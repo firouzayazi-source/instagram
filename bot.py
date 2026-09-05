@@ -1,4 +1,4 @@
-import os, re, json, time, asyncio, logging, aiosqlite, jdatetime, pytz, zipfile, io, csv, html, secrets, traceback
+import os, re, json, time, asyncio, logging, aiosqlite, jdatetime, pytz, zipfile, io, html, secrets, traceback
 from datetime import datetime, timedelta
 import aiofiles
 from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
@@ -271,7 +271,11 @@ async def _stats_flush_loop():
     global _stats_dirty
     while True:
         await asyncio.sleep(30)
-        if _stats_dirty: await save_stats(); _stats_dirty=False
+        # بدون این try، یک خطای نوشتن (دیسک پر، دسترسی) تسک را می‌کشت و
+        # آمار تا ری‌استارت بعدی دیگر ذخیره نمی‌شد — آن هم بی‌صدا
+        try:
+            if _stats_dirty: await save_stats(); _stats_dirty=False
+        except Exception as e: logger.error(f"stats_flush: {e}")
 
 # ── load/save
 async def _rj(path,default):
@@ -452,14 +456,14 @@ async def safe_edit(msg,text,**kw):
     # اگر پیام عکس/کپشن دارد، edit_text کار نمی‌کند → پیام را حذف و پیام متنی جدید بفرست
     if getattr(msg,"photo",None) or getattr(msg,"caption",None) is not None:
         try: await msg.delete()
-        except: pass
+        except Exception: pass
         try: await msg.reply_text(text,**kw); return
         except Exception as e: logger.error(f"safe_edit(photo): {e}"); return
     try: await msg.edit_text(text,**kw)
     except Exception as e:
         if "not modified" in str(e).lower(): return
         try: await msg.reply_text(text,**kw)
-        except: logger.error(f"safe_edit: {e}")
+        except Exception: logger.error(f"safe_edit: {e}")
 
 async def init_db():
     global db
@@ -666,20 +670,21 @@ async def _spam_cleanup_loop():
     صفر تاثیر روی سرعت — فقط در زمان idle اجرا می‌شود."""
     while True:
         await asyncio.sleep(6 * 3600)
-        now = time.time()
-        stale = [uid for uid, ts in list(_rate.items())
-                 if not ts or now - max(ts) > _RATE_WIN * 6]
-        for uid in stale:
-            _rate.pop(uid, None); _warned.pop(uid, None)
-        for uid in [u for u, t in list(_hard_block.items()) if t < now]:
-            del _hard_block[uid]
-        for uid in [u for u,(v,exp) in list(_block_cache.items()) if exp<now]:
-            del _block_cache[uid]
-        for uid in [u for u,ts in list(_seen_uids.items()) if now-ts>_SEEN_TTL*3]:
-            del _seen_uids[uid]
-        if stale: logger.debug(f"spam_cleanup: {len(stale)} رکورد منقضی پاک شد")
-        try: await prune_threads()
-        except Exception as e: logger.error(f"prune_threads: {e}")
+        try:
+            now = time.time()
+            stale = [uid for uid, ts in list(_rate.items())
+                     if not ts or now - max(ts) > _RATE_WIN * 6]
+            for uid in stale:
+                _rate.pop(uid, None); _warned.pop(uid, None)
+            for uid in [u for u, t in list(_hard_block.items()) if t < now]:
+                del _hard_block[uid]
+            for uid in [u for u,(v,exp) in list(_block_cache.items()) if exp<now]:
+                del _block_cache[uid]
+            for uid in [u for u,ts in list(_seen_uids.items()) if now-ts>_SEEN_TTL*3]:
+                del _seen_uids[uid]
+            if stale: logger.debug(f"spam_cleanup: {len(stale)} رکورد منقضی پاک شد")
+            await prune_threads()
+        except Exception as e: logger.error(f"spam_cleanup: {e}")
 
 def spam_check(uid: int) -> str:
     """کاملاً sync — بدون await، بدون DB، صفر overhead.
@@ -1468,7 +1473,7 @@ async def log_unmatched(text,user=None):
             it["count"]=it.get("count",1)+1; it["last"]=gregorian_now()
             break
     else:
-        unmatched.insert(0,{"text":t,"count":1,"last":gregorian_now(),
+        unmatched.insert(0,{"id":new_btn_id(),"text":t,"count":1,"last":gregorian_now(),
                             "uid":getattr(user,"id",None)})
         del unmatched[UNMATCHED_MAX:]
     await save_unmatched()
@@ -1488,7 +1493,7 @@ def unmatched_text():
     if not unmatched:
         return ("<b>❓ سؤال‌های بی‌پاسخ</b>\n"+HR+
                 "\nهنوز سؤالی بدون جواب نمانده.")
-    top=sorted(unmatched,key=lambda x:(-x.get("count",1),x.get("last","")))
+    top=unmatched_sorted()
     out=["<b>❓ سؤال‌های بی‌پاسخ</b>",HR,
          "پرسش‌هایی که هیچ سؤال آماده‌ای جوابشان را نداشت — "
          "پرتکرارها اول. روی هرکدام بزنید تا از رویش سؤال آماده بسازید.",HR]
@@ -1498,20 +1503,25 @@ def unmatched_text():
     return _fit("\n".join(out),TEXT_LIMIT)
 
 def unmatched_kb():
-    top=sorted(unmatched,key=lambda x:(-x.get("count",1),x.get("last","")))
     rows=[]
-    for i,it in enumerate(top[:10]):
+    for it in unmatched_sorted()[:10]:
         c=it.get("count",1)
+        # شناسه‌ی ثابت، نه شماره‌ی ردیف: اگر بین نمایش و تپ سؤال تازه‌ای
+        # برسد، ترتیب عوض می‌شود و ردیف اشتباه باز می‌شد
         rows.append([InlineKeyboardButton(
             f"➕ {_fit(it['text'],28)}"+(f" ×{to_fa(c)}" if c>1 else ""),
-            callback_data=f"unm_{i}")])
+            callback_data=f"unm_{it.get('id','?')}")])
     if unmatched:
         rows.append([InlineKeyboardButton("🗑 پاک کردن فهرست",callback_data="unm_clear")])
     return InlineKeyboardMarkup(_nav(*rows,back="faq_menu"))
 
-def unmatched_at(i):
-    top=sorted(unmatched,key=lambda x:(-x.get("count",1),x.get("last","")))
-    return top[i] if 0<=i<len(top) else None
+def unmatched_sorted():
+    """پرتکرارها اول؛ در تساوی، تازه‌ترها بالاتر."""
+    by_date=sorted(unmatched,key=lambda x:x.get("last",""),reverse=True)
+    return sorted(by_date,key=lambda x:-x.get("count",1))
+
+def unmatched_by_id(uid):
+    return next((x for x in unmatched if x.get("id")==uid),None)
 
 async def load_faq():
     global faq
@@ -2100,7 +2110,7 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             logger.error(f"user_cb uid={uid} data={data}: {e}",exc_info=True)
             try: await query.message.reply_text("❌ خطا. دوباره امتحان کنید.")
-            except: pass
+            except Exception: pass
         return
 
     # ════ ADMIN — هر handler خودش answer می‌زنه تا show_alert درست کار کنه
@@ -2188,7 +2198,7 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
                             reply_markup=unmatched_kb(),parse_mode="HTML")
 
         elif data.startswith("unm_"):
-            it=unmatched_at(int(data[4:])) if data[4:].isdigit() else None
+            it=unmatched_by_id(data[4:])
             if not it: await query.answer("یافت نشد!",show_alert=True); return
             await query.answer()
             ctx.user_data.update({"mode":"faq_keys","faq_id":None})
@@ -2740,9 +2750,9 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"admin callback error data={data}: {e}",exc_info=True)
         try: await query.answer()
-        except: pass
+        except Exception: pass
         try: await query.message.reply_text("❌ خطا در پردازش درخواست.")
-        except: pass
+        except Exception: pass
 
 # ════════════════════════════════════════════════
 #  TEXT HANDLER
@@ -2981,7 +2991,14 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         full=build_msg(text,content,mkey)
         await send_banner(update.message,full,mkey,kb=kb); return
 
-    # پیام آزاد کاربر — اول ببینیم سؤال آماده‌ای جوابش را دارد یا نه
+    # پیام آزاد کاربر — اول ببینیم سؤال آماده‌ای جوابش را دارد یا نه.
+    # متنِ آزادِ خودِ مدیر از این مسیر کنار می‌رود: نه پاسخ خودکار می‌گیرد،
+    # نه فهرست «سؤال‌های بی‌پاسخ» را با پیام‌های داخلی آلوده می‌کند.
+    if is_admin(user.id):
+        await update.message.reply_text(
+            "دستور شناخته‌شده‌ای نبود.\n/admin برای پنل · /start برای منو",
+            reply_markup=main_menu())
+        return
     hit=faq_match(text) if get_setting("faq_auto") else None
     if hit:
         hit["hits"]=hit.get("hits",0)+1; await save_faq()
@@ -3025,8 +3042,11 @@ async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",a
         except Exception as e:
             logger.error(f"forward user msg → {aid}: {e}")
     if not delivered: return False
+    if auto:
+        # مشتری همین الان پاسخ گرفت — نه تأیید اضافه لازم دارد، نه باید در
+        # صف «بی‌جواب» بنشیند و دو ساعت بعد یادآوری بی‌مورد بفرستد.
+        return True
     await mark_open(user.id)
-    if auto: return True          # مشتری همین الان پاسخ گرفت، تأیید اضافه لازم نیست
     # تأیید آگاه از ساعت کاری — «به‌زودی پاسخ می‌دهیم» ساعت ۳ بامداد دروغ است
     if is_open():
         body="همکاران ما به‌زودی پاسخ می‌دهند. 🙏"
@@ -3074,7 +3094,7 @@ async def reply_relay(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if target is None: return          # ریپلای بی‌ربط — بگذار بقیه رسیدگی کنند
     # میان‌بر: به‌جای تایپ دوباره‌ی متن، فقط #کلیدواژه — همان جواب آماده می‌رود.
     # با دو مدیر یعنی جواب‌ها یکدست هم می‌مانند.
-    body=(msg.text or msg.caption or "").strip()
+    body=(msg.text or "").strip()
     if get_setting("faq_shortcut") and body.startswith("#") and len(body.split())==1:
         it=faq_by_key(body[1:])
         if not it:
@@ -3279,16 +3299,32 @@ async def document_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
 # ════════════════════════════════════════════════
 #  MAIN
 # ════════════════════════════════════════════════
+def _spawn(coro,name):
+    """تسک پس‌زمینه با گزارش مرگ.
+
+    با ensure_future خالی، اگر تسکی استثنا بدهد پایتون فقط هنگام جمع‌آوری
+    زباله یک هشدار می‌دهد و عملاً بی‌صدا می‌میرد — یعنی یک قابلیت تا
+    ری‌استارت بعدی از کار می‌افتد و کسی نمی‌فهمد.
+    """
+    t=asyncio.ensure_future(coro)
+    def _done(f):
+        try: f.result()
+        except asyncio.CancelledError: pass
+        except Exception as e:
+            logger.error(f"⛔ تسک پس‌زمینه‌ی «{name}» متوقف شد: {e}",exc_info=True)
+    t.add_done_callback(_done)
+    return t
+
 async def post_init(app):
     await init_db(); await load_data(); await load_banners()
     await load_workhours(); await load_buttons(); await load_settings()
     await load_stats(); await load_menu(); await load_places(); await load_backup_registry()
     await load_admins(); await bc_load(); await load_faq(); await load_unmatched()
-    asyncio.ensure_future(_spam_cleanup_loop())
-    asyncio.ensure_future(_stats_flush_loop())
-    asyncio.ensure_future(_auto_backup_loop(app.bot))
-    asyncio.ensure_future(_bc_loop(app.bot))
-    asyncio.ensure_future(_pending_loop(app.bot))
+    _spawn(_spam_cleanup_loop(),"پاکسازی")
+    _spawn(_stats_flush_loop(),"ذخیره‌ی آمار")
+    _spawn(_auto_backup_loop(app.bot),"بکاپ هفتگی")
+    _spawn(_bc_loop(app.bot),"پخش همگانی")
+    _spawn(_pending_loop(app.bot),"پیام‌های بی‌جواب")
     try:
         await app.bot.set_my_commands([BotCommand("start","شروع و نمایش منو"),
                                        BotCommand("help","راهنما")])
