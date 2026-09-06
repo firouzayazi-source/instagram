@@ -48,6 +48,31 @@ ADMINS_FILE = "admins.json"; BROADCAST_FILE = "broadcast.json"
 FAQ_FILE = "faq.json"; UNMATCHED_FILE = "unmatched.json"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+
+# ── محافظت از توکن در لاگ‌ها
+# httpx هر درخواست را در سطح INFO لاگ می‌کند و توکن داخلِ خودِ URL است:
+#   "HTTP Request: POST https://api.telegram.org/bot<TOKEN>/getMe"
+# یعنی توکن با متن ساده در journalctl می‌نشست و با هر کپی‌کردن لاگ بیرون
+# می‌رفت. هرکس آن رشته را داشته باشد کنترل کامل ربات را دارد.
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("telegram.ext.Application").setLevel(logging.INFO)
+
+class _RedactToken(logging.Filter):
+    """تور ایمنی: اگر توکن از هر مسیر دیگری (خطا، traceback، کتابخانه‌ی
+    ناشناس) به لاگ راه پیدا کرد، جایش ‹توکن› نوشته می‌شود."""
+    def filter(self, record):
+        try:
+            msg = record.getMessage()
+            if TOKEN and TOKEN in msg:
+                record.msg = msg.replace(TOKEN, "‹توکن پنهان شد›"); record.args = ()
+        except Exception:
+            pass
+        return True
+
+for _h in logging.getLogger().handlers:
+    _h.addFilter(_RedactToken())
+
 logger = logging.getLogger(__name__)
 IRAN_TZ = pytz.timezone("Asia/Tehran")
 
