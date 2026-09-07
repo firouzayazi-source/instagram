@@ -50,6 +50,7 @@ admins.json
 broadcast.json
 faq.json
 unmatched.json
+pages.json
 pre_restore.zip
 *.corrupt
 

@@ -46,6 +46,7 @@ MENU_FILE = "menu.json"; BACKUPS_FILE = "backups.json"; PLACES_FILE = "places.js
 SETTINGS_FILE = "settings.json"; STATS_FILE = "stats.json"
 ADMINS_FILE = "admins.json"; BROADCAST_FILE = "broadcast.json"
 FAQ_FILE = "faq.json"; UNMATCHED_FILE = "unmatched.json"
+PAGES_FILE = "pages.json"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -111,11 +112,20 @@ DEFAULT_MENU = [
 ]
 menu_cfg = []
 
-SECTION_NAMES = {"welcome":"🏠 خوش‌آمدگویی",
+# بخش‌های پایه — همیشه هستند و حذف نمی‌شوند
+BASE_SECTIONS = {"welcome":"🏠 خوش‌آمدگویی",
                  "workhours":"🕐 ساعت کاری",
                  "1":"🌐 شبکه‌های اجتماعی","2":"🌐 سایت استوک لند",
                  "3":"💰 شرایط اقساط","4":"📞 پشتیبانی","5":"📍 آدرس فروشگاه",
                  "6":"🔖 دکمه ذخیره ۱","7":"🔖 دکمه ذخیره ۲"}
+# SECTION_NAMES = پایه + بخش‌های سفارشیِ ادمین (pages.json).
+# عمداً همان dict می‌ماند تا همه‌ی کدهایی که SECTION_NAMES[key] یا
+# «for k in SECTION_NAMES» می‌زنند بدون تغییر کار کنند.
+SECTION_NAMES = dict(BASE_SECTIONS)
+pages: list = []          # [{"key":"p_ab12cd34","title":"🛍 محصولات"}]
+
+def is_custom(key): return str(key).startswith("p_")
+def new_page_key(): return "p_"+secrets.token_hex(4)
 
 # ── state
 responses=None; banners={}; workhours={}; buttons={}; settings={}; stats={}; places={}
@@ -335,6 +345,25 @@ async def _wj(path,data):
         except Exception: pass
         return False
 
+async def load_pages():
+    """بخش‌های سفارشی را به SECTION_NAMES تزریق می‌کند تا بقیه‌ی ربات
+    (متن، بنر، دکمه، آمار، بک‌آپ) بدون هیچ تغییری با آن‌ها کار کند."""
+    global pages
+    data=await _rj(PAGES_FILE,list)
+    pages=[x for x in data if isinstance(x,dict) and x.get("key") and x.get("title")] \
+          if isinstance(data,list) else []
+    SECTION_NAMES.clear(); SECTION_NAMES.update(BASE_SECTIONS)
+    for pg in pages: SECTION_NAMES[pg["key"]]=pg["title"]
+    logger.info(f"pages: {len(pages)} بخش سفارشی")
+
+async def save_pages():
+    SECTION_NAMES.clear(); SECTION_NAMES.update(BASE_SECTIONS)
+    for pg in pages: SECTION_NAMES[pg["key"]]=pg["title"]
+    invalidate_menu_cache()
+    return await _wj(PAGES_FILE,pages)
+
+def page_item(key): return next((x for x in pages if x["key"]==key),None)
+
 async def load_data():
     global responses
     responses=await _rj(DATA_FILE,lambda:dict(MENU_ITEMS,welcome="✨ خوش آمدید به ربات استوک لند"))
@@ -378,7 +407,7 @@ async def load_menu():
     if not menu_cfg:
         menu_cfg = [dict(m) for m in DEFAULT_MENU]; await save_menu()
     else:
-        valid = {d["key"] for d in DEFAULT_MENU}
+        valid = {d["key"] for d in DEFAULT_MENU} | {p["key"] for p in pages}
         # حذف کلیدهایی که دیگر وجود ندارند (مثلاً catalog از نسخه‌های قبلی)
         # وگرنه دکمه‌ای در منو می‌ماند که هیچ هندلری ندارد.
         dropped = [m["key"] for m in menu_cfg if m.get("key") not in valid]
@@ -1056,9 +1085,17 @@ async def _pending_loop(bot):
 # ترتیب نمایش بخش‌ها — دقیقاً مطابق منوی کاربر
 SECTION_ORDER = ["welcome","1","2","3","4","5","workhours","6","7"]
 
+def section_order():
+    """ترتیب نمایش در پنل: بخش‌های پایه، بعد بخش‌های سفارشی."""
+    return SECTION_ORDER + [p["key"] for p in pages]
+
+def pages_hint():
+    return ("\n\n📄 بخش‌های سفارشی: هر تعداد که بخواهید بسازید. هرکدام متن، "
+            "بنر، لینک و لوکیشن خودش را دارد و می‌تواند به منوی اصلی برود.")
+
 def sections_kb():
     btns=[]; row=[]
-    for key in SECTION_ORDER:
+    for key in section_order():
         if key not in SECTION_NAMES: continue
         name=SECTION_NAMES[key]
         cont=responses.get(key,"") if responses else ""
@@ -1071,6 +1108,7 @@ def sections_kb():
         row.append(InlineKeyboardButton(label,callback_data=f"sec_{key}"))
         if len(row)==2: btns.append(row); row=[]
     if row: btns.append(row)
+    btns.append([InlineKeyboardButton("➕ بخش تازه",callback_data="page_add")])
     btns.extend(_nav(back="adm_content"))
     return InlineKeyboardMarkup(btns)
 
@@ -1088,6 +1126,12 @@ def section_kb(key):
     else:
         loc_lbl="📍 لوکیشن  ➕ ندارد"
     rows.append([InlineKeyboardButton(loc_lbl,callback_data=f"sec_loc_{key}")])
+    if is_custom(key):
+        m=menu_item(key)
+        on=bool(m and m.get("enabled",True))
+        rows.append([InlineKeyboardButton(f"🧩 در منوی اصلی  {'🟢' if on else '⚫️'}",
+                                          callback_data=f"page_menu_{key}"),
+                     InlineKeyboardButton("🗑 حذف بخش",callback_data=f"page_dl_{key}")])
     rows.append([InlineKeyboardButton("🔙 بازگشت",callback_data="sections")])
     return InlineKeyboardMarkup(rows)
 
@@ -1899,7 +1943,8 @@ async def send_backup(bot,label="بک‌آپ"):
     files=[(DATA_FILE,"data.json"),(BANNER_FILE,"banner.json"),(WORKHOURS_FILE,"workhours.json"),
            (BUTTONS_FILE,"buttons.json"),(SETTINGS_FILE,"settings.json"),(STATS_FILE,"stats.json"),
            (MENU_FILE,"menu.json"),(PLACES_FILE,"places.json"),(ADMINS_FILE,"admins.json"),
-           (FAQ_FILE,"faq.json"),(UNMATCHED_FILE,"unmatched.json"),(DB_FILE,"users.db")]
+           (FAQ_FILE,"faq.json"),(UNMATCHED_FILE,"unmatched.json"),
+           (PAGES_FILE,"pages.json"),(DB_FILE,"users.db")]
     with zipfile.ZipFile(buf,"w",zipfile.ZIP_DEFLATED) as zf:
         for fp,name in files:
             try:
@@ -1958,7 +2003,8 @@ async def _auto_backup_loop(bot):
 BACKUP_MAP = {"data.json":DATA_FILE,"banner.json":BANNER_FILE,"workhours.json":WORKHOURS_FILE,
               "buttons.json":BUTTONS_FILE,"settings.json":SETTINGS_FILE,"stats.json":STATS_FILE,
               "menu.json":MENU_FILE,"places.json":PLACES_FILE,"admins.json":ADMINS_FILE,
-              "faq.json":FAQ_FILE,"unmatched.json":UNMATCHED_FILE,"users.db":DB_FILE}
+              "faq.json":FAQ_FILE,"unmatched.json":UNMATCHED_FILE,
+              "pages.json":PAGES_FILE,"users.db":DB_FILE}
 SQLITE_MAGIC = b"SQLite format 3\x00"
 MAX_RESTORE_BYTES = 200 * 1024 * 1024   # سقف ایمنی برای فایل‌های داخل ZIP
 
@@ -2024,6 +2070,7 @@ async def restore_backup(bot,file_id):
             _seen_uids={}; _block_cache={}
             await init_db()
 
+        await load_pages()
         await load_data(); await load_banners(); await load_workhours()
         await load_buttons(); await load_settings(); await load_stats(); await load_menu(); await load_places()
         # از فایل‌های تازه دوباره خوانده شوند
@@ -2403,7 +2450,8 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         # ── مدیریت بخش‌ها — یکپارچه برای تمام بخش‌ها
         elif data=="sections":
             await query.answer()
-            await safe_edit(query.message,"📋 مدیریت بخش‌ها:",reply_markup=sections_kb())
+            await safe_edit(query.message,"📋 مدیریت بخش‌ها"+pages_hint(),
+                            reply_markup=sections_kb())
 
         # ── مدیریت منوی اصلی ──
         elif data=="menu_mgr":
@@ -2503,6 +2551,58 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
                 f"\n✏️ متن: {txt_ok}\n🖼 بنر: {ban_ok}\n🔘 دکمه: {btn_ok}",
                 reply_markup=section_kb(key))
             except BadRequest: await query.message.reply_text(f"📋 {SECTION_NAMES.get(key,key)}",reply_markup=section_kb(key))
+
+        elif data=="page_add":
+            await query.answer()
+            ctx.user_data["mode"]="page_add"
+            await query.message.reply_text(
+                "📄 نام بخش تازه را بنویسید — همان چیزی که روی دکمه‌ی منو دیده می‌شود.\n\n"
+                "مثال:  🛍 محصولات",reply_markup=cancel_menu())
+
+        elif data.startswith("page_dl_"):
+            key=data[8:]; pg=page_item(key)
+            if not pg: await query.answer("یافت نشد!",show_alert=True); return
+            await query.answer()
+            await safe_edit(query.message,
+                f"🗑 حذف بخش «{esc(pg['title'])}»؟\n{HR}\n"
+                "متن، بنر، دکمه‌ها و لوکیشن این بخش هم پاک می‌شوند و از منو "
+                "برداشته می‌شود. بخش‌های دیگر دست‌نخورده می‌مانند.",
+                parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🗑 بله، حذف کن",callback_data=f"page_dok_{key}")],
+                    [InlineKeyboardButton("↩️ انصراف",callback_data=f"sec_{key}")]]))
+
+        elif data.startswith("page_dok_"):
+            key=data[9:]; pg=page_item(key)
+            if not pg: await query.answer("یافت نشد!",show_alert=True); return
+            pages[:] = [x for x in pages if x["key"]!=key]
+            for store,saver in ((responses,save_data),(banners,save_banners),
+                                (buttons,save_buttons),(places,save_places)):
+                if store is not None and key in store:
+                    store.pop(key,None); await saver()
+            stats.pop(key,None); await save_stats()
+            menu_cfg[:] = [m for m in menu_cfg if m.get("key")!=key]
+            await save_menu(); await save_pages()
+            await query.answer("🗑 بخش حذف شد.",show_alert=True)
+            await safe_edit(query.message,"📝 بخش‌های ربات"+pages_hint(),
+                            reply_markup=sections_kb())
+
+        elif data.startswith("page_menu_"):
+            key=data[10:]; pg=page_item(key)
+            if not pg: await query.answer("یافت نشد!",show_alert=True); return
+            m=menu_item(key)
+            if m:
+                m["enabled"]=not m.get("enabled",True)
+            else:
+                nxt=max([x.get("order",0) for x in menu_cfg] or [0])+1
+                menu_cfg.append({"key":key,"label":pg["title"],"order":nxt,
+                                 "enabled":True,"width":"half"})
+                m=menu_item(key)
+            await save_menu()
+            await query.answer("✅ به منو اضافه شد" if m.get("enabled",True)
+                               else "⚫️ از منو برداشته شد",show_alert=True)
+            await safe_edit(query.message,f"📋 بخش: {SECTION_NAMES.get(key,key)}\n{'─'*14}",
+                            reply_markup=section_kb(key))
 
         elif data.startswith("sec_text_"):
             key=data[9:]
@@ -2810,7 +2910,12 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             key=ctx.user_data.pop("menu_key",None); ctx.user_data.pop("mode",None)
             m=menu_item(key)
             if m and text:
-                m["label"]=text; await save_menu()
+                m["label"]=text
+                # بخش سفارشی: نامش هم باید همراه دکمه عوض شود، وگرنه پنل و
+                # منو دو اسم متفاوت نشان می‌دهند
+                pg=page_item(key)
+                if pg: pg["title"]=text; await save_pages()
+                await save_menu()
                 await update.message.reply_text(f"✅ نام دکمه به «{text}» تغییر کرد.",reply_markup=main_menu())
                 await update.message.reply_text(f"🎛 دکمه: {m['label']}",reply_markup=menu_item_kb(key))
             else:
@@ -2826,6 +2931,29 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
                 f"🎯 {bc_label(aud)} — {to_fa(n)} نفر\nچه کار کنم؟",
                 reply_markup=bc_confirm_kb())
             return
+        if mode=="page_add":
+            ctx.user_data.pop("mode",None)
+            title=text.strip()[:40]
+            if len(title)<2:
+                ctx.user_data["mode"]="page_add"
+                await update.message.reply_text("❌ نام کوتاه است. دوباره بنویسید:",
+                                                reply_markup=cancel_menu()); return
+            if any(p["title"]==title for p in pages) or title in BASE_SECTIONS.values():
+                await update.message.reply_text("❌ بخشی با همین نام وجود دارد.",
+                                                reply_markup=main_menu()); return
+            key=new_page_key()
+            pages.append({"key":key,"title":title})
+            responses[key]=""
+            nxt=max([x.get("order",0) for x in menu_cfg] or [0])+1
+            menu_cfg.append({"key":key,"label":title,"order":nxt,
+                             "enabled":True,"width":"half"})
+            await save_pages(); await save_data(); await save_menu()
+            await update.message.reply_text(
+                f"✅ بخش «{title}» ساخته شد و به منو اضافه شد.\n"
+                f"حالا متن، بنر و لینک‌هایش را بگذارید 👇",reply_markup=main_menu())
+            await update.message.reply_text(f"📋 بخش: {title}\n{'─'*14}",
+                                            reply_markup=section_kb(key)); return
+
         if mode=="faq_keys":
             fid=ctx.user_data.get("faq_id")
             keys=[k.strip() for k in text.replace("،",",").split(",") if k.strip()]
@@ -3001,8 +3129,8 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         kb=InlineKeyboardMarkup([[InlineKeyboardButton("📆 برنامه‌ی هفتگی",callback_data="wh_weekly")]])
         await send_banner(update.message,msg,"workhours",kb=kb); return
 
-    # بخش‌های متنی (۱ تا ۵)
-    if mkey and mkey in MENU_ITEMS:
+    # بخش‌های متنی — پایه (۱ تا ۷) و سفارشی (p_...)
+    if mkey and (mkey in MENU_ITEMS or is_custom(mkey)):
         await record_stat(mkey)
         kb=user_sec_kb(mkey)
         # لوکیشن فعال → یک کارت واحد: نقشه + نام + آدرس + دکمه‌های بخش.
@@ -3341,7 +3469,7 @@ def _spawn(coro,name):
     return t
 
 async def post_init(app):
-    await init_db(); await load_data(); await load_banners()
+    await init_db(); await load_pages(); await load_data(); await load_banners()
     await load_workhours(); await load_buttons(); await load_settings()
     await load_stats(); await load_menu(); await load_places(); await load_backup_registry()
     await load_admins(); await bc_load(); await load_faq(); await load_unmatched()
