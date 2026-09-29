@@ -142,7 +142,8 @@ DEFAULT_WH = {"enabled":True,"schedule":{
 DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs":True,
                     "faq_auto":True,        # پاسخ خودکار به سؤال‌های آماده
                     "faq_shortcut":True,    # میان‌بر #کلیدواژه هنگام پاسخ مدیر
-                    "log_unmatched":True}   # ثبت سؤال‌هایی که جوابی نداشتند
+                    "log_unmatched":True,   # ثبت سؤال‌هایی که جوابی نداشتند
+                    "track_visits":True}    # حافظه‌ی رفتار مشتری (کارت شناخت)
 
 # ── helpers
 def get_banner(k): banners.setdefault(k,{"file_id":None,"active":False}); return banners[k]
@@ -296,10 +297,46 @@ _stats_dirty = False
 _last_err_report = 0.0      # زمان آخرین گزارش خطا به ادمین
 _ERR_REPORT_GAP  = 60.0     # حداقل فاصله بین دو گزارش (ثانیه)
 
-async def record_stat(k):
+EV_MSG = "_msg"          # کلید ویژه: پیام آزادِ مشتری
+
+async def record_stat(k,uid=None):
+    """شمارنده‌ی کلی (برای آمار) + رویداد شخصی (برای کارت شناخت مشتری)."""
     global _stats_dirty
     stats[k]=stats.get(k,0)+1
     _stats_dirty=True   # فقط flag — بدون disk write
+    if uid is not None and get_setting("track_visits"):
+        try: await record_event(uid,k)
+        except Exception as e: logger.debug(f"record_event: {e}")
+
+async def record_event(uid,key):
+    await db.execute("INSERT INTO events(user_id,key,ts) VALUES(?,?,?)",
+                     (uid,key,gregorian_now()))
+    await db.commit()
+
+# بازه‌های چهارساعته — ۲۴ خط در پیام تلگرام خوانا نیست
+HOUR_BUCKETS = [(0,4,"🌙 ۰۰–۰۴"),(4,8,"🌅 ۰۴–۰۸"),(8,12,"☀️ ۰۸–۱۲"),
+                (12,16,"🌤 ۱۲–۱۶"),(16,20,"🌇 ۱۶–۲۰"),(20,24,"🌃 ۲۰–۲۴")]
+
+async def busy_hours(days=30):
+    """پیام‌های مشتری در هر بازه‌ی ساعتی — «کی باید کنار گوشی باشم».
+
+    ts به وقت تهران و به‌صورت متن ذخیره شده، پس strftime مستقیم همان
+    ساعت محلی را می‌دهد و تبدیل منطقه‌ی زمانی لازم نیست.
+    """
+    async with db.execute(
+        "SELECT CAST(strftime('%H',ts) AS INTEGER) h,COUNT(*) c FROM events "
+        "WHERE key=? AND ts>=datetime('now',?,'localtime') GROUP BY h",
+        (EV_MSG,f"-{days} days")) as c:
+        rows=await c.fetchall()
+    per_hour={h:n for h,n in rows if h is not None}
+    buckets=[(lbl,sum(per_hour.get(h,0) for h in range(a,b))) for a,b,lbl in HOUR_BUCKETS]
+    peak=max(per_hour.items(),key=lambda x:x[1])[0] if per_hour else None
+    return buckets,peak,sum(per_hour.values())
+
+async def prune_events(days=90):
+    await db.execute("DELETE FROM events WHERE ts<datetime('now',?,'localtime')",
+                     (f"-{days} days",))
+    await db.commit()
 
 async def _stats_flush_loop():
     """هر ۳۰ ثانیه اگر آمار تغییر کرده باشد، ذخیره می‌کند."""
@@ -532,6 +569,10 @@ async def init_db():
             user_id INTEGER PRIMARY KEY,username TEXT,first_name TEXT,
             joined_at TEXT,last_seen TEXT,is_blocked INTEGER DEFAULT 0);
         CREATE INDEX IF NOT EXISTS idx_ls ON users(last_seen);
+        CREATE TABLE IF NOT EXISTS events(
+            user_id INTEGER,key TEXT,ts TEXT);
+        CREATE INDEX IF NOT EXISTS idx_ev_u ON events(user_id,ts);
+        CREATE INDEX IF NOT EXISTS idx_ev_k ON events(key,ts);
         CREATE TABLE IF NOT EXISTS threads(
             admin_id INTEGER,msg_id INTEGER,user_id INTEGER,ts TEXT,
             PRIMARY KEY(admin_id,msg_id));
@@ -609,6 +650,53 @@ async def thread_last_msg(admin_id,user_id):
         (admin_id,user_id)) as c:
         r=await c.fetchone()
     return r[0] if r else None
+
+# ── کارت شناخت مشتری
+async def customer_card(uid):
+    """چند خط که مدیر را در جریان می‌گذارد طرف کیست.
+
+    هیچ هوش مصنوعی‌ای در کار نیست — فقط همان چیزی که ربات دیده: کِی آمد،
+    چند بار نوشت، از کجا آمد، و پیش از نوشتن چه خواند. وقتی بدانی مشتری
+    صفحه‌ی اقساط را خوانده و بعد «سلام» نوشته، جوابت با یک تازه‌وارد فرق می‌کند.
+    """
+    if not get_setting("track_visits"): return ""
+    async with db.execute(
+        "SELECT joined_at,source FROM users WHERE user_id=?",(uid,)) as c:
+        row=await c.fetchone()
+    lines=[]
+    src=(row[1] if row else "") or ""
+    first=(row[0] if row else "") or ""
+    head=[]
+    if src: head.append(SOURCE_LABELS.get(src,f"🎯 {src}"))
+    if first:
+        a=ago_text(first)
+        # تازه‌وارد یعنی همین امروز رسیده — «از ۳ دقیقه پیش اینجاست» بی‌معنی است
+        head.append("🆕 تازه‌وارد" if ("دقیقه" in a or a=="همین الان" or "ساعت" in a)
+                    else f"از {a} اینجاست")
+    if head: lines.append(" · ".join(head))
+
+    async with db.execute(
+        "SELECT COUNT(*) FROM events WHERE user_id=? AND key=?",(uid,EV_MSG)) as c:
+        nmsg=(await c.fetchone())[0]
+    async with db.execute(
+        "SELECT ts FROM events WHERE user_id=? AND key=? ORDER BY ts DESC LIMIT 1 OFFSET 1",
+        (uid,EV_MSG)) as c:
+        prev=await c.fetchone()
+    part=[]
+    if nmsg>1:   part.append(f"💬 {to_fa(nmsg)}اُمین پیامش")
+    elif nmsg==1: part.append("💬 اولین پیامش")
+    if prev: part.append(f"آخرین تماس {ago_text(prev[0])}")
+    if part: lines.append("  ·  ".join(part))
+
+    # چه بخش‌هایی را پیش از نوشتن دیده — بدون تکرار، تازه‌ترین اول
+    async with db.execute(
+        "SELECT key,MAX(ts) t FROM events WHERE user_id=? AND key<>? "
+        "GROUP BY key ORDER BY t DESC LIMIT 4",(uid,EV_MSG)) as c:
+        seen=[r[0] for r in await c.fetchall()]
+    if seen:
+        labels=[SECTION_NAMES.get(k,"🕐 ساعت کاری" if k=="wh_page" else k) for k in seen]
+        lines.append("👀 دیده: "+"، ".join(labels))
+    return "\n".join(esc(x) for x in lines)
 
 # ── پیام‌های بی‌جواب
 async def mark_open(uid):
@@ -737,7 +825,7 @@ async def _spam_cleanup_loop():
             for uid in [u for u,ts in list(_seen_uids.items()) if now-ts>_SEEN_TTL*3]:
                 del _seen_uids[uid]
             if stale: logger.debug(f"spam_cleanup: {len(stale)} رکورد منقضی پاک شد")
-            await prune_threads()
+            await prune_threads(); await prune_events()
         except Exception as e: logger.error(f"spam_cleanup: {e}")
 
 def spam_check(uid: int) -> str:
@@ -928,7 +1016,8 @@ def settings_text():
             "\nبا زدن هر گزینه، روشن/خاموش می‌شود."
             "\n\n💡 پاسخ خودکار: سؤال آماده‌ای که کلیدواژه‌اش در پیام مشتری باشد"
             "\n#️⃣ میان‌بر: هنگام پاسخ، #کلیدواژه را می‌نویسید و جواب آماده می‌رود"
-            "\n❓ سؤال‌های بی‌پاسخ: پرسش‌هایی که هیچ جوابی برایشان نبود")
+            "\n❓ سؤال‌های بی‌پاسخ: پرسش‌هایی که هیچ جوابی برایشان نبود"
+            "\n👤 حافظه‌ی رفتار: کارت شناخت مشتری روی پیام‌ها و آمار ساعت‌های شلوغ")
 
 def stats_kb():
     return InlineKeyboardMarkup(_nav(
@@ -954,6 +1043,16 @@ async def stats_text():
     if srcs:
         out += [sep,"🎯 مشتری‌ها از کجا آمده‌اند"]
         out += [f"• {SOURCE_LABELS.get(r[0],r[0])}: {to_fa(r[1])}" for r in srcs[:8]]
+    try:
+        buckets,peak,total_msg=await busy_hours()
+    except Exception as e:
+        logger.debug(f"busy_hours: {e}"); buckets,peak,total_msg=[],None,0
+    if total_msg:
+        out += [sep,f"🕘 پیام مشتری‌ها در ۳۰ روز اخیر ({to_fa(total_msg)} پیام)"]
+        top=max(n for _,n in buckets) or 1
+        out += [f"{progress_bar(n,top)} {to_fa(n):>3}  {lbl}" for lbl,n in buckets if n]
+        if peak is not None:
+            out.append(f"⏰ شلوغ‌ترین ساعت: {to_fa(f'{peak:02d}')}:۰۰")
     labels=dict(SECTION_NAMES); labels["wh_page"]="🕐 ساعت کاری"
     rows=sorted(((labels.get(k,k),v) for k,v in stats.items() if v),key=lambda r:-r[1])
     out += [sep,"📈 بازدید بخش‌ها"]
@@ -1126,6 +1225,9 @@ def section_kb(key):
     else:
         loc_lbl="📍 لوکیشن  ➕ ندارد"
     rows.append([InlineKeyboardButton(loc_lbl,callback_data=f"sec_loc_{key}")])
+    if key not in ("welcome",):
+        rows.append([InlineKeyboardButton("🔗 لینک مستقیم این بخش",
+                                          callback_data=f"sec_link_{key}")])
     if is_custom(key):
         m=menu_item(key)
         on=bool(m and m.get("enabled",True))
@@ -1266,12 +1368,14 @@ def settings_kb(owner=False):
     auto="🟢" if get_setting("faq_auto") else "⚫️"
     scut="🟢" if get_setting("faq_shortcut") else "⚫️"
     unm ="🟢" if get_setting("log_unmatched") else "⚫️"
+    trk ="🟢" if get_setting("track_visits") else "⚫️"
     rows=[[InlineKeyboardButton(f"{shop} فروشگاه باز است",callback_data="stg_store_open")],
           [InlineKeyboardButton(f"{notif} اعلان عضو جدید",callback_data="stg_notify_new_user")],
           [InlineKeyboardButton(f"{fwd} دریافت پیام کاربران",callback_data="stg_forward_user_msgs")],
           [InlineKeyboardButton(f"{auto} پاسخ خودکار سؤال‌ها",callback_data="stg_faq_auto")],
           [InlineKeyboardButton(f"{scut} میان‌بر #کلیدواژه",callback_data="stg_faq_shortcut")],
-          [InlineKeyboardButton(f"{unm} ثبت سؤال‌های بی‌پاسخ",callback_data="stg_log_unmatched")]]
+          [InlineKeyboardButton(f"{unm} ثبت سؤال‌های بی‌پاسخ",callback_data="stg_log_unmatched")],
+          [InlineKeyboardButton(f"{trk} حافظه‌ی رفتار مشتری",callback_data="stg_track_visits")]]
     # مدیریت مدیرها و بازگردانی بک‌آپ فقط دستِ مالک است
     if owner:
         rows.append([InlineKeyboardButton(f"👮 مدیران ربات · {to_fa(len(_admins))}",
@@ -2090,13 +2194,50 @@ async def restore_backup(bot,file_id):
 # ════════════════════════════════════════════════
 #  HANDLERS — cmd_start / cmd_admin
 # ════════════════════════════════════════════════
+async def send_section(msg,key,title=None,uid=None):
+    """کارت یک بخش — از منو یا از لینک مستقیم، هر دو همین‌جا رندر می‌شوند."""
+    await record_stat(key,uid)
+    title=title or SECTION_NAMES.get(key,key)
+    kb=user_sec_kb(key)
+    # لوکیشن فعال → یک کارت واحد: نقشه + نام + آدرس + دکمه‌های بخش.
+    # (تلگرام اجازه نمی‌دهد venue همراه عکس یا caption باشد، پس همین کارت
+    #  جای متن و بنر را می‌گیرد.)
+    if place_active(key) and await send_place(msg,key,kb=kb):
+        return
+    content=strip_button_links(responses.get(key,"") or "",key)
+    if not content.strip() and section_links(key):
+        content="از دکمه‌های زیر استفاده کنید 👇"
+    await send_banner(msg,build_msg(title,content,key),key,kb=kb)
+
+# ── لینک‌های ورودی
+BOT_USERNAME = ""        # در post_init پر می‌شود
+
+def deep_link(src="",section=""):
+    u=BOT_USERNAME or "<نام‌ربات>"
+    arg=(src or "")+(f"-{section}" if section else "")
+    return f"https://t.me/{u}?start={arg}" if arg else f"https://t.me/{u}"
+
+def parse_start_arg(arg):
+    """«insta» → فقط منبع.  «insta-3» → منبع + بخشی که باید باز شود.
+
+    کلیدِ بخش‌های سفارشی «p_xxxx» است و خط تیره ندارد، پس اولین «-» مرز
+    امنی بین منبع و بخش است.
+    """
+    src,_,sec=(arg or "").partition("-")
+    if sec not in SECTION_NAMES or sec in ("welcome",): sec=""
+    return src,sec
+
 async def cmd_start(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     user=update.effective_user; is_new=False
     async with db.execute("SELECT user_id FROM users WHERE user_id=?",(user.id,)) as c: is_new=(await c.fetchone()) is None
     await save_user(user)
     await mark_left(user.id,0)   # اگر قبلاً ربات را بلاک کرده بود و برگشته، دوباره فعالش کن
-    # t.me/<bot>?start=insta → می‌فهمیم مشتری از کجا آمده (برای خودِ کاربر نامرئی)
-    if getattr(ctx,"args",None): await set_source(user.id,ctx.args[0])
+    # t.me/<bot>?start=insta      → می‌فهمیم مشتری از کجا آمده
+    # t.me/<bot>?start=insta-3     → علاوه بر منبع، مستقیم همان بخش باز می‌شود
+    deep_sec=""
+    if getattr(ctx,"args",None):
+        src,deep_sec=parse_start_arg(ctx.args[0])
+        if src: await set_source(user.id,src)
     if get_setting("notify_new_user") and is_new:
         await notify_admins(ctx.bot,
             f"🆕 کاربر جدید!\n👤 {user.first_name or'—'}\n"
@@ -2116,6 +2257,10 @@ async def cmd_start(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     links=user_sec_kb("welcome")
     if links:
         await update.message.reply_text("🔗 دسترسی سریع:",reply_markup=links)
+    # لینک استوری اینستاگرام درباره‌ی اقساط بود؟ همان کارت را باز کن،
+    # نه اینکه مشتری دنبال دکمه‌اش بگردد.
+    if deep_sec:
+        await send_section(update.message,deep_sec,uid=user.id)
 
 async def cmd_help(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     st=status_line()
@@ -2539,7 +2684,23 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
                 f"🎛 مدیریت منوی اصلی\n{'─'*18}\nدکمه فعال: {to_fa(en)} از {to_fa(len(menu_cfg))}\n\n✅ به حالت پیش‌فرض بازگشت.",
                 reply_markup=menu_mgr_kb())
 
-        elif data.startswith("sec_") and not any(data.startswith(p) for p in["sec_text_","sec_ban_","sec_btns_","sec_loc_"]):
+        elif data.startswith("sec_link_"):
+            key=data[9:]
+            if key not in SECTION_NAMES:
+                await query.answer("یافت نشد!",show_alert=True); return
+            await query.answer()
+            rows=[(lbl,deep_link(src,key)) for src,lbl in
+                  (("insta","📸 اینستاگرام"),("site","🌐 سایت"),
+                   ("qr","🔳 QR مغازه"),("card","🪧 کارت ویزیت"))]
+            body="\n\n".join(f"{lbl}\n<code>{esc(u)}</code>" for lbl,u in rows)
+            await safe_edit(query.message,
+                f"🔗 لینک مستقیم «{esc(SECTION_NAMES.get(key,key))}»\n{HR}\n"
+                f"هرکدام را در جای خودش بگذارید: با یک تپ، مشتری مستقیم همین "
+                f"بخش را می‌بیند و منبع ورودش هم ثبت می‌شود.\n\n{body}",
+                parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup(_nav(back=f"sec_{key}")))
+
+        elif data.startswith("sec_") and not any(data.startswith(p) for p in["sec_text_","sec_ban_","sec_btns_","sec_loc_","sec_link_"]):
             await query.answer()
             key=data[4:]
             from telegram.error import BadRequest
@@ -3122,7 +3283,7 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     mkey = pressed["key"] if pressed else None
 
     if mkey=="workhours":
-        await record_stat("wh_page")
+        await record_stat("wh_page",user.id)
         if not workhours.get("enabled",True): await update.message.reply_text("🕐 ساعت کاری تنظیم نشده.",reply_markup=main_menu()); return
         wh=wh_today_block() or ""
         msg=build_msg(text,wh,"workhours")
@@ -3131,18 +3292,7 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
 
     # بخش‌های متنی — پایه (۱ تا ۷) و سفارشی (p_...)
     if mkey and (mkey in MENU_ITEMS or is_custom(mkey)):
-        await record_stat(mkey)
-        kb=user_sec_kb(mkey)
-        # لوکیشن فعال → یک کارت واحد: نقشه + نام + آدرس + دکمه‌های بخش.
-        # (تلگرام اجازه نمی‌دهد venue همراه عکس یا caption باشد، پس همین کارت
-        #  جای متن و بنر را می‌گیرد.)
-        if place_active(mkey) and await send_place(update.message,mkey,kb=kb):
-            return
-        content=strip_button_links(responses.get(mkey,"") or "",mkey)
-        if not content.strip() and section_links(mkey):
-            content="از دکمه‌های زیر استفاده کنید 👇"
-        full=build_msg(text,content,mkey)
-        await send_banner(update.message,full,mkey,kb=kb); return
+        await send_section(update.message,mkey,text,user.id); return
 
     # پیام آزاد کاربر — اول ببینیم سؤال آماده‌ای جوابش را دارد یا نه.
     # متنِ آزادِ خودِ مدیر از این مسیر کنار می‌رود: نه پاسخ خودکار می‌گیرد،
@@ -3173,9 +3323,15 @@ async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",a
     if is_admin(user.id) or not get_setting("forward_user_msgs"): return False
     msg=update.message
     if msg is None: return False
+    try: await record_event(user.id,EV_MSG)
+    except Exception as e: logger.debug(f"record_event msg: {e}")
     uname=f"@{user.username}" if user.username else "—"
     card=(f"<b>💬 {esc(kind or 'پیام')} از مشتری</b>\n{HR}\n"
           f"👤 {esc(user.first_name or '—')}  ·  {esc(uname)}\n🆔 <code>{user.id}</code>")
+    ctx_card=""
+    try: ctx_card=await customer_card(user.id)
+    except Exception as e: logger.debug(f"customer_card: {e}")
+    if ctx_card: card += f"\n{HR}\n{ctx_card}"
     if auto:
         # مدیر باید بداند مشتری همین حالا یک جواب گرفته — تا جواب تکراری ندهد
         card += f"\n✅ پاسخ خودکار داده شد: «{esc(faq_title(auto))}»"
@@ -3478,6 +3634,10 @@ async def post_init(app):
     _spawn(_auto_backup_loop(app.bot),"بکاپ هفتگی")
     _spawn(_bc_loop(app.bot),"پخش همگانی")
     _spawn(_pending_loop(app.bot),"پیام‌های بی‌جواب")
+    global BOT_USERNAME
+    try:
+        me=await app.bot.get_me(); BOT_USERNAME=me.username or ""
+    except Exception as e: logger.warning(f"get_me: {e}")
     try:
         await app.bot.set_my_commands([BotCommand("start","شروع و نمایش منو"),
                                        BotCommand("help","راهنما")])
