@@ -51,6 +51,7 @@ broadcast.json
 faq.json
 unmatched.json
 pages.json
+topics.json
 pre_restore.zip
 *.corrupt
 

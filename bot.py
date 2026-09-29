@@ -1,7 +1,8 @@
 import os, re, json, time, asyncio, logging, aiosqlite, jdatetime, pytz, zipfile, io, html, secrets, traceback
 from datetime import datetime, timedelta
 import aiofiles
-from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
+from telegram import (Update, ReplyKeyboardMarkup, InlineKeyboardMarkup,
+                      InlineKeyboardButton, BotCommand, WebAppInfo)
 from telegram.error import Forbidden, BadRequest, Conflict
 from telegram.ext import (ApplicationBuilder, ApplicationHandlerStop, CommandHandler,
                            MessageHandler, CallbackQueryHandler, ContextTypes, filters)
@@ -46,7 +47,7 @@ MENU_FILE = "menu.json"; BACKUPS_FILE = "backups.json"; PLACES_FILE = "places.js
 SETTINGS_FILE = "settings.json"; STATS_FILE = "stats.json"
 ADMINS_FILE = "admins.json"; BROADCAST_FILE = "broadcast.json"
 FAQ_FILE = "faq.json"; UNMATCHED_FILE = "unmatched.json"
-PAGES_FILE = "pages.json"
+PAGES_FILE = "pages.json"; TOPICS_FILE = "topics.json"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -109,6 +110,7 @@ DEFAULT_MENU = [
     {"key":"4","label":"📞 پشتیبانی","order":7,"enabled":True,"width":"half"},
     {"key":"6","label":"🔖 دکمه ذخیره ۱","order":8,"enabled":False,"width":"half"},
     {"key":"7","label":"🔖 دکمه ذخیره ۲","order":9,"enabled":False,"width":"half"},
+    {"key":"notify","label":"🔔 اطلاع‌رسانی","order":5,"enabled":True,"width":"half"},
 ]
 menu_cfg = []
 
@@ -117,7 +119,8 @@ BASE_SECTIONS = {"welcome":"🏠 خوش‌آمدگویی",
                  "workhours":"🕐 ساعت کاری",
                  "1":"🌐 شبکه‌های اجتماعی","2":"🌐 سایت استوک لند",
                  "3":"💰 شرایط اقساط","4":"📞 پشتیبانی","5":"📍 آدرس فروشگاه",
-                 "6":"🔖 دکمه ذخیره ۱","7":"🔖 دکمه ذخیره ۲"}
+                 "6":"🔖 دکمه ذخیره ۱","7":"🔖 دکمه ذخیره ۲",
+                 "notify":"🔔 اطلاع‌رسانی"}
 # SECTION_NAMES = پایه + بخش‌های سفارشیِ ادمین (pages.json).
 # عمداً همان dict می‌ماند تا همه‌ی کدهایی که SECTION_NAMES[key] یا
 # «for k in SECTION_NAMES» می‌زنند بدون تغییر کار کنند.
@@ -125,6 +128,12 @@ SECTION_NAMES = dict(BASE_SECTIONS)
 pages: list = []          # [{"key":"p_ab12cd34","title":"🛍 محصولات"}]
 
 def is_custom(key): return str(key).startswith("p_")
+
+# موضوع‌های اطلاع‌رسانی — کاربر خودش انتخاب می‌کند از چه چیزی خبردار شود.
+# رضایت‌محور: بدون این، هر پیام همگانی برای همه می‌رود و آدم‌ها بلاک می‌کنند.
+topics: list = []         # [{"id":"t_ab12","title":"🔔 لیست قیمت تازه"}]
+def new_topic_id(): return "t_"+secrets.token_hex(3)
+def topic_item(tid): return next((x for x in topics if x["id"]==tid),None)
 def new_page_key(): return "p_"+secrets.token_hex(4)
 
 # ── state
@@ -143,7 +152,9 @@ DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs"
                     "faq_auto":True,        # پاسخ خودکار به سؤال‌های آماده
                     "faq_shortcut":True,    # میان‌بر #کلیدواژه هنگام پاسخ مدیر
                     "log_unmatched":True,   # ثبت سؤال‌هایی که جوابی نداشتند
-                    "track_visits":True}    # حافظه‌ی رفتار مشتری (کارت شناخت)
+                    "track_visits":True,    # حافظه‌ی رفتار مشتری (کارت شناخت)
+                    "weekly_digest":True,   # خلاصه‌ی هفته کنار بکاپ جمعه
+                    "miniapp":True}         # لینک سایت داخل تلگرام باز شود
 
 # ── helpers
 def get_banner(k): banners.setdefault(k,{"file_id":None,"active":False}); return banners[k]
@@ -382,6 +393,38 @@ async def _wj(path,data):
         except Exception: pass
         return False
 
+async def load_topics():
+    global topics
+    d=await _rj(TOPICS_FILE,lambda:None)
+    if d is None:
+        topics=[{"id":new_topic_id(),"title":"💰 لیست قیمت تازه"},
+                {"id":new_topic_id(),"title":"🎁 تخفیف‌ها و پیشنهادها"},
+                {"id":new_topic_id(),"title":"✨ محصولات تازه"}]
+        await save_topics(); return
+    topics=[x for x in d if isinstance(x,dict) and x.get("id") and x.get("title")] \
+           if isinstance(d,list) else []
+
+async def save_topics(): return await _wj(TOPICS_FILE,topics)
+
+# ── اشتراک کاربر
+async def sub_toggle(uid,tid):
+    """برمی‌گرداند: وضعیت تازه (True=مشترک شد)."""
+    async with db.execute("SELECT 1 FROM subs WHERE user_id=? AND topic=?",(uid,tid)) as c:
+        on=(await c.fetchone()) is not None
+    if on: await db.execute("DELETE FROM subs WHERE user_id=? AND topic=?",(uid,tid))
+    else:   await db.execute("INSERT OR REPLACE INTO subs(user_id,topic,ts) VALUES(?,?,?)",
+                             (uid,tid,gregorian_now()))
+    await db.commit()
+    return not on
+
+async def user_subs(uid):
+    async with db.execute("SELECT topic FROM subs WHERE user_id=?",(uid,)) as c:
+        return {r[0] for r in await c.fetchall()}
+
+async def sub_count(tid):
+    return await _cnt("SELECT COUNT(*) FROM subs s JOIN users u ON u.user_id=s.user_id "
+                      "WHERE s.topic=? AND u.is_blocked=0 AND u.has_left=0",(tid,))
+
 async def load_pages():
     """بخش‌های سفارشی را به SECTION_NAMES تزریق می‌کند تا بقیه‌ی ربات
     (متن، بنر، دکمه، آمار، بک‌آپ) بدون هیچ تغییری با آن‌ها کار کند."""
@@ -569,6 +612,10 @@ async def init_db():
             user_id INTEGER PRIMARY KEY,username TEXT,first_name TEXT,
             joined_at TEXT,last_seen TEXT,is_blocked INTEGER DEFAULT 0);
         CREATE INDEX IF NOT EXISTS idx_ls ON users(last_seen);
+        CREATE TABLE IF NOT EXISTS subs(
+            user_id INTEGER,topic TEXT,ts TEXT,
+            PRIMARY KEY(user_id,topic));
+        CREATE INDEX IF NOT EXISTS idx_sub_t ON subs(topic);
         CREATE TABLE IF NOT EXISTS events(
             user_id INTEGER,key TEXT,ts TEXT);
         CREATE INDEX IF NOT EXISTS idx_ev_u ON events(user_id,ts);
@@ -908,11 +955,21 @@ def section_links(key):
         seen.add(u.rstrip("/").lower()); out.append((title,u))
     return out
 
+def link_button(title,url):
+    """دکمه‌ی لینک. لینک سایتِ خودِ فروشگاه به‌صورت «مینی‌اپ» باز می‌شود:
+    سایت داخل خود تلگرام می‌آید، نه در مرورگر — مشتری از ربات جدا نمی‌شود.
+    شرط تلگرام: فقط HTTPS و فقط در چت خصوصی."""
+    if (get_setting("miniapp") and url.lower().startswith("https://")
+            and SHOP_SITE.lower() in url.lower()):
+        try: return InlineKeyboardButton(title,web_app=WebAppInfo(url=url))
+        except Exception: pass
+    return InlineKeyboardButton(title,url=url)
+
 def user_sec_kb(key,home=False):
     links=section_links(key)
     btns=[]; row=[]
     for i,(title,url) in enumerate(links):
-        row.append(InlineKeyboardButton(title,url=url))
+        row.append(link_button(title,url))
         # لینک‌های کوتاه دوتایی، بلندها تک‌ردیفه — چیدمان تمیزتر
         if len(row)==2 or len(title)>18 or i==len(links)-1:
             btns.append(row); row=[]
@@ -1017,7 +1074,9 @@ def settings_text():
             "\n\n💡 پاسخ خودکار: سؤال آماده‌ای که کلیدواژه‌اش در پیام مشتری باشد"
             "\n#️⃣ میان‌بر: هنگام پاسخ، #کلیدواژه را می‌نویسید و جواب آماده می‌رود"
             "\n❓ سؤال‌های بی‌پاسخ: پرسش‌هایی که هیچ جوابی برایشان نبود"
-            "\n👤 حافظه‌ی رفتار: کارت شناخت مشتری روی پیام‌ها و آمار ساعت‌های شلوغ")
+            "\n👤 حافظه‌ی رفتار: کارت شناخت مشتری روی پیام‌ها و آمار ساعت‌های شلوغ"
+            "\n📊 گزارش هفتگی: خلاصه‌ی هفته، جمعه‌ها کنار بکاپ"
+            f"\n🪟 سایت داخل تلگرام: لینک‌های {SHOP_SITE} به‌جای مرورگر، داخل خود تلگرام")
 
 def stats_kb():
     return InlineKeyboardMarkup(_nav(
@@ -1065,11 +1124,29 @@ async def stats_text():
     txt="\n".join(out)
     return txt[:3990]+"…" if len(txt)>4000 else txt
 
+async def topics_text():
+    out=["<b>🔔 موضوع‌های اطلاع‌رسانی</b>",HR,
+         "کاربر خودش انتخاب می‌کند از چه چیزی خبردار شود. بعد در «پیام همگانی» "
+         "می‌توانید فقط به مشترک‌های یک موضوع پیام بدهید — نه به همه.",HR]
+    if not topics: out.append("هنوز موضوعی تعریف نشده.")
+    for t in topics:
+        out.append(f"• {esc(t['title'])} — {to_fa(await sub_count(t['id']))} مشترک")
+    return _fit("\n".join(out),TEXT_LIMIT)
+
+def topics_kb():
+    rows=[[InlineKeyboardButton("➕ موضوع تازه",callback_data="tp_add")]]
+    for t in topics:
+        rows.append([InlineKeyboardButton(f"🗑 {_fit(t['title'],26)}",
+                                          callback_data=f"tp_dl_{t['id']}")])
+    return InlineKeyboardMarkup(_nav(*rows,back="adm_content"))
+
 def content_kb():
     return InlineKeyboardMarkup(_nav(
         [InlineKeyboardButton("🧩 دکمه‌های منوی اصلی",callback_data="menu_mgr")],
         [InlineKeyboardButton("📝 متن، بنر و لینک بخش‌ها",callback_data="sections")],
         [InlineKeyboardButton(f"💡 سؤال‌های آماده · {to_fa(len(faq))}",callback_data="faq_menu")],
+        [InlineKeyboardButton(f"🔔 موضوع‌های اطلاع‌رسانی · {to_fa(len(topics))}",
+                              callback_data="tp_menu")],
     ))
 
 # ── سؤال‌های آماده
@@ -1182,7 +1259,7 @@ async def _pending_loop(bot):
         await asyncio.sleep(1800)
 
 # ترتیب نمایش بخش‌ها — دقیقاً مطابق منوی کاربر
-SECTION_ORDER = ["welcome","1","2","3","4","5","workhours","6","7"]
+SECTION_ORDER = ["welcome","1","2","3","4","5","workhours","notify","6","7"]
 
 def section_order():
     """ترتیب نمایش در پنل: بخش‌های پایه، بعد بخش‌های سفارشی."""
@@ -1369,13 +1446,17 @@ def settings_kb(owner=False):
     scut="🟢" if get_setting("faq_shortcut") else "⚫️"
     unm ="🟢" if get_setting("log_unmatched") else "⚫️"
     trk ="🟢" if get_setting("track_visits") else "⚫️"
+    dig ="🟢" if get_setting("weekly_digest") else "⚫️"
+    mini="🟢" if get_setting("miniapp") else "⚫️"
     rows=[[InlineKeyboardButton(f"{shop} فروشگاه باز است",callback_data="stg_store_open")],
           [InlineKeyboardButton(f"{notif} اعلان عضو جدید",callback_data="stg_notify_new_user")],
           [InlineKeyboardButton(f"{fwd} دریافت پیام کاربران",callback_data="stg_forward_user_msgs")],
           [InlineKeyboardButton(f"{auto} پاسخ خودکار سؤال‌ها",callback_data="stg_faq_auto")],
           [InlineKeyboardButton(f"{scut} میان‌بر #کلیدواژه",callback_data="stg_faq_shortcut")],
           [InlineKeyboardButton(f"{unm} ثبت سؤال‌های بی‌پاسخ",callback_data="stg_log_unmatched")],
-          [InlineKeyboardButton(f"{trk} حافظه‌ی رفتار مشتری",callback_data="stg_track_visits")]]
+          [InlineKeyboardButton(f"{trk} حافظه‌ی رفتار مشتری",callback_data="stg_track_visits")],
+          [InlineKeyboardButton(f"{dig} گزارش هفتگی",callback_data="stg_weekly_digest")],
+          [InlineKeyboardButton(f"{mini} سایت داخل تلگرام",callback_data="stg_miniapp")]]
     # مدیریت مدیرها و بازگردانی بک‌آپ فقط دستِ مالک است
     if owner:
         rows.append([InlineKeyboardButton(f"👮 مدیران ربات · {to_fa(len(_admins))}",
@@ -1615,7 +1696,7 @@ def faq_kb_for(item):
     links=extract_links(item.get("answer",""))
     btns=[]; row=[]
     for i,(title,url) in enumerate(links):
-        row.append(InlineKeyboardButton(title,url=url))
+        row.append(link_button(title,url))
         if len(row)==2 or len(title)>18 or i==len(links)-1:
             btns.append(row); row=[]
     if row: btns.append(row)
@@ -1805,6 +1886,14 @@ BC_AUDIENCE = {
 async def bc_uids(aud):
     """فهرست مقصد. بلاک‌شده‌ها، کسانی که ربات را حذف کرده‌اند و خودِ مدیرها
     همیشه بیرون‌اند (مدیر پیش‌نمایش را دیده، لازم نیست دوباره بگیرد)."""
+    if aud.startswith("sub:"):
+        tid=aud[4:]
+        if not topic_item(tid): return []
+        async with db.execute(
+            "SELECT s.user_id FROM subs s JOIN users u ON u.user_id=s.user_id "
+            "WHERE s.topic=? AND u.is_blocked=0 AND u.has_left=0",(tid,)) as c:
+            rows=await c.fetchall()
+        return [r[0] for r in rows if not is_admin(r[0])]
     if aud.startswith("src:"):
         src=aud[4:]
         if not _SRC_RE.match(src): return []
@@ -1819,6 +1908,8 @@ async def bc_uids(aud):
     return [r[0] for r in rows if not is_admin(r[0])]
 
 def bc_label(aud):
+    if aud.startswith("sub:"):
+        t=topic_item(aud[4:]); return "🔔 "+(t["title"] if t else aud[4:])
     if aud.startswith("src:"): return "🎯 "+SOURCE_LABELS.get(aud[4:],aud[4:])
     return BC_AUDIENCE.get(aud,BC_AUDIENCE["all"])[0]
 
@@ -1872,6 +1963,10 @@ async def bc_aud_kb():
     for k,(lbl,_) in BC_AUDIENCE.items():
         rows.append([InlineKeyboardButton(f"{lbl} · {to_fa(len(await bc_uids(k)))}",
                                           callback_data=f"bc_aud_{k}")])
+    for t in topics:
+        n=await sub_count(t["id"])
+        if n: rows.append([InlineKeyboardButton(
+            f"🔔 {t['title']} · {to_fa(n)}",callback_data=f"bc_aud_sub:{t['id']}")])
     for src,cnt in await source_stats():
         if src and src!="—" and cnt:
             n=len(await bc_uids("src:"+src))
@@ -2048,7 +2143,7 @@ async def send_backup(bot,label="بک‌آپ"):
            (BUTTONS_FILE,"buttons.json"),(SETTINGS_FILE,"settings.json"),(STATS_FILE,"stats.json"),
            (MENU_FILE,"menu.json"),(PLACES_FILE,"places.json"),(ADMINS_FILE,"admins.json"),
            (FAQ_FILE,"faq.json"),(UNMATCHED_FILE,"unmatched.json"),
-           (PAGES_FILE,"pages.json"),(DB_FILE,"users.db")]
+           (PAGES_FILE,"pages.json"),(TOPICS_FILE,"topics.json"),(DB_FILE,"users.db")]
     with zipfile.ZipFile(buf,"w",zipfile.ZIP_DEFLATED) as zf:
         for fp,name in files:
             try:
@@ -2090,6 +2185,43 @@ def _backup_due(now):
         return True,today
     return False,today
 
+async def weekly_digest():
+    """خلاصه‌ی هفته برای مالک — کنار بکاپ جمعه می‌رود.
+
+    رسیدنش خودش یعنی ربات زنده است؛ و آن خط آخر مستقیم می‌گوید سؤال
+    آماده‌ی بعدی را درباره‌ی چه بنویسی.
+    """
+    since="-7 days"
+    newu=await _cnt("SELECT COUNT(*) FROM users WHERE joined_at>=datetime('now',?,'localtime')",(since,))
+    act =await _cnt("SELECT COUNT(*) FROM users WHERE last_seen>=datetime('now',?,'localtime')",(since,))
+    msgs=await _cnt("SELECT COUNT(*) FROM events WHERE key=? AND ts>=datetime('now',?,'localtime')",
+                    (EV_MSG,since))
+    openn=await open_count()
+    out=[f"<b>📊 هفته‌ی گذشته — {esc(shamsi_now().split('—')[0].strip())}</b>",HR,
+         f"🆕 {to_fa(newu)} مشتری جدید  ·  📅 {to_fa(act)} فعال  ·  💬 {to_fa(msgs)} پیام"]
+    if openn: out.append(f"⏳ {to_fa(openn)} پیام هنوز بی‌جواب")
+    async with db.execute(
+        "SELECT key,COUNT(*) c FROM events WHERE key<>? AND ts>=datetime('now',?,'localtime') "
+        "GROUP BY key ORDER BY c DESC LIMIT 3",(EV_MSG,since)) as c:
+        tops=await c.fetchall()
+    if tops:
+        out.append("👀 پربازدید: "+"، ".join(
+            f"{SECTION_NAMES.get(k,'🕐 ساعت کاری' if k=='wh_page' else k)} ({to_fa(n)})"
+            for k,n in tops))
+    srcs=[r for r in await source_stats() if r[0]!="—"]
+    if srcs: out.append("🎯 بیشترین ورودی: "+SOURCE_LABELS.get(srcs[0][0],srcs[0][0]))
+    if topics:
+        subs=[(t["title"],await sub_count(t["id"])) for t in topics]
+        subs=[x for x in subs if x[1]]
+        if subs:
+            out.append("🔔 مشترک‌ها: "+"، ".join(f"{t} ({to_fa(n)})" for t,n in subs))
+    hot=[u for u in unmatched_sorted() if u.get("count",1)>1][:1]
+    if hot:
+        out += [HR,f"❓ پرتکرارترین سؤال بی‌پاسخ: «{esc(_fit(hot[0]['text'],60))}» "
+                   f"×{to_fa(hot[0].get('count',1))}",
+                "برایش یک سؤال آماده بنویسید تا از این به بعد خودکار جواب بگیرد."]
+    return _fit("\n".join(out),TEXT_LIMIT)
+
 async def _auto_backup_loop(bot):
     """هفته‌ای یک‌بار — جمعه ساعت ۳ بامداد به وقت تهران."""
     await asyncio.sleep(60)          # بگذار راه‌اندازی تمام شود
@@ -2100,6 +2232,11 @@ async def _auto_backup_loop(bot):
                 await send_backup(bot,label="بک‌آپ هفتگی")
                 settings["last_auto_backup"]=today; await save_settings()
                 logger.info("✅ بکاپ هفتگی ارسال شد")
+                if get_setting("weekly_digest"):
+                    try:
+                        await bot.send_message(OWNER_ID,await weekly_digest(),
+                                               parse_mode="HTML")
+                    except Exception as e: logger.error(f"digest: {e}")
         except Exception as e:
             logger.error(f"auto_backup: {e}")
         await asyncio.sleep(1800)
@@ -2108,7 +2245,7 @@ BACKUP_MAP = {"data.json":DATA_FILE,"banner.json":BANNER_FILE,"workhours.json":W
               "buttons.json":BUTTONS_FILE,"settings.json":SETTINGS_FILE,"stats.json":STATS_FILE,
               "menu.json":MENU_FILE,"places.json":PLACES_FILE,"admins.json":ADMINS_FILE,
               "faq.json":FAQ_FILE,"unmatched.json":UNMATCHED_FILE,
-              "pages.json":PAGES_FILE,"users.db":DB_FILE}
+              "pages.json":PAGES_FILE,"topics.json":TOPICS_FILE,"users.db":DB_FILE}
 SQLITE_MAGIC = b"SQLite format 3\x00"
 MAX_RESTORE_BYTES = 200 * 1024 * 1024   # سقف ایمنی برای فایل‌های داخل ZIP
 
@@ -2174,7 +2311,7 @@ async def restore_backup(bot,file_id):
             _seen_uids={}; _block_cache={}
             await init_db()
 
-        await load_pages()
+        await load_pages(); await load_topics()
         await load_data(); await load_banners(); await load_workhours()
         await load_buttons(); await load_settings(); await load_stats(); await load_menu(); await load_places()
         # از فایل‌های تازه دوباره خوانده شوند
@@ -2208,6 +2345,27 @@ async def send_section(msg,key,title=None,uid=None):
     if not content.strip() and section_links(key):
         content="از دکمه‌های زیر استفاده کنید 👇"
     await send_banner(msg,build_msg(title,content,key),key,kb=kb)
+
+async def notify_kb(uid):
+    mine=await user_subs(uid)
+    rows=[[InlineKeyboardButton(("✅ " if t["id"] in mine else "➕ ")+t["title"],
+                                callback_data=f"sub_{t['id']}")] for t in topics]
+    return InlineKeyboardMarkup(rows) if rows else None
+
+async def send_notify(msg,uid,title=None):
+    """صفحه‌ی اطلاع‌رسانی — کاربر خودش انتخاب می‌کند از چه چیزی خبردار شود."""
+    await record_stat("notify",uid)
+    kb=await notify_kb(uid)
+    if not kb:
+        await msg.reply_text("فعلاً موضوعی برای اطلاع‌رسانی تنظیم نشده.",
+                             reply_markup=main_menu()); return
+    body=strip_button_links(responses.get("notify","") or "","notify")
+    if not body.strip():
+        body=("از چه چیزی خبردار شوید؟ روی هرکدام بزنید تا روشن یا خاموش شود.\n"
+              "هر وقت خواستید می‌توانید لغوش کنید — و ما فقط درباره‌ی همین‌ها "
+              "پیام می‌دهیم، نه بیشتر.")
+    await send_banner(msg,build_msg(title or SECTION_NAMES["notify"],body,"notify"),
+                      "notify",kb=kb)
 
 # ── لینک‌های ورودی
 BOT_USERNAME = ""        # در post_init پر می‌شود
@@ -2259,7 +2417,9 @@ async def cmd_start(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("🔗 دسترسی سریع:",reply_markup=links)
     # لینک استوری اینستاگرام درباره‌ی اقساط بود؟ همان کارت را باز کن،
     # نه اینکه مشتری دنبال دکمه‌اش بگردد.
-    if deep_sec:
+    if deep_sec=="notify":
+        await send_notify(update.message,user.id)
+    elif deep_sec:
         await send_section(update.message,deep_sec,uid=user.id)
 
 async def cmd_help(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
@@ -2292,6 +2452,18 @@ async def user_cb(query,ctx):
         kb=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 برگشت",callback_data="wh_back_today")]])
         await query.message.reply_text(msg,reply_markup=kb); return
 
+    if data.startswith("sub_"):
+        tid=data[4:]; t=topic_item(tid)
+        if not t: return
+        on=await sub_toggle(query.from_user.id,tid)
+        try:
+            await query.message.edit_reply_markup(
+                reply_markup=await notify_kb(query.from_user.id))
+        except Exception: pass
+        try: await query.answer("🔔 خبرتان می‌کنیم" if on else "🔕 دیگر خبر نمی‌دهیم")
+        except Exception: pass
+        return
+
     if data=="wh_back_today":
         wh=wh_today_block() or""
         msg=f"🕐 ساعت کاری استوک لند\n{wh}"
@@ -2302,7 +2474,7 @@ async def user_cb(query,ctx):
 #  MAIN CALLBACK DISPATCHER
 # ════════════════════════════════════════════════
 # پیشوندهایی که هم ادمین هم کاربر دسترسی دارد
-_USER_CB_PREFIXES = ("wh_weekly","wh_back_today")
+_USER_CB_PREFIXES = ("wh_weekly","wh_back_today","sub_")
 
 async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     global _bc_job,_bc_cancel
@@ -2322,10 +2494,14 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
 
     # ── مسیریابی کاربران — answer یکبار اینجا فراخوانی می‌شه
     if data.startswith(_USER_CB_PREFIXES) or not is_admin(uid):
-        await query.answer()
+        # sub_ خودش answer می‌زند تا بازخوردش («خبرتان می‌کنیم») دیده شود؛
+        # بقیه همین‌جا یک‌بار answer می‌گیرند.
+        if not data.startswith("sub_"): await query.answer()
         try: await user_cb(query,ctx)
         except Exception as e:
             logger.error(f"user_cb uid={uid} data={data}: {e}",exc_info=True)
+            try: await query.answer()
+            except Exception: pass
             try: await query.message.reply_text("❌ خطا. دوباره امتحان کنید.")
             except Exception: pass
         return
@@ -2346,6 +2522,28 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             n=await ping_open(ctx.bot,uid)
             await query.answer(f"{to_fa(n)} پیام در چت بالا آمد." if n
                                else "پیام بی‌جوابی نیست.",show_alert=True)
+
+        elif data=="tp_menu":
+            await query.answer()
+            await safe_edit(query.message,await topics_text(),
+                            reply_markup=topics_kb(),parse_mode="HTML")
+
+        elif data=="tp_add":
+            await query.answer()
+            ctx.user_data["mode"]="tp_add"
+            await query.message.reply_text(
+                "🔔 نام موضوع را بنویسید — همان چیزی که کاربر می‌بیند.\n\n"
+                "مثال:  💰 لیست قیمت تازه",reply_markup=cancel_menu())
+
+        elif data.startswith("tp_dl_"):
+            tid=data[6:]; t=topic_item(tid)
+            if not t: await query.answer("یافت نشد!",show_alert=True); return
+            topics[:] = [x for x in topics if x["id"]!=tid]
+            await db.execute("DELETE FROM subs WHERE topic=?",(tid,)); await db.commit()
+            await save_topics()
+            await query.answer("🗑 موضوع و مشترک‌هایش حذف شد.",show_alert=True)
+            await safe_edit(query.message,await topics_text(),
+                            reply_markup=topics_kb(),parse_mode="HTML")
 
         elif data=="faq_menu":
             await query.answer()
@@ -3092,6 +3290,22 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
                 f"🎯 {bc_label(aud)} — {to_fa(n)} نفر\nچه کار کنم؟",
                 reply_markup=bc_confirm_kb())
             return
+        if mode=="tp_add":
+            ctx.user_data.pop("mode",None)
+            title=text.strip()[:40]
+            if len(title)<2:
+                ctx.user_data["mode"]="tp_add"
+                await update.message.reply_text("❌ نام کوتاه است. دوباره بنویسید:",
+                                                reply_markup=cancel_menu()); return
+            if any(t["title"]==title for t in topics):
+                await update.message.reply_text("❌ موضوعی با همین نام هست.",
+                                                reply_markup=main_menu()); return
+            topics.append({"id":new_topic_id(),"title":title}); await save_topics()
+            await update.message.reply_text(f"✅ موضوع «{title}» اضافه شد.",
+                                            reply_markup=main_menu())
+            await update.message.reply_text(await topics_text(),parse_mode="HTML",
+                                            reply_markup=topics_kb()); return
+
         if mode=="page_add":
             ctx.user_data.pop("mode",None)
             title=text.strip()[:40]
@@ -3289,6 +3503,9 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         msg=build_msg(text,wh,"workhours")
         kb=InlineKeyboardMarkup([[InlineKeyboardButton("📆 برنامه‌ی هفتگی",callback_data="wh_weekly")]])
         await send_banner(update.message,msg,"workhours",kb=kb); return
+
+    if mkey=="notify":
+        await send_notify(update.message,user.id,text); return
 
     # بخش‌های متنی — پایه (۱ تا ۷) و سفارشی (p_...)
     if mkey and (mkey in MENU_ITEMS or is_custom(mkey)):
@@ -3625,7 +3842,7 @@ def _spawn(coro,name):
     return t
 
 async def post_init(app):
-    await init_db(); await load_pages(); await load_data(); await load_banners()
+    await init_db(); await load_pages(); await load_topics(); await load_data(); await load_banners()
     await load_workhours(); await load_buttons(); await load_settings()
     await load_stats(); await load_menu(); await load_places(); await load_backup_registry()
     await load_admins(); await bc_load(); await load_faq(); await load_unmatched()
