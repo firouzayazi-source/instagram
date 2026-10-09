@@ -1,6 +1,7 @@
-import os, re, json, time, asyncio, logging, aiosqlite, jdatetime, pytz, zipfile, io, html, secrets, traceback
+import os, re, json, time, random, asyncio, logging, aiosqlite, jdatetime, pytz, zipfile, io, html, secrets, traceback
 from datetime import datetime, timedelta
 import aiofiles
+import brain       # موتور فهم پیام — بدون هیچ API بیرونی
 from telegram import (Update, ReplyKeyboardMarkup, InlineKeyboardMarkup,
                       InlineKeyboardButton, BotCommand, WebAppInfo)
 from telegram.error import Forbidden, BadRequest, Conflict
@@ -154,7 +155,10 @@ DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs"
                     "log_unmatched":True,   # ثبت سؤال‌هایی که جوابی نداشتند
                     "track_visits":True,    # حافظه‌ی رفتار مشتری (کارت شناخت)
                     "weekly_digest":True,   # خلاصه‌ی هفته کنار بکاپ جمعه
-                    "miniapp":True}         # لینک سایت داخل تلگرام باز شود
+                    "miniapp":True,         # لینک سایت داخل تلگرام باز شود
+                    "assistant":True,       # دستیار هوشمند (موتور داخلی، بدون API)
+                    "typing_delay":True,    # «در حال نوشتن…» پیش از جواب
+                    "ai_cc_admin":True}     # رونوشت پاسخ‌های دستیار برای مدیرها
 
 # ── helpers
 def get_banner(k): banners.setdefault(k,{"file_id":None,"active":False}); return banners[k]
@@ -741,7 +745,7 @@ async def customer_card(uid):
         "GROUP BY key ORDER BY t DESC LIMIT 4",(uid,EV_MSG)) as c:
         seen=[r[0] for r in await c.fetchall()]
     if seen:
-        labels=[SECTION_NAMES.get(k,"🕐 ساعت کاری" if k=="wh_page" else k) for k in seen]
+        labels=[event_label(k) for k in seen]
         lines.append("👀 دیده: "+"، ".join(labels))
     return "\n".join(esc(x) for x in lines)
 
@@ -1076,7 +1080,9 @@ def settings_text():
             "\n❓ سؤال‌های بی‌پاسخ: پرسش‌هایی که هیچ جوابی برایشان نبود"
             "\n👤 حافظه‌ی رفتار: کارت شناخت مشتری روی پیام‌ها و آمار ساعت‌های شلوغ"
             "\n📊 گزارش هفتگی: خلاصه‌ی هفته، جمعه‌ها کنار بکاپ"
-            f"\n🪟 سایت داخل تلگرام: لینک‌های {SHOP_SITE} به‌جای مرورگر، داخل خود تلگرام")
+            f"\n🪟 سایت داخل تلگرام: لینک‌های {SHOP_SITE} به‌جای مرورگر، داخل خود تلگرام"
+            "\n🧠 دستیار: گفت‌وگوی طبیعی با مشتری از روی نیت‌ها (بدون API)"
+            "\n📋 رونوشت: پیام‌هایی که دستیار جواب داد هم برای مدیرها فرستاده شود")
 
 def stats_kb():
     return InlineKeyboardMarkup(_nav(
@@ -1144,7 +1150,7 @@ def content_kb():
     return InlineKeyboardMarkup(_nav(
         [InlineKeyboardButton("🧩 دکمه‌های منوی اصلی",callback_data="menu_mgr")],
         [InlineKeyboardButton("📝 متن، بنر و لینک بخش‌ها",callback_data="sections")],
-        [InlineKeyboardButton(f"💡 سؤال‌های آماده · {to_fa(len(faq))}",callback_data="faq_menu")],
+        [InlineKeyboardButton(f"🧠 دستیار هوشمند · {to_fa(len(faq))} نیت",callback_data="faq_menu")],
         [InlineKeyboardButton(f"🔔 موضوع‌های اطلاع‌رسانی · {to_fa(len(topics))}",
                               callback_data="tp_menu")],
     ))
@@ -1153,13 +1159,19 @@ def content_kb():
 def faq_menu_text():
     on=sum(1 for x in faq if x.get("enabled",True))
     hits=sum(x.get("hits",0) for x in faq)
-    return ("<b>💡 سؤال‌های آماده</b>\n"+HR+
-            "\nوقتی پیام مشتری یکی از کلیدواژه‌ها را داشته باشد، همان لحظه "
-            "پاسخ می‌گیرد — و پیامش باز هم برای شما فوروارد می‌شود.\n"
-            f"\n📊 {to_fa(on)} فعال از {to_fa(len(faq))}  ·  {to_fa(hits)} بار پاسخ خودکار")
+    state=("🟢 روشن" if get_setting("assistant") else "⚫️ خاموش (فقط تطبیق ساده‌ی کلیدواژه)")
+    return ("<b>🧠 دستیار هوشمند</b>  ·  "+state+"\n"+HR+
+            "\nمشتری مثل یک گفت‌وگوی عادی می‌نویسد؛ دستیار می‌فهمد درباره‌ی کدام "
+            "«نیت» است و جواب می‌دهد — با هم‌معنی‌ها، غلط تایپی و ادامه‌ی بحث. "
+            "اگر نفهمد، حدس نمی‌زند و پیام را به شما می‌سپارد."
+            "\n\n<b>هر نیت:</b> کلیدواژه‌ها + جمله‌های نمونه + متن پاسخ + یک «کار» "
+            "(نمایش بخش، ساعت کاری، لیست قیمت، سپردن به همکار)."
+            "\n\n🧪 امتحان: <code>/ask میشه قسطی بخرم؟</code>"
+            f"\n\n📊 {to_fa(on)} نیت فعال از {to_fa(len(faq))}  ·  "
+            f"{to_fa(hits)} بار جواب داده")
 
 def faq_menu_kb():
-    rows=[[InlineKeyboardButton("➕ سؤال جدید",callback_data="faq_add")]]
+    rows=[[InlineKeyboardButton("➕ نیت تازه",callback_data="faq_add")]]
     if get_setting("log_unmatched") and unmatched:
         rows.append([InlineKeyboardButton(
             f"❓ سؤال‌های بی‌پاسخ · {to_fa(len(unmatched))}",callback_data="unm_menu")])
@@ -1176,12 +1188,26 @@ def faq_view_text(it):
     if it.get("photo"):
         pic=f"\n🖼 عکس دارد  ·  {faq_photo_stamp(it) or '—'}"
     k1=(it.get("keys") or [None])[0]
-    return _fit("<b>💡 سؤال آماده</b>\n"+HR+
+    act=it.get("action") or ""
+    ex=it.get("examples") or []
+    sug=[faq_title(faq_item(i)) for i in it.get("suggest") or [] if faq_item(i)]
+    ans=it.get("answer","")
+    if not ans.strip() and act.startswith("section:"):
+        ans=f"(متن از خودِ بخش «{SECTION_NAMES.get(act[8:],act[8:])}» خوانده می‌شود)"
+    nvar=len([x for x in brain.VARIANT_SEP.split(it.get("answer","")) if x.strip()])
+    return _fit(f"<b>🧠 {esc(faq_title(it))}</b>  ·  "
+                +("🟢 فعال" if it.get("enabled",True) else "⚫️ خاموش")+"\n"+HR+
                 "\n🔑 کلیدواژه‌ها: "+esc("، ".join(it.get("keys",[]) or ["—"]))+
-                f"\n📊 {to_fa(it.get('hits',0))} بار پاسخ داده"+pic+
+                (f"\n🗣 جمله‌های نمونه: {to_fa(len(ex))}" if ex else "")+
+                f"\n⚙️ کار: {esc(action_label(act))}"+
+                (f"\n👉 پیشنهاد بعدی: {esc('، '.join(sug))}" if sug else "")+
+                (f"\n🎲 {to_fa(nvar)} شکلِ متفاوت از پاسخ" if nvar>1 else "")+
+                f"\n📊 {to_fa(it.get('hits',0))} بار جواب داده"+pic+
                 (f"\n\n♻️ برای عوض‌کردن سریع عکس، همین‌جا عکس را با کپشن "
                  f"<code>#{esc(k1)}</code> بفرستید." if k1 else "")+
-                f"\n{HR}\n"+esc(it.get("answer","")),TEXT_LIMIT)
+                f"\n{HR}\n"+esc(ans)+
+                "\n\n<i>راهنما: چند شکل پاسخ را با خطی که فقط «---» دارد جدا کنید. "
+                "جای‌نگهدارها: {name} {product} {status} {hours}</i>",TEXT_LIMIT)
 
 def faq_view_kb(it):
     pic=([InlineKeyboardButton("🖼 تغییر عکس",callback_data=f"faq_ep_{it['id']}"),
@@ -1191,6 +1217,7 @@ def faq_view_kb(it):
     return InlineKeyboardMarkup(_nav(
         [InlineKeyboardButton("🔑 کلیدواژه‌ها",callback_data=f"faq_ek_{it['id']}"),
          InlineKeyboardButton("📝 پاسخ",callback_data=f"faq_ea_{it['id']}")],
+        [InlineKeyboardButton("⚙️ کار دستیار",callback_data=f"faq_ac_{it['id']}")],
         pic,
         [InlineKeyboardButton("⚫️ غیرفعال کن" if it.get("enabled",True) else "🟢 فعال کن",
                               callback_data=f"faq_tg_{it['id']}"),
@@ -1447,6 +1474,9 @@ def settings_kb(owner=False):
     unm ="🟢" if get_setting("log_unmatched") else "⚫️"
     trk ="🟢" if get_setting("track_visits") else "⚫️"
     dig ="🟢" if get_setting("weekly_digest") else "⚫️"
+    ast ="🟢" if get_setting("assistant") else "⚫️"
+    typ ="🟢" if get_setting("typing_delay") else "⚫️"
+    ccad="🟢" if get_setting("ai_cc_admin") else "⚫️"
     mini="🟢" if get_setting("miniapp") else "⚫️"
     rows=[[InlineKeyboardButton(f"{shop} فروشگاه باز است",callback_data="stg_store_open")],
           [InlineKeyboardButton(f"{notif} اعلان عضو جدید",callback_data="stg_notify_new_user")],
@@ -1456,7 +1486,10 @@ def settings_kb(owner=False):
           [InlineKeyboardButton(f"{unm} ثبت سؤال‌های بی‌پاسخ",callback_data="stg_log_unmatched")],
           [InlineKeyboardButton(f"{trk} حافظه‌ی رفتار مشتری",callback_data="stg_track_visits")],
           [InlineKeyboardButton(f"{dig} گزارش هفتگی",callback_data="stg_weekly_digest")],
-          [InlineKeyboardButton(f"{mini} سایت داخل تلگرام",callback_data="stg_miniapp")]]
+          [InlineKeyboardButton(f"{mini} سایت داخل تلگرام",callback_data="stg_miniapp")],
+          [InlineKeyboardButton(f"{ast} دستیار هوشمند",callback_data="stg_assistant")],
+          [InlineKeyboardButton(f"{typ} «در حال نوشتن…»",callback_data="stg_typing_delay"),
+           InlineKeyboardButton(f"{ccad} رونوشت برای مدیر",callback_data="stg_ai_cc_admin")]]
     # مدیریت مدیرها و بازگردانی بک‌آپ فقط دستِ مالک است
     if owner:
         rows.append([InlineKeyboardButton(f"👮 مدیران ربات · {to_fa(len(_admins))}",
@@ -1660,7 +1693,8 @@ def faq_match(text):
     return best
 
 def faq_title(item):
-    """نام خوانا برای فهرست پنل — اولین کلیدواژه یا ابتدای پاسخ."""
+    """نام خوانا — برچسب دکمه، یا اولین کلیدواژه، یا ابتدای پاسخ."""
+    if item.get("button"): return item["button"]
     ks=item.get("keys") or []
     return ks[0] if ks else _fit(item.get("answer",""),30)
 
@@ -1674,16 +1708,27 @@ def faq_photo_stamp(item):
     j=jdatetime.datetime.fromgregorian(datetime=d)
     return f"🗓 {to_fa(j.day)} {MONTH_FA[j.month]}"
 
-async def send_faq(msg,item,footer=True):
-    """پاسخ آماده — اگر عکس داشته باشد با عکس، وگرنه متنی."""
-    kb=faq_kb_for(item)
-    body=strip_text_links(item.get("answer","")) if kb else item.get("answer","")
-    head=f"<b>💡 {esc(faq_title(item))}</b>"
+async def send_faq(msg,item,footer=True,chat=False,lead="",values=None,extra_rows=None):
+    """پاسخ آماده — اگر عکس داشته باشد با عکس، وگرنه متنی.
+
+    chat=True یعنی لحن گفت‌وگو: بدون قاب و سرتیتر، مثل پیام یک آدم.
+    پاسخ‌های چندشکلی («---») و جای‌نگهدارها ({name}، {product}…) فقط
+    همین‌جا پر می‌شوند تا هیچ‌وقت خام به مشتری نرسند."""
+    kb=merge_kb(faq_kb_for(item),extra_rows)
+    raw=brain.pick_variant(item.get("answer","")) if chat else item.get("answer","")
+    if values is not None or chat: raw=brain.fill(raw,**(values or {}))
+    body=strip_text_links(raw) if faq_kb_for(item) else raw
     stamp=faq_photo_stamp(item)
-    if stamp: head += f"  ·  {esc(stamp)}"
-    tail=("\n\n<i>اگر پاسخ کامل نبود نگران نباشید — همکاران ما هم پیام شما را "
-          "دیدند و جواب می‌دهند.</i>") if footer else ""
-    txt=f"{head}\n{HR}\n{esc(body)}{tail}"
+    if chat:
+        parts=[esc(x) for x in (lead,body) if x and x.strip()]
+        if stamp and item.get("photo"): parts.append(f"<i>{esc(stamp)}</i>")
+        txt="\n\n".join(parts) or "👇"
+    else:
+        head=f"<b>💡 {esc(faq_title(item))}</b>"
+        if stamp: head += f"  ·  {esc(stamp)}"
+        tail=("\n\n<i>اگر پاسخ کامل نبود نگران نباشید — همکاران ما هم پیام شما را "
+              "دیدند و جواب می‌دهند.</i>") if footer else ""
+        txt=f"{head}\n{HR}\n{esc(body)}{tail}"
     if item.get("photo"):
         await msg.reply_photo(photo=item["photo"],caption=_fit(txt,CAP_LIMIT),
                               parse_mode="HTML",reply_markup=kb)
@@ -1702,14 +1747,9 @@ def faq_kb_for(item):
     if row: btns.append(row)
     return InlineKeyboardMarkup(btns) if btns else None
 
-# نمونه‌های اولیه — همه خاموش‌اند تا تا وقتی ادمین متن را با کلمات خودش
-# ننوشته، جواب نادرست به مشتری نرود.
-SAMPLE_FAQ = [
-    (["گارانتی","ضمانت","وارانتی"], "متن گارانتی را اینجا بنویسید."),
-    (["اقساط","قسطی","قسط"],        "شرایط خرید اقساطی را اینجا بنویسید."),
-    (["ارسال","پست","تیپاکس"],      "شرایط ارسال را اینجا بنویسید."),
-    (["آدرس","کجایید","نشانی"],     "آدرس فروشگاه را اینجا بنویسید."),
-]
+# نشانه‌ی متن نمونه‌ای که هنوز ادمین ننوشته (نسخه‌های قبلی چنین نمونه‌هایی
+# می‌ساختند؛ هنگام کاشت نیت‌های پیش‌فرض با نسخه‌ی کامل جایگزین می‌شوند)
+PLACEHOLDER_MARK = "را اینجا بنویسید"
 
 # ── سؤال‌های بی‌پاسخ: چیزی که مشتری پرسید و هیچ جوابی برایش نبود.
 # فهرستِ سؤال‌های آماده را به‌جای حدسِ ادمین، از خودِ مشتری‌ها می‌سازد.
@@ -1779,15 +1819,11 @@ def unmatched_by_id(uid):
 
 async def load_faq():
     global faq
-    data=await _rj(FAQ_FILE,lambda:None)
-    if data is None:
-        faq=[{"id":new_btn_id(),"keys":k,"answer":a,"enabled":False,"hits":0}
-             for k,a in SAMPLE_FAQ]
-        await save_faq()
-        logger.info("faq: نمونه‌های اولیه ساخته شد (همه خاموش)")
-        return
-    faq=[x for x in data if isinstance(x,dict) and x.get("answer")] if isinstance(data,list) else []
-    logger.info(f"faq: {len(faq)} سؤال آماده")
+    data=await _rj(FAQ_FILE,list)
+    faq=[x for x in data if isinstance(x,dict) and (x.get("answer") or x.get("action"))] \
+        if isinstance(data,list) else []
+    await seed_intents()
+    logger.info(f"faq: {len(faq)} نیت/سؤال آماده")
 
 async def save_faq(): return await _wj(FAQ_FILE,faq)
 
@@ -2206,7 +2242,7 @@ async def weekly_digest():
         tops=await c.fetchall()
     if tops:
         out.append("👀 پربازدید: "+"، ".join(
-            f"{SECTION_NAMES.get(k,'🕐 ساعت کاری' if k=='wh_page' else k)} ({to_fa(n)})"
+            f"{event_label(k)} ({to_fa(n)})"
             for k,n in tops))
     srcs=[r for r in await source_stats() if r[0]!="—"]
     if srcs: out.append("🎯 بیشترین ورودی: "+SOURCE_LABELS.get(srcs[0][0],srcs[0][0]))
@@ -2331,11 +2367,19 @@ async def restore_backup(bot,file_id):
 # ════════════════════════════════════════════════
 #  HANDLERS — cmd_start / cmd_admin
 # ════════════════════════════════════════════════
-async def send_section(msg,key,title=None,uid=None):
-    """کارت یک بخش — از منو یا از لینک مستقیم، هر دو همین‌جا رندر می‌شوند."""
+def merge_kb(kb,rows):
+    """دکمه‌های لینکِ بخش + دکمه‌های پیشنهادیِ دستیار در یک کیبورد.
+    تلگرام به هر پیام فقط یک کیبورد inline می‌دهد، پس باید یکی شوند."""
+    rows=[r for r in (rows or []) if r]
+    if not rows: return kb
+    base=[list(r) for r in kb.inline_keyboard] if kb else []
+    return InlineKeyboardMarkup(base+rows)
+
+async def send_section(msg,key,title=None,uid=None,extra_rows=None):
+    """کارت یک بخش — از منو، از لینک مستقیم، یا از دستیار؛ همه همین‌جا."""
     await record_stat(key,uid)
     title=title or SECTION_NAMES.get(key,key)
-    kb=user_sec_kb(key)
+    kb=merge_kb(user_sec_kb(key),extra_rows)
     # لوکیشن فعال → یک کارت واحد: نقشه + نام + آدرس + دکمه‌های بخش.
     # (تلگرام اجازه نمی‌دهد venue همراه عکس یا caption باشد، پس همین کارت
     #  جای متن و بنر را می‌گیرد.)
@@ -2407,7 +2451,8 @@ async def cmd_start(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     st=status_line()
     if st: parts.append(st)
     if wt: parts += ["",esc(wt)]
-    parts += ["","از منوی پایین انتخاب کنید 👇"]
+    parts += ["",("سؤالتون رو همین‌جا بنویسید، یا از منوی پایین انتخاب کنید 👇"
+                  if get_setting("assistant") else "از منوی پایین انتخاب کنید 👇")]
     full=_fit("\n".join(parts),TEXT_LIMIT)
     # منوی پایین همیشه باید ست شود — تلگرام هر پیام را فقط با یک نوع کیبورد
     # می‌پذیرد، پس اگر بخش خوش‌آمد لینک داشته باشد، لینک‌ها جدا می‌روند.
@@ -2434,6 +2479,27 @@ async def cmd_help(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         _fit(f"<b>ℹ️ راهنمای {esc(SHOP_NAME)}</b>\n{HR}\n"+"\n".join(body),TEXT_LIMIT),
         parse_mode="HTML",reply_markup=main_menu(),disable_web_page_preview=True)
+
+async def cmd_ask(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    """/ask <جمله> — مدیر ببیند دستیار یک جمله را چطور می‌فهمد، بی‌آنکه چیزی
+    ثبت یا برای کسی فرستاده شود."""
+    user=update.effective_user
+    if not is_admin(user.id): return
+    text=" ".join(getattr(ctx,"args",None) or []).strip()
+    if not text:
+        return await update.message.reply_text(
+            "مثال:\n/ask سلام، آیفون ۱۳ قسطی میشه؟\n/ask کجایید؟\n/ask واسه ۱۴ چی؟")
+    a=brain.analyze(text,brain_intents())
+    it=a["intent"]
+    dbg=(f"🔎 فهم دستیار\n"
+         f"• نیت: {faq_title(it) if it else '— (به همکار سپرده می‌شود)'}"
+         +(f" · امتیاز {a['score']:.2f}" if it else "")+
+         (f"\n• محصول: {a['product']}" if a["product"] else "")+
+         (f"\n• روزمره: {'، '.join(sorted(a['tags']))}" if a["tags"] else "")+
+         ("\n• ادامه‌ی بحث قبلی" if a["followup"] else "")+
+         "\n━━━━━━━━━━━━━━━\nجوابی که مشتری می‌گیرد 👇")
+    await update.message.reply_text(dbg)
+    await assistant_reply(update,ctx,text,user,dry=True)
 
 async def cmd_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if not is_admin(update.effective_user.id):
@@ -2464,6 +2530,15 @@ async def user_cb(query,ctx):
         except Exception: pass
         return
 
+    if data.startswith("ai_"):
+        it=faq_item(data[3:]); u=query.from_user
+        if not it or not it.get("enabled",True): return
+        await _typing(ctx.bot,query.message.chat_id)
+        await run_intent(query.message,it,u,ctx.bot)
+        if (it.get("action") or "")=="human" and not is_admin(u.id):
+            await notify_handoff(ctx.bot,u)
+        return
+
     if data=="wh_back_today":
         wh=wh_today_block() or""
         msg=f"🕐 ساعت کاری استوک لند\n{wh}"
@@ -2474,7 +2549,7 @@ async def user_cb(query,ctx):
 #  MAIN CALLBACK DISPATCHER
 # ════════════════════════════════════════════════
 # پیشوندهایی که هم ادمین هم کاربر دسترسی دارد
-_USER_CB_PREFIXES = ("wh_weekly","wh_back_today","sub_")
+_USER_CB_PREFIXES = ("wh_weekly","wh_back_today","sub_","ai_")
 
 async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     global _bc_job,_bc_cancel
@@ -2612,15 +2687,68 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             await safe_edit(query.message,unmatched_text(),
                             reply_markup=unmatched_kb(),parse_mode="HTML")
 
-        elif data.startswith("unm_"):
-            it=unmatched_by_id(data[4:])
-            if not it: await query.answer("یافت نشد!",show_alert=True); return
+        elif data.startswith("unm_at_"):
+            # «این سؤال یعنی همان نیت» — با یک تپ، دستیار از این به بعد می‌فهمدش
+            uid_,_,iid=data[7:].partition("_")
+            u=unmatched_by_id(uid_); it=faq_item(iid)
+            if not u or not it: await query.answer("یافت نشد!",show_alert=True); return
+            it.setdefault("examples",[])
+            if u["text"] not in it["examples"]: it["examples"].append(u["text"])
+            unmatched[:] = [x for x in unmatched if x.get("id")!=uid_]
+            await save_faq(); await save_unmatched()
+            await query.answer(f"✅ یاد گرفت: این یعنی «{faq_title(it)}»",show_alert=True)
+            await safe_edit(query.message,unmatched_text(),
+                            reply_markup=unmatched_kb(),parse_mode="HTML")
+
+        elif data.startswith("unm_new_"):
+            u=unmatched_by_id(data[8:])
+            if not u: await query.answer("یافت نشد!",show_alert=True); return
             await query.answer()
             ctx.user_data.update({"mode":"faq_keys","faq_id":None})
             await query.message.reply_text(
-                f"❓ سؤال مشتری:\n«{it['text']}»\n\n"
-                f"🔑 حالا کلیدواژه‌ها را با کاما بنویسید — کلمه‌هایی که در پیام‌های "
-                f"مشابه تکرار می‌شوند:",reply_markup=cancel_menu())
+                f"❓ سؤال مشتری:\n«{u['text']}»\n\n"
+                f"🔑 کلیدواژه‌های نیت تازه را با کاما بنویسید — کلمه‌هایی که در "
+                f"پیام‌های مشابه تکرار می‌شوند:",reply_markup=cancel_menu())
+
+        elif data.startswith("unm_"):
+            u=unmatched_by_id(data[4:])
+            if not u: await query.answer("یافت نشد!",show_alert=True); return
+            await query.answer()
+            rows=[[InlineKeyboardButton(f"➕ یعنی {_fit(faq_title(x),22)}",
+                                        callback_data=f"unm_at_{u['id']}_{x['id']}")]
+                  for x in faq if x.get("enabled",True)][:14]
+            rows.append([InlineKeyboardButton("🆕 نیت تازه بساز",callback_data=f"unm_new_{u['id']}")])
+            await safe_edit(query.message,
+                f"❓ سؤال مشتری:\n«{esc(u['text'])}»\n{HR}\n"
+                "این سؤال یعنی کدام نیت؟ با یک تپ، دستیار از این به بعد جمله‌های "
+                "شبیه این را هم می‌فهمد.",parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup(_nav(*rows,back="unm_menu")))
+
+        elif data.startswith("faq_ac_"):
+            it=faq_item(data[7:])
+            if not it: await query.answer("یافت نشد!",show_alert=True); return
+            await query.answer()
+            opts=[("n","")]+[(c,c) for c in ("hours","prices","notify","human")]
+            opts+=[(f"s:{k}",f"section:{k}") for k in section_order()
+                   if k not in ("welcome","workhours","notify")]
+            rows=[[InlineKeyboardButton(("✅ " if (it.get("action") or "")==a else "")+action_label(a),
+                                        callback_data=f"faq_as_{it['id']}_{c}")] for c,a in opts]
+            await safe_edit(query.message,
+                f"⚙️ دستیار بعد از متنِ «{esc(faq_title(it))}» چه کاری انجام دهد؟",
+                parse_mode="HTML",reply_markup=InlineKeyboardMarkup(_nav(*rows,back=f"faq_v_{it['id']}")))
+
+        elif data.startswith("faq_as_"):
+            # کلید بخش‌های سفارشی هم ممکن است «_» داشته باشد؛ پس «_s:» اول
+            if "_s:" in data: iid,_,code=data[7:].partition("_s:"); code="s:"+code
+            else: iid,_,code=data[7:].rpartition("_")
+            it=faq_item(iid)
+            if not it: await query.answer("یافت نشد!",show_alert=True); return
+            a={"n":""}.get(code,code)
+            if a.startswith("s:"): a="section:"+a[2:]
+            it["action"]=a; await save_faq()
+            await query.answer("✅ "+action_label(a),show_alert=True)
+            await safe_edit(query.message,faq_view_text(it),
+                            reply_markup=faq_view_kb(it),parse_mode="HTML")
 
         elif data.startswith("faq_tg_"):
             it=faq_item(data[7:])
@@ -3519,6 +3647,15 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             "دستور شناخته‌شده‌ای نبود.\n/admin برای پنل · /start برای منو",
             reply_markup=main_menu())
         return
+    # گفت‌وگو دستِ همکار است؟ دستیار کنار می‌کشد و پیام مستقیم به او می‌رسد
+    if in_human_mode(user.id):
+        if await forward_to_admin(update,ctx,ack=False): return
+    if get_setting("assistant") and get_setting("faq_auto"):
+        if await assistant_reply(update,ctx,text,user): return
+        await update.message.reply_text(
+            "متوجه نشدم 🙏 سؤالتون رو جور دیگه بنویسید یا از منوی پایین انتخاب کنید.",
+            reply_markup=main_menu())
+        return
     hit=faq_match(text) if get_setting("faq_auto") else None
     if hit:
         hit["hits"]=hit.get("hits",0)+1; await save_faq()
@@ -3530,7 +3667,8 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "لطفاً یکی از گزینه‌های منوی زیر را انتخاب کنید 👇",reply_markup=main_menu())
 
-async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",auto=None):
+async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",auto=None,
+                           ack=True,ack_lead="",count=True):
     """پیام مشتری (هر نوعی) را برای ادمین فوروارد و به مشتری تأیید می‌دهد.
 
     فوروارد برای همه‌ی انواع پیام کار می‌کند — متن، عکس، ویس، ویدیو، فایل،
@@ -3540,8 +3678,9 @@ async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",a
     if is_admin(user.id) or not get_setting("forward_user_msgs"): return False
     msg=update.message
     if msg is None: return False
-    try: await record_event(user.id,EV_MSG)
-    except Exception as e: logger.debug(f"record_event msg: {e}")
+    if count:      # دستیار خودش یک‌بار شمرده؛ دوباره‌شماری آمار را دو برابر می‌کرد
+        try: await record_event(user.id,EV_MSG)
+        except Exception as e: logger.debug(f"record_event msg: {e}")
     uname=f"@{user.username}" if user.username else "—"
     card=(f"<b>💬 {esc(kind or 'پیام')} از مشتری</b>\n{HR}\n"
           f"👤 {esc(user.first_name or '—')}  ·  {esc(uname)}\n🆔 <code>{user.id}</code>")
@@ -3573,6 +3712,16 @@ async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",a
         # صف «بی‌جواب» بنشیند و دو ساعت بعد یادآوری بی‌مورد بفرستد.
         return True
     await mark_open(user.id)
+    # وسط گفت‌وگوی زنده با همکار، «پیام شما دریافت شد» بعد از هر جمله فقط مزاحم است
+    if not ack: return True
+    if ack_lead:
+        # لحن دستیار: یک پیام کوتاه و انسانی، نه کارت رسمی
+        tail=("پیامتون رسید و همکارم به‌زودی همین‌جا جواب می‌ده." if is_open() else
+              f"الان خارج از ساعت کاری هستیم؛ همکارم {next_open_text() or 'به‌محض بازگشایی'} "
+              "همین‌جا جوابتون رو می‌ده.")
+        try: await msg.reply_text(f"{ack_lead}\n{tail}",reply_markup=main_menu())
+        except Exception as e: logger.error(f"ack to user: {e}")
+        return True
     # تأیید آگاه از ساعت کاری — «به‌زودی پاسخ می‌دهیم» ساعت ۳ بامداد دروغ است
     if is_open():
         body="همکاران ما به‌زودی پاسخ می‌دهند. 🙏"
@@ -3639,7 +3788,7 @@ async def reply_relay(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             await msg.reply_text(f"❌ ارسال نشد: {e}"); raise ApplicationHandlerStop
         it["hits"]=it.get("hits",0)+1; await save_faq()
         await link_thread(user.id,msg.message_id,target)
-        await mark_answered(target)
+        await mark_answered(target); set_human(target)
         await _ok_mark(ctx.bot,msg,f"✅ «{faq_title(it)}» ارسال شد")
         raise ApplicationHandlerStop
     try:
@@ -3657,9 +3806,294 @@ async def reply_relay(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         raise ApplicationHandlerStop
     # پاسخ خودِ مدیر هم به همین مشتری گره می‌خورد تا رشته ادامه پیدا کند
     await link_thread(user.id,msg.message_id,target)
-    await mark_answered(target)
+    await mark_answered(target); set_human(target)
     await _ok_mark(ctx.bot,msg)
     raise ApplicationHandlerStop
+
+
+# ════════════════════════════════════════════════
+#  دستیار هوشمند — گفت‌وگوی طبیعی بدون API
+# ════════════════════════════════════════════════
+# فهمِ پیام در brain.py است؛ اینجا فقط تصمیم می‌گیریم چه بفرستیم.
+# دستیار فقط از داده‌ی خودِ ربات حرف می‌زند (متن بخش‌ها، نیت‌ها، ساعت کاری،
+# لیست قیمت) و اگر نفهمد، حدس نمی‌زند: پیام را به همکار می‌سپارد.
+
+# «کار»ی که هر نیت انجام می‌دهد، علاوه بر متنش
+ACTIONS = {"":       "💬 فقط متن پاسخ",
+           "hours":  "🕐 ساعت کاری امروز",
+           "prices": "💰 لیست قیمت (عکس تاریخ‌دار)",
+           "notify": "🔔 صفحه‌ی اطلاع‌رسانی",
+           "human":  "🧑‍💼 سپردن به همکار"}
+
+def action_label(a):
+    a=a or ""
+    if a.startswith("section:"):
+        return "📋 نمایش بخش «"+SECTION_NAMES.get(a[8:],a[8:])+"»"
+    return ACTIONS.get(a,a)
+
+# نیت‌های پیش‌فرض یک فروشگاه موبایل. هرکدام که «کار»ش نمایش یک بخش است،
+# متنش را از همان بخش پنل می‌خواند — پس همین الان با محتوای واقعی تو جواب
+# می‌دهد. سه‌تای آخر متنِ اختصاصی می‌خواهند و تا نوشته نشوند خاموش‌اند.
+DEFAULT_INTENTS = [
+  {"id":"i_price","button":"💰 لیست قیمت","action":"prices",
+   "keys":["قیمت","لیست قیمت","چند تومن","چند تومنه","نرخ روز","قیمتا","چقدر","چنده"],
+   "answer":"قیمت روز {product} 👇\n---\nلیست قیمت امروز {product} 👇\n---\nاینم قیمت‌های امروز 👇",
+   "suggest":["i_install","i_human"]},
+  {"id":"i_stock","button":"📦 موجودی","action":"section:1",
+   "keys":["موجودی","موجود","موجوده","دارید","دارین"],
+   "answer":"موجودی لحظه‌ای {product} رو تو پیج و سایت به‌روز می‌کنیم 👇\n"
+            "اگه بخواید، همکارم همین الان براتون چک می‌کنه.",
+   "suggest":["i_price","i_human"]},
+  {"id":"i_install","button":"💳 خرید اقساطی","action":"section:3",
+   "keys":["قسط","اقساط","چک","طلا","شرایط خرید","پیش پرداخت","بدون ضامن"],
+   "answer":"","suggest":["i_price","i_human"],
+   "offer":"لیست قیمت امروز رو هم ببینید؟","offer_to":"i_price"},
+  {"id":"i_address","button":"📍 آدرس و مسیر","action":"section:5",
+   "keys":["ادرس","لوکیشن","کجا","مسیر","نقشه","حضوری","مغازه","فروشگاه کجاست",
+           "چطوری بیام","چجوری بیام","کجا بیام"],
+   "answer":"","suggest":["i_hours"]},
+  {"id":"i_hours","button":"🕐 ساعت کاری","action":"hours",
+   "keys":["ساعت کاری","ساعت کار","ساعت چند","تا ساعت","از ساعت چند","تا کی",
+           "چه ساعتی","باز","بسته","تعطیل"],
+   "answer":"","suggest":["i_address"],
+   "offer":"آدرس و مسیر مغازه رو هم براتون بفرستم؟","offer_to":"i_address"},
+  {"id":"i_site","button":"🌐 سایت","action":"section:2",
+   "keys":["سایت","ادرس سایت","خرید انلاین","سفارش انلاین"],"answer":""},
+  {"id":"i_social","button":"📸 اینستاگرام","action":"section:1",
+   "keys":["اینستاگرام","کانال","شبکه اجتماعی","شبکه های اجتماعی"],"answer":""},
+  {"id":"i_notify","button":"🔔 خبرم کن","action":"notify",
+   "keys":["خبرم کنید","خبرم کن","اطلاع بدید","تخفیف","جشنواره"],
+   "answer":"حتماً 🙂 هر موضوعی که می‌خواید خبرش رو بگیرید انتخاب کنید 👇"},
+  {"id":"i_human","button":"🧑‍💼 صحبت با همکار","action":"human",
+   "keys":["همکار","تماس","شماره","زنگ","صحبت کنم","کسی هست","پشتیبانی"],
+   "answer":"حتماً 🙏 پیامتون رو به همکارم دادم و خودش همین‌جا جوابتون رو می‌ده.\n---\n"
+            "چشم 🙏 به همکارم خبر دادم؛ به‌زودی همین‌جا جوابتون رو می‌ده."},
+  {"id":"i_warranty","button":"🛡 گارانتی","enabled":False,
+   "keys":["گارانتی","ضمانت اصالت","اصالت"],
+   "answer":"✏️ شرایط گارانتی را با کلمات خودتان اینجا بنویسید، بعد این نیت را روشن کنید.",
+   "suggest":["i_human"]},
+  {"id":"i_shipping","button":"🚚 ارسال","enabled":False,
+   "keys":["ارسال","شهرستان","شهر دیگه","ارسال رایگان"],
+   "answer":"✏️ شرایط ارسال را با کلمات خودتان اینجا بنویسید، بعد این نیت را روشن کنید.",
+   "suggest":["i_human"]},
+  {"id":"i_tradein","button":"🔄 معاوضه و خرید کارکرده","enabled":False,
+   "keys":["تعویض","معاوضه","کارکرده","میخرید","بفروشم","دست دوم"],
+   "examples":["گوشی خودمو بیارم شما میخرید","گوشی قدیمیمو میخرید"],
+   "answer":"✏️ شرایط معاوضه و خرید گوشی کارکرده را اینجا بنویسید، بعد این نیت را روشن کنید.",
+   "suggest":["i_human"]},
+]
+QUICK_INTENTS = ["i_price","i_install","i_address","i_human"]   # زیر سلام و احوال‌پرسی
+
+async def seed_intents():
+    """نیت‌های پیش‌فرض یک‌بار کاشته می‌شوند.
+
+    هرچه ادمین خودش نوشته محترم است: اگر نیت یا سؤال آماده‌ای با همان
+    کلیدواژه‌ها وجود دارد و متنش واقعی است، پیش‌فرض اضافه نمی‌شود. فقط
+    نمونه‌های خالیِ نسخه‌های قبلی («… را اینجا بنویسید») جایشان را به
+    نسخه‌ی کامل می‌دهند."""
+    if settings.get("assistant_seeded"): return
+    changed=False
+    for d in DEFAULT_INTENTS:
+        if faq_item(d["id"]): continue
+        dkeys={brain.norm(k) for k in d["keys"]}
+        clash=[x for x in faq if dkeys & {brain.norm(k) for k in x.get("keys",[])}]
+        real=[x for x in clash if x.get("enabled",True) or PLACEHOLDER_MARK not in x.get("answer","")]
+        if real: continue
+        for x in clash: faq.remove(x)
+        it={k:(list(v) if isinstance(v,list) else v) for k,v in d.items()}
+        it.setdefault("enabled",True); it.setdefault("hits",0)
+        faq.append(it); changed=True
+    settings["assistant_seeded"]=True; await save_settings()
+    if changed:
+        await save_faq(); logger.info("assistant: نیت‌های پیش‌فرض کاشته شد")
+
+def brain_intents():
+    return [x for x in faq if x.get("enabled",True)]
+
+# ── حافظه‌ی کوتاه گفت‌وگو (در حافظه؛ با ری‌استارت پاک می‌شود و اشکالی ندارد)
+brain_ctx: dict = {}      # uid → {"intent","ts","offer","offer_ts"}
+human_until: dict = {}    # uid → تا کِی گفت‌وگو دست همکار است
+CTX_TTL, OFFER_TTL, HUMAN_TTL = 15*60, 10*60, 30*60
+
+def in_human_mode(uid): return human_until.get(uid,0)>time.time()
+
+def set_human(uid):
+    """همکار وارد گفت‌وگو شد: دستیار برای این مشتری کنار می‌کشد تا
+    وسط حرفِ آدم‌ها جواب خودکار نپرد."""
+    human_until[uid]=time.time()+HUMAN_TTL; brain_ctx.pop(uid,None)
+
+def suggest_rows(item=None,ids=None):
+    ids=ids if ids is not None else (item.get("suggest") or [] if item else [])
+    btns=[]
+    for i in ids:
+        it=faq_item(i)
+        if it and it.get("enabled",True) and (it.get("answer") or it.get("action")):
+            btns.append(InlineKeyboardButton(faq_title(it),callback_data=f"ai_{it['id']}"))
+    return [btns[i:i+2] for i in range(0,len(btns),2)]
+
+async def _typing(bot,chat_id,n=80):
+    """«در حال نوشتن…» برای یک لحظه — جواب فوری و بی‌مکث، ماشینی به نظر می‌رسد."""
+    if not get_setting("typing_delay"): return
+    try:
+        await bot.send_chat_action(chat_id=chat_id,action="typing")
+        await asyncio.sleep(min(1.4,0.45+n/400))
+    except Exception: pass
+
+def _join(*parts): return "\n\n".join(p for p in parts if p and p.strip())
+
+async def run_intent(msg,item,user,bot,lead="",product="",dry=False):
+    """یک نیت را اجرا می‌کند: متن (چندشکلی، پرشده) + کارِ نیت + پیشنهادها."""
+    uid=user.id
+    values={"name":(user.first_name or "").strip()[:20],"product":product,
+            "shop":SHOP_NAME,"status":status_line() or "","hours":wh_today_block() or ""}
+    answer=brain.fill(brain.pick_variant(item.get("answer","")),**values)
+    action=item.get("action") or ""
+    rows=suggest_rows(item)
+    if not dry:
+        item["hits"]=item.get("hits",0)+1; await save_faq()
+        if not action.startswith("section:"):
+            try: await record_event(uid,f"ai:{item['id']}")
+            except Exception as e: logger.debug(f"ai event: {e}")
+
+    if action.startswith("section:") and action[8:] in SECTION_NAMES:
+        pre=_join(lead,answer)
+        if pre: await msg.reply_text(pre,reply_markup=main_menu())
+        await send_section(msg,action[8:],uid=None if dry else uid,extra_rows=rows)
+    elif action=="hours":
+        body=_join(lead,answer,status_line() or "",wh_today_block() or "")
+        rows=rows+[[InlineKeyboardButton("📆 برنامه‌ی هفتگی",callback_data="wh_weekly")]]
+        await msg.reply_text(body or "🕐",reply_markup=InlineKeyboardMarkup(rows))
+    elif action=="prices":
+        pic=item if item.get("photo") else next(
+            (x for x in faq if x.get("photo") and any(brain.norm(k)==brain.PRICE_KEY
+                                                      for k in x.get("keys",[]))),None)
+        if pic:
+            shown=dict(pic); shown["answer"]=answer or pic.get("answer","")
+            await send_faq(msg,shown,chat=True,lead=lead,values=values,extra_rows=rows)
+        else:
+            await msg.reply_text(_join(lead,"قیمت‌های روز رو همیشه تو سایت به‌روز داریم 👇"),
+                                 reply_markup=main_menu())
+            await send_section(msg,"2",uid=None if dry else uid,extra_rows=rows)
+    elif action=="notify":
+        pre=_join(lead,answer)
+        if pre: await msg.reply_text(pre,reply_markup=main_menu())
+        await send_notify(msg,uid)
+    elif action=="human":
+        await msg.reply_text(_join(lead,answer) or "🙏",reply_markup=main_menu())
+        if not dry: set_human(uid)
+    else:
+        await send_faq(msg,item,chat=True,lead=lead,values=values,extra_rows=rows)
+
+    # پیشنهادِ قدم بعد به شکل سؤال: «آدرس رو هم بفرستم؟» — جوابِ «آره»ی
+    # مشتری همین را اجرا می‌کند
+    c={"intent":item["id"],"ts":time.time(),
+       "product":product or (brain_ctx.get(uid) or {}).get("product","")}
+    to=faq_item(item.get("offer_to") or "")
+    if item.get("offer") and to and to.get("enabled",True):
+        await msg.reply_text(item["offer"],reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton("👍 بله",callback_data=f"ai_{to['id']}")]]))
+        c.update(offer=to["id"],offer_ts=time.time())
+    brain_ctx[uid]=c
+
+async def notify_handoff(bot,user,why="درخواست صحبت با همکار"):
+    """وقتی مشتری با دکمه (نه با پیام) همکار را خواست، پیامی نیست که فوروارد
+    شود؛ یک کارت برای مدیرها می‌رود که روی همان ریپلای بزنند."""
+    card=(f"<b>🧑‍💼 {esc(why)}</b>\n{HR}\n"
+          f"👤 {esc(user.first_name or '—')}"+(f"  ·  @{esc(user.username)}" if user.username else "")+
+          f"\n🆔 <code>{user.id}</code>")
+    try:
+        extra=await customer_card(user.id)
+        if extra: card+=f"\n{HR}\n{extra}"
+    except Exception: pass
+    card+="\n↩️ برای پاسخ، روی همین پیام ریپلای کنید."
+    for aid in admin_ids():
+        try:
+            m=await bot.send_message(aid,card,parse_mode="HTML")
+            await link_thread(aid,m.message_id,user.id)
+        except Exception as e: logger.error(f"handoff → {aid}: {e}")
+    await mark_open(user.id)
+
+async def assistant_reply(update,ctx,text,user,dry=False):
+    """پاسخ دستیار به یک پیام متنی مشتری. True یعنی رسیدگی شد.
+
+    ترتیب: پاسخِ «آره/نه» به پیشنهاد قبلی → نیتِ پیام → ادامه‌ی بحث قبلی →
+    حرفِ روزمره → و اگر هیچ‌کدام، صادقانه به همکار سپردن."""
+    msg=update.message; uid=user.id; now=time.time()
+    a=brain.analyze(text,brain_intents())
+    tags=a["tags"]; c=brain_ctx.get(uid) or {}
+    name=(user.first_name or "").strip()[:20]
+    hour=datetime.now(IRAN_TZ).hour
+    lead=""
+    if "greet" in tags: lead=brain.greet_line(name,hour)
+    if "tired" in tags: lead=_join(lead,brain.say("tired"))
+    if not dry:
+        try: await record_event(uid,EV_MSG)
+        except Exception as e: logger.debug(f"ev msg: {e}")
+
+    # ۱) «آره» / «نه» به پیشنهاد قبلی
+    if c.get("offer") and now-c.get("offer_ts",0)<OFFER_TTL and ("yes" in tags or "no" in tags):
+        if "yes" in tags and faq_item(c["offer"]):
+            await _typing(ctx.bot,msg.chat_id)
+            await run_intent(msg,faq_item(c["offer"]),user,ctx.bot,lead=lead,dry=dry)
+        else:
+            brain_ctx.pop(uid,None)
+            await msg.reply_text(_join(lead,brain.say("no")),reply_markup=main_menu())
+        return True
+
+    # ۲) نیت پیام، یا ادامه‌ی بحث قبلی («واسه ۱۴ چی؟»)
+    item=a["intent"]; follow=""
+    fresh=now-c.get("ts",0)<CTX_TTL
+    prod=brain.carry_product(text,c.get("product","") if fresh else "")
+    if not item and (a["followup"] or prod) and c.get("intent") and fresh:
+        item=faq_item(c["intent"])
+        if item and prod: follow=f"برای {prod} 👇"
+    if item:
+        await _typing(ctx.bot,msg.chat_id,len(item.get("answer","")))
+        await run_intent(msg,item,user,ctx.bot,lead=_join(lead,follow),
+                         product=prod,dry=dry)
+        if not dry:
+            if (item.get("action") or "")=="human":
+                await forward_to_admin(update,ctx,ack=False,count=False)
+            elif get_setting("ai_cc_admin"):
+                await forward_to_admin(update,ctx,auto=item,count=False)
+        return True
+
+    # ۳) فقط حرف روزمره: سلام، مرسی، خداحافظ، خوبی؟، «رباتی؟»
+    if tags and not a["rest"]:
+        lines=[lead] if lead else []
+        quick=None
+        if "who" in tags:
+            lines.append(brain.who_reply(SHOP_NAME)); quick=suggest_rows(ids=["i_human"])
+        if "how" in tags: lines.append(brain.say("how"))
+        if "thanks" in tags: lines.append(brain.say("thanks"))
+        if "bye" in tags: lines.append(brain.say("bye"))
+        if "laugh" in tags: lines.append(brain.say("laugh"))
+        if "no" in tags: lines.append(brain.say("no"))
+        if ("yes" in tags or ("greet" in tags and len(lines)==1)
+                or ("tired" in tags and len(lines)<=1)):
+            lines.append(brain.say("greet_only" if ("greet" in tags or "tired" in tags)
+                                   else "yes_nothing"))
+            quick=suggest_rows(ids=QUICK_INTENTS)
+        await _typing(ctx.bot,msg.chat_id)
+        await msg.reply_text(_join(*lines) or "🙂",
+                             reply_markup=InlineKeyboardMarkup(quick) if quick else main_menu())
+        return True
+
+    # ۴) نفهمیدم — حدس نمی‌زنیم؛ به همکار می‌سپاریم
+    if dry:
+        await msg.reply_text(_join(lead,random.choice(brain.UNKNOWN_LEADS),
+                                   "(در حالت واقعی، پیام برای همکار فرستاده می‌شد)"))
+        return True
+    await log_unmatched(text,user)
+    return await forward_to_admin(update,ctx,count=False,
+                                  ack_lead=_join(lead,random.choice(brain.UNKNOWN_LEADS)))
+
+def event_label(k):
+    """برچسب خوانای یک رویداد برای کارت شناخت و گزارش هفتگی."""
+    if k=="wh_page": return "🕐 ساعت کاری"
+    if k.startswith("ai:"):
+        it=faq_item(k[3:]); return f"💬 {faq_title(it)}" if it else "💬 پرسش"
+    return SECTION_NAMES.get(k,k)
 
 # نوع پیام → برچسبی که در اعلان ادمین می‌آید
 _KIND_BY_ATTR = (("voice","🎤 ویس"),("video_note","🎥 ویدیو پیام"),("video","🎬 ویدیو"),
@@ -3675,7 +4109,7 @@ async def user_media_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if spam_check(user.id)!='ok': return
     msg=update.message
     kind=next((lbl for attr,lbl in _KIND_BY_ATTR if getattr(msg,attr,None)),"پیام")
-    if not await forward_to_admin(update,ctx,kind):
+    if not await forward_to_admin(update,ctx,kind,ack=not in_human_mode(user.id)):
         await msg.reply_text(
             "لطفاً یکی از گزینه‌های منوی زیر را انتخاب کنید 👇",reply_markup=main_menu())
 
@@ -3946,6 +4380,7 @@ def main():
     app.add_handler(CommandHandler("start",cmd_start))
     app.add_handler(CommandHandler("help",cmd_help))
     app.add_handler(CommandHandler("admin",cmd_admin))
+    app.add_handler(CommandHandler("ask",cmd_ask))
     app.add_handler(CallbackQueryHandler(callbacks))
     app.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND,photo_handler))
     app.add_handler(MessageHandler(filters.Document.ZIP & ~filters.COMMAND,document_handler))
