@@ -1,4 +1,4 @@
-import os, re, json, time, random, asyncio, logging, aiosqlite, jdatetime, pytz, zipfile, io, html, secrets, traceback
+import os, re, json, time, random, asyncio, logging, aiosqlite, jdatetime, pytz, zipfile, io, html, secrets, traceback, hashlib
 from datetime import datetime, timedelta
 import aiofiles
 import brain       # موتور فهم پیام — بدون هیچ API بیرونی
@@ -3831,23 +3831,102 @@ def action_label(a):
         return "📋 نمایش بخش «"+SECTION_NAMES.get(a[8:],a[8:])+"»"
     return ACTIONS.get(a,a)
 
-# نیت‌های پیش‌فرض یک فروشگاه موبایل. هرکدام که «کار»ش نمایش یک بخش است،
-# متنش را از همان بخش پنل می‌خواند — پس همین الان با محتوای واقعی تو جواب
-# می‌دهد. سه‌تای آخر متنِ اختصاصی می‌خواهند و تا نوشته نشوند خاموش‌اند.
+# نیت‌های پیش‌فرض استوک‌لند — با اطلاعات واقعی فروشگاه. هرکدام که «کار»ش
+# نمایش یک بخش است، متنش را از همان بخش پنل می‌خواند (اقساط، آدرس، شبکه‌ها،
+# سایت، پشتیبانی)؛ پس اگر متن بخش را در پنل عوض کنید، جواب دستیار هم عوض
+# می‌شود. هر نیت را می‌شود از پنل ویرایش، خاموش یا حذف کرد.
+_SHOP_LINE = ("آیفون، آیپد، مک‌بوک، اپل‌واچ، ایرپاد و لوازم جانبی — هم آک (نو و پلمب) "
+              "با گارانتی شرکتی، هم کارکرده‌ی تمیز با ۷ روز مهلت تست.")
 DEFAULT_INTENTS = [
   {"id":"i_price","button":"💰 لیست قیمت","action":"prices",
    "keys":["قیمت","لیست قیمت","چند تومن","چند تومنه","نرخ روز","قیمتا","چقدر","چنده"],
+   "examples":["قیمت گوشیاتون چنده","لیست قیمتتون رو بفرستید","قیمت امروز چنده"],
    "answer":"قیمت روز {product} 👇\n---\nلیست قیمت امروز {product} 👇\n---\nاینم قیمت‌های امروز 👇",
-   "suggest":["i_install","i_human"]},
-  {"id":"i_stock","button":"📦 موجودی","action":"section:1",
+   "suggest":["i_install","i_registry","i_human"]},
+  {"id":"i_stock","button":"📦 موجودی","action":"",
    "keys":["موجودی","موجود","موجوده","دارید","دارین"],
-   "answer":"موجودی لحظه‌ای {product} رو تو پیج و سایت به‌روز می‌کنیم 👇\n"
-            "اگه بخواید، همکارم همین الان براتون چک می‌کنه.",
-   "suggest":["i_price","i_human"]},
+   "examples":["الان موجود دارید","این مدل رو دارید"],
+   "answer":"موجودی {product} لحظه‌ای عوض می‌شه 🙂 تو سایت و پیج به‌روزش می‌کنیم.\n---\n"
+            "موجودی {product} رو تو سایت و پیج به‌روز نگه می‌داریم 🙂",
+   "suggest":["i_site","i_social"],
+   "offer":"بدم همکارم همین الان موجودی رو براتون چک کنه؟","offer_to":"i_human"},
+  {"id":"i_products","button":"🍏 محصولات ما","action":"",
+   "keys":["محصولات","چه محصولاتی","چی میفروشید","چیا دارید","چه مدل هایی"],
+   "examples":["چه گوشی هایی دارید","چیا میفروشید","فقط ایفون دارید"],
+   "answer":"تو استوک‌لند تخصصی محصولات اپل داریم 🍏\n\n• آیفون\n• آیپد\n• مک‌بوک\n• اپل‌واچ\n"
+            "• ایرپاد\n• لوازم جانبی\n\nهم آک (نو و پلمب) با گارانتی شرکتی، "
+            "هم کارکرده‌ی تمیز با ۷ روز مهلت تست.",
+   "suggest":["i_price","i_site"]},
+  {"id":"i_android","button":"🤖 گوشی غیر اپل","action":"",
+   "keys":["سامسونگ","شیائومی","اندروید","گلکسی","هواوی","پوکو","ناتینگ"],
+   "answer":"ما تخصصی فقط محصولات اپل کار می‌کنیم 🍏 آیفون، آیپد، مک‌بوک، اپل‌واچ، "
+            "ایرپاد و لوازم جانبی.",
+   "suggest":["i_products","i_price"]},
+  {"id":"i_accessory","button":"🎧 لوازم جانبی","action":"",
+   "keys":["لوازم جانبی","قاب","گلس","شارژر","کابل","هندزفری","محافظ صفحه","کلگی"],
+   "answer":"لوازم جانبی اپل هم داریم 👌 شارژر، کابل، قاب، گلس و…\n"
+            "برای مدل و موجودی، همکارم دقیق راهنمایی‌تون می‌کنه.",
+   "suggest":["i_human"],
+   "offer":"بدم به همکارم که موجودی رو بگه؟","offer_to":"i_human"},
+  {"id":"i_condition","button":"✨ آک یا کارکرده","action":"",
+   "keys":["اک","پلمب","استوک","کارکرده","دست دوم","کار کرده","نو"],
+   "examples":["گوشیاتون نو هستن","استوک تمیز دارید","فرق اک با استوک چیه"],
+   "answer":"هر دو رو داریم 🙂\n\n📦 آک: نو و پلمب، با گارانتی شرکتی خودش\n"
+            "🔍 کارکرده (استوک): تمیز و بررسی‌شده، با ۷ روز مهلت تست",
+   "suggest":["i_price","i_warranty"]},
+  {"id":"i_registry","button":"📶 رجیستری","action":"",
+   "keys":["رجیستر","رجیستری","رجیستر شده","ریجستر","رجستر"],
+   "examples":["ایفوناتون رجیستر شدن","رجیستر نشده دارید"],
+   "answer":"هر دو نوع رو داریم: رجیستر شده و رجیستر نشده 📶\n"
+            "قیمت هر کدوم تو لیست قیمت جدا مشخص شده.",
+   "suggest":["i_human"],
+   "offer":"لیست قیمت امروز رو بفرستم؟","offer_to":"i_price"},
   {"id":"i_install","button":"💳 خرید اقساطی","action":"section:3",
    "keys":["قسط","اقساط","چک","طلا","شرایط خرید","پیش پرداخت","بدون ضامن"],
-   "answer":"","suggest":["i_price","i_human"],
+   "examples":["با چک میشه خرید","شرایط قسطی چطوره","طلا میگیرید"],
+   "answer":"","suggest":["i_payment","i_human"],
    "offer":"لیست قیمت امروز رو هم ببینید؟","offer_to":"i_price"},
+  {"id":"i_payment","button":"💳 روش پرداخت","action":"",
+   "keys":["پرداخت","کارتخوان","کارت به کارت","نقدی","نقد","درگاه","پوز","روش پرداخت"],
+   "examples":["چطوری پول رو بدم","با کارت میشه حساب کرد"],
+   "answer":"پرداخت به چند روش ممکنه 💳\n\n• کارتخوان، حضوری در فروشگاه\n• کارت به کارت\n"
+            "• درگاه آنلاین سایت\n• اقساطی با چک یا طلا",
+   "suggest":["i_install","i_site"]},
+  {"id":"i_warranty","button":"🛡 گارانتی","action":"",
+   "keys":["گارانتی","گارانتی شرکتی","ضمانت سلامت"],
+   "examples":["گوشیاتون گارانتی دارن","کارکرده ها ضمانت دارن"],
+   "answer":"📦 گوشی‌های آک (نو و پلمب) گارانتی شرکتی خودشون رو دارن.\n"
+            "🔍 گوشی‌های کارکرده هم ۷ روز مهلت تست دارن؛ اگه تو این یه هفته ایراد فنی "
+            "دیدید، با همکارم هماهنگ کنید.",
+   "suggest":["i_return","i_human"]},
+  {"id":"i_return","button":"↩️ مهلت تست و مرجوعی","action":"",
+   "keys":["مرجوع","مرجوعی","پس بدم","پس دادن","برگردونم","عودت","مهلت تست","تست"],
+   "examples":["اگه خراب بود میتونم پس بدم","چند روز وقت دارم تست کنم"],
+   "answer":"۷ روز مهلت تست دارید 🙂 اگه تو این مدت ایراد فنی دیدید، با همکارم هماهنگ "
+            "کنید تا بررسی بشه.",
+   "suggest":["i_warranty","i_human"]},
+  {"id":"i_shipping","button":"🚚 ارسال","action":"",
+   "keys":["ارسال","شهرستان","شهر دیگه","ارسال رایگان","ارسال دارید","میفرستید","میفرستین"],
+   "examples":["به شهرستان هم میفرستید","برای تهران میفرستید","میتونید بفرستید برام"],
+   "answer":"به سراسر ایران ارسال داریم 🚚\nبرای هزینه و زمان رسیدن به شهرتون، همکارم "
+            "دقیق راهنمایی‌تون می‌کنه.",
+   "suggest":["i_payment"],
+   "offer":"بدم به همکارم که هماهنگ کنه؟","offer_to":"i_human"},
+  {"id":"i_tradein","button":"🔄 معاوضه و فروش گوشی","action":"",
+   "keys":["تعویض","معاوضه","میخرید","بفروشم","خرید کارکرده","عوض کنم"],
+   "examples":["گوشی خودمو بیارم شما میخرید","گوشی قدیمیمو میخرید",
+               "گوشیمو با ایفون جدید عوض میکنید"],
+   "answer":"هم معاوضه داریم، هم گوشی کارکرده‌تون رو می‌خریم 🔄\n"
+            "قیمتش بعد از دیدن و بررسی گوشی مشخص می‌شه؛ می‌تونید حضوری بیارید فروشگاه، "
+            "یا مدل و وضعیتش رو همین‌جا بنویسید تا همکارم راهنمایی‌تون کنه.",
+   "suggest":["i_address","i_human"]},
+  {"id":"i_software","button":"🛠 خدمات نرم‌افزاری","action":"section:4",
+   "keys":["اپل ایدی","اپلایدی","apple id","ایکلود","icloud","نصب برنامه","انتقال اطلاعات",
+           "نرم افزار","نصب"],
+   "examples":["اپل ایدی میسازید","برنامه نصب میکنید","اطلاعات گوشی قبلیمو منتقل میکنید"],
+   "answer":"خدمات نرم‌افزاری هم داریم 🛠\n\n• ساخت اپل‌آیدی\n• نصب برنامه\n"
+            "• انتقال اطلاعات از گوشی قبلی\n\nبرای هماهنگی 👇",
+   "suggest":["i_human"]},
   {"id":"i_address","button":"📍 آدرس و مسیر","action":"section:5",
    "keys":["ادرس","لوکیشن","کجا","مسیر","نقشه","حضوری","مغازه","فروشگاه کجاست",
            "چطوری بیام","چجوری بیام","کجا بیام"],
@@ -3859,53 +3938,120 @@ DEFAULT_INTENTS = [
    "offer":"آدرس و مسیر مغازه رو هم براتون بفرستم؟","offer_to":"i_address"},
   {"id":"i_site","button":"🌐 سایت","action":"section:2",
    "keys":["سایت","ادرس سایت","خرید انلاین","سفارش انلاین"],"answer":""},
-  {"id":"i_social","button":"📸 اینستاگرام","action":"section:1",
-   "keys":["اینستاگرام","کانال","شبکه اجتماعی","شبکه های اجتماعی"],"answer":""},
+  {"id":"i_social","button":"📸 اینستاگرام و کانال","action":"section:1",
+   "keys":["اینستاگرام","کانال","شبکه اجتماعی","شبکه های اجتماعی","بله","روبیکا"],"answer":""},
+  {"id":"i_about","button":"🏬 درباره‌ی استوک‌لند","action":"",
+   "keys":["درباره استوک لند"],
+   "examples":["استوک لند چیه","شما کی هستید","چیکار میکنید","کارتون چیه"],
+   "answer":"استوک‌لند فروشگاه تخصصی محصولات اپل در قمه 🍏\n"+_SHOP_LINE+
+            "\nفروش نقدی و اقساطی (چک و طلا) و ارسال به سراسر ایران.",
+   "suggest":["i_address","i_social"]},
   {"id":"i_notify","button":"🔔 خبرم کن","action":"notify",
    "keys":["خبرم کنید","خبرم کن","اطلاع بدید","تخفیف","جشنواره"],
    "answer":"حتماً 🙂 هر موضوعی که می‌خواید خبرش رو بگیرید انتخاب کنید 👇"},
+  {"id":"i_phone","button":"📞 شماره تماس","action":"section:4",
+   "keys":["شماره","شماره تماس","تلفن","زنگ","تماس","پشتیبانی","شمارتون","تلفن مغازه","شماره مغازه"],
+   "answer":"","suggest":["i_human"]},
   {"id":"i_human","button":"🧑‍💼 صحبت با همکار","action":"human",
-   "keys":["همکار","تماس","شماره","زنگ","صحبت کنم","کسی هست","پشتیبانی"],
+   "keys":["همکار","صحبت کنم","کسی هست","حرف بزنم","ادم واقعی"],
+   "examples":["میخوام با یکی حرف بزنم","یکی جواب بده","با خود فروشنده کار دارم"],
    "answer":"حتماً 🙏 پیامتون رو به همکارم دادم و خودش همین‌جا جوابتون رو می‌ده.\n---\n"
             "چشم 🙏 به همکارم خبر دادم؛ به‌زودی همین‌جا جوابتون رو می‌ده."},
-  {"id":"i_warranty","button":"🛡 گارانتی","enabled":False,
-   "keys":["گارانتی","ضمانت اصالت","اصالت"],
-   "answer":"✏️ شرایط گارانتی را با کلمات خودتان اینجا بنویسید، بعد این نیت را روشن کنید.",
-   "suggest":["i_human"]},
-  {"id":"i_shipping","button":"🚚 ارسال","enabled":False,
-   "keys":["ارسال","شهرستان","شهر دیگه","ارسال رایگان"],
-   "answer":"✏️ شرایط ارسال را با کلمات خودتان اینجا بنویسید، بعد این نیت را روشن کنید.",
-   "suggest":["i_human"]},
-  {"id":"i_tradein","button":"🔄 معاوضه و خرید کارکرده","enabled":False,
-   "keys":["تعویض","معاوضه","کارکرده","میخرید","بفروشم","دست دوم"],
-   "examples":["گوشی خودمو بیارم شما میخرید","گوشی قدیمیمو میخرید"],
-   "answer":"✏️ شرایط معاوضه و خرید گوشی کارکرده را اینجا بنویسید، بعد این نیت را روشن کنید.",
-   "suggest":["i_human"]},
 ]
 QUICK_INTENTS = ["i_price","i_install","i_address","i_human"]   # زیر سلام و احوال‌پرسی
 
-async def seed_intents():
-    """نیت‌های پیش‌فرض یک‌بار کاشته می‌شوند.
+# ── به‌روزرسانی نیت‌های پیش‌فرض بدون دست زدن به کارِ ادمین
+# هر نیت پیش‌فرض یک «عکس» از نسخه‌ای که کاشته شده نگه می‌دارد (_seed). در
+# نسخه‌ی تازه، هر فیلدی که ادمین دست نزده (هنوز برابر همان عکس است) به‌روز
+# می‌شود؛ هر فیلدی که خودش نوشته دست‌نخورده می‌ماند. در کلیدواژه‌ها و
+# جمله‌های نمونه، فقط موردهای تازه اضافه می‌شوند — چیزی که ادمین پاک کرده
+# برنمی‌گردد. نیتی که ادمین حذف کرده هم دوباره ساخته نمی‌شود.
+SEED_VERSION = 2
+_SEED_SCALARS = ("button","answer","action","suggest","offer","offer_to","enabled")
+_SEED_LISTS = ("keys","examples")
 
-    هرچه ادمین خودش نوشته محترم است: اگر نیت یا سؤال آماده‌ای با همان
-    کلیدواژه‌ها وجود دارد و متنش واقعی است، پیش‌فرض اضافه نمی‌شود. فقط
-    نمونه‌های خالیِ نسخه‌های قبلی («… را اینجا بنویسید») جایشان را به
-    نسخه‌ی کامل می‌دهند."""
-    if settings.get("assistant_seeded"): return
+def _seed_h(v):
+    return hashlib.sha1(json.dumps(v,ensure_ascii=False,sort_keys=True).encode()).hexdigest()[:10]
+
+def _seed_snapshot(d):
+    return {"h":{f:_seed_h(d.get(f,True if f=="enabled" else None)) for f in _SEED_SCALARS},
+            **{f:list(d.get(f,[])) for f in _SEED_LISTS}}
+
+# نسخه‌ی ۱ (پیش از ذخیره‌ی _seed) — فقط برای ارتقای نصب‌های قبلی
+_SEED_V1 = {
+  'i_price':{"h": {"button": "a4ffba70ce", "answer": "9b0bc4d62a", "action": "58fc4e0e6b", "suggest": "dd93a11665", "offer": "2be88ca424", "offer_to": "2be88ca424", "enabled": "5ffe533b83"}, "keys": ["قیمت", "لیست قیمت", "چند تومن", "چند تومنه", "نرخ روز", "قیمتا", "چقدر", "چنده"], "examples": []},
+  'i_stock':{"h": {"button": "7724634990", "answer": "e1ffc610b8", "action": "7db8b8b5df", "suggest": "fb737964ce", "offer": "2be88ca424", "offer_to": "2be88ca424", "enabled": "5ffe533b83"}, "keys": ["موجودی", "موجود", "موجوده", "دارید", "دارین"], "examples": []},
+  'i_install':{"h": {"button": "fb5121618e", "answer": "dd29ecf524", "action": "684482763c", "suggest": "fb737964ce", "offer": "4dee737341", "offer_to": "39f17ffeea", "enabled": "5ffe533b83"}, "keys": ["قسط", "اقساط", "چک", "طلا", "شرایط خرید", "پیش پرداخت", "بدون ضامن"], "examples": []},
+  'i_address':{"h": {"button": "a188c160b7", "answer": "dd29ecf524", "action": "42379e30bd", "suggest": "7f48788959", "offer": "2be88ca424", "offer_to": "2be88ca424", "enabled": "5ffe533b83"}, "keys": ["ادرس", "لوکیشن", "کجا", "مسیر", "نقشه", "حضوری", "مغازه", "فروشگاه کجاست", "چطوری بیام", "چجوری بیام", "کجا بیام"], "examples": []},
+  'i_hours':{"h": {"button": "d69e4a06a6", "answer": "dd29ecf524", "action": "f333e3fb14", "suggest": "ebcdd6edef", "offer": "00da6ffb58", "offer_to": "530cd3b605", "enabled": "5ffe533b83"}, "keys": ["ساعت کاری", "ساعت کار", "ساعت چند", "تا ساعت", "از ساعت چند", "تا کی", "چه ساعتی", "باز", "بسته", "تعطیل"], "examples": []},
+  'i_site':{"h": {"button": "97f49cec50", "answer": "dd29ecf524", "action": "3b46d3f7f3", "suggest": "2be88ca424", "offer": "2be88ca424", "offer_to": "2be88ca424", "enabled": "5ffe533b83"}, "keys": ["سایت", "ادرس سایت", "خرید انلاین", "سفارش انلاین"], "examples": []},
+  'i_social':{"h": {"button": "cb80b69145", "answer": "dd29ecf524", "action": "7db8b8b5df", "suggest": "2be88ca424", "offer": "2be88ca424", "offer_to": "2be88ca424", "enabled": "5ffe533b83"}, "keys": ["اینستاگرام", "کانال", "شبکه اجتماعی", "شبکه های اجتماعی"], "examples": []},
+  'i_notify':{"h": {"button": "6fa3f3e463", "answer": "62ed694b3f", "action": "3faa602f31", "suggest": "2be88ca424", "offer": "2be88ca424", "offer_to": "2be88ca424", "enabled": "5ffe533b83"}, "keys": ["خبرم کنید", "خبرم کن", "اطلاع بدید", "تخفیف", "جشنواره"], "examples": []},
+  'i_human':{"h": {"button": "c067ea5750", "answer": "660fef9b6a", "action": "353f64ee59", "suggest": "2be88ca424", "offer": "2be88ca424", "offer_to": "2be88ca424", "enabled": "5ffe533b83"}, "keys": ["همکار", "تماس", "شماره", "زنگ", "صحبت کنم", "کسی هست", "پشتیبانی"], "examples": []},
+  'i_warranty':{"h": {"button": "621c00e6ce", "answer": "21ac6d5ce7", "action": "2be88ca424", "suggest": "11115ef936", "offer": "2be88ca424", "offer_to": "2be88ca424", "enabled": "7cb6efb98b"}, "keys": ["گارانتی", "ضمانت اصالت", "اصالت"], "examples": []},
+  'i_shipping':{"h": {"button": "3bdba9ee14", "answer": "26a2eb31cf", "action": "2be88ca424", "suggest": "11115ef936", "offer": "2be88ca424", "offer_to": "2be88ca424", "enabled": "7cb6efb98b"}, "keys": ["ارسال", "شهرستان", "شهر دیگه", "ارسال رایگان"], "examples": []},
+  'i_tradein':{"h": {"button": "e20e514ef8", "answer": "44011de9b0", "action": "2be88ca424", "suggest": "11115ef936", "offer": "2be88ca424", "offer_to": "2be88ca424", "enabled": "7cb6efb98b"}, "keys": ["تعویض", "معاوضه", "کارکرده", "میخرید", "بفروشم", "دست دوم"], "examples": ["گوشی خودمو بیارم شما میخرید", "گوشی قدیمیمو میخرید"]},
+}
+
+def _upgrade_intent(it,d):
+    """فیلدهای دست‌نخورده‌ی یک نیت پیش‌فرض را به نسخه‌ی تازه می‌برد."""
+    base=it.get("_seed") or _SEED_V1.get(it["id"])
+    if not base: return False
+    changed=False
+    for f in _SEED_SCALARS:
+        cur=it.get(f,True if f=="enabled" else None)
+        new=d.get(f,True if f=="enabled" else None)
+        if _seed_h(cur)==base["h"].get(f) and cur!=new:
+            if new is None: it.pop(f,None)
+            else: it[f]=list(new) if isinstance(new,list) else new
+            changed=True
+    for f in _SEED_LISTS:
+        cur=list(it.get(f,[])); old=set(base.get(f,[]))
+        if cur==base.get(f,[]): merged=list(d.get(f,[]))
+        else: merged=cur+[x for x in d.get(f,[]) if x not in old and x not in cur]
+        if merged!=cur:
+            if merged: it[f]=merged
+            else: it.pop(f,None)
+            changed=True
+    snap=_seed_snapshot(d)
+    if it.get("_seed")!=snap: it["_seed"]=snap; changed=True
+    return changed
+
+async def seed_intents():
+    """نیت‌های پیش‌فرض را می‌کارد یا به نسخه‌ی تازه می‌برد.
+
+    هرچه ادمین خودش نوشته محترم است: اگر سؤال آماده‌ای با همان کلیدواژه‌ها
+    دارد و متنش واقعی است، پیش‌فرضِ هم‌کلید اضافه نمی‌شود. فقط نمونه‌های
+    خالیِ نسخه‌های قبلی («… را اینجا بنویسید») جایشان را به نسخه‌ی کامل
+    می‌دهند."""
+    if settings.get("assistant_seed_v",0)>=SEED_VERSION: return
+    # نصبی که نسخه‌ی ۱ را کاشته بود: همه‌ی آن شناسه‌ها «دیده شده‌اند» —
+    # اگر الان نیستند یعنی ادمین حذفشان کرده
+    seen=set(settings.get("assistant_ids") or
+             (_SEED_V1.keys() if settings.get("assistant_seeded") else ()))
+    ours={d["id"] for d in DEFAULT_INTENTS}
     changed=False
     for d in DEFAULT_INTENTS:
-        if faq_item(d["id"]): continue
+        it=faq_item(d["id"])
+        if it:
+            changed|=_upgrade_intent(it,d); seen.add(d["id"]); continue
+        if d["id"] in seen: continue
+        seen.add(d["id"])
         dkeys={brain.norm(k) for k in d["keys"]}
-        clash=[x for x in faq if dkeys & {brain.norm(k) for k in x.get("keys",[])}]
+        clash=[x for x in faq if x.get("id") not in ours
+               and dkeys & {brain.norm(k) for k in x.get("keys",[])}]
         real=[x for x in clash if x.get("enabled",True) or PLACEHOLDER_MARK not in x.get("answer","")]
         if real: continue
         for x in clash: faq.remove(x)
         it={k:(list(v) if isinstance(v,list) else v) for k,v in d.items()}
         it.setdefault("enabled",True); it.setdefault("hits",0)
+        it["_seed"]=_seed_snapshot(d)
         faq.append(it); changed=True
-    settings["assistant_seeded"]=True; await save_settings()
+    settings.update(assistant_seeded=True,assistant_seed_v=SEED_VERSION,
+                    assistant_ids=sorted(seen))
+    await save_settings()
     if changed:
-        await save_faq(); logger.info("assistant: نیت‌های پیش‌فرض کاشته شد")
+        await save_faq(); logger.info(f"assistant: نیت‌های پیش‌فرض نسخه‌ی {SEED_VERSION}")
 
 def brain_intents():
     return [x for x in faq if x.get("enabled",True)]
@@ -4024,7 +4170,7 @@ async def assistant_reply(update,ctx,text,user,dry=False):
     name=(user.first_name or "").strip()[:20]
     hour=datetime.now(IRAN_TZ).hour
     lead=""
-    if "greet" in tags: lead=brain.greet_line(name,hour)
+    if "greet" in tags: lead=brain.greet_line(name,hour,text=text)
     if "tired" in tags: lead=_join(lead,brain.say("tired"))
     if not dry:
         try: await record_event(uid,EV_MSG)
