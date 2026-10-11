@@ -5243,8 +5243,16 @@ async def user_media_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     msg=update.message
     if is_admin(user.id):
         # مدیر در حالت آزمایش می‌تواند ویس دستیار را هم امتحان کند
-        if user.id in test_mode and (msg.voice or msg.video_note) and voice_ready():
-            await handle_voice(update,ctx,user,dry=True)
+        if user.id in test_mode and (msg.voice or msg.video_note):
+            if voice_ready():
+                await handle_voice(update,ctx,user,dry=True)
+            else:
+                # هیچ‌وقت سکوت — مدیر باید بداند چرا ویس جواب نگرفت
+                why=("در تنظیمات خاموش است" if not get_setting("voice_stt") else
+                     "دستیار هوشمند خاموش است" if not (get_setting("assistant") and get_setting("faq_auto"))
+                     else voice.status())
+                await msg.reply_text(f"🎤 ویس به متن آماده نیست: {why}\n"
+                                     "تا وقتی آماده نشده، ویس مشتری‌ها مثل قبل فقط برای همکارها فرستاده می‌شود.")
         return                            # مسیر ادمین در هندلرهای اختصاصی است
     await save_user(user)
     if await is_blocked(user.id): return
