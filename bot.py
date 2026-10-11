@@ -1156,6 +1156,16 @@ def content_kb():
     ))
 
 # ── سؤال‌های آماده
+# مدیرهایی که دارند مثل مشتری با دستیار حرف می‌زنند (در حافظه؛ ری‌استارت خاموشش می‌کند)
+test_mode: set = set()
+
+TEST_HELP = ("🧪 <b>حالت آزمایش روشن شد</b>\n"+HR+
+             "\nحالا مثل یک مشتری بنویسید؛ دستیار دقیقاً همان جوابی را می‌دهد که "
+             "مشتری می‌گیرد. هیچ چیزی ثبت، شمرده یا برای همکارها فرستاده نمی‌شود."
+             "\n\nچند نمونه:\n• سلام، آیفون ۱۳ چنده؟\n• واسه ۱۴ چی؟\n• قسطی میدید؟"
+             "\n• کجایید؟\n• گوشیمو میخرید؟\n• رجیستر شده دارید؟"
+             "\n\nبرای خاموشی دوباره <code>/test</code> را بزنید.")
+
 def faq_menu_text():
     on=sum(1 for x in faq if x.get("enabled",True))
     hits=sum(x.get("hits",0) for x in faq)
@@ -1166,12 +1176,17 @@ def faq_menu_text():
             "اگر نفهمد، حدس نمی‌زند و پیام را به شما می‌سپارد."
             "\n\n<b>هر نیت:</b> کلیدواژه‌ها + جمله‌های نمونه + متن پاسخ + یک «کار» "
             "(نمایش بخش، ساعت کاری، لیست قیمت، سپردن به همکار)."
-            "\n\n🧪 امتحان: <code>/ask میشه قسطی بخرم؟</code>"
+            "\n\n🧪 <b>امتحان مثل مشتری:</b> «حالت آزمایش» را روشن کنید و هر چه "
+            "می‌خواهید بنویسید — جوابِ دستیار را همان‌طور که مشتری می‌بیند می‌گیرید "
+            "(چیزی ثبت یا برای کسی فرستاده نمی‌شود). یا یک جمله: "
+            "<code>/ask میشه قسطی بخرم؟</code>"
             f"\n\n📊 {to_fa(on)} نیت فعال از {to_fa(len(faq))}  ·  "
             f"{to_fa(hits)} بار جواب داده")
 
-def faq_menu_kb():
-    rows=[[InlineKeyboardButton("➕ نیت تازه",callback_data="faq_add")]]
+def faq_menu_kb(uid=None):
+    t="🧪 حالت آزمایش: روشن — برای خاموشی بزنید" if uid in test_mode else "🧪 امتحان مثل مشتری"
+    rows=[[InlineKeyboardButton(t,callback_data="faq_test")],
+          [InlineKeyboardButton("➕ نیت تازه",callback_data="faq_add")]]
     if get_setting("log_unmatched") and unmatched:
         rows.append([InlineKeyboardButton(
             f"❓ سؤال‌های بی‌پاسخ · {to_fa(len(unmatched))}",callback_data="unm_menu")])
@@ -2480,6 +2495,17 @@ async def cmd_help(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         _fit(f"<b>ℹ️ راهنمای {esc(SHOP_NAME)}</b>\n{HR}\n"+"\n".join(body),TEXT_LIMIT),
         parse_mode="HTML",reply_markup=main_menu(),disable_web_page_preview=True)
 
+async def cmd_test(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    """/test — مدیر مثل مشتری با دستیار حرف بزند (روشن/خاموش)."""
+    uid=update.effective_user.id
+    if not is_admin(uid): return
+    if uid in test_mode:
+        test_mode.discard(uid)
+        return await update.message.reply_text(
+            "🧪 حالت آزمایش خاموش شد. برگشتید به حالت مدیر.",reply_markup=main_menu())
+    test_mode.add(uid)
+    await update.message.reply_text(TEST_HELP,parse_mode="HTML",reply_markup=main_menu())
+
 async def cmd_ask(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     """/ask <جمله> — مدیر ببیند دستیار یک جمله را چطور می‌فهمد، بی‌آنکه چیزی
     ثبت یا برای کسی فرستاده شود."""
@@ -2620,10 +2646,18 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             await safe_edit(query.message,await topics_text(),
                             reply_markup=topics_kb(),parse_mode="HTML")
 
+        elif data=="faq_test":
+            on=uid not in test_mode
+            (test_mode.add if on else test_mode.discard)(uid)
+            await query.answer("🧪 روشن شد — مثل مشتری بنویسید" if on else "🧪 خاموش شد")
+            await safe_edit(query.message,faq_menu_text(),
+                            reply_markup=faq_menu_kb(uid),parse_mode="HTML")
+            if on: await query.message.reply_text(TEST_HELP,parse_mode="HTML",reply_markup=main_menu())
+
         elif data=="faq_menu":
             await query.answer()
             await safe_edit(query.message,faq_menu_text(),
-                            reply_markup=faq_menu_kb(),parse_mode="HTML")
+                            reply_markup=faq_menu_kb(uid),parse_mode="HTML")
 
         elif data=="faq_add":
             await query.answer()
@@ -2763,7 +2797,7 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             faq[:] = [x for x in faq if x.get("id")!=fid]; await save_faq()
             await query.answer("🗑 حذف شد.",show_alert=True)
             await safe_edit(query.message,faq_menu_text(),
-                            reply_markup=faq_menu_kb(),parse_mode="HTML")
+                            reply_markup=faq_menu_kb(uid),parse_mode="HTML")
 
         elif data=="adm_content":
             await query.answer()
@@ -3643,8 +3677,17 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     # متنِ آزادِ خودِ مدیر از این مسیر کنار می‌رود: نه پاسخ خودکار می‌گیرد،
     # نه فهرست «سؤال‌های بی‌پاسخ» را با پیام‌های داخلی آلوده می‌کند.
     if is_admin(user.id):
+        if user.id in test_mode:
+            # حالت آزمایش: همان جوابِ مشتری، بی‌آنکه چیزی ثبت یا فرستاده شود
+            if get_setting("assistant") and get_setting("faq_auto"):
+                await assistant_reply(update,ctx,text,user,dry=True)
+            else:
+                await update.message.reply_text("⚫️ دستیار هوشمند در تنظیمات خاموش است.")
+            return
         await update.message.reply_text(
-            "دستور شناخته‌شده‌ای نبود.\n/admin برای پنل · /start برای منو",
+            "پیامِ مدیر به دستیار نمی‌رود — دستیار فقط به مشتری‌ها جواب می‌دهد.\n"
+            "🧪 برای امتحانش مثل یک مشتری: /test\n"
+            "/admin برای پنل · /start برای منو",
             reply_markup=main_menu())
         return
     # گفت‌وگو دستِ همکار است؟ دستیار کنار می‌کشد و پیام مستقیم به او می‌رسد
@@ -4092,7 +4135,7 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False):
     uid=user.id
     values={"name":(user.first_name or "").strip()[:20],"product":product,
             "shop":SHOP_NAME,"status":status_line() or "","hours":wh_today_block() or ""}
-    answer=brain.fill(brain.pick_variant(item.get("answer","")),**values)
+    answer=brain.fill(brain.pick_variant(item.get("answer",""),product=product),**values)
     action=item.get("action") or ""
     rows=suggest_rows(item)
     if not dry:
@@ -4527,6 +4570,7 @@ def main():
     app.add_handler(CommandHandler("help",cmd_help))
     app.add_handler(CommandHandler("admin",cmd_admin))
     app.add_handler(CommandHandler("ask",cmd_ask))
+    app.add_handler(CommandHandler("test",cmd_test))
     app.add_handler(CallbackQueryHandler(callbacks))
     app.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND,photo_handler))
     app.add_handler(MessageHandler(filters.Document.ZIP & ~filters.COMMAND,document_handler))

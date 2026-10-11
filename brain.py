@@ -414,10 +414,17 @@ def is_followup(text):
 VARIANT_SEP = re.compile(r"\n\s*-{3,}\s*\n")
 
 
-def pick_variant(answer, rnd=random):
+def pick_variant(answer, rnd=random, product=None):
     """پاسخ می‌تواند چند شکل داشته باشد که با خط «---» جدا شده‌اند؛
-    هر بار یکی انتخاب می‌شود تا ربات تکراری و ماشینی به نظر نیاید."""
+    هر بار یکی انتخاب می‌شود تا ربات تکراری و ماشینی به نظر نیاید.
+
+    اگر product داده شود: وقتی مشتری اسم مدل را گفته، شکلی که {product}
+    دارد ترجیح دارد («قیمت روز آیفون ۱۳»)، و وقتی نگفته، شکلی که ندارد —
+    تا جای خالی در جمله نماند."""
     parts = [p.strip() for p in VARIANT_SEP.split(answer or "") if p.strip()]
+    if product is not None:
+        want = [p for p in parts if ("{product}" in p) == bool(product)]
+        parts = want or parts
     return rnd.choice(parts) if parts else ""
 
 
