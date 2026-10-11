@@ -2,6 +2,7 @@ import os, re, json, time, random, asyncio, logging, aiosqlite, jdatetime, pytz,
 from datetime import datetime, timedelta
 import aiofiles
 import brain       # موتور فهم پیام — بدون هیچ API بیرونی
+import profanity   # تشخیص فحش و توهین
 from telegram import (Update, ReplyKeyboardMarkup, InlineKeyboardMarkup,
                       InlineKeyboardButton, BotCommand, WebAppInfo)
 from telegram.error import Forbidden, BadRequest, Conflict
@@ -158,7 +159,8 @@ DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs"
                     "miniapp":True,         # لینک سایت داخل تلگرام باز شود
                     "assistant":True,       # دستیار هوشمند (موتور داخلی، بدون API)
                     "typing_delay":True,    # «در حال نوشتن…» پیش از جواب
-                    "ai_cc_admin":True}     # رونوشت پاسخ‌های دستیار برای مدیرها
+                    "ai_cc_admin":True,     # رونوشت پاسخ‌های دستیار برای مدیرها
+                    "profanity_filter":True}  # تذکر به پیام توهین‌آمیز
 
 # ── helpers
 def get_banner(k): banners.setdefault(k,{"file_id":None,"active":False}); return banners[k]
@@ -313,6 +315,7 @@ _last_err_report = 0.0      # زمان آخرین گزارش خطا به ادم�
 _ERR_REPORT_GAP  = 60.0     # حداقل فاصله بین دو گزارش (ثانیه)
 
 EV_MSG = "_msg"          # کلید ویژه: پیام آزادِ مشتری
+EV_ABUSE = "_abuse"      # پیام توهین‌آمیز (برای کارت مشتری)
 
 async def record_stat(k,uid=None):
     """شمارنده‌ی کلی (برای آمار) + رویداد شخصی (برای کارت شناخت مشتری)."""
@@ -741,12 +744,16 @@ async def customer_card(uid):
 
     # چه بخش‌هایی را پیش از نوشتن دیده — بدون تکرار، تازه‌ترین اول
     async with db.execute(
-        "SELECT key,MAX(ts) t FROM events WHERE user_id=? AND key<>? "
-        "GROUP BY key ORDER BY t DESC LIMIT 4",(uid,EV_MSG)) as c:
+        "SELECT key,MAX(ts) t FROM events WHERE user_id=? AND key NOT IN (?,?) "
+        "GROUP BY key ORDER BY t DESC LIMIT 4",(uid,EV_MSG,EV_ABUSE)) as c:
         seen=[r[0] for r in await c.fetchall()]
     if seen:
         labels=[event_label(k) for k in seen]
         lines.append("👀 دیده: "+"، ".join(labels))
+    async with db.execute(
+        "SELECT COUNT(*) FROM events WHERE user_id=? AND key=?",(uid,EV_ABUSE)) as c:
+        nab=(await c.fetchone())[0]
+    if nab: lines.append(f"⚠️ {to_fa(nab)} بار پیام توهین‌آمیز")
     return "\n".join(esc(x) for x in lines)
 
 # ── پیام‌های بی‌جواب
@@ -1093,7 +1100,9 @@ def settings_text():
             "\n📊 گزارش هفتگی: خلاصه‌ی هفته، جمعه‌ها کنار بکاپ"
             f"\n🪟 سایت داخل تلگرام: لینک‌های {SHOP_SITE} به‌جای مرورگر، داخل خود تلگرام"
             "\n🧠 دستیار: گفت‌وگوی طبیعی با مشتری از روی نیت‌ها (بدون API)"
-            "\n📋 رونوشت: پیام‌هایی که دستیار جواب داد هم برای مدیرها فرستاده شود")
+            "\n📋 رونوشت: پیام‌هایی که دستیار جواب داد هم برای مدیرها فرستاده شود"
+            "\n🛡 توهین: به پیام بی‌ادبانه تذکر می‌دهد؛ بار سوم گفتگو یک ساعت متوقف می‌شود"
+            " (کلمه‌ی تازه: /badword)")
 
 def stats_kb():
     return InlineKeyboardMarkup(_nav(
@@ -1504,6 +1513,7 @@ def settings_kb(owner=False):
     typ ="🟢" if get_setting("typing_delay") else "⚫️"
     ccad="🟢" if get_setting("ai_cc_admin") else "⚫️"
     mini="🟢" if get_setting("miniapp") else "⚫️"
+    prof="🟢" if get_setting("profanity_filter") else "⚫️"
     rows=[[InlineKeyboardButton(f"{shop} فروشگاه باز است",callback_data="stg_store_open")],
           [InlineKeyboardButton(f"{notif} اعلان عضو جدید",callback_data="stg_notify_new_user")],
           [InlineKeyboardButton(f"{fwd} دریافت پیام کاربران",callback_data="stg_forward_user_msgs")],
@@ -1515,7 +1525,8 @@ def settings_kb(owner=False):
           [InlineKeyboardButton(f"{mini} سایت داخل تلگرام",callback_data="stg_miniapp")],
           [InlineKeyboardButton(f"{ast} دستیار هوشمند",callback_data="stg_assistant")],
           [InlineKeyboardButton(f"{typ} «در حال نوشتن…»",callback_data="stg_typing_delay"),
-           InlineKeyboardButton(f"{ccad} رونوشت برای مدیر",callback_data="stg_ai_cc_admin")]]
+           InlineKeyboardButton(f"{ccad} رونوشت برای مدیر",callback_data="stg_ai_cc_admin")],
+          [InlineKeyboardButton(f"{prof} تذکر به توهین و فحش",callback_data="stg_profanity_filter")]]
     # مدیریت مدیرها و بازگردانی بک‌آپ فقط دستِ مالک است
     if owner:
         rows.append([InlineKeyboardButton(f"👮 مدیران ربات · {to_fa(len(_admins))}",
@@ -2539,6 +2550,28 @@ async def cmd_help(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         _fit(f"<b>ℹ️ راهنمای {esc(SHOP_NAME)}</b>\n{HR}\n"+"\n".join(body),TEXT_LIMIT),
         parse_mode="HTML",reply_markup=main_menu(),disable_web_page_preview=True)
+
+async def cmd_badword(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    """/badword — فهرست کلمه‌هایی که مدیر خودش اضافه کرده
+    /badword کلمه — افزودن  ·  /badword - کلمه — حذف"""
+    if not is_admin(update.effective_user.id): return
+    extra=settings.setdefault("bad_words_extra",[])
+    args=list(getattr(ctx,"args",None) or [])
+    if not args:
+        lst="\n".join(f"• {esc(w)}" for w in extra) or "— هنوز چیزی اضافه نکرده‌اید"
+        return await update.message.reply_text(
+            f"<b>🛡 کلمه‌های توهین‌آمیزِ افزوده</b>\n{HR}\n"
+            f"فهرست اصلی (صدها کلمه و عبارت فارسی، فینگلیش و انگلیسی) داخل ربات است؛ "
+            f"اینجا فقط چیزهایی است که خودتان اضافه کرده‌اید.\n\n{lst}\n\n"
+            "➕ <code>/badword کلمه</code>\n➖ <code>/badword - کلمه</code>",parse_mode="HTML")
+    remove=args[0] in ("-","حذف")
+    word=" ".join(args[1:] if remove else args).strip()
+    if not word: return await update.message.reply_text("کلمه را بعد از دستور بنویسید.")
+    if remove:
+        if word in extra: extra.remove(word); await save_settings()
+        return await update.message.reply_text(f"➖ «{word}» برداشته شد.")
+    if word not in extra: extra.append(word); await save_settings()
+    await update.message.reply_text(f"➕ «{word}» اضافه شد — از این به بعد تذکر می‌گیرد.")
 
 async def cmd_test(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     """/test — مدیر مثل مشتری با دستیار حرف بزند (روشن/خاموش)."""
@@ -3724,6 +3757,7 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if is_admin(user.id):
         if user.id in test_mode:
             # حالت آزمایش: همان جوابِ مشتری، بی‌آنکه چیزی ثبت یا فرستاده شود
+            if await check_abuse(update,ctx,text,user,dry=True): return
             if get_setting("assistant") and get_setting("faq_auto"):
                 await assistant_reply(update,ctx,text,user,dry=True)
             else:
@@ -3735,6 +3769,7 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             "/admin برای پنل · /start برای منو",
             reply_markup=main_menu())
         return
+    if await check_abuse(update,ctx,text,user): return
     # گفت‌وگو دستِ همکار است؟ دستیار کنار می‌کشد و پیام مستقیم به او می‌رسد
     if in_human_mode(user.id):
         if await forward_to_admin(update,ctx,ack=False): return
@@ -4322,6 +4357,55 @@ async def assistant_reply(update,ctx,text,user,dry=False):
     return await forward_to_admin(update,ctx,count=False,
                                   ack_lead=_join(lead,random.choice(brain.UNKNOWN_LEADS)))
 
+# ════════════════════════════════════════════════
+#  برخورد با توهین
+# ════════════════════════════════════════════════
+# بار اول تذکر محترمانه، بار دوم هشدار، بار سوم (در ۲۴ ساعت) گفتگو یک ساعت
+# متوقف می‌شود و مدیرها خبردار می‌شوند. پیام توهین‌آمیز نه جواب خودکار
+# می‌گیرد و نه برای همکارها فوروارد می‌شود. شمارش در حافظه است.
+abuse_hits: dict = {}     # uid → [زمان‌ها]
+muted_until: dict = {}    # uid → تا کِی پیام‌هایش نادیده گرفته می‌شود
+ABUSE_WINDOW, MUTE_MIN = 24*3600, 60
+
+def is_muted(uid): return muted_until.get(uid,0)>time.time()
+
+async def check_abuse(update,ctx,text,user,dry=False):
+    """True یعنی پیام رسیدگی شد (توهین بود یا کاربر موقتاً ساکت است) و
+    نباید جلوتر برود."""
+    if not get_setting("profanity_filter"): return False
+    uid=user.id; msg=update.message
+    if not dry and is_muted(uid): return True
+    hit=profanity.find(text,settings.get("bad_words_extra") or ())
+    if not hit: return False
+    if dry:
+        await msg.reply_text(random.choice(profanity.WARN_1)+
+                             f"\n\n🧪 (حالت آزمایش — تشخیص: «{hit}»)")
+        return True
+    now=time.time()
+    hits=[t for t in abuse_hits.get(uid,[]) if now-t<ABUSE_WINDOW]+[now]
+    abuse_hits[uid]=hits
+    try: await record_event(uid,EV_ABUSE)
+    except Exception as e: logger.debug(f"ev abuse: {e}")
+    brain_ctx.pop(uid,None)
+    if len(hits)==1: body=random.choice(profanity.WARN_1)
+    elif len(hits)==2: body=profanity.WARN_2
+    else:
+        muted_until[uid]=now+MUTE_MIN*60; abuse_hits[uid]=[]
+        body=profanity.MUTED.format(minutes=to_fa(MUTE_MIN))
+        card=(f"<b>⛔️ گفتگو با یک مشتری {to_fa(MUTE_MIN)} دقیقه متوقف شد</b>\n{HR}\n"
+              f"دلیل: سه پیام توهین‌آمیز در ۲۴ ساعت\n"
+              f"👤 {esc(user.first_name or '—')}"+(f"  ·  @{esc(user.username)}" if user.username else "")+
+              f"\n🆔 <code>{uid}</code>\n💬 «{esc(_fit(text,120))}»\n"
+              "↩️ اگر لازم است، روی همین پیام ریپلای کنید.")
+        for aid in admin_ids():
+            try:
+                m=await ctx.bot.send_message(aid,card,parse_mode="HTML")
+                await link_thread(aid,m.message_id,uid)
+            except Exception as e: logger.error(f"abuse → {aid}: {e}")
+    try: await msg.reply_text(body,reply_markup=main_menu())
+    except Exception as e: logger.error(f"abuse reply: {e}")
+    return True
+
 def event_label(k):
     """برچسب خوانای یک رویداد برای کارت شناخت و گزارش هفتگی."""
     if k=="wh_page": return "🕐 ساعت کاری"
@@ -4342,6 +4426,7 @@ async def user_media_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if await is_blocked(user.id): return
     if spam_check(user.id)!='ok': return
     msg=update.message
+    if await check_abuse(update,ctx,msg.caption or "",user): return
     kind=next((lbl for attr,lbl in _KIND_BY_ATTR if getattr(msg,attr,None)),"پیام")
     if not await forward_to_admin(update,ctx,kind,ack=not in_human_mode(user.id)):
         await msg.reply_text(
@@ -4629,6 +4714,7 @@ def main():
     app.add_handler(CommandHandler("admin",cmd_admin))
     app.add_handler(CommandHandler("ask",cmd_ask))
     app.add_handler(CommandHandler("test",cmd_test))
+    app.add_handler(CommandHandler("badword",cmd_badword))
     app.add_handler(CallbackQueryHandler(callbacks))
     app.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND,photo_handler))
     app.add_handler(MessageHandler(filters.Document.ZIP & ~filters.COMMAND,document_handler))
