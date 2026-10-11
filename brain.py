@@ -286,6 +286,24 @@ MATCH_MIN = 0.5       # کمترین امتیاز برای اینکه بگویی
 WEAK = {"دارید", "داری", "دارین", "هست", "کجا", "باز", "کی", "میفرستید", "میفرستین",
         "چقدر", "چنده", "چقد"}
 WEAK_SCORE = 0.5
+# کلمه‌هایی که «توضیح» نمی‌خواهند: اگر پیام فقط با یک کلمه‌ی ضعیف («دارید»)
+# جور شده و کلمه‌ی معنادارِ بی‌جوابی دارد («تعمیرات دارید؟»)، آن تطبیق
+# پذیرفته نمی‌شود — وگرنه «تعمیرات دارید» جوابِ موجودی می‌گرفت.
+GENERIC = {"مدل", "مدلش", "مدلا", "گوشی", "گوشیا", "گوشیاتون", "گوشیتون", "گوشیم", "دستگاه",
+           "الان", "امروز", "فعلا", "الان", "ایفون", "اپل", "محصول", "جنس", "رنگ", "نو",
+           "اصل", "اوکی", "اینجا", "اونجا", "مغازتون", "مغازه", "فروشگاه", "شما", "شمام",
+           "میخواستم", "میخوام", "بپرسم", "سوال", "داشتم", "یعنی", "بازم", "دوباره",
+           "شده", "شد", "کرده", "کردم", "کنه", "کنم", "داره", "دارم", "بود", "باشه", "هستن",
+           "هستید", "هستین", "هستی",
+           "صفحه", "صفحش", "صفحهش", "گوشیمو", "گوشیم", "خیلی", "چیزی", "یکی", "همه"}
+# کلمه‌های مدل — در «جمله‌ی نمونه» شمرده نمی‌شوند، وگرنه نمونه‌ی «۱۶ پرو مکس
+# چند اینچه» هر «… پرو مکس چند»ی را سؤال مشخصات می‌فهمید
+_MODEL_WORDS = {"پرو", "مکس", "پلاس", "مینی", "ایر", "اولترا", "pro", "max", "plus", "mini"}
+
+
+def _ex_words(text):
+    return {stem(t) for t in tokens(text)
+            if t not in STOPWORDS and t not in _MODEL_WORDS and not t.isdigit()}
 EXAMPLE_MIN = 0.6     # چه سهمی از کلمه‌های یک جمله‌ی نمونه باید در پیام باشد
 
 
@@ -358,7 +376,7 @@ def score_intent(item, msg_forms, msg_content):
             if s > score or (s == score and len(norm(key)) > longest):
                 score, longest = s, len(norm(key))
     for ex in item.get("examples") or []:
-        ex_content = {stem(t) for t in tokens(ex) if t not in STOPWORDS}
+        ex_content = _ex_words(ex)
         if len(ex_content) < 2:
             continue
         cover = len(ex_content & msg_content) / len(ex_content)
@@ -388,7 +406,36 @@ def match(text, intents):
         s, ln = score_intent(it, msg_forms, msg_content)
         if s >= MATCH_MIN and (s > best_score or (s == best_score and ln > best_len)):
             best, best_score, best_len = it, s, ln
+    if best is not None and best_score <= WEAK_SCORE and _only_have(text) and _unexplained(text):
+        return None, 0.0
     return best, best_score
+
+
+_HAVE = {"دارید", "داری", "دارین", "هست"}
+
+
+def _only_have(text):
+    """تنها کلمه‌ی ضعیفِ پیام از جنس «دارید/هست» است — نه «کجا»، «باز»،
+    «چقدر» که خودشان جهت سؤال را روشن می‌کنند."""
+    ws = set()
+    for t in tokens(text):
+        for f in (t, SYNONYMS.get(t, ""), stem(t)):
+            if f in WEAK: ws.add(f)
+    return bool(ws) and ws <= _HAVE
+
+
+def _unexplained(text):
+    """کلمه‌های معنادارِ پیام که نه ضعیف‌اند، نه عمومی، نه اسم محصول."""
+    prod = set(norm(product(text)).split()) if product(text) else set()
+    out = []
+    for t in tokens(text):
+        if (t in STOPWORDS or t in WEAK or t in GENERIC or t.isdigit() or t in _BRANDS
+                or t in _VARIANTS or t in prod or len(t) < 3):
+            continue
+        if any(w in WEAK for w in (stem(t), SYNONYMS.get(t, ""))):
+            continue
+        out.append(t)
+    return out
 
 
 # ════════════════════════════════════════════════
@@ -531,3 +578,197 @@ def analyze(text, intents):
         "product": prod,
         "followup": bool(rest) and intent is None and is_followup(rest),
     }
+
+
+# ════════════════════════════════════════════════
+#  چند سؤال در یک پیام
+# ════════════════════════════════════════════════
+# «قیمت ۱۳ پرو چنده؟ قسطی هم میدید؟ کجایید؟» — پیام به بندها شکسته می‌شود و
+# هر بند جدا فهمیده می‌شود. شکستن روی متنِ خام است (علامت‌ها هنوز هستند).
+_CLAUSE_SPLIT = re.compile(
+    r"[?؟!\n.،,؛;]+|\s+(?:و|ضمنا|ضمناً|همچنین|بعدشم|بعدم|راستی|یه سوال دیگه|یک سوال دیگه)\s+")
+MULTI_MAX = 3
+
+
+def clauses(text):
+    return [c.strip() for c in _CLAUSE_SPLIT.split(text or "") if c and c.strip()]
+
+
+def match_all(text, intents):
+    """نیت‌های جدا در بندهای پیام، به ترتیب آمدن (حداکثر سه‌تا).
+    [(نیت, امتیاز, بند)] — اگر کمتر از دو نیتِ متفاوت باشد، خالی."""
+    prod = product(text)
+    found, seen = [], set()
+    for c in clauses(text):
+        _, rest = smalltalk(c)
+        if not rest:
+            continue
+        it, sc = match(rest, intents)
+        if it is None and (prod or product(c)) and any(t in PRICE_HINTS for t in tokens(rest)):
+            it, sc = price_intent(intents), MATCH_MIN
+        if it is not None and it.get("id") not in seen:
+            seen.add(it.get("id"))
+            found.append((it, sc, c))
+    return found[:MULTI_MAX] if len(found) >= 2 else []
+
+
+# ════════════════════════════════════════════════
+#  «منظورتون این بود؟» — نامزدهای نزدیک
+# ════════════════════════════════════════════════
+NEAR_MIN = 0.6
+NEAR_FUZZY = 0.72      # کمتر از FUZZY_MIN ولی هنوز شبیه
+
+
+def _content(text):
+    out = set()
+    for t in tokens(text):
+        if t not in STOPWORDS:
+            out |= {stem(t), t}
+            if t in SYNONYMS: out.add(SYNONYMS[t])
+    return out
+
+
+def near(text, intents, limit=2):
+    """وقتی هیچ نیتی قطعی نیست: نیت‌هایی که «نزدیک» بودند، تا از مشتری
+    بپرسیم منظورش کدام است. [(نیت, امتیاز)] — بهترین‌ها اول."""
+    _, rest = smalltalk(text)
+    if not rest:
+        return []
+    msg_forms = token_forms(rest)
+    content = _content(rest)
+    strong_words = [t for t in tokens(rest) if t not in STOPWORDS and t not in WEAK]
+    if not strong_words:
+        return []
+    cands = []
+    for it in intents:
+        if not it.get("enabled", True):
+            continue
+        best = 0.0
+        for key in it.get("keys") or []:
+            words = norm(key).split()
+            kf = _key_forms(key)
+            if not kf:
+                continue
+            hits = [_tok_hit(f, msg_forms) for f in kf]
+            # فعل‌ها («میفروشید»، «میدید») در جمله‌های بی‌ربط هم هستند؛ نیمه‌تطبیق
+            # فقط با اسم‌های معنادار شمرده می‌شود
+            strong = [h for h, w in zip(hits, words)
+                      if h and w not in WEAK and w not in STOPWORDS and w not in GENERIC
+                      and not w.startswith(("می", "نمی"))]
+            if len(kf) >= 2 and strong and not all(hits):
+                best = max(best, 0.45 + 0.35 * len(strong) / len(kf))
+            if (len(kf) == 1 and len(words[0]) >= 4 and words[0] not in WEAK
+                    and not words[0].startswith(("می", "نمی"))):
+                for t in strong_words:
+                    if len(t) >= 4 and not t.startswith(("می", "نمی")) and t not in GENERIC:
+                        r = difflib.SequenceMatcher(None, words[0], t).ratio()
+                        if NEAR_FUZZY <= r < FUZZY_MIN:
+                            best = max(best, 0.62)
+        for ex in it.get("examples") or []:
+            exc = _ex_words(ex)
+            if len(exc) < 3:
+                continue
+            cover = len(exc & content) / len(exc)
+            if 0.34 <= cover < EXAMPLE_MIN:
+                best = max(best, 0.4 + cover * 0.5)
+        if best >= NEAR_MIN:
+            cands.append((it, best))
+    cands.sort(key=lambda x: -x[1])
+    return cands[:limit]
+
+
+# ════════════════════════════════════════════════
+#  ناراحتی و شکایت
+# ════════════════════════════════════════════════
+# wait      — «چرا جواب نمیدید؟» منتظر مانده
+# complaint — از خودِ فروشگاه/خرید ناراضی است → فوری
+# issue     — دستگاهش مشکل دارد (شاید فقط سؤال تعمیر) → همدلی، نه آژیر
+_WAIT = ("جواب نمیدید", "جواب نمیدین", "جواب نمیده", "جواب نمیدن", "چرا جواب", "کسی جواب",
+         "هیچکس جواب", "هیچ کس جواب", "کسی نیست", "هیچکس نیست", "منتظرم", "منتظر موندم",
+         "خیلی وقته منتظر", "چقدر باید صبر", "هیچ خبری", "خبری نشد", "جوابمو بدید",
+         "جواب منو بدید", "پس چی شد")
+_COMPLAINT = ("شکایت", "ناراضی", "نارضایتی", "بدقول", "بد قول", "کلاهبردار", "کلاه برداری",
+              "کلاهبرداری", "سرم کلاه", "پولمو پس", "پول منو پس", "پولم رو پس", "پولمو بدید",
+              "پول منو بدید", "پس نمیدید",
+              "پس نمیگیرید", "پس نمی گیرید", "دروغ گفتید", "دروغ میگید", "گول زدید",
+              "تقلبی بود", "فیک بود", "بی مسئولیت", "بیمسئولیت", "مسخره کردید", "اعتراض",
+              "افتضاح بود", "افتضاحید", "پشیمونم", "پشیمان شدم", "هنوز نرسیده",
+              "نرسیده دستم", "دیر کردید", "پیگیری نکردید", "دیگه ازتون خرید نمیکنم",
+              "دیگه خرید نمیکنم")
+_ISSUE = ("خراب شد", "خراب شده", "خرابه", "کار نمیکنه", "کار نمی کنه", "روشن نمیشه",
+          "شارژ نمیشه", "ایراد داره", "ایراد پیدا", "مشکل داره", "مشکل پیدا", "عیب داره",
+          "سوخت", "هنگ میکنه", "ریستارت میشه", "ضربه خورد", "افتاد تو آب", "افتاد تو اب",
+          "شکسته", "شکست")
+_BOUGHT = ("خریدم", "خریدیم", "گرفتم ازتون", "ازتون گرفتم", "ازتون خریدم", "از شما خریدم",
+           "از شما گرفتم", "خرید کردم", "تحویل گرفتم")
+
+
+def mood(text):
+    """'wait' | 'complaint' | 'issue' | None"""
+    t = f" {norm(text)} "
+    has = lambda xs: any(f" {norm(x)} " in t or f" {norm(x)}" in t for x in xs)
+    if has(_COMPLAINT):
+        return "complaint"
+    issue = has(_ISSUE)
+    if issue and has(_BOUGHT):
+        return "complaint"        # مشکلِ بعد از خرید از خودِ ما
+    if has(_WAIT):
+        return "wait"
+    if issue:
+        return "issue"
+    return None
+
+
+MOOD_LEADS = {
+    "wait": ["ببخشید که منتظر موندید 🙏 همین الان دوباره به همکارم خبر دادم که فوری پیگیری کنه.",
+             "عذر می‌خوام بابت انتظار 🙏 پیامتون رو با اولویت فوری به همکارم رسوندم."],
+    "complaint": ["واقعاً متأسفم که این اتفاق افتاده 🙏 پیامتون رو با اولویت فوری به مسئول "
+                  "پیگیری دادم؛ همین‌جا جوابتون رو می‌ده.",
+                  "خیلی متأسفم 🙏 حق دارید ناراحت باشید. همین الان موضوع رو با اولویت فوری "
+                  "به مسئولش سپردم."],
+    "issue": ["متأسفم که دستگاهتون مشکل پیدا کرده 🙏",
+              "ای بابا، متأسفم 🙏"],
+}
+
+
+# ════════════════════════════════════════════════
+#  چند محصول در یک جمله (برای مقایسه)
+# ════════════════════════════════════════════════
+def products_all(text, default_brand="آیفون"):
+    """«۱۳ پرو یا ۱۴ پرو مکس کدوم بهتره؟» → ["آیفون ۱۳ پرو", "آیفون ۱۴ پرو مکس"].
+    عدد بی‌برند اینجا مدل آیفون حساب می‌شود (فروشگاه تخصصی اپل است)،
+    به شرط اینکه عددی در محدوده‌ی مدل‌ها باشد."""
+    t = norm(text)
+    out, brand_now = [], None
+    for m in _PRODUCT.finditer(t):
+        brand, num, var = m.group(1), m.group(2), m.group(3)
+        if brand:
+            brand_now = _BRANDS[brand]
+        if not (brand or num or var):
+            continue
+        if not brand and not num:
+            continue                      # «پرو» تنها
+        if not brand and num and not (6 <= int(num) <= 20):
+            continue
+        b = _BRANDS[brand] if brand else (brand_now or default_brand)
+        parts = [b]
+        if num: parts.append(num.translate(_FA))
+        if var: parts.append(_VARIANTS[var])
+        if len(parts) == 1:
+            continue
+        p = " ".join(parts)
+        if p not in out:
+            out.append(p)
+    return out
+
+
+def content_words(text, limit=3):
+    """کلمه‌های معنادار یک جمله — برای پیشنهاد کلیدواژه هنگام یادگیری."""
+    seen, out = set(), []
+    for t in tokens(text):
+        if (t in STOPWORDS or t in WEAK or t in GENERIC or len(t) < 3 or t.isdigit()
+                or t.startswith(("می", "نمی"))):
+            continue
+        if t not in seen:
+            seen.add(t); out.append(t)
+    return out[:limit]

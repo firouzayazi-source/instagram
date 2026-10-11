@@ -1,7 +1,8 @@
 import os, re, json, time, random, asyncio, logging, aiosqlite, jdatetime, pytz, zipfile, io, html, secrets, traceback, hashlib
 from datetime import datetime, timedelta
-import aiofiles
+import aiofiles, types
 import brain       # موتور فهم پیام — بدون هیچ API بیرونی
+import specs       # مشخصات فنی آیفون‌ها (مقایسه)
 import profanity   # تشخیص فحش و توهین
 from telegram import (Update, ReplyKeyboardMarkup, InlineKeyboardMarkup,
                       InlineKeyboardButton, BotCommand, WebAppInfo)
@@ -50,6 +51,7 @@ SETTINGS_FILE = "settings.json"; STATS_FILE = "stats.json"
 ADMINS_FILE = "admins.json"; BROADCAST_FILE = "broadcast.json"
 FAQ_FILE = "faq.json"; UNMATCHED_FILE = "unmatched.json"
 PAGES_FILE = "pages.json"; TOPICS_FILE = "topics.json"
+LEARN_FILE = "learn.json"      # آنچه دستیار خودش یاد گرفته (با امکان پس‌گرفتن)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -630,12 +632,22 @@ async def init_db():
         CREATE TABLE IF NOT EXISTS threads(
             admin_id INTEGER,msg_id INTEGER,user_id INTEGER,ts TEXT,
             PRIMARY KEY(admin_id,msg_id));
+        CREATE TABLE IF NOT EXISTS waitlist(
+            user_id INTEGER,product TEXT,ts TEXT,
+            PRIMARY KEY(user_id,product));
+        CREATE INDEX IF NOT EXISTS idx_wl_p ON waitlist(product);
     """)
     for sql in ["ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0",
                 "ALTER TABLE users ADD COLUMN has_left INTEGER DEFAULT 0",
                 "ALTER TABLE users ADD COLUMN source TEXT DEFAULT ''",
                 "ALTER TABLE users ADD COLUMN open_msg_at TEXT DEFAULT ''",
-                "ALTER TABLE users ADD COLUMN reminded INTEGER DEFAULT 0"]:
+                "ALTER TABLE users ADD COLUMN reminded INTEGER DEFAULT 0",
+                # حافظه‌ی دستیار: آخرین موضوع و محصول، و نیازِ ثبت‌شده در مشاور خرید
+                "ALTER TABLE users ADD COLUMN mem_intent TEXT DEFAULT ''",
+                "ALTER TABLE users ADD COLUMN mem_product TEXT DEFAULT ''",
+                "ALTER TABLE users ADD COLUMN mem_at TEXT DEFAULT ''",
+                "ALTER TABLE users ADD COLUMN mem_greet_at TEXT DEFAULT ''",
+                "ALTER TABLE users ADD COLUMN mem_profile TEXT DEFAULT ''"]:
         try: await db.execute(sql)
         except Exception as e:
             # «ستون تکراری» یعنی مهاجرت قبلاً انجام شده — بقیه خطاها واقعی‌اند
@@ -927,7 +939,9 @@ ASSIST_HINTS = ("🤖 بپرسید… مثلاً: آیفون ۱۳ چنده؟",
                 "🤖 بپرسید… مثلاً: گوشیمو معاوضه می‌کنید؟",
                 "🤖 بپرسید… مثلاً: رجیستر شده دارید؟",
                 "🤖 بپرسید… مثلاً: گارانتی دارن؟",
-                "🤖 بپرسید… مثلاً: کجایید؟ تا کی بازید؟")
+                "🤖 بپرسید… مثلاً: کجایید؟ تا کی بازید؟",
+                "🤖 بپرسید… مثلاً: ۱۳ با ۱۴ چه فرقی داره؟",
+                "🤖 بنویسید: کمکم کن انتخاب کنم 🎯")
 
 def main_menu():
     global _menu_kb_cache
@@ -1206,6 +1220,8 @@ def faq_menu_text():
 def faq_menu_kb(uid=None):
     t="🧪 حالت آزمایش: روشن — برای خاموشی بزنید" if uid in test_mode else "🧪 امتحان مثل مشتری"
     rows=[[InlineKeyboardButton(t,callback_data="faq_test")],
+          [InlineKeyboardButton(f"🎓 یادگیری · {to_fa(len(learn_data['log']))}",callback_data="lrn_menu"),
+           InlineKeyboardButton("🔔 منتظرهای مدل",callback_data="wait_menu")],
           [InlineKeyboardButton("➕ نیت تازه",callback_data="faq_add")]]
     if get_setting("log_unmatched") and unmatched:
         rows.append([InlineKeyboardButton(
@@ -2216,7 +2232,8 @@ async def send_backup(bot,label="بک‌آپ"):
            (BUTTONS_FILE,"buttons.json"),(SETTINGS_FILE,"settings.json"),(STATS_FILE,"stats.json"),
            (MENU_FILE,"menu.json"),(PLACES_FILE,"places.json"),(ADMINS_FILE,"admins.json"),
            (FAQ_FILE,"faq.json"),(UNMATCHED_FILE,"unmatched.json"),
-           (PAGES_FILE,"pages.json"),(TOPICS_FILE,"topics.json"),(DB_FILE,"users.db")]
+           (PAGES_FILE,"pages.json"),(TOPICS_FILE,"topics.json"),(LEARN_FILE,"learn.json"),
+           (DB_FILE,"users.db")]
     with zipfile.ZipFile(buf,"w",zipfile.ZIP_DEFLATED) as zf:
         for fp,name in files:
             try:
@@ -2274,8 +2291,8 @@ async def weekly_digest():
          f"🆕 {to_fa(newu)} مشتری جدید  ·  📅 {to_fa(act)} فعال  ·  💬 {to_fa(msgs)} پیام"]
     if openn: out.append(f"⏳ {to_fa(openn)} پیام هنوز بی‌جواب")
     async with db.execute(
-        "SELECT key,COUNT(*) c FROM events WHERE key<>? AND ts>=datetime('now',?,'localtime') "
-        "GROUP BY key ORDER BY c DESC LIMIT 3",(EV_MSG,since)) as c:
+        "SELECT key,COUNT(*) c FROM events WHERE key NOT IN (?,?) AND ts>=datetime('now',?,'localtime') "
+        "GROUP BY key ORDER BY c DESC LIMIT 3",(EV_MSG,EV_ABUSE,since)) as c:
         tops=await c.fetchall()
     if tops:
         out.append("👀 پربازدید: "+"، ".join(
@@ -2288,6 +2305,8 @@ async def weekly_digest():
         subs=[x for x in subs if x[1]]
         if subs:
             out.append("🔔 مشترک‌ها: "+"، ".join(f"{t} ({to_fa(n)})" for t,n in subs))
+    nl=learned_this_week()
+    if nl: out.append(f"🎓 دستیار این هفته {to_fa(nl)} جمله‌ی تازه یاد گرفت")
     hot=[u for u in unmatched_sorted() if u.get("count",1)>1][:1]
     if hot:
         out += [HR,f"❓ پرتکرارترین سؤال بی‌پاسخ: «{esc(_fit(hot[0]['text'],60))}» "
@@ -2318,7 +2337,8 @@ BACKUP_MAP = {"data.json":DATA_FILE,"banner.json":BANNER_FILE,"workhours.json":W
               "buttons.json":BUTTONS_FILE,"settings.json":SETTINGS_FILE,"stats.json":STATS_FILE,
               "menu.json":MENU_FILE,"places.json":PLACES_FILE,"admins.json":ADMINS_FILE,
               "faq.json":FAQ_FILE,"unmatched.json":UNMATCHED_FILE,
-              "pages.json":PAGES_FILE,"topics.json":TOPICS_FILE,"users.db":DB_FILE}
+              "pages.json":PAGES_FILE,"topics.json":TOPICS_FILE,"learn.json":LEARN_FILE,
+              "users.db":DB_FILE}
 SQLITE_MAGIC = b"SQLite format 3\x00"
 MAX_RESTORE_BYTES = 200 * 1024 * 1024   # سقف ایمنی برای فایل‌های داخل ZIP
 
@@ -2388,7 +2408,7 @@ async def restore_backup(bot,file_id):
         await load_data(); await load_banners(); await load_workhours()
         await load_buttons(); await load_settings(); await load_stats(); await load_menu(); await load_places()
         # از فایل‌های تازه دوباره خوانده شوند
-        await load_admins(); await load_faq(); await load_unmatched()
+        await load_admins(); await load_faq(); await load_unmatched(); await load_learn()
         # نرمال‌سازی فرمت فایل‌ها روی دیسک (جلوگیری از مشکل فرمت قدیمی بعد از restart)
         await save_banners(); await save_buttons()
         if snapshot: logger.info(f"بکاپ ایمنی پیش از بازگردانی: {snapshot}")
@@ -2497,7 +2517,12 @@ async def cmd_start(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if links:
         await update.message.reply_text("🔗 دسترسی سریع:",reply_markup=links)
     if get_setting("assistant") and get_setting("faq_auto") and not deep_sec:
-        await send_assistant_intro(update.message,ctx.bot)
+        mem=await recall(user.id) if not is_new else None
+        if mem:
+            await _typing(ctx.bot,update.message.chat_id)
+            await send_memory(update.message,user,mem)
+        else:
+            await send_assistant_intro(update.message,ctx.bot)
     # لینک استوری اینستاگرام درباره‌ی اقساط بود؟ همان کارت را باز کن،
     # نه اینکه مشتری دنبال دکمه‌اش بگردد.
     if deep_sec=="notify":
@@ -2514,10 +2539,12 @@ ASSIST_INTRO = ("🤖 <b>دستیار هوشمند {shop}</b>\n{hr}\n"
                 "مثل چت با یک آدم:\n\n"
                 "💬 <i>«سلام، آیفون ۱۳ پرو قیمتش چنده؟»</i>\n"
                 "💬 <i>«قسطی با چک میشه خرید؟»</i>\n"
-                "💬 <i>«گوشی خودمو معاوضه می‌کنید؟»</i>\n\n"
+                "💬 <i>«۱۳ پرو با ۱۴ چه فرقی داره؟»</i>\n\n"
+                "نمی‌دونید چی بخرید؟ بگید «کمکم کن انتخاب کنم» 🎯\n\n"
                 "هر جا لازم باشه، همکارهام همین‌جا وارد گفتگو می‌شن 🙋‍♂️\n\n"
                 "یا یکی از این‌ها رو بزنید 👇")
 INTRO_QUICK = (("💰 قیمت‌های امروز","i_price"),("💳 شرایط اقساط","i_install"),
+               ("🎯 کمکم کن انتخاب کنم","i_advisor"),("⚖️ مقایسه‌ی مدل‌ها","i_compare"),
                ("🔄 معاوضه","i_tradein"),("📍 آدرس و ساعت","i_address"))
 
 async def send_assistant_intro(msg,bot):
@@ -2584,6 +2611,8 @@ async def cmd_test(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     test_mode.add(uid)
     await update.message.reply_text(TEST_HELP,parse_mode="HTML",reply_markup=main_menu())
 
+ASK_MOODS = {"complaint":"🔴 ناراضی/شکایت","wait":"🔴 منتظر جواب","issue":"🟠 مشکل دستگاه"}
+
 async def cmd_ask(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     """/ask <جمله> — مدیر ببیند دستیار یک جمله را چطور می‌فهمد، بی‌آنکه چیزی
     ثبت یا برای کسی فرستاده شود."""
@@ -2601,6 +2630,13 @@ async def cmd_ask(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
          (f"\n• محصول: {a['product']}" if a["product"] else "")+
          (f"\n• روزمره: {'، '.join(sorted(a['tags']))}" if a["tags"] else "")+
          ("\n• ادامه‌ی بحث قبلی" if a["followup"] else "")+
+         (f"\n• چند سؤال: {'، '.join(faq_title(x[0]) for x in brain.match_all(text,brain_intents()))}"
+          if brain.match_all(text,brain_intents()) else "")+
+         (f"\n• حال مشتری: {ASK_MOODS[brain.mood(text)]}" if brain.mood(text) else "")+
+         (f"\n• مدل‌ها: {'، '.join(specs.name_of(k) for k in specs.find_models(text))}"
+          if specs.find_models(text) else "")+
+         (f"\n• نزدیک: {'، '.join(faq_title(x[0]) for x in brain.near(text,brain_intents()))}"
+          if not it and brain.near(text,brain_intents()) else "")+
          "\n━━━━━━━━━━━━━━━\nجوابی که مشتری می‌گیرد 👇")
     await update.message.reply_text(dbg)
     await assistant_reply(update,ctx,text,user,dry=True)
@@ -2637,10 +2673,94 @@ async def user_cb(query,ctx):
     if data.startswith("ai_"):
         it=faq_item(data[3:]); u=query.from_user
         if not it or not it.get("enabled",True): return
+        dry=is_admin(u.id)
+        if not dry: await implicit_vote(u.id,it["id"])
+        c=brain_ctx.get(u.id) or {}
+        prod=c.get("offer_product") or c.get("product","") if now_fresh(c) else ""
         await _typing(ctx.bot,query.message.chat_id)
-        await run_intent(query.message,it,u,ctx.bot)
-        if (it.get("action") or "")=="human" and not is_admin(u.id):
+        await run_intent(query.message,it,u,ctx.bot,product=prod,dry=dry)
+        if (it.get("action") or "")=="human" and not dry:
             await notify_handoff(ctx.bot,u)
+        return
+
+    # «منظورتون کدومه؟» — انتخاب مشتری هم جواب است، هم درس
+    if data.startswith("dym_"):
+        u=query.from_user; c=brain_ctx.get(u.id) or {}; d=c.get("dym")
+        if not d or time.time()-d["ts"]>DYM_TTL:
+            try: await query.answer("این سؤال قدیمی شده؛ لطفاً دوباره بنویسید 🙏",show_alert=True)
+            except Exception: pass
+            return
+        c.pop("dym",None); c.pop("unk",None)
+        try: await query.message.edit_reply_markup(reply_markup=None)
+        except Exception: pass
+        shim=_StoredMsg(query.message,d["chat"],d["mid"],d["text"])
+        upd=types.SimpleNamespace(message=shim,effective_user=u,effective_message=shim)
+        if data=="dym_x":
+            if d.get("dry"):
+                await query.message.reply_text("🧪 (حالت آزمایش: پیام برای همکار فرستاده می‌شد)")
+                return
+            await forward_to_admin(upd,ctx,count=False,
+                                   ack_lead="چشم 🙏 سؤالتون رو به همکارم دادم.")
+            return
+        try: i=int(data[4:])
+        except ValueError: return
+        it=faq_item(d["ids"][i]) if 0<=i<len(d["ids"]) else None
+        if not it: return
+        await _typing(ctx.bot,query.message.chat_id)
+        await run_intent(query.message,it,u,ctx.bot,dry=d.get("dry",False),text=d["text"],
+                         product=brain.product(d["text"]))
+        if not d.get("dry"):
+            if await learn_vote(d["text"],it["id"],u.id,"dym"):
+                await unmatched_remove(d["text"])
+            if (it.get("action") or "")=="human":
+                await forward_to_admin(upd,ctx,ack=False,count=False)
+            elif get_setting("ai_cc_admin"):
+                await forward_to_admin(upd,ctx,auto=it,count=False)
+        return
+
+    # مشاور خرید
+    if data.startswith("adv_"):
+        parts=data.split("_")
+        if len(parts)!=3: return
+        try: idx=int(parts[2])
+        except ValueError: return
+        try: await query.message.edit_reply_markup(reply_markup=None)
+        except Exception: pass
+        await adv_step(query.message,query.from_user,ctx.bot,step=parts[1],idx=idx)
+        return
+
+    # لیست انتظار یک مدل
+    if data=="wl_add":
+        u=query.from_user; c=brain_ctx.get(u.id) or {}
+        p=c.get("wl") or c.get("product","")
+        if not p:
+            try: await query.answer("کدوم مدل؟ اسمش رو بنویسید و بگید «خبرم کن» 🙏",show_alert=True)
+            except Exception: pass
+            return
+        if not is_admin(u.id): await wl_add(u.id,p)
+        try: await query.answer(f"🔔 هر وقت {p} رسید خبرتون می‌کنم",show_alert=True)
+        except Exception: pass
+        try: await query.message.edit_reply_markup(reply_markup=None)
+        except Exception: pass
+        return
+
+    # حافظه: «خوش برگشتید… هنوز دنبالشید؟»
+    if data in ("mem_yes","mem_new"):
+        u=query.from_user
+        try: await query.message.edit_reply_markup(reply_markup=None)
+        except Exception: pass
+        if data=="mem_new":
+            brain_ctx.pop(u.id,None)
+            await query.message.reply_text("بفرمایید 🙂 سؤالتون رو بنویسید، در خدمتم.",
+                                           reply_markup=main_menu())
+            return
+        mem=await recall(u.id,any_age=True)
+        it=faq_item(mem["intent"]) if mem else None
+        if not it:
+            await query.message.reply_text("بفرمایید 🙂 سؤالتون رو بنویسید.",reply_markup=main_menu())
+            return
+        await _typing(ctx.bot,query.message.chat_id)
+        await run_intent(query.message,it,u,ctx.bot,product=mem["product"],dry=is_admin(u.id))
         return
 
     if data=="wh_back_today":
@@ -2653,7 +2773,7 @@ async def user_cb(query,ctx):
 #  MAIN CALLBACK DISPATCHER
 # ════════════════════════════════════════════════
 # پیشوندهایی که هم ادمین هم کاربر دسترسی دارد
-_USER_CB_PREFIXES = ("wh_weekly","wh_back_today","sub_","ai_")
+_USER_CB_PREFIXES = ("wh_weekly","wh_back_today","sub_","ai_","dym_","adv_","wl_add","mem_")
 
 async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     global _bc_job,_bc_cancel
@@ -2799,6 +2919,74 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             await safe_edit(query.message,unmatched_text(),
                             reply_markup=unmatched_kb(),parse_mode="HTML")
 
+        elif data=="lrn_menu":
+            await query.answer()
+            txt,kb=learn_view()
+            await safe_edit(query.message,txt,parse_mode="HTML",reply_markup=kb)
+
+        elif data.startswith("lrn_undo_"):
+            lid=data[9:]
+            x=next((e for e in learn_data["log"] if e.get("id")==lid),None)
+            if not x: await query.answer("یافت نشد!",show_alert=True); return
+            it=faq_item(x["intent"])
+            if it:
+                it["examples"]=[e for e in it.get("examples") or [] if e!=x["text"]]
+                await save_faq()
+            learn_data["log"]=[e for e in learn_data["log"] if e.get("id")!=lid]
+            await save_learn()
+            await query.answer("↩️ پس گرفته شد",show_alert=True)
+            txt,kb=learn_view()
+            await safe_edit(query.message,txt,parse_mode="HTML",reply_markup=kb)
+
+        elif data=="wait_menu":
+            await query.answer()
+            groups=await wl_groups()
+            lines=["<b>🔔 منتظرهای مدل</b>",HR,
+                   "مشتری‌هایی که گفته‌اند «هر وقت این مدل رسید خبرم کن». وقتی رسید، "
+                   "روی همان مدل بزنید تا به همه‌شان خبر برود."]
+            if not groups: lines += ["","هنوز کسی منتظر مدلی نیست."]
+            rows=[[InlineKeyboardButton(f"📣 {_fit(p,26)} · {to_fa(n)} نفر",
+                                        callback_data=f"wait_go_{_ph(p)}")] for p,n in groups[:20]]
+            await safe_edit(query.message,"\n".join(lines),parse_mode="HTML",
+                            reply_markup=InlineKeyboardMarkup(_nav(*rows,back="faq_menu")))
+
+        elif data.startswith("wait_go_") or data.startswith("wait_ok_"):
+            h=data[8:]
+            p=next((g for g,_ in await wl_groups() if _ph(g)==h),None)
+            if not p: await query.answer("این فهرست دیگر نیست.",show_alert=True); return
+            if data.startswith("wait_go_"):
+                n=len(await wl_users(p))
+                await query.answer()
+                await safe_edit(query.message,
+                    f"📣 به <b>{to_fa(n)}</b> نفر خبر بدهم که <b>{esc(p)}</b> رسید؟\n"
+                    "پیام: «🔔 خبر خوب! … رسید ✨» با دکمه‌های قیمت و رزرو.",parse_mode="HTML",
+                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("✅ بفرست",callback_data=f"wait_ok_{h}")],
+                                                       [InlineKeyboardButton("🔙 برگشت",callback_data="wait_menu")]]))
+                return
+            await query.answer("⏳ در حال ارسال…")
+            n=await wl_announce(ctx.bot,p)
+            await safe_edit(query.message,f"✅ به {to_fa(n)} نفر خبر داده شد که «{esc(p)}» رسید.",
+                            parse_mode="HTML",
+                            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 برگشت",callback_data="wait_menu")]]))
+
+        elif data.startswith("unm_mk_"):
+            # سؤالِ مشتری + جوابی که مدیر داده = یک نیت تازه، با یک تپ
+            u=unmatched_by_id(data[7:])
+            if not u or not u.get("reply"): await query.answer("یافت نشد!",show_alert=True); return
+            words=brain.content_words(u["text"],3)
+            # یک کلیدواژه‌ی چندکلمه‌ای (همه باید باشند) — کلمه‌ی تنها مثل «رسمی»
+            # جمله‌های بی‌ربط را هم می‌گرفت؛ جمله‌ی نمونه بقیه را پوشش می‌دهد
+            keys=[" ".join(words[:2])] if len(words)>=2 else words
+            it={"id":new_btn_id(),"button":"💬 "+_fit(" ".join(words) or u["text"],24),"keys":keys,
+                "examples":[u["text"]],"answer":u["reply"],"action":"","enabled":True,"hits":0}
+            faq.append(it)
+            unmatched[:] = [x for x in unmatched if x.get("id")!=u["id"]]
+            learn_data["log"].insert(0,{"id":new_btn_id(),"text":u["text"],"intent":it["id"],
+                                        "src":"admin-reply","ts":gregorian_now()})
+            await save_faq(); await save_unmatched(); await save_learn()
+            await query.answer("✨ نیت ساخته شد — کلیدواژه‌ها را اگر خواستید ویرایش کنید",show_alert=True)
+            await safe_edit(query.message,faq_view_text(it),reply_markup=faq_view_kb(it),parse_mode="HTML")
+
         elif data.startswith("unm_at_"):
             # «این سؤال یعنی همان نیت» — با یک تپ، دستیار از این به بعد می‌فهمدش
             uid_,_,iid=data[7:].partition("_")
@@ -2829,9 +3017,14 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             rows=[[InlineKeyboardButton(f"➕ یعنی {_fit(faq_title(x),22)}",
                                         callback_data=f"unm_at_{u['id']}_{x['id']}")]
                   for x in faq if x.get("enabled",True)][:14]
+            if u.get("reply"):
+                rows.insert(0,[InlineKeyboardButton("✨ نیت بساز از همین سؤال و جوابِ شما",
+                                                    callback_data=f"unm_mk_{u['id']}")])
             rows.append([InlineKeyboardButton("🆕 نیت تازه بساز",callback_data=f"unm_new_{u['id']}")])
             await safe_edit(query.message,
-                f"❓ سؤال مشتری:\n«{esc(u['text'])}»\n{HR}\n"
+                f"❓ سؤال مشتری:\n«{esc(u['text'])}»\n"
+                +(f"💬 جواب شما: «{esc(_fit(u['reply'],200))}»\n" if u.get("reply") else "")+
+                f"{HR}\n"
                 "این سؤال یعنی کدام نیت؟ با یک تپ، دستیار از این به بعد جمله‌های "
                 "شبیه این را هم می‌فهمد.",parse_mode="HTML",
                 reply_markup=InlineKeyboardMarkup(_nav(*rows,back="unm_menu")))
@@ -2840,7 +3033,8 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             it=faq_item(data[7:])
             if not it: await query.answer("یافت نشد!",show_alert=True); return
             await query.answer()
-            opts=[("n","")]+[(c,c) for c in ("hours","prices","notify","human")]
+            opts=[("n","")]+[(c,c) for c in ("hours","prices","notify","human",
+                                             "compare","specs","advisor")]
             opts+=[(f"s:{k}",f"section:{k}") for k in section_order()
                    if k not in ("welcome","workhours","notify")]
             rows=[[InlineKeyboardButton(("✅ " if (it.get("action") or "")==a else "")+action_label(a),
@@ -3735,6 +3929,9 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     # تشخیص دکمه از روی label (که ممکن است ادمین تغییرش داده باشد)
     pressed = next((m for m in menu_cfg if m["label"]==text and m.get("enabled",True)), None)
     mkey = pressed["key"] if pressed else None
+    if mkey and not is_admin(user.id):
+        si=section_intent(mkey)
+        if si: await implicit_vote(user.id,si["id"])
 
     if mkey=="workhours":
         await record_stat("wh_page",user.id)
@@ -3770,6 +3967,9 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             reply_markup=main_menu())
         return
     if await check_abuse(update,ctx,text,user): return
+    st=adv_state.get(user.id)
+    if st and st.get("await")=="budget" and time.time()-st["ts"]<ADV_TTL:
+        await adv_step(update.message,user,ctx.bot,typed=text); return
     # گفت‌وگو دستِ همکار است؟ دستیار کنار می‌کشد و پیام مستقیم به او می‌رسد
     if in_human_mode(user.id):
         if await forward_to_admin(update,ctx,ack=False): return
@@ -3790,8 +3990,10 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "لطفاً یکی از گزینه‌های منوی زیر را انتخاب کنید 👇",reply_markup=main_menu())
 
+URGENT_LABELS = {"complaint":"🔴 فوری — مشتری ناراضی است","wait":"🔴 فوری — مشتری منتظر جواب است"}
+
 async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",auto=None,
-                           ack=True,ack_lead="",count=True):
+                           ack=True,ack_lead="",count=True,urgent=""):
     """پیام مشتری (هر نوعی) را برای ادمین فوروارد و به مشتری تأیید می‌دهد.
 
     فوروارد برای همه‌ی انواع پیام کار می‌کند — متن، عکس، ویس، ویدیو، فایل،
@@ -3805,8 +4007,15 @@ async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",a
         try: await record_event(user.id,EV_MSG)
         except Exception as e: logger.debug(f"record_event msg: {e}")
     uname=f"@{user.username}" if user.username else "—"
-    card=(f"<b>💬 {esc(kind or 'پیام')} از مشتری</b>\n{HR}\n"
+    head=URGENT_LABELS.get(urgent) or f"💬 {kind or 'پیام'} از مشتری"
+    card=(f"<b>{esc(head)}</b>\n{HR}\n"
           f"👤 {esc(user.first_name or '—')}  ·  {esc(uname)}\n🆔 <code>{user.id}</code>")
+    if getattr(msg,"text",None):
+        last_text[user.id]=(msg.text,time.time())
+    tl=trail_line(user.id)
+    if tl: card+=f"\n{esc(tl)}"
+    prof=await profile_of(user.id)
+    if prof: card+=f"\n🎯 {esc(prof)}"
     ctx_card=""
     try: ctx_card=await customer_card(user.id)
     except Exception as e: logger.debug(f"customer_card: {e}")
@@ -3867,6 +4076,14 @@ class _ProxyChat:
     async def reply_text(self,text,**kw):  return await self.bot.send_message(self.chat_id,text,**kw)
     async def reply_photo(self,photo,**kw): return await self.bot.send_photo(self.chat_id,photo=photo,**kw)
 
+def _replied_text(src,target):
+    """متنِ سؤالی که مدیر رویش جواب داد: اگر روی خودِ پیامِ فورواردشده
+    ریپلای کرده، همان؛ وگرنه آخرین پیام متنی همان مشتری (تا ۲۴ ساعت)."""
+    if getattr(src,"forward_origin",None) and getattr(src,"text",None):
+        return (src.text,time.time())
+    lt=last_text.get(target)
+    return lt if lt and time.time()-lt[1]<24*3600 else None
+
 async def _ok_mark(bot,msg,fallback="✅ ارسال شد"):
     """تأیید بی‌سروصدا با ری‌اکشن؛ اگر نشد، یک پیام کوتاه."""
     try:
@@ -3913,6 +4130,15 @@ async def reply_relay(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         await link_thread(user.id,msg.message_id,target)
         await mark_answered(target); set_human(target)
         await _ok_mark(ctx.bot,msg,f"✅ «{faq_title(it)}» ارسال شد")
+        # جواب # یعنی «این سؤال همان نیت است» — دستیار همین را یاد می‌گیرد
+        lt=_replied_text(src,target)
+        if lt and get_setting("assistant"):
+            try:
+                if await learn_example(lt[0],it["id"],"admin"):
+                    await unmatched_remove(lt[0])
+                    await msg.reply_text(f"🎓 یاد گرفتم: «{_fit(lt[0],60)}» یعنی «{faq_title(it)}»\n"
+                                         "از این به بعد خودم جوابش رو می‌دم. (پس‌گرفتن: پنل دستیار ← 🎓 یادگیری)")
+            except Exception as e: logger.debug(f"learn #: {e}")
         raise ApplicationHandlerStop
     try:
         # copy_message یعنی پیام بدون برچسب «فوروارد از» می‌رسد — انگار
@@ -3931,6 +4157,13 @@ async def reply_relay(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     await link_thread(user.id,msg.message_id,target)
     await mark_answered(target); set_human(target)
     await _ok_mark(ctx.bot,msg)
+    # جوابِ متنیِ مدیر به سؤالی که دستیار نفهمیده بود، کنار همان سؤال
+    # می‌نشیند تا در پنل با یک تپ «نیت» شود
+    lt=_replied_text(src,target)
+    if lt and msg.text:
+        u=unmatched_find(lt[0])
+        if u and not u.get("reply"):
+            u["reply"]=msg.text[:500]; await save_unmatched()
     raise ApplicationHandlerStop
 
 
@@ -3946,7 +4179,10 @@ ACTIONS = {"":       "💬 فقط متن پاسخ",
            "hours":  "🕐 ساعت کاری امروز",
            "prices": "💰 لیست قیمت (عکس تاریخ‌دار)",
            "notify": "🔔 صفحه‌ی اطلاع‌رسانی",
-           "human":  "🧑‍💼 سپردن به همکار"}
+           "human":  "🧑‍💼 سپردن به همکار",
+           "compare":"⚖️ مقایسه‌ی مدل‌ها (جدول مشخصات)",
+           "specs":  "📱 مشخصات فنی مدل",
+           "advisor":"🎯 مشاور خرید (چند سؤال + کارت برای فروشنده)"}
 
 def action_label(a):
     a=a or ""
@@ -4010,7 +4246,8 @@ DEFAULT_INTENTS = [
    "answer":"","suggest":["i_payment","i_human"],
    "offer":"لیست قیمت امروز رو هم ببینید؟","offer_to":"i_price"},
   {"id":"i_payment","button":"💳 روش پرداخت","action":"",
-   "keys":["پرداخت","کارتخوان","کارت به کارت","نقدی","نقد","درگاه","پوز","روش پرداخت"],
+   "keys":["پرداخت","کارتخوان","کارت خوان","کارت به کارت","نقدی","نقد","درگاه","پوز","روش پرداخت",
+           "شماره کارت","شماره حساب"],
    "examples":["چطوری پول رو بدم","با کارت میشه حساب کرد"],
    "answer":"پرداخت به چند روش ممکنه 💳\n\n• کارتخوان، حضوری در فروشگاه\n• کارت به کارت\n"
             "• درگاه آنلاین سایت\n• اقساطی با چک یا طلا",
@@ -4056,7 +4293,7 @@ DEFAULT_INTENTS = [
    "answer":"","suggest":["i_hours"]},
   {"id":"i_hours","button":"🕐 ساعت کاری","action":"hours",
    "keys":["ساعت کاری","ساعت کار","ساعت چند","تا ساعت","از ساعت چند","تا کی",
-           "چه ساعتی","باز","بسته","تعطیل"],
+           "چه ساعتی","باز","بسته","تعطیل","جمعه","جمعه ها","پنجشنبه","روز تعطیل","تعطیلی"],
    "answer":"","suggest":["i_address"],
    "offer":"آدرس و مسیر مغازه رو هم براتون بفرستم؟","offer_to":"i_address"},
   {"id":"i_site","button":"🌐 سایت","action":"section:2",
@@ -4069,8 +4306,25 @@ DEFAULT_INTENTS = [
    "answer":"استوک‌لند فروشگاه تخصصی محصولات اپل در قمه 🍏\n"+_SHOP_LINE+
             "\nفروش نقدی و اقساطی (چک و طلا) و ارسال به سراسر ایران.",
    "suggest":["i_address","i_social"]},
+  {"id":"i_compare","button":"⚖️ مقایسه‌ی مدل‌ها","action":"compare",
+   "keys":["فرق","تفاوت","مقایسه","کدوم بهتره","بهتره یا","فرقش","فرقشون","مقایسه کنید"],
+   "examples":["۱۳ با ۱۴ چه فرقی داره","کدوم بهتره ۱۳ پرو یا ۱۴"],
+   "answer":"","suggest":["i_price","i_advisor"],
+   "offer":"قیمت امروزشون رو هم ببینید؟","offer_to":"i_price"},
+  {"id":"i_specs","button":"📱 مشخصات فنی","action":"specs",
+   "keys":["مشخصات","مشخصات فنی","سخت افزار","پردازنده","چیپ","تراشه","چیپست","سایز صفحه",
+           "اندازه صفحه","چند اینچ","دوربین","دوربینش","چند مگاپیکسل","هرتز"],
+   "examples":["دوربین ۱۵ پرو چطوره","۱۶ پرو مکس چند اینچه"],
+   "answer":"","suggest":["i_compare","i_advisor"],
+   "offer":"قیمت امروزش رو هم ببینید؟","offer_to":"i_price"},
+  {"id":"i_advisor","button":"🎯 کمکم کن انتخاب کنم","action":"advisor",
+   "keys":["مشاوره","مشاوره خرید","چی بخرم","کدوم بخرم","کدومو بخرم","نمیدونم چی بخرم",
+           "پیشنهاد","پیشنهادتون","راهنمایی خرید","انتخاب کنم","بودجه","بودجم"],
+   "examples":["با این بودجه چی پیشنهاد میدید","یه گوشی خوب میخوام","کمکم کنید انتخاب کنم"],
+   "answer":""},
   {"id":"i_notify","button":"🔔 خبرم کن","action":"notify",
-   "keys":["خبرم کنید","خبرم کن","اطلاع بدید","تخفیف","جشنواره"],
+   "keys":["خبرم کنید","خبرم کن","اطلاع بدید","تخفیف","جشنواره","هر وقت اومد","وقتی اومد",
+           "اومد خبرم","رسید خبرم","موجود شد خبر"],
    "answer":"حتماً 🙂 هر موضوعی که می‌خواید خبرش رو بگیرید انتخاب کنید 👇"},
   {"id":"i_phone","button":"📞 شماره تماس","action":"section:4",
    "keys":["شماره","شماره تماس","تلفن","زنگ","تماس","پشتیبانی","شمارتون","تلفن مغازه","شماره مغازه"],
@@ -4081,7 +4335,7 @@ DEFAULT_INTENTS = [
    "answer":"حتماً 🙏 پیامتون رو به همکارم دادم و خودش همین‌جا جوابتون رو می‌ده.\n---\n"
             "چشم 🙏 به همکارم خبر دادم؛ به‌زودی همین‌جا جوابتون رو می‌ده."},
 ]
-QUICK_INTENTS = ["i_price","i_install","i_address","i_human"]   # زیر سلام و احوال‌پرسی
+QUICK_INTENTS = ["i_price","i_install","i_advisor","i_human"]   # زیر سلام و احوال‌پرسی
 
 # ── به‌روزرسانی نیت‌های پیش‌فرض بدون دست زدن به کارِ ادمین
 # هر نیت پیش‌فرض یک «عکس» از نسخه‌ای که کاشته شده نگه می‌دارد (_seed). در
@@ -4089,7 +4343,7 @@ QUICK_INTENTS = ["i_price","i_install","i_address","i_human"]   # زیر سلا�
 # می‌شود؛ هر فیلدی که خودش نوشته دست‌نخورده می‌ماند. در کلیدواژه‌ها و
 # جمله‌های نمونه، فقط موردهای تازه اضافه می‌شوند — چیزی که ادمین پاک کرده
 # برنمی‌گردد. نیتی که ادمین حذف کرده هم دوباره ساخته نمی‌شود.
-SEED_VERSION = 2
+SEED_VERSION = 3
 _SEED_SCALARS = ("button","answer","action","suggest","offer","offer_to","enabled")
 _SEED_LISTS = ("keys","examples")
 
@@ -4186,6 +4440,8 @@ CTX_TTL, OFFER_TTL, HUMAN_TTL = 15*60, 10*60, 30*60
 
 def in_human_mode(uid): return human_until.get(uid,0)>time.time()
 
+def now_fresh(c): return time.time()-(c or {}).get("ts",0)<CTX_TTL
+
 def set_human(uid):
     """همکار وارد گفت‌وگو شد: دستیار برای این مشتری کنار می‌کشد تا
     وسط حرفِ آدم‌ها جواب خودکار نپرد."""
@@ -4210,19 +4466,403 @@ async def _typing(bot,chat_id,n=80):
 
 def _join(*parts): return "\n\n".join(p for p in parts if p and p.strip())
 
-async def run_intent(msg,item,user,bot,lead="",product="",dry=False):
-    """یک نیت را اجرا می‌کند: متن (چندشکلی، پرشده) + کارِ نیت + پیشنهادها."""
+# ── مسیر گفتگو (در حافظه) — برای خلاصه‌ای که همکار بالای پیام می‌بیند
+trail: dict = {}          # uid → [(زمان, نیت, محصول)]
+TRAIL_TTL = 24*3600
+
+def add_trail(uid,iid,product=""):
+    now=time.time()
+    t=[x for x in trail.get(uid,[]) if now-x[0]<TRAIL_TTL]
+    if t and t[-1][1]==iid and t[-1][2]==product: t[-1]=(now,iid,product)
+    else: t.append((now,iid,product))
+    trail[uid]=t[-8:]
+
+# اسم کوتاهِ هر موضوع، برای جمله‌هایی مثل «دفعه‌ی قبل درباره‌ی … پرسیده بودید»
+TOPIC_WORDS = {"i_price":"قیمت","i_stock":"موجودی","i_products":"محصولات",
+               "i_android":"گوشی غیر اپل","i_accessory":"لوازم جانبی",
+               "i_condition":"آک یا کارکرده","i_registry":"رجیستری","i_install":"خرید اقساطی",
+               "i_payment":"روش پرداخت","i_warranty":"گارانتی","i_return":"مهلت تست",
+               "i_shipping":"ارسال","i_tradein":"معاوضه","i_software":"خدمات نرم‌افزاری",
+               "i_address":"آدرس","i_hours":"ساعت کاری","i_site":"سایت",
+               "i_social":"شبکه‌های اجتماعی","i_about":"درباره‌ی فروشگاه","i_notify":"خبرم کن",
+               "i_phone":"شماره تماس","i_human":"صحبت با همکار","i_compare":"مقایسه‌ی مدل‌ها",
+               "i_specs":"مشخصات فنی","i_advisor":"مشاور خرید"}
+
+def topic_word(iid):
+    if iid in TOPIC_WORDS: return TOPIC_WORDS[iid]
+    it=faq_item(iid)
+    return re.sub(r"^\W+","",faq_title(it)).strip() if it else ""
+
+def trail_line(uid):
+    now=time.time()
+    parts=[]
+    for _,iid,p in [x for x in trail.get(uid,[]) if now-x[0]<TRAIL_TTL][-5:]:
+        w=topic_word(iid)
+        if w: parts.append(f"{w} ({p})" if p else w)
+    return ("🧠 پرسیده: "+" ← ".join(parts)) if parts else ""
+
+def canon_product(p):
+    """«۱۳ پرو» → «آیفون ۱۳ پرو» — فروشگاه تخصصی اپل است."""
+    p=(p or "").strip()
+    return f"آیفون {p}" if p and p[0] in "۰۱۲۳۴۵۶۷۸۹0123456789" else p
+
+# ── حافظه‌ی ماندگار مشتری (دیتابیس)
+# فقط موضوع‌هایی که «علاقه» نشان می‌دهند — «دفعه‌ی قبل آدرس پرسیده بودید»
+# حرف بی‌معنی است.
+MEM_TOPICS = {"i_price","i_stock","i_install","i_registry","i_condition","i_tradein",
+              "i_compare","i_specs","i_advisor","i_accessory","i_payment","i_warranty",
+              "i_shipping","i_software","i_return"}
+MEM_MIN_GAP = 12*3600         # «خوش برگشتید» فقط برای کسی که واقعاً رفته و برگشته
+MEM_MAX_AGE = 60*86400
+
+async def remember(uid,iid,product=""):
+    if iid not in MEM_TOPICS: return
+    try:
+        # محصول تا وقتی گفتگو ادامه دارد می‌ماند: «قیمت ۱۳ پرو» و بعد «قسطی میشه؟»
+        # یعنی خرید اقساطیِ همان ۱۳ پرو
+        cutoff=(datetime.now(IRAN_TZ)-timedelta(hours=6)).strftime("%Y-%m-%d %H:%M:%S")
+        await db.execute(
+            "UPDATE users SET mem_intent=?,mem_at=?,"
+            "mem_product=CASE WHEN ?<>'' THEN ? WHEN mem_at>=? THEN mem_product ELSE '' END "
+            "WHERE user_id=?",(iid,gregorian_now(),product,product,cutoff,uid))
+        await db.commit()
+    except Exception as e: logger.debug(f"remember: {e}")
+
+async def recall(uid,any_age=False):
+    """حافظه‌ی قابل گفتن: مشتری‌ای که ۱۲ ساعت تا ۶۰ روز پیش چیزی پرسیده و
+    هنوز «خوش برگشتید» را برای همان نشنیده."""
+    try:
+        async with db.execute("SELECT mem_intent,mem_product,mem_at,mem_greet_at,mem_profile "
+                              "FROM users WHERE user_id=?",(uid,)) as c:
+            r=await c.fetchone()
+    except Exception: return None
+    if not r or not r[0] or not r[2] or not faq_item(r[0]): return None
+    if not any_age:
+        try: at=datetime.strptime(r[2],"%Y-%m-%d %H:%M:%S")
+        except Exception: return None
+        age=(datetime.now(IRAN_TZ).replace(tzinfo=None)-at).total_seconds()
+        if age<MEM_MIN_GAP or age>MEM_MAX_AGE: return None
+        if r[3] and r[3]>=r[2]: return None
+    return {"intent":r[0],"product":r[1] or "","profile":r[4] or ""}
+
+async def mark_recalled(uid):
+    try:
+        await db.execute("UPDATE users SET mem_greet_at=? WHERE user_id=?",(gregorian_now(),uid))
+        await db.commit()
+    except Exception as e: logger.debug(f"recalled: {e}")
+
+async def profile_of(uid):
+    try:
+        async with db.execute("SELECT mem_profile FROM users WHERE user_id=?",(uid,)) as c:
+            r=await c.fetchone()
+        return (r[0] or "") if r else ""
+    except Exception: return ""
+
+def memory_text(mem,name):
+    w=topic_word(mem["intent"]); p=mem["product"]
+    topic=f"{w} {p}".strip()
+    who=f" {name} جان" if name else ""
+    return (f"خوش برگشتید{who} 🙂\nدفعه‌ی قبل درباره‌ی «{topic}» پرسیده بودید — "
+            "هنوز دنبالشید؟")
+
+def memory_kb():
+    return InlineKeyboardMarkup([[InlineKeyboardButton("👍 آره، ادامه بدیم",callback_data="mem_yes"),
+                                  InlineKeyboardButton("✨ سؤال تازه دارم",callback_data="mem_new")]])
+
+async def send_memory(msg,user,mem,lead=""):
+    name=(user.first_name or "").strip()[:20]
+    await msg.reply_text(_join(lead,memory_text(mem,name)),reply_markup=memory_kb())
+    brain_ctx[user.id]={"intent":mem["intent"],"ts":time.time(),"product":mem["product"],
+                        "offer":mem["intent"],"offer_ts":time.time(),
+                        "offer_product":mem["product"]}
+    await mark_recalled(user.id)
+
+# ── لیست انتظار مدل‌ها: «هر وقت ۱۵ پرو مکس اومد خبرم کن»
+def _ph(p): return hashlib.sha1(p.encode()).hexdigest()[:8]
+
+async def wl_add(uid,product):
+    await db.execute("INSERT OR REPLACE INTO waitlist(user_id,product,ts) VALUES(?,?,?)",
+                     (uid,product,gregorian_now()))
+    await db.commit()
+
+async def wl_groups():
+    async with db.execute("SELECT product,COUNT(*) FROM waitlist GROUP BY product "
+                          "ORDER BY COUNT(*) DESC,product") as c:
+        return await c.fetchall()
+
+async def wl_users(product):
+    async with db.execute("SELECT w.user_id FROM waitlist w LEFT JOIN users u "
+                          "ON u.user_id=w.user_id WHERE w.product=? "
+                          "AND COALESCE(u.has_left,0)=0 AND COALESCE(u.is_blocked,0)=0",
+                          (product,)) as c:
+        return [r[0] for r in await c.fetchall()]
+
+async def wl_announce(bot,product):
+    """به همه‌ی منتظرهای یک مدل خبر می‌دهد و فهرستشان را پاک می‌کند."""
+    sent=0
+    kb=InlineKeyboardMarkup([[InlineKeyboardButton("💰 قیمت امروز",callback_data="ai_i_price"),
+                              InlineKeyboardButton("🧑‍💼 رزرو با همکار",callback_data="ai_i_human")]])
+    for uid in await wl_users(product):
+        try:
+            await bot.send_message(uid,f"🔔 خبر خوب! <b>{esc(product)}</b> رسید ✨\n"
+                                   "برای قیمت و رزرو، همین‌جا پیام بدید یا یکی از این‌ها رو بزنید 👇",
+                                   parse_mode="HTML",reply_markup=kb)
+            sent+=1
+            brain_ctx[uid]={"intent":"i_stock","ts":time.time(),"product":product}
+        except Forbidden: await mark_left(uid)
+        except Exception as e: logger.warning(f"waitlist → {uid}: {e}")
+        await asyncio.sleep(0.05)
+    await db.execute("DELETE FROM waitlist WHERE product=?",(product,)); await db.commit()
+    return sent
+
+# ── مشاور خرید: چند سؤال کوتاه با دکمه → کارت «مشتری آماده‌ی خرید» برای فروشنده
+ADV_STEPS = {
+  "c":("دنبال چه محصولی هستید؟",
+       [("📱 آیفون","آیفون"),("📲 آیپد","آیپد"),("💻 مک‌بوک","مک‌بوک"),
+        ("⌚️ اپل‌واچ","اپل‌واچ"),("🎧 ایرپاد","ایرپاد")]),
+  "n":("نو باشه یا کارکرده؟",
+       [("✨ آک (نو و پلمب)","آک"),("🔍 کارکرده‌ی تمیز","کارکرده"),("🤷 فرقی نداره","فرقی نداره")]),
+  "b":("بودجه‌تون حدوداً چقدره؟",
+       [("💰 اقتصادی","اقتصادی"),("⚖️ متوسط","متوسط"),("💎 بهترین مدل","بهترین مدل"),
+        ("✍️ مبلغش رو می‌نویسم","?")]),
+  "p":("پرداخت چطور باشه؟",[("💵 نقدی","نقدی"),("💳 اقساطی (چک یا طلا)","اقساطی")]),
+  "f":("براتون کدوم مهم‌تره؟",
+       [("📸 دوربین","دوربین"),("🔋 باتری و صفحه‌ی بزرگ","باتری و صفحه‌ی بزرگ"),
+        ("🤏 سایز جمع‌وجور","سایز جمع‌وجور"),("🎮 سرعت و بازی","سرعت و بازی")]),
+}
+ADV_TIPS = {
+  "دوربین":"برای عکاسی، مدل‌های «پرو» به خاطر لنز تله‌فوتو انتخاب بهتری‌ان 📸",
+  "باتری و صفحه‌ی بزرگ":"مدل‌های «پرو مکس» و «پلاس» صفحه و باتری بزرگ‌تری دارن 🔋",
+  "سایز جمع‌وجور":"اگه گوشی جمع‌وجور می‌خواید، مدل‌های ۶٫۱ اینچی و «مینی» راحت‌ترن 🤏",
+  "سرعت و بازی":"برای بازی، مدل‌های «پرو» با صفحه‌ی ۱۲۰ هرتز و تراشه‌ی جدیدتر عالی‌ان 🎮",
+}
+adv_state: dict = {}     # uid → {"ts","dry","await",…جواب‌ها}
+ADV_TTL = 30*60
+
+def _adv_next(st):
+    for k in ("c","n","b","p"):
+        if k not in st: return k
+    if st.get("c")=="آیفون" and "f" not in st: return "f"
+    return None
+
+async def _adv_ask(msg,step,num):
+    q,opts=ADV_STEPS[step]
+    rows=[[InlineKeyboardButton(t,callback_data=f"adv_{step}_{i}")] for i,(t,_) in enumerate(opts)]
+    await msg.reply_text(f"{to_fa(num)}) {q}",reply_markup=InlineKeyboardMarkup(rows))
+
+def adv_profile(st):
+    parts=[st.get("c",""),st.get("n","")]
+    if st.get("b"): parts.append(f"بودجه: {st['b']}")
+    parts.append(st.get("p",""))
+    if st.get("f"): parts.append(f"اولویت: {st['f']}")
+    return " · ".join(x for x in parts if x)
+
+async def adv_start(msg,user,dry=False,lead=""):
+    adv_state[user.id]={"ts":time.time(),"dry":dry}
+    await msg.reply_text(_join(lead,"🎯 بذارید کمکتون کنم بهترین انتخاب رو بکنید — "
+                               "فقط چند سؤال کوتاه، با یک تپ."),reply_markup=main_menu())
+    await _adv_ask(msg,"c",1)
+
+async def adv_step(msg,user,bot,step=None,idx=None,typed=None):
+    """جواب یک مرحله (دکمه یا بودجه‌ی تایپ‌شده) → سؤال بعدی یا جمع‌بندی."""
+    st=adv_state.get(user.id)
+    if not st or time.time()-st["ts"]>ADV_TTL:
+        adv_state.pop(user.id,None)
+        await msg.reply_text("این گفتگو قدیمی شده 🙏 برای شروع دوباره بنویسید «کمکم کن انتخاب کنم».",
+                             reply_markup=main_menu())
+        return
+    if typed is not None:
+        st["b"]=_fit(typed.strip(),40); st.pop("await",None)
+    else:
+        if step not in ADV_STEPS or step!=_adv_next(st): return
+        opts=ADV_STEPS[step][1]
+        if not (0<=idx<len(opts)): return
+        val=opts[idx][1]
+        if val=="?":
+            st["await"]="budget"; st["ts"]=time.time()
+            await msg.reply_text("مبلغ تقریبی بودجه‌تون رو بنویسید ✍️ (مثلاً «۴۰ میلیون»)")
+            return
+        st[step]=val
+    st["ts"]=time.time()
+    nxt=_adv_next(st)
+    if nxt:
+        done=sum(1 for k in ("c","n","b","p","f") if k in st)
+        await _adv_ask(msg,nxt,done+1); return
+    await adv_finish(msg,user,bot,st)
+
+async def adv_finish(msg,user,bot,st):
+    adv_state.pop(user.id,None)
+    prof=adv_profile(st)
+    tip=ADV_TIPS.get(st.get("f",""),"")
+    await msg.reply_text(_join("عالیه، ممنون 🙌 خلاصه‌ی نیازتون:",f"🎯 {prof}",tip,
+                               "همکارم با توجه به موجودی امروز، بهترین گزینه‌ها رو همین‌جا "
+                               "براتون می‌فرسته 🙏"),reply_markup=main_menu())
+    if st.get("dry"):
+        await msg.reply_text("🧪 (حالت آزمایش: کارت «مشتری آماده‌ی خرید» برای همکارها فرستاده می‌شد)")
+        return
     uid=user.id
+    try:
+        await db.execute("UPDATE users SET mem_profile=? WHERE user_id=?",(prof,uid)); await db.commit()
+    except Exception as e: logger.debug(f"profile: {e}")
+    add_trail(uid,"i_advisor"); await remember(uid,"i_advisor","")
+    await notify_handoff(bot,user,why="مشتری آماده‌ی خرید — مشاور خرید",
+                         icon="🎯",extra=f"🎯 نیاز: {prof}")
+    set_human(uid)
+
+# ── «منظورتون کدومه؟»
+DYM_TTL = 30*60
+
+class _StoredMsg:
+    """پیامی که قبلاً آمده و حالا باید فوروارد شود (بعد از «هیچکدوم»)."""
+    def __init__(self,reply_to,chat_id,message_id,text):
+        self._r=reply_to; self.chat_id=chat_id; self.message_id=message_id; self.text=text
+        self.caption=None
+    async def reply_text(self,*a,**k): return await self._r.reply_text(*a,**k)
+
+# ════════════════════════════════════════════════
+#  یادگیری خودکار
+# ════════════════════════════════════════════════
+# دستیار از سه منبع یاد می‌گیرد و هر چه یاد گرفته در پنل «🎓 یادگیری» با
+# یک تپ قابل پس‌گرفتن است:
+#   admin — مدیر به سؤالی با #کلیدواژه جواب داد → همان لحظه
+#   dym   — مشتری در «منظورتون کدومه؟» یکی را انتخاب کرد → همان لحظه
+#   click — مشتری بعد از سؤالِ نافهمیده، خودش دکمه‌ی موضوعی را زد → وقتی
+#           دست‌کم دو نفرِ مختلف همین کار را کردند
+# چیزی یاد گرفته نمی‌شود اگر: خیلی کوتاه/بلند باشد، توهین‌آمیز باشد، یا
+# (برای منابع غیرمدیر) همین حالا محکم به نیت دیگری بخورد.
+learn_data: dict = {"votes":{},"log":[]}
+LEARN_NEED = {"admin":1,"dym":1,"click":2}
+LEARN_SRC = {"admin":"👨‍💼 جواب # مدیر","dym":"🤔 انتخاب مشتری","click":"👆 رفتار مشتری‌ها",
+             "admin-reply":"✨ از سؤال و جواب مدیر"}
+UNK_TTL = 120            # ثانیه — «سؤال نافهمیده، بعد دکمه» فقط اگر پشت سر هم باشد
+last_text: dict = {}     # uid → (متن آخرین پیام مشتری که به مدیر رسید, زمان)
+
+async def load_learn():
+    global learn_data
+    d=await _rj(LEARN_FILE,dict)
+    d=d if isinstance(d,dict) else {}
+    learn_data={"votes":d.get("votes") if isinstance(d.get("votes"),dict) else {},
+                "log":d.get("log") if isinstance(d.get("log"),list) else []}
+
+async def save_learn(): return await _wj(LEARN_FILE,learn_data)
+
+def _learnable(text):
+    toks=brain.tokens(text or "")
+    if not (2<=len(toks)<=14): return False
+    if len([t for t in toks if t not in brain.STOPWORDS])<2: return False
+    return not profanity.find(text)
+
+def _sig(text):
+    return " ".join(sorted({brain.stem(t) for t in brain.tokens(text) if t not in brain.STOPWORDS}))
+
+async def learn_example(text,iid,src):
+    it=faq_item(iid)
+    if not it or not _learnable(text): return False
+    t=text.strip()[:200]; n=brain.norm(t)
+    if any(brain.norm(x)==n for x in it.get("examples") or []): return False
+    if src!="admin":
+        rest=brain.smalltalk(t)[1] or t
+        cur,sc=brain.match(rest,brain_intents())
+        if cur is not None and cur.get("id")!=iid and sc>=1.0: return False
+    it.setdefault("examples",[]).append(t)
+    learn_data["log"].insert(0,{"id":new_btn_id(),"text":t,"intent":iid,"src":src,
+                                "ts":gregorian_now()})
+    del learn_data["log"][300:]
+    await save_faq(); await save_learn()
+    logger.info(f"learn: «{t}» → {iid} ({src})")
+    return True
+
+async def learn_vote(text,iid,uid,src):
+    if not _learnable(text) or not faq_item(iid): return False
+    need=LEARN_NEED.get(src,2)
+    if need<=1: return await learn_example(text,iid,src)
+    key=f"{_sig(text)}|{iid}"
+    v=learn_data["votes"].setdefault(key,{"text":text.strip()[:200],"intent":iid,"users":[],
+                                          "src":src,"ts":gregorian_now()})
+    if uid not in v["users"]: v["users"].append(uid)
+    v["ts"]=gregorian_now()
+    if len(v["users"])>=need:
+        learn_data["votes"].pop(key,None)
+        if await learn_example(v["text"],iid,src): return True
+    if len(learn_data["votes"])>500:
+        for k,_ in sorted(learn_data["votes"].items(),key=lambda kv:kv[1].get("ts",""))[:100]:
+            learn_data["votes"].pop(k,None)
+    await save_learn(); return False
+
+def learn_view():
+    log=learn_data["log"][:12]
+    lines=["<b>🎓 آنچه دستیار خودش یاد گرفته</b>",HR,
+           "دستیار از این‌ها یاد می‌گیرد:",
+           "👨‍💼 جوابی که شما با <code>#کلیدواژه</code> می‌دهید (همان لحظه)",
+           "🤔 انتخاب مشتری در «منظورتون کدومه؟» (همان لحظه)",
+           "👆 رفتار مشتری‌ها: سؤالِ نافهمیده و بعد زدن یک موضوع (دست‌کم ۲ نفر)",
+           "✨ سؤال بی‌پاسخ + جوابی که شما دادید (با یک تپ در «سؤال‌های بی‌پاسخ»)",HR]
+    if not log: lines.append("هنوز چیزی یاد نگرفته — با اولین گفتگوها شروع می‌کند.")
+    for i,x in enumerate(log,1):
+        it=faq_item(x["intent"])
+        lines.append(f"{to_fa(i)}. «{esc(_fit(x['text'],45))}» → "
+                     f"{esc(faq_title(it) if it else '—')}  ·  {LEARN_SRC.get(x['src'],x['src'])}")
+    pend=len(learn_data["votes"])
+    if pend: lines += ["",f"⏳ {to_fa(pend)} مورد منتظر تأیید رفتار مشتری‌های بیشتر"]
+    if log: lines += ["","اگر چیزی اشتباه یاد گرفته، شماره‌اش را بزنید تا پس گرفته شود."]
+    btns=[InlineKeyboardButton(f"↩️ {to_fa(i)}",callback_data=f"lrn_undo_{x['id']}")
+          for i,x in enumerate(log,1)]
+    rows=[btns[i:i+4] for i in range(0,len(btns),4)]
+    return _fit("\n".join(lines),TEXT_LIMIT),InlineKeyboardMarkup(_nav(*rows,back="faq_menu"))
+
+def learned_this_week():
+    since=(datetime.now(IRAN_TZ)-timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S")
+    return sum(1 for x in learn_data["log"] if x.get("ts","")>=since)
+
+def unmatched_find(text):
+    n=faq_norm(text)
+    return next((u for u in unmatched if faq_norm(u["text"])==n),None)
+
+async def unmatched_remove(text):
+    u=unmatched_find(text)
+    if u:
+        unmatched[:] = [x for x in unmatched if x is not u]; await save_unmatched()
+
+def section_intent(key):
+    return next((x for x in faq if x.get("enabled",True) and x.get("action")==f"section:{key}"),None)
+
+async def implicit_vote(uid,iid):
+    """مشتری بعد از سؤالی که نفهمیدیم، خودش موضوعی را انتخاب کرد."""
+    c=brain_ctx.get(uid) or {}
+    u=c.pop("unk",None)
+    if u and time.time()-u[1]<UNK_TTL and iid:
+        try: await learn_vote(u[0],iid,uid,"click")
+        except Exception as e: logger.debug(f"implicit: {e}")
+
+# ════════════════════════════════════════════════
+#  اجرای یک نیت
+# ════════════════════════════════════════════════
+async def _send_html(msg,html,rows=None):
+    await msg.reply_text(_fit(html,TEXT_LIMIT),parse_mode="HTML",
+                         reply_markup=InlineKeyboardMarkup(rows) if rows else main_menu(),
+                         disable_web_page_preview=True)
+
+async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail=True):
+    """یک نیت را اجرا می‌کند: متن (چندشکلی، پرشده) + کارِ نیت + پیشنهادها.
+    tail=False یعنی این جواب وسط یک جواب چندتایی است: پیشنهاد و سؤال
+    بعدی فقط زیر آخرین جواب می‌آید."""
+    uid=user.id
+    product=canon_product(product)
     values={"name":(user.first_name or "").strip()[:20],"product":product,
             "shop":SHOP_NAME,"status":status_line() or "","hours":wh_today_block() or ""}
     answer=brain.fill(brain.pick_variant(item.get("answer",""),product=product),**values)
     action=item.get("action") or ""
-    rows=suggest_rows(item)
+    rows=suggest_rows(item) if tail else []
     if not dry:
         item["hits"]=item.get("hits",0)+1; await save_faq()
         if not action.startswith("section:"):
             try: await record_event(uid,f"ai:{item['id']}")
             except Exception as e: logger.debug(f"ai event: {e}")
+        add_trail(uid,item["id"],product)
+        await remember(uid,item["id"],product)
+    prev=brain_ctx.get(uid) or {}
+    keep_product=product or prev.get("product","")
+    wl_product=""
 
     if action.startswith("section:") and action[8:] in SECTION_NAMES:
         pre=_join(lead,answer)
@@ -4240,39 +4880,82 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False):
             shown=dict(pic); shown["answer"]=answer or pic.get("answer","")
             await send_faq(msg,shown,chat=True,lead=lead,values=values,extra_rows=rows)
         else:
-            await msg.reply_text(_join(lead,"قیمت‌های روز رو همیشه تو سایت به‌روز داریم 👇"),
+            await msg.reply_text(_join(lead,f"قیمت روز {product} رو همیشه تو سایت به‌روز داریم 👇"
+                                       if product else "قیمت‌های روز رو همیشه تو سایت به‌روز داریم 👇"),
                                  reply_markup=main_menu())
             await send_section(msg,"2",uid=None if dry else uid,extra_rows=rows)
     elif action=="notify":
-        pre=_join(lead,answer)
-        if pre: await msg.reply_text(pre,reply_markup=main_menu())
-        await send_notify(msg,uid)
+        wp=keep_product if (product or prev.get("intent")=="i_stock") else ""
+        if wp:
+            if not dry: await wl_add(uid,wp)
+            await msg.reply_text(_join(esc(lead),f"✅ حتماً! هر وقت <b>{esc(wp)}</b> رسید، همین‌جا "
+                                       "خبرتون می‌کنم 🔔"),parse_mode="HTML",reply_markup=main_menu())
+        else:
+            pre=_join(lead,answer)
+            if pre: await msg.reply_text(pre,reply_markup=main_menu())
+            await send_notify(msg,uid)
     elif action=="human":
         await msg.reply_text(_join(lead,answer) or "🙏",reply_markup=main_menu())
         if not dry: set_human(uid)
+    elif action in ("specs","compare"):
+        keys=specs.find_models(text)
+        pk=specs.key_of(keep_product)
+        # «با ۱۶ پرو چه فرقی داره؟» — طرف دوم مقایسه، مدلِ قبلیِ گفتگوست
+        prev_k=specs.key_of(canon_product(prev.get("product",""))) if now_fresh(prev) else None
+        if action=="compare" and len(keys)==1 and prev_k and prev_k not in keys: keys=[prev_k]+keys
+        if action=="specs" and not keys and pk: keys=[pk]
+        if action=="compare" and len(keys)>=2:
+            await _send_html(msg,_join(esc(lead),specs.compare_text(keys)),rows)
+            keep_product=specs.name_of(keys[1])
+        elif keys:
+            await _send_html(msg,_join(esc(lead),specs.spec_text(keys[0])),rows)
+            keep_product=specs.name_of(keys[0])
+            if action=="compare":
+                await msg.reply_text(f"با کدوم مدل مقایسه‌اش کنم؟ مثلاً «با {specs.name_of('16')}»")
+        elif brain.product(text) and not brain.product(text).startswith("آیفون"):
+            hr=suggest_rows(ids=["i_human"])
+            await msg.reply_text(_join(lead,"مشخصات دقیق این مدل رو همکارم براتون می‌گه 🙏"),
+                                 reply_markup=InlineKeyboardMarkup(hr) if hr else main_menu())
+        else:
+            ask=("کدوم دو مدل رو مقایسه کنم؟ مثلاً «۱۳ با ۱۴» یا «۱۵ پرو یا ۱۶»"
+                 if action=="compare" else "مشخصات کدوم مدل؟ مثلاً «مشخصات آیفون ۱۵ پرو»")
+            ar=suggest_rows(ids=["i_advisor"])
+            await msg.reply_text(_join(lead,ask),
+                                 reply_markup=InlineKeyboardMarkup(ar) if ar else main_menu())
+            tail=False
+    elif action=="advisor":
+        await adv_start(msg,user,dry=dry,lead=_join(lead,answer))
+        tail=False
     else:
+        if item.get("id")=="i_stock" and product:
+            wl_product=product
+            rows=rows+[[InlineKeyboardButton(f"🔔 وقتی {product} رسید خبرم کن",
+                                             callback_data="wl_add")]]
         await send_faq(msg,item,chat=True,lead=lead,values=values,extra_rows=rows)
 
     # پیشنهادِ قدم بعد به شکل سؤال: «آدرس رو هم بفرستم؟» — جوابِ «آره»ی
     # مشتری همین را اجرا می‌کند
-    c={"intent":item["id"],"ts":time.time(),
-       "product":product or (brain_ctx.get(uid) or {}).get("product","")}
+    c={"intent":item["id"],"ts":time.time(),"product":keep_product}
+    if wl_product: c["wl"]=wl_product
     to=faq_item(item.get("offer_to") or "")
-    if item.get("offer") and to and to.get("enabled",True):
+    if tail and item.get("offer") and to and to.get("enabled",True):
         await msg.reply_text(item["offer"],reply_markup=InlineKeyboardMarkup(
             [[InlineKeyboardButton("👍 بله",callback_data=f"ai_{to['id']}")]]))
         c.update(offer=to["id"],offer_ts=time.time())
     brain_ctx[uid]=c
 
-async def notify_handoff(bot,user,why="درخواست صحبت با همکار"):
+async def notify_handoff(bot,user,why="درخواست صحبت با همکار",icon="🧑‍💼",extra=""):
     """وقتی مشتری با دکمه (نه با پیام) همکار را خواست، پیامی نیست که فوروارد
     شود؛ یک کارت برای مدیرها می‌رود که روی همان ریپلای بزنند."""
-    card=(f"<b>🧑‍💼 {esc(why)}</b>\n{HR}\n"
+    card=(f"<b>{icon} {esc(why)}</b>\n{HR}\n"
           f"👤 {esc(user.first_name or '—')}"+(f"  ·  @{esc(user.username)}" if user.username else "")+
           f"\n🆔 <code>{user.id}</code>")
+    if extra: card+=f"\n{esc(extra)}"
+    tl=trail_line(user.id)
+    if tl: card+=f"\n{esc(tl)}"
     try:
-        extra=await customer_card(user.id)
-        if extra: card+=f"\n{HR}\n{extra}"
+        more=await customer_card(user.id)
+        if more: card+=f"\n{HR}\n{more}"
     except Exception: pass
     card+="\n↩️ برای پاسخ، روی همین پیام ریپلای کنید."
     for aid in admin_ids():
@@ -4282,13 +4965,19 @@ async def notify_handoff(bot,user,why="درخواست صحبت با همکار")
         except Exception as e: logger.error(f"handoff → {aid}: {e}")
     await mark_open(user.id)
 
+def _multi_label(items):
+    return {"id":"multi","button":" + ".join(faq_title(x) for x in items)}
+
 async def assistant_reply(update,ctx,text,user,dry=False):
     """پاسخ دستیار به یک پیام متنی مشتری. True یعنی رسیدگی شد.
 
-    ترتیب: پاسخِ «آره/نه» به پیشنهاد قبلی → نیتِ پیام → ادامه‌ی بحث قبلی →
-    حرفِ روزمره → و اگر هیچ‌کدام، صادقانه به همکار سپردن."""
+    ترتیب: بودجه‌ی مشاور خرید → «آره/نه» به پیشنهاد قبلی → ناراحتی و شکایت
+    → چند سؤال در یک پیام → نیتِ پیام / ادامه‌ی بحث / مقایسه → حرفِ روزمره
+    (و «خوش برگشتید») → «منظورتون کدومه؟» → و اگر هیچ‌کدام، صادقانه به
+    همکار سپردن."""
     msg=update.message; uid=user.id; now=time.time()
-    a=brain.analyze(text,brain_intents())
+    intents=brain_intents()
+    a=brain.analyze(text,intents)
     tags=a["tags"]; c=brain_ctx.get(uid) or {}
     name=(user.first_name or "").strip()[:20]
     hour=datetime.now(IRAN_TZ).hour
@@ -4299,27 +4988,72 @@ async def assistant_reply(update,ctx,text,user,dry=False):
         try: await record_event(uid,EV_MSG)
         except Exception as e: logger.debug(f"ev msg: {e}")
 
+    # ۰) مشاور خرید منتظر بودجه‌ی تایپ‌شده است
+    st=adv_state.get(uid)
+    if st and st.get("await")=="budget" and now-st["ts"]<ADV_TTL and a["rest"]:
+        await adv_step(msg,user,ctx.bot,typed=text); return True
+
     # ۱) «آره» / «نه» به پیشنهاد قبلی
     if c.get("offer") and now-c.get("offer_ts",0)<OFFER_TTL and ("yes" in tags or "no" in tags):
         if "yes" in tags and faq_item(c["offer"]):
             await _typing(ctx.bot,msg.chat_id)
-            await run_intent(msg,faq_item(c["offer"]),user,ctx.bot,lead=lead,dry=dry)
+            await run_intent(msg,faq_item(c["offer"]),user,ctx.bot,lead=lead,dry=dry,
+                             product=c.get("offer_product") or c.get("product",""))
         else:
             brain_ctx.pop(uid,None)
             await msg.reply_text(_join(lead,brain.say("no")),reply_markup=main_menu())
         return True
 
-    # ۲) نیت پیام، یا ادامه‌ی بحث قبلی («واسه ۱۴ چی؟»)
-    item=a["intent"]; follow=""
+    # ۲) ناراحتی و شکایت — اول همدلی، بعد فوری به آدم
+    mood=brain.mood(text)
+    if mood in ("complaint","wait"):
+        body=_join(lead,random.choice(brain.MOOD_LEADS[mood]))
+        if dry:
+            await msg.reply_text(body+"\n\n🧪 (حالت آزمایش: با برچسب 🔴 فوری برای همکارها می‌رفت)")
+            return True
+        await _typing(ctx.bot,msg.chat_id)
+        await msg.reply_text(body,reply_markup=main_menu())
+        it=a["intent"]
+        if it and (it.get("action") or "") not in ("human","notify","advisor"):
+            await run_intent(msg,it,user,ctx.bot,product=a["product"],text=text)
+        await forward_to_admin(update,ctx,ack=False,count=False,urgent=mood)
+        # شکایت دستِ آدم است؛ ولی «چرا جواب نمیدید» شاید نیمه‌شب باشد — دستیار
+        # کنار نمی‌کشد تا مشتری بی‌جواب نماند
+        if mood=="complaint": set_human(uid)
+        return True
+    if mood=="issue": lead=_join(lead,random.choice(brain.MOOD_LEADS["issue"]))
+
     fresh=now-c.get("ts",0)<CTX_TTL
     prod=brain.carry_product(text,c.get("product","") if fresh else "")
+
+    # ۳) چند سؤال در یک پیام
+    multi=brain.match_all(text,intents)
+    if multi:
+        items=[x[0] for x in multi]
+        await _typing(ctx.bot,msg.chat_id,200)
+        for i,(it,_,clause) in enumerate(multi):
+            last=i==len(multi)-1
+            await run_intent(msg,it,user,ctx.bot,lead=lead if i==0 else "",
+                             product=brain.carry_product(clause,prod) or prod,dry=dry,
+                             text=clause,tail=last)
+        if not dry:
+            if any((x.get("action") or "")=="human" for x in items):
+                await forward_to_admin(update,ctx,ack=False,count=False)
+            elif get_setting("ai_cc_admin"):
+                await forward_to_admin(update,ctx,auto=_multi_label(items),count=False)
+        return True
+
+    # ۴) نیت پیام، یا ادامه‌ی بحث قبلی («واسه ۱۴ چی؟»)، یا دو مدل = مقایسه
+    item=a["intent"]; follow=""
+    if not item and len(specs.find_models(a["rest"] or text))>=2 and faq_item("i_compare"):
+        item=faq_item("i_compare")
     if not item and (a["followup"] or prod) and c.get("intent") and fresh:
         item=faq_item(c["intent"])
-        if item and prod: follow=f"برای {prod} 👇"
+        if item and prod: follow=f"برای {canon_product(prod)} 👇"
     if item:
         await _typing(ctx.bot,msg.chat_id,len(item.get("answer","")))
         await run_intent(msg,item,user,ctx.bot,lead=_join(lead,follow),
-                         product=prod,dry=dry)
+                         product=prod,dry=dry,text=text)
         if not dry:
             if (item.get("action") or "")=="human":
                 await forward_to_admin(update,ctx,ack=False,count=False)
@@ -4327,8 +5061,14 @@ async def assistant_reply(update,ctx,text,user,dry=False):
                 await forward_to_admin(update,ctx,auto=item,count=False)
         return True
 
-    # ۳) فقط حرف روزمره: سلام، مرسی، خداحافظ، خوبی؟، «رباتی؟»
+    # ۵) فقط حرف روزمره: سلام، مرسی، خداحافظ، خوبی؟، «رباتی؟»
     if tags and not a["rest"]:
+        if "greet" in tags and not ({"thanks","bye","who"} & tags):
+            mem=await recall(uid)
+            if mem:
+                await _typing(ctx.bot,msg.chat_id)
+                await send_memory(msg,user,mem,lead=lead)
+                return True
         lines=[lead] if lead else []
         quick=None
         if "who" in tags:
@@ -4348,14 +5088,33 @@ async def assistant_reply(update,ctx,text,user,dry=False):
                              reply_markup=InlineKeyboardMarkup(quick) if quick else main_menu())
         return True
 
-    # ۴) نفهمیدم — حدس نمی‌زنیم؛ به همکار می‌سپاریم
+    # ۶) نزدیک بود ولی مطمئن نیستیم — از خودِ مشتری می‌پرسیم
+    # مشکلِ دستگاه را با گزینه‌سازی معطل نمی‌کنیم — مستقیم به آدم
+    cands=brain.near(text,intents) if mood!="issue" else []
+    if cands:
+        brain_ctx[uid]={"ts":now,"product":prod,
+                        "dym":{"text":text,"chat":msg.chat_id,"mid":msg.message_id,
+                               "ids":[x[0]["id"] for x in cands],"ts":now,"dry":dry},
+                        "unk":(text,now)}
+        rows=[[InlineKeyboardButton(faq_title(it),callback_data=f"dym_{i}")]
+              for i,(it,_) in enumerate(cands)]
+        rows.append([InlineKeyboardButton("🙋 هیچکدوم — از همکار بپرسید",callback_data="dym_x")])
+        await _typing(ctx.bot,msg.chat_id)
+        await msg.reply_text(_join(lead,"مطمئن نیستم درست فهمیده باشم 🤔 منظورتون کدومه؟"),
+                             reply_markup=InlineKeyboardMarkup(rows))
+        if not dry: await log_unmatched(text,user)
+        return True
+
+    # ۷) نفهمیدم — حدس نمی‌زنیم؛ به همکار می‌سپاریم
     if dry:
         await msg.reply_text(_join(lead,random.choice(brain.UNKNOWN_LEADS),
                                    "(در حالت واقعی، پیام برای همکار فرستاده می‌شد)"))
         return True
+    brain_ctx[uid]={"ts":now,"product":prod,"unk":(text,now)}
     await log_unmatched(text,user)
     return await forward_to_admin(update,ctx,count=False,
                                   ack_lead=_join(lead,random.choice(brain.UNKNOWN_LEADS)))
+
 
 # ════════════════════════════════════════════════
 #  برخورد با توهین
@@ -4599,6 +5358,7 @@ async def post_init(app):
     await load_workhours(); await load_buttons(); await load_settings()
     await load_stats(); await load_menu(); await load_places(); await load_backup_registry()
     await load_admins(); await bc_load(); await load_faq(); await load_unmatched()
+    await load_learn()
     _spawn(_spam_cleanup_loop(),"پاکسازی")
     _spawn(_stats_flush_loop(),"ذخیره‌ی آمار")
     _spawn(_auto_backup_loop(app.bot),"بکاپ هفتگی")
