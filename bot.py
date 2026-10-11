@@ -912,11 +912,22 @@ def invalidate_menu_cache():
     global _menu_kb_cache
     _menu_kb_cache = None
 
+# متن کم‌رنگِ داخل جعبه‌ی تایپ — جایی که مشتری دقیقاً همان لحظه نگاه می‌کند.
+# هر بار یکی، تا حس «یک دستیار زنده» بدهد و نشان دهد چه چیزهایی می‌شود پرسید.
+# (سقف تلگرام ۶۴ نویسه است)
+ASSIST_HINTS = ("🤖 بپرسید… مثلاً: آیفون ۱۳ چنده؟",
+                "🤖 بپرسید… مثلاً: قسطی با چک میشه؟",
+                "🤖 بپرسید… مثلاً: گوشیمو معاوضه می‌کنید؟",
+                "🤖 بپرسید… مثلاً: رجیستر شده دارید؟",
+                "🤖 بپرسید… مثلاً: گارانتی دارن؟",
+                "🤖 بپرسید… مثلاً: کجایید؟ تا کی بازید؟")
+
 def main_menu():
     global _menu_kb_cache
-    if _menu_kb_cache is not None: return _menu_kb_cache
-    _menu_kb_cache = _build_main_menu()
-    return _menu_kb_cache
+    if _menu_kb_cache is None: _menu_kb_cache = _build_main_menu()
+    if not get_setting("assistant"): return _menu_kb_cache
+    return ReplyKeyboardMarkup(_menu_kb_cache.keyboard,resize_keyboard=True,
+                               input_field_placeholder=random.choice(ASSIST_HINTS))
 
 def _build_main_menu():
     # به ترتیب order، با احترام به عرض هر دکمه:
@@ -2466,8 +2477,7 @@ async def cmd_start(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     st=status_line()
     if st: parts.append(st)
     if wt: parts += ["",esc(wt)]
-    parts += ["",("سؤالتون رو همین‌جا بنویسید، یا از منوی پایین انتخاب کنید 👇"
-                  if get_setting("assistant") else "از منوی پایین انتخاب کنید 👇")]
+    if not get_setting("assistant"): parts += ["","از منوی پایین انتخاب کنید 👇"]
     full=_fit("\n".join(parts),TEXT_LIMIT)
     # منوی پایین همیشه باید ست شود — تلگرام هر پیام را فقط با یک نوع کیبورد
     # می‌پذیرد، پس اگر بخش خوش‌آمد لینک داشته باشد، لینک‌ها جدا می‌روند.
@@ -2475,6 +2485,8 @@ async def cmd_start(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     links=user_sec_kb("welcome")
     if links:
         await update.message.reply_text("🔗 دسترسی سریع:",reply_markup=links)
+    if get_setting("assistant") and get_setting("faq_auto") and not deep_sec:
+        await send_assistant_intro(update.message,ctx.bot)
     # لینک استوری اینستاگرام درباره‌ی اقساط بود؟ همان کارت را باز کن،
     # نه اینکه مشتری دنبال دکمه‌اش بگردد.
     if deep_sec=="notify":
@@ -2482,14 +2494,47 @@ async def cmd_start(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     elif deep_sec:
         await send_section(update.message,deep_sec,uid=user.id)
 
+# کارت معرفی دستیار — بعد از خوش‌آمد. مشتری باید از همان اول بفهمد لازم نیست
+# دنبال دکمه بگردد: می‌تواند مثل چت با یک آدم بنویسد.
+ASSIST_INTRO = ("🤖 <b>دستیار هوشمند {shop}</b>\n{hr}\n"
+                "سلام! من دستیار هوشمند فروشگاهم و هر ساعتی از شبانه‌روز جوابتون رو "
+                "می‌دم ⚡️\n\n"
+                "لازم نیست دنبال دکمه بگردید؛ سؤالتون رو <b>همین پایین تایپ کنید</b>، "
+                "مثل چت با یک آدم:\n\n"
+                "💬 <i>«سلام، آیفون ۱۳ پرو قیمتش چنده؟»</i>\n"
+                "💬 <i>«قسطی با چک میشه خرید؟»</i>\n"
+                "💬 <i>«گوشی خودمو معاوضه می‌کنید؟»</i>\n\n"
+                "هر جا لازم باشه، همکارهام همین‌جا وارد گفتگو می‌شن 🙋‍♂️\n\n"
+                "یا یکی از این‌ها رو بزنید 👇")
+INTRO_QUICK = (("💰 قیمت‌های امروز","i_price"),("💳 شرایط اقساط","i_install"),
+               ("🔄 معاوضه","i_tradein"),("📍 آدرس و ساعت","i_address"))
+
+async def send_assistant_intro(msg,bot):
+    btns=[InlineKeyboardButton(t,callback_data=f"ai_{i}") for t,i in INTRO_QUICK
+          if (it:=faq_item(i)) and it.get("enabled",True)]
+    rows=[btns[i:i+2] for i in range(0,len(btns),2)]
+    await _typing(bot,msg.chat_id,200)
+    try:
+        await msg.reply_text(ASSIST_INTRO.format(shop=esc(SHOP_NAME),hr=HR),parse_mode="HTML",
+                             reply_markup=InlineKeyboardMarkup(rows) if rows else main_menu())
+    except Exception as e: logger.warning(f"assistant intro: {e}")
+
 async def cmd_help(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     st=status_line()
     body=[]
     if st: body += [st,""]
-    body += ["از منوی پایین صفحه، بخش موردنظرتان را انتخاب کنید.","",
-             "💬 <b>سؤالی دارید؟</b>",
-             "همین‌جا بنویسید — متن، عکس یا ویس. پیام شما مستقیم به همکاران ما "
-             "می‌رسد و پاسخ را در همین گفتگو می‌گیرید.","",
+    if get_setting("assistant") and get_setting("faq_auto"):
+        body += ["🤖 <b>دستیار هوشمند</b>",
+                 "سؤالتون رو مثل چت با یک آدم همین‌جا تایپ کنید — قیمت، اقساط، "
+                 "گارانتی، رجیستری، معاوضه، ارسال، آدرس و… دستیار همون لحظه جواب "
+                 "می‌ده و هر جا لازم باشه همکارهامون وارد گفتگو می‌شن.","",
+                 "📎 عکس و ویس هم مستقیم به همکاران ما می‌رسد.",""]
+    else:
+        body += ["از منوی پایین صفحه، بخش موردنظرتان را انتخاب کنید.","",
+                 "💬 <b>سؤالی دارید؟</b>",
+                 "همین‌جا بنویسید — متن، عکس یا ویس. پیام شما مستقیم به همکاران ما "
+                 "می‌رسد و پاسخ را در همین گفتگو می‌گیرید.",""]
+    body += [
              "🔄 /start — نمایش دوباره‌ی منو"]
     await update.message.reply_text(
         _fit(f"<b>ℹ️ راهنمای {esc(SHOP_NAME)}</b>\n{HR}\n"+"\n".join(body),TEXT_LIMIT),
@@ -4482,17 +4527,30 @@ async def post_init(app):
         await app.bot.set_my_commands([BotCommand("start","شروع و نمایش منو"),
                                        BotCommand("help","راهنما")])
         # چیزی که کاربر پیش از زدن Start می‌بیند
-        await app.bot.set_my_short_description(
-            f"پشتیبانی {SHOP_NAME} — آدرس، ساعت کاری، شبکه‌های اجتماعی و پاسخ به سؤالات شما")
-        await app.bot.set_my_description(
-            f"به پشتیبانی {SHOP_NAME} خوش آمدید 👋\n\n"
-            "اینجا می‌توانید:\n"
-            "• آدرس فروشگاه و موقعیت روی نقشه را ببینید\n"
-            "• از ساعت کاری امروز باخبر شوید\n"
-            "• به سایت و شبکه‌های اجتماعی ما دسترسی داشته باشید\n"
-            "• شرایط خرید اقساطی را بخوانید\n"
-            "• سؤالتان را بپرسید و از همکاران ما پاسخ بگیرید\n\n"
-            "برای شروع دکمه‌ی «Start» را بزنید.")
+        if get_setting("assistant"):
+            short=(f"🤖 دستیار هوشمند {SHOP_NAME} — قیمت، اقساط، گارانتی، معاوضه و آدرس؛ "
+                   "فقط بپرسید")
+            desc=(f"🤖 دستیار هوشمند {SHOP_NAME}\n\n"
+                  "سؤالتان را مثل چت با یک آدم بنویسید؛ همان لحظه جواب می‌گیرید ⚡️\n\n"
+                  "💬 «آیفون ۱۳ پرو قیمتش چنده؟»\n"
+                  "💬 «قسطی با چک میشه خرید؟»\n"
+                  "💬 «رجیستر شده دارید؟»\n"
+                  "💬 «گوشیمو معاوضه می‌کنید؟»\n\n"
+                  "قیمت روز، اقساط، گارانتی، ارسال به سراسر ایران، آدرس و ساعت کاری — "
+                  "و هر جا لازم باشد، همکاران ما همین‌جا وارد گفتگو می‌شوند.\n\n"
+                  "برای شروع «Start» را بزنید.")
+        else:
+            short=f"پشتیبانی {SHOP_NAME} — آدرس، ساعت کاری، شبکه‌های اجتماعی و پاسخ به سؤالات شما"
+            desc=(f"به پشتیبانی {SHOP_NAME} خوش آمدید 👋\n\n"
+                  "اینجا می‌توانید:\n"
+                  "• آدرس فروشگاه و موقعیت روی نقشه را ببینید\n"
+                  "• از ساعت کاری امروز باخبر شوید\n"
+                  "• به سایت و شبکه‌های اجتماعی ما دسترسی داشته باشید\n"
+                  "• شرایط خرید اقساطی را بخوانید\n"
+                  "• سؤالتان را بپرسید و از همکاران ما پاسخ بگیرید\n\n"
+                  "برای شروع دکمه‌ی «Start» را بزنید.")
+        await app.bot.set_my_short_description(short[:120])
+        await app.bot.set_my_description(desc[:512])
     except Exception as e: logger.warning(f"معرفی ربات: {e}")
     logger.info("✅ ربات راه‌اندازی شد")
 
