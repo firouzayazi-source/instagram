@@ -4,8 +4,9 @@ import aiofiles, types
 import brain       # موتور فهم پیام — بدون هیچ API بیرونی
 import specs       # مشخصات فنی آیفون‌ها (مقایسه)
 import profanity   # تشخیص فحش و توهین
-from telegram import (Update, ReplyKeyboardMarkup, InlineKeyboardMarkup,
-                      InlineKeyboardButton, BotCommand, WebAppInfo)
+from telegram import (Update, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardMarkup,
+                      InlineKeyboardButton, BotCommand, BotCommandScopeChat,
+                      BotCommandScopeDefault, WebAppInfo)
 from telegram.error import Forbidden, BadRequest, Conflict
 from telegram.ext import (ApplicationBuilder, ApplicationHandlerStop, CommandHandler,
                            MessageHandler, CallbackQueryHandler, ContextTypes, filters)
@@ -162,7 +163,8 @@ DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs"
                     "assistant":True,       # دستیار هوشمند (موتور داخلی، بدون API)
                     "typing_delay":True,    # «در حال نوشتن…» پیش از جواب
                     "ai_cc_admin":True,     # رونوشت پاسخ‌های دستیار برای مدیرها
-                    "profanity_filter":True}  # تذکر به پیام توهین‌آمیز
+                    "profanity_filter":True,  # تذکر به پیام توهین‌آمیز
+                    "chat_mode":True}       # بدون منو: مشتری فقط یک صفحه‌ی چت می‌بیند
 
 # ── helpers
 def get_banner(k): banners.setdefault(k,{"file_id":None,"active":False}); return banners[k]
@@ -171,6 +173,11 @@ def get_place(k):
     places.setdefault(k,{"lat":None,"lon":None,"title":"","address":"","active":False})
     return places[k]
 def get_setting(k): return settings.get(k,DEFAULT_SETTINGS.get(k,True))
+
+def chat_mode():
+    """حالت چت: نه منوی پایین، نه دکمه‌ی پیشنهادی — مشتری می‌نویسد و دستیار
+    راهنمایی می‌کند. فقط وقتی معنا دارد که دستیار روشن باشد."""
+    return bool(get_setting("chat_mode") and get_setting("assistant") and get_setting("faq_auto"))
 
 HHMM_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 
@@ -945,6 +952,7 @@ ASSIST_HINTS = ("🤖 بپرسید… مثلاً: آیفون ۱۳ چنده؟",
 
 def main_menu():
     global _menu_kb_cache
+    if chat_mode(): return ReplyKeyboardRemove()     # صفحه‌ی چتِ خالی، بدون منو
     if _menu_kb_cache is None: _menu_kb_cache = _build_main_menu()
     if not get_setting("assistant"): return _menu_kb_cache
     return ReplyKeyboardMarkup(_menu_kb_cache.keyboard,resize_keyboard=True,
@@ -1116,7 +1124,9 @@ def settings_text():
             "\n🧠 دستیار: گفت‌وگوی طبیعی با مشتری از روی نیت‌ها (بدون API)"
             "\n📋 رونوشت: پیام‌هایی که دستیار جواب داد هم برای مدیرها فرستاده شود"
             "\n🛡 توهین: به پیام بی‌ادبانه تذکر می‌دهد؛ بار سوم گفتگو یک ساعت متوقف می‌شود"
-            " (کلمه‌ی تازه: /badword)")
+            " (کلمه‌ی تازه: /badword)"
+            "\n💬 حالت چت: مشتری منو و دکمه نمی‌بیند؛ فقط می‌نویسد و دستیار راهنمایی می‌کند"
+            " (تغییر دکمه‌ی Menu تلگرام بعد از ری‌استارت)")
 
 def stats_kb():
     return InlineKeyboardMarkup(_nav(
@@ -1530,6 +1540,7 @@ def settings_kb(owner=False):
     ccad="🟢" if get_setting("ai_cc_admin") else "⚫️"
     mini="🟢" if get_setting("miniapp") else "⚫️"
     prof="🟢" if get_setting("profanity_filter") else "⚫️"
+    chm="🟢" if get_setting("chat_mode") else "⚫️"
     rows=[[InlineKeyboardButton(f"{shop} فروشگاه باز است",callback_data="stg_store_open")],
           [InlineKeyboardButton(f"{notif} اعلان عضو جدید",callback_data="stg_notify_new_user")],
           [InlineKeyboardButton(f"{fwd} دریافت پیام کاربران",callback_data="stg_forward_user_msgs")],
@@ -1542,7 +1553,8 @@ def settings_kb(owner=False):
           [InlineKeyboardButton(f"{ast} دستیار هوشمند",callback_data="stg_assistant")],
           [InlineKeyboardButton(f"{typ} «در حال نوشتن…»",callback_data="stg_typing_delay"),
            InlineKeyboardButton(f"{ccad} رونوشت برای مدیر",callback_data="stg_ai_cc_admin")],
-          [InlineKeyboardButton(f"{prof} تذکر به توهین و فحش",callback_data="stg_profanity_filter")]]
+          [InlineKeyboardButton(f"{prof} تذکر به توهین و فحش",callback_data="stg_profanity_filter")],
+          [InlineKeyboardButton(f"{chm} حالت چت (بدون منو و دکمه)",callback_data="stg_chat_mode")]]
     # مدیریت مدیرها و بازگردانی بک‌آپ فقط دستِ مالک است
     if owner:
         rows.append([InlineKeyboardButton(f"👮 مدیران ربات · {to_fa(len(_admins))}",
@@ -2502,6 +2514,9 @@ async def cmd_start(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             f"🆕 کاربر جدید!\n👤 {user.first_name or'—'}\n"
             f"{'@'+user.username if user.username else'—'}\n🆔 {user.id}")
     name=(user.first_name or "").strip()
+    if chat_mode():
+        await chat_welcome(update.message,ctx.bot,user,is_new,deep_sec)
+        return
     wt=strip_button_links(responses.get("welcome","") or "","welcome")
     head=f"سلام {esc(name)} 👋" if name else "سلام 👋"
     parts=[f"<b>{head}</b>",f"به <b>{esc(SHOP_NAME)}</b> خوش آمدید",HR]
@@ -2529,6 +2544,41 @@ async def cmd_start(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         await send_notify(update.message,user.id)
     elif deep_sec:
         await send_section(update.message,deep_sec,uid=user.id)
+
+# ── خوش‌آمد در حالت چت: یک پیام، بدون منو و دکمه — «هر چی بنویسید، راهنماییتون می‌کنم»
+CHAT_WELCOME = ("{greet}\nبه <b>{shop}</b> خوش اومدید 🌸\n\n"
+                "من دستیار هوشمند فروشگاهم 🤖 لازم نیست دنبال گزینه بگردید؛ "
+                "<b>هر سؤالی دارید همین‌جا بنویسید</b>، مثل چت با یک آدم — خودم راهنماییتون می‌کنم:\n\n"
+                "💬 <i>«قیمت آیفون ۱۳ پرو چنده؟»</i>\n"
+                "💬 <i>«قسطی با چک میشه خرید؟»</i>\n"
+                "💬 <i>«۱۳ با ۱۴ چه فرقی داره؟»</i>\n"
+                "💬 <i>«نمی‌دونم چی بخرم، کمکم کن»</i>\n\n"
+                "{status}هر جا لازم باشه، همکارهام هم همین‌جا جوابتون رو می‌دن 🙋‍♂️")
+
+async def chat_welcome(msg,bot,user,is_new,deep_sec=""):
+    name=(user.first_name or "").strip()[:20]
+    greet=f"<b>سلام{(' '+esc(name)+' جان') if name else ''} 👋</b>"
+    if deep_sec:
+        # از لینک مستقیمِ یک بخش آمده (مثلاً استوری اقساط): سلام کوتاه + همان بخش
+        await msg.reply_text(f"{greet}\nاینم چیزی که دنبالش بودید 👇 هر سؤالی هم داشتید همین‌جا بنویسید.",
+                             parse_mode="HTML",reply_markup=ReplyKeyboardRemove())
+        if deep_sec=="notify": await send_notify(msg,user.id)
+        else: await send_section(msg,deep_sec,uid=user.id)
+        return
+    await _typing(bot,msg.chat_id,200)
+    mem=await recall(user.id) if not is_new else None
+    if mem:
+        await msg.reply_text(f"{greet}\n"+esc(memory_text(mem,"")),parse_mode="HTML",
+                             reply_markup=ReplyKeyboardRemove())
+        brain_ctx[user.id]={"intent":mem["intent"],"ts":time.time(),"product":mem["product"],
+                            "offer":mem["intent"],"offer_ts":time.time(),
+                            "offer_product":mem["product"]}
+        await mark_recalled(user.id)
+        return
+    st=status_line()
+    await send_banner(msg,CHAT_WELCOME.format(greet=greet,shop=esc(SHOP_NAME),
+                                              status=(esc(st)+"\n") if st else ""),
+                      "welcome",kb=ReplyKeyboardRemove())
 
 # کارت معرفی دستیار — بعد از خوش‌آمد. مشتری باید از همان اول بفهمد لازم نیست
 # دنبال دکمه بگردد: می‌تواند مثل چت با یک آدم بنویسد.
@@ -2561,6 +2611,12 @@ async def cmd_help(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     st=status_line()
     body=[]
     if st: body += [st,""]
+    if chat_mode():
+        it=faq_item("i_help")
+        await update.message.reply_text(
+            brain.pick_variant(it["answer"]) if it else "هر سؤالی دارید همین‌جا بنویسید 🙂",
+            reply_markup=main_menu())
+        return
     if get_setting("assistant") and get_setting("faq_auto"):
         body += ["🤖 <b>دستیار هوشمند</b>",
                  "سؤالتون رو مثل چت با یک آدم همین‌جا تایپ کنید — قیمت، اقساط، "
@@ -3976,7 +4032,8 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if get_setting("assistant") and get_setting("faq_auto"):
         if await assistant_reply(update,ctx,text,user): return
         await update.message.reply_text(
-            "متوجه نشدم 🙏 سؤالتون رو جور دیگه بنویسید یا از منوی پایین انتخاب کنید.",
+            ("متوجه نشدم 🙏 سؤالتون رو جور دیگه بنویسید."
+             if chat_mode() else "متوجه نشدم 🙏 سؤالتون رو جور دیگه بنویسید یا از منوی پایین انتخاب کنید."),
             reply_markup=main_menu())
         return
     hit=faq_match(text) if get_setting("faq_auto") else None
@@ -4322,6 +4379,15 @@ DEFAULT_INTENTS = [
            "پیشنهاد","پیشنهادتون","راهنمایی خرید","انتخاب کنم","بودجه","بودجم"],
    "examples":["با این بودجه چی پیشنهاد میدید","یه گوشی خوب میخوام","کمکم کنید انتخاب کنم"],
    "answer":""},
+  {"id":"i_help","button":"🧭 چه کمکی می‌تونم بکنم","action":"",
+   "keys":["منو","راهنما","راهنمایی","چه کمکی","چیکار میتونی","چیکار میکنی","گزینه","گزینه ها",
+           "چی بپرسم","چه سوالی","چه سوالایی"],
+   "examples":["چه کارایی میتونی انجام بدی","چه سوالایی میشه ازت پرسید","چطوری باهات کار کنم"],
+   "answer":"هر سؤالی درباره‌ی خرید دارید همین‌جا بنویسید 🙂 مثلاً:\n\n"
+            "💰 «قیمت آیفون ۱۳ پرو چنده؟»\n💳 «قسطی با چک میشه؟»\n"
+            "⚖️ «۱۳ با ۱۴ چه فرقی داره؟»\n🎯 «نمی‌دونم چی بخرم، کمکم کن»\n"
+            "🔄 «گوشیمو معاوضه می‌کنید؟»\n🛡 «گارانتی دارن؟»\n📍 «آدرستون کجاست؟ تا کی بازید؟»\n\n"
+            "هر جا لازم باشه، همکارم هم همین‌جا جوابتون رو می‌ده 🙋‍♂️"},
   {"id":"i_notify","button":"🔔 خبرم کن","action":"notify",
    "keys":["خبرم کنید","خبرم کن","اطلاع بدید","تخفیف","جشنواره","هر وقت اومد","وقتی اومد",
            "اومد خبرم","رسید خبرم","موجود شد خبر"],
@@ -4343,7 +4409,7 @@ QUICK_INTENTS = ["i_price","i_install","i_advisor","i_human"]   # زیر سلا�
 # می‌شود؛ هر فیلدی که خودش نوشته دست‌نخورده می‌ماند. در کلیدواژه‌ها و
 # جمله‌های نمونه، فقط موردهای تازه اضافه می‌شوند — چیزی که ادمین پاک کرده
 # برنمی‌گردد. نیتی که ادمین حذف کرده هم دوباره ساخته نمی‌شود.
-SEED_VERSION = 3
+SEED_VERSION = 4
 _SEED_SCALARS = ("button","answer","action","suggest","offer","offer_to","enabled")
 _SEED_LISTS = ("keys","examples")
 
@@ -4448,6 +4514,7 @@ def set_human(uid):
     human_until[uid]=time.time()+HUMAN_TTL; brain_ctx.pop(uid,None)
 
 def suggest_rows(item=None,ids=None):
+    if chat_mode(): return []
     ids=ids if ids is not None else (item.get("suggest") or [] if item else [])
     btns=[]
     for i in ids:
@@ -4486,7 +4553,7 @@ TOPIC_WORDS = {"i_price":"قیمت","i_stock":"موجودی","i_products":"مح�
                "i_address":"آدرس","i_hours":"ساعت کاری","i_site":"سایت",
                "i_social":"شبکه‌های اجتماعی","i_about":"درباره‌ی فروشگاه","i_notify":"خبرم کن",
                "i_phone":"شماره تماس","i_human":"صحبت با همکار","i_compare":"مقایسه‌ی مدل‌ها",
-               "i_specs":"مشخصات فنی","i_advisor":"مشاور خرید"}
+               "i_specs":"مشخصات فنی","i_advisor":"مشاور خرید","i_help":"راهنما"}
 
 def topic_word(iid):
     if iid in TOPIC_WORDS: return TOPIC_WORDS[iid]
@@ -4571,7 +4638,8 @@ def memory_kb():
 
 async def send_memory(msg,user,mem,lead=""):
     name=(user.first_name or "").strip()[:20]
-    await msg.reply_text(_join(lead,memory_text(mem,name)),reply_markup=memory_kb())
+    await msg.reply_text(_join(lead,memory_text(mem,name)),
+                         reply_markup=main_menu() if chat_mode() else memory_kb())
     brain_ctx[user.id]={"intent":mem["intent"],"ts":time.time(),"product":mem["product"],
                         "offer":mem["intent"],"offer_ts":time.time(),
                         "offer_product":mem["product"]}
@@ -4645,8 +4713,59 @@ def _adv_next(st):
     if st.get("c")=="آیفون" and "f" not in st: return "f"
     return None
 
+# کلمه‌هایی که مشتری برای هر گزینه تایپ می‌کند
+ADV_TYPED = {
+  "c":[("آیفون",("ایفون","iphone","گوشی")),("آیپد",("ایپد","ipad","تبلت")),
+       ("مک‌بوک",("مکبوک","مک","لپتاپ","لپ","macbook","mac")),("اپل‌واچ",("واچ","ساعت","watch")),
+       ("ایرپاد",("ایرپاد","هندزفری","airpods","ایرپادز"))],
+  "n":[("آک",("اک","نو","پلمب","اکبند")),("کارکرده",("کارکرده","کار","استوک","دست","دوم")),
+       ("فرقی نداره",("فرقی","فرق","هردو","هر","مهم"))],
+  "b":[("اقتصادی",("اقتصادی","ارزون","ارزان","ارزونتر")),("متوسط",("متوسط","معمولی","وسط")),
+       ("بهترین مدل",("بهترین","گرون","گران","پرچمدار","بالاترین"))],
+  "p":[("نقدی",("نقد","نقدی","کارتی","یکجا")),("اقساطی",("قسط","اقساط","قسطی","اقساطی","چک","طلا"))],
+  "f":[("دوربین",("دوربین","عکس","عکاسی","فیلم")),("باتری و صفحه‌ی بزرگ",("باتری","شارژ","بزرگ")),
+       ("سایز جمع‌وجور",("کوچیک","کوچک","جمع","جمعوجور","سبک")),
+       ("سرعت و بازی",("سرعت","بازی","گیم","سریع","پردازنده"))],
+}
+_ADV_CANCEL = {"بیخیال","لغو","ولش","نمیخوام","کنسل","انصراف"}
+
+def adv_match(step,text):
+    toks=set(brain.tokens(text))
+    for val,words in ADV_TYPED.get(step,()):
+        if any(w in toks or any(t.startswith(w) and len(w)>=3 for t in toks) for w in words):
+            return val
+    if step=="b" and (re.search(r"\d",brain.norm(text)) or toks & {"میلیون","تومن","تومان","هزار"}):
+        return _fit(text.strip(),40)
+    return None
+
+async def adv_typed(msg,user,bot,st,text,a):
+    """جوابِ تایپیِ مرحله‌ی فعلیِ مشاور خرید. False یعنی مشتری موضوع را عوض کرد."""
+    if set(brain.tokens(text)) & _ADV_CANCEL:
+        adv_state.pop(user.id,None)
+        await msg.reply_text("باشه 🙂 هر وقت خواستید بگید «کمکم کن انتخاب کنم».",reply_markup=main_menu())
+        return True
+    step="b" if st.get("await")=="budget" else _adv_next(st)
+    if not step: return False
+    val=adv_match(step,text) if step!="b" or st.get("await")!="budget" else _fit(text.strip(),40)
+    if val:
+        await adv_step(msg,user,bot,choice=(step,val)); return True
+    if a["intent"] and a["intent"].get("id")!="i_advisor":
+        adv_state.pop(user.id,None); return False   # سؤال دیگری پرسید — مشاور کنار می‌رود
+    done=sum(1 for k in ("c","n","b","p","f") if k in st)
+    await msg.reply_text("متوجه نشدم 🙂")
+    await _adv_ask(msg,step,done+1)
+    return True
+
+def _or_list(xs):
+    return xs[0] if len(xs)==1 else "، ".join(xs[:-1])+" یا "+xs[-1]
+
 async def _adv_ask(msg,step,num):
     q,opts=ADV_STEPS[step]
+    if chat_mode():
+        names=[re.sub(r"^\W+","",t).split(" (")[0] for t,v in opts if v!="?"]
+        extra=" — یا مبلغش رو بنویسید" if step=="b" else ""
+        await msg.reply_text(f"{to_fa(num)}) {q}\n{_or_list(names)}؟{extra}",reply_markup=main_menu())
+        return
     rows=[[InlineKeyboardButton(t,callback_data=f"adv_{step}_{i}")] for i,(t,_) in enumerate(opts)]
     await msg.reply_text(f"{to_fa(num)}) {q}",reply_markup=InlineKeyboardMarkup(rows))
 
@@ -4663,7 +4782,7 @@ async def adv_start(msg,user,dry=False,lead=""):
                                "فقط چند سؤال کوتاه، با یک تپ."),reply_markup=main_menu())
     await _adv_ask(msg,"c",1)
 
-async def adv_step(msg,user,bot,step=None,idx=None,typed=None):
+async def adv_step(msg,user,bot,step=None,idx=None,typed=None,choice=None):
     """جواب یک مرحله (دکمه یا بودجه‌ی تایپ‌شده) → سؤال بعدی یا جمع‌بندی."""
     st=adv_state.get(user.id)
     if not st or time.time()-st["ts"]>ADV_TTL:
@@ -4673,6 +4792,8 @@ async def adv_step(msg,user,bot,step=None,idx=None,typed=None):
         return
     if typed is not None:
         st["b"]=_fit(typed.strip(),40); st.pop("await",None)
+    elif choice is not None:
+        st[choice[0]]=choice[1]; st.pop("await",None)
     else:
         if step not in ADV_STEPS or step!=_adv_next(st): return
         opts=ADV_STEPS[step][1]
@@ -4718,6 +4839,48 @@ class _StoredMsg:
         self._r=reply_to; self.chat_id=chat_id; self.message_id=message_id; self.text=text
         self.caption=None
     async def reply_text(self,*a,**k): return await self._r.reply_text(*a,**k)
+
+_NONE_WORDS = {"هیچکدوم","هیچ کدوم","هیچکدام","هیچ کدام","هیچکدومش","هیچی","هیچ‌کدوم"}
+_ORDINALS = ({"اولی","اول","اولیه","1","یک","یکی"},{"دومی","دوم","2","دو"})
+
+async def dym_typed(update,ctx,user,d,text,a,tags,dry=False):
+    """مشتری به «منظورتون … یا …؟» با نوشتن جواب داد."""
+    msg=update.message; uid=user.id
+    t=brain.norm(text)
+    c=brain_ctx.get(uid) or {}
+    pick=None
+    if t in {brain.norm(x) for x in _NONE_WORDS} or ("no" in tags and not a["rest"]):
+        c.pop("dym",None)
+        if dry:
+            await msg.reply_text("🧪 (حالت آزمایش: پیام برای همکار فرستاده می‌شد)"); return True
+        shim=_StoredMsg(msg,d["chat"],d["mid"],d["text"])
+        await forward_to_admin(types.SimpleNamespace(message=shim,effective_user=user,effective_message=shim),
+                               ctx,count=False,ack_lead="چشم 🙏 سؤالتون رو به همکارم دادم.")
+        return True
+    if "yes" in tags and not a["rest"] and len(d["ids"])==1: pick=d["ids"][0]
+    if not pick and a["intent"] and a["intent"]["id"] in d["ids"]: pick=a["intent"]["id"]
+    if not pick:
+        for i,words in enumerate(_ORDINALS):
+            if i<len(d["ids"]) and t in words: pick=d["ids"][i]
+    if not pick:
+        for i in d["ids"]:
+            w=brain.norm(topic_word(i))
+            if w and (w in t or t in w) and len(t)>=2: pick=i; break
+    if not pick:
+        c.pop("dym",None); return False          # موضوع را عوض کرده — مسیر عادی
+    c.pop("dym",None)
+    it=faq_item(pick)
+    if not it: return False
+    await _typing(ctx.bot,msg.chat_id)
+    await run_intent(msg,it,user,ctx.bot,dry=dry,text=d["text"],product=brain.product(d["text"]))
+    if not dry:
+        if await learn_vote(d["text"],pick,uid,"dym"):
+            await unmatched_remove(d["text"])
+        shim=_StoredMsg(msg,d["chat"],d["mid"],d["text"])
+        upd=types.SimpleNamespace(message=shim,effective_user=user,effective_message=shim)
+        if (it.get("action") or "")=="human": await forward_to_admin(upd,ctx,ack=False,count=False)
+        elif get_setting("ai_cc_admin"): await forward_to_admin(upd,ctx,auto=it,count=False)
+    return True
 
 # ════════════════════════════════════════════════
 #  یادگیری خودکار
@@ -4929,9 +5092,13 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
     else:
         if item.get("id")=="i_stock" and product:
             wl_product=product
-            rows=rows+[[InlineKeyboardButton(f"🔔 وقتی {product} رسید خبرم کن",
-                                             callback_data="wl_add")]]
+            if not chat_mode():
+                rows=rows+[[InlineKeyboardButton(f"🔔 وقتی {product} رسید خبرم کن",
+                                                 callback_data="wl_add")]]
         await send_faq(msg,item,chat=True,lead=lead,values=values,extra_rows=rows)
+        if wl_product and chat_mode():
+            await msg.reply_text(f"اگه الان نبود، بنویسید «خبرم کن» تا هر وقت {wl_product} رسید "
+                                 "همین‌جا خبرتون کنم 🔔",reply_markup=main_menu())
 
     # پیشنهادِ قدم بعد به شکل سؤال: «آدرس رو هم بفرستم؟» — جوابِ «آره»ی
     # مشتری همین را اجرا می‌کند
@@ -4939,8 +5106,8 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
     if wl_product: c["wl"]=wl_product
     to=faq_item(item.get("offer_to") or "")
     if tail and item.get("offer") and to and to.get("enabled",True):
-        await msg.reply_text(item["offer"],reply_markup=InlineKeyboardMarkup(
-            [[InlineKeyboardButton("👍 بله",callback_data=f"ai_{to['id']}")]]))
+        await msg.reply_text(item["offer"],reply_markup=main_menu() if chat_mode() else
+            InlineKeyboardMarkup([[InlineKeyboardButton("👍 بله",callback_data=f"ai_{to['id']}")]]))
         c.update(offer=to["id"],offer_ts=time.time())
     brain_ctx[uid]=c
 
@@ -4988,10 +5155,15 @@ async def assistant_reply(update,ctx,text,user,dry=False):
         try: await record_event(uid,EV_MSG)
         except Exception as e: logger.debug(f"ev msg: {e}")
 
-    # ۰) مشاور خرید منتظر بودجه‌ی تایپ‌شده است
+    # ۰) مشاور خرید وسط کار است — جواب تایپی را می‌گیریم
     st=adv_state.get(uid)
-    if st and st.get("await")=="budget" and now-st["ts"]<ADV_TTL and a["rest"]:
-        await adv_step(msg,user,ctx.bot,typed=text); return True
+    if st and now-st["ts"]<ADV_TTL:
+        if await adv_typed(msg,user,ctx.bot,st,text,a): return True
+
+    # ۰٫۵) جوابِ تایپیِ «منظورتون کدومه؟»
+    d=c.get("dym")
+    if d and now-d["ts"]<DYM_TTL:
+        if await dym_typed(update,ctx,user,d,text,a,tags,dry): return True
 
     # ۱) «آره» / «نه» به پیشنهاد قبلی
     if c.get("offer") and now-c.get("offer_ts",0)<OFFER_TTL and ("yes" in tags or "no" in tags):
@@ -5080,8 +5252,8 @@ async def assistant_reply(update,ctx,text,user,dry=False):
         if "no" in tags: lines.append(brain.say("no"))
         if ("yes" in tags or ("greet" in tags and len(lines)==1)
                 or ("tired" in tags and len(lines)<=1)):
-            lines.append(brain.say("greet_only" if ("greet" in tags or "tired" in tags)
-                                   else "yes_nothing"))
+            lines.append(brain.say(("greet_chat" if chat_mode() else "greet_only")
+                                   if ("greet" in tags or "tired" in tags) else "yes_nothing"))
             quick=suggest_rows(ids=QUICK_INTENTS)
         await _typing(ctx.bot,msg.chat_id)
         await msg.reply_text(_join(*lines) or "🙂",
@@ -5096,12 +5268,18 @@ async def assistant_reply(update,ctx,text,user,dry=False):
                         "dym":{"text":text,"chat":msg.chat_id,"mid":msg.message_id,
                                "ids":[x[0]["id"] for x in cands],"ts":now,"dry":dry},
                         "unk":(text,now)}
-        rows=[[InlineKeyboardButton(faq_title(it),callback_data=f"dym_{i}")]
-              for i,(it,_) in enumerate(cands)]
-        rows.append([InlineKeyboardButton("🙋 هیچکدوم — از همکار بپرسید",callback_data="dym_x")])
         await _typing(ctx.bot,msg.chat_id)
-        await msg.reply_text(_join(lead,"مطمئن نیستم درست فهمیده باشم 🤔 منظورتون کدومه؟"),
-                             reply_markup=InlineKeyboardMarkup(rows))
+        if chat_mode():
+            names=[f"«{topic_word(it['id']) or faq_title(it)}»" for it,_ in cands]
+            q=(f"منظورتون {names[0]} بود؟ (آره / نه)" if len(names)==1 else
+               f"منظورتون {' یا '.join(names)}؟ کافیه بنویسید کدوم — یا «هیچکدوم» تا از همکارم بپرسم.")
+            await msg.reply_text(_join(lead,"مطمئن نیستم درست فهمیده باشم 🤔",q),reply_markup=main_menu())
+        else:
+            rows=[[InlineKeyboardButton(faq_title(it),callback_data=f"dym_{i}")]
+                  for i,(it,_) in enumerate(cands)]
+            rows.append([InlineKeyboardButton("🙋 هیچکدوم — از همکار بپرسید",callback_data="dym_x")])
+            await msg.reply_text(_join(lead,"مطمئن نیستم درست فهمیده باشم 🤔 منظورتون کدومه؟"),
+                                 reply_markup=InlineKeyboardMarkup(rows))
         if not dry: await log_unmatched(text,user)
         return True
 
@@ -5189,7 +5367,8 @@ async def user_media_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     kind=next((lbl for attr,lbl in _KIND_BY_ATTR if getattr(msg,attr,None)),"پیام")
     if not await forward_to_admin(update,ctx,kind,ack=not in_human_mode(user.id)):
         await msg.reply_text(
-            "لطفاً یکی از گزینه‌های منوی زیر را انتخاب کنید 👇",reply_markup=main_menu())
+            ("سؤالتون رو همین‌جا بنویسید 🙂" if chat_mode()
+             else "لطفاً یکی از گزینه‌های منوی زیر را انتخاب کنید 👇"),reply_markup=main_menu())
 
 # ════════════════════════════════════════════════
 #  PHOTO HANDLER
@@ -5369,8 +5548,19 @@ async def post_init(app):
         me=await app.bot.get_me(); BOT_USERNAME=me.username or ""
     except Exception as e: logger.warning(f"get_me: {e}")
     try:
-        await app.bot.set_my_commands([BotCommand("start","شروع و نمایش منو"),
-                                       BotCommand("help","راهنما")])
+        if chat_mode():
+            # مشتری حتی دکمه‌ی Menu تلگرام را هم نمی‌بیند؛ فقط مدیرها فهرست دستور دارند
+            await app.bot.set_my_commands([],scope=BotCommandScopeDefault())
+            for aid in admin_ids():
+                try:
+                    await app.bot.set_my_commands(
+                        [BotCommand("admin","پنل مدیریت"),BotCommand("test","امتحان مثل مشتری"),
+                         BotCommand("ask","فهم دستیار از یک جمله"),BotCommand("start","صفحه‌ی مشتری")],
+                        scope=BotCommandScopeChat(aid))
+                except Exception as e: logger.debug(f"admin commands {aid}: {e}")
+        else:
+            await app.bot.set_my_commands([BotCommand("start","شروع و نمایش منو"),
+                                           BotCommand("help","راهنما")])
         # چیزی که کاربر پیش از زدن Start می‌بیند
         if get_setting("assistant"):
             short=(f"🤖 دستیار هوشمند {SHOP_NAME} — قیمت، اقساط، گارانتی، معاوضه و آدرس؛ "
