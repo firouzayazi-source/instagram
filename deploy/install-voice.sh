@@ -48,13 +48,16 @@ echo "▶ مدل انتخاب‌شده: $MODEL"
 
 echo "▶ نصب کتابخانه‌ها داخل venv همین پروژه…"
 # numpy ۲٫۳ به بعد پردازنده‌های قدیمی/مجازیِ بدون x86-64-v2 را پشتیبانی نمی‌کند
-"$PIP" install -q "faster-whisper==1.2.1" "numpy>=1.24,<2.3" || fail "نصب کتابخانه‌ها ناموفق بود."
+# av: faster-whisper با PyAV قدیمی‌تر از ۱۳ کار نمی‌کند (metadata_errors)
+"$PIP" install -q --upgrade "faster-whisper==1.2.1" "numpy>=1.24,<2.3" "av>=15,<19" \
+  || fail "نصب کتابخانه‌ها ناموفق بود."
 
 echo "▶ آزمایش کتابخانه‌ها روی این پردازنده…"
-timeout 120 "$PY" -c "import numpy, av, tokenizers, ctranslate2" 2>/tmp/voice_err.txt
+VERS=$(timeout 120 "$PY" -c "import numpy, av, tokenizers, ctranslate2; print(f'numpy {numpy.__version__} · av {av.__version__} · ctranslate2 {ctranslate2.__version__}')" 2>/tmp/voice_err.txt)
 RC=$?
 [ $RC -eq 0 ] || { tail -3 /tmp/voice_err.txt; fail "کتابخانه‌ها روی این سرور اجرا نشدند: $(why $RC)"; }
-echo "   ✔ numpy · av · tokenizers · ctranslate2"
+echo "   ✔ $VERS"
+command -v ffmpeg >/dev/null && echo "   ✔ ffmpeg سیستم هم هست (پشتیبان)"
 
 echo "▶ دانلود مدل در $DIR/models (فقط یک‌بار)…"
 mkdir -p "$DIR/models"
@@ -78,10 +81,11 @@ trial() {   # $1 = گزینه‌ی اضافه (خالی یا novad)
 }
 
 echo "▶ آزمایش واقعیِ تبدیل ویس…"
+secs() { echo "$OUT" | grep -o '"seconds": [0-9.]*' | grep -o '[0-9.]*$' | cut -c1-5; }
 if trial ""; then
-  echo "   ✔ با تشخیص سکوت"
+  echo "   ✔ با تشخیص سکوت — $(secs) ثانیه برای ۱ ثانیه صدا (با بارگذاری مدل)"
 elif trial "novad"; then
-  echo "   ✔ بدون تشخیص سکوت (این بخش روی پردازنده‌ی سرور اجرا نشد؛ مشکلی نیست)"
+  echo "   ✔ بدون تشخیص سکوت — $(secs) ثانیه (این بخش روی پردازنده‌ی سرور اجرا نشد؛ مشکلی نیست)"
 else
   rm -f "$DIR/models/_test.wav"
   fail "تبدیل ویس روی این سرور اجرا نشد."

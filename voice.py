@@ -26,6 +26,8 @@ import json
 import logging
 import os
 import re
+import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -112,6 +114,24 @@ def judge(segments):
 # ════════════════════════════════════════════════
 #  پروسه‌ی کارگر (python voice.py --worker)
 # ════════════════════════════════════════════════
+def _decode(data):
+    """صدا → آرایه‌ی ۱۶ کیلوهرتز. اول PyAV (همراه faster-whisper)؛ اگر نشد،
+    ffmpeg سیستم (اگر نصب باشد) — نسخه‌های مختلف PyAV رفتار یکسانی ندارند."""
+    try:
+        from faster_whisper.audio import decode_audio
+        return decode_audio(io.BytesIO(data), sampling_rate=16000)
+    except Exception as e:
+        ff = shutil.which("ffmpeg")
+        if not ff:
+            raise RuntimeError(f"decode: {e}")
+        import numpy as np
+        r = subprocess.run([ff, "-nostdin", "-loglevel", "error", "-i", "pipe:0", "-f", "s16le",
+                            "-ac", "1", "-ar", "16000", "pipe:1"], input=data,
+                           capture_output=True, timeout=120)
+        if r.returncode != 0 or not r.stdout:
+            raise RuntimeError(f"decode: {e} / ffmpeg: {r.stderr[-200:]!r}")
+        return np.frombuffer(r.stdout, np.int16).astype(np.float32) / 32768.0
+
 def _worker():
     """هر خط ورودی مسیر یک فایل صوتی است؛ هر خط خروجی یک JSON."""
     try:
@@ -151,8 +171,8 @@ def _worker():
                 reply({"text": txt, "ok": bool(txt), "logprob": -0.2,
                        "seconds": time.time() - t}); continue
             with open(path, "rb") as f:
-                data = f.read()
-            segments, _info = m.transcribe(io.BytesIO(data), language="fa", beam_size=3,
+                audio = _decode(f.read())
+            segments, _info = m.transcribe(audio, language="fa", beam_size=3,
                                            vad_filter=use_vad(),
                                            condition_on_previous_text=False,
                                            initial_prompt=PROMPT, without_timestamps=True)
