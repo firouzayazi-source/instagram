@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import aiofiles, types
 import brain       # موتور فهم پیام — بدون هیچ API بیرونی
 import specs       # مشخصات فنی آیفون‌ها (مقایسه)
-import voice       # ویس → متن فارسی، روی همین سرور (اختیاری)
 import profanity   # تشخیص فحش و توهین
 from telegram import (Update, ReplyKeyboardMarkup, InlineKeyboardMarkup,
                       InlineKeyboardButton, BotCommand, WebAppInfo)
@@ -163,8 +162,7 @@ DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs"
                     "assistant":True,       # دستیار هوشمند (موتور داخلی، بدون API)
                     "typing_delay":True,    # «در حال نوشتن…» پیش از جواب
                     "ai_cc_admin":True,     # رونوشت پاسخ‌های دستیار برای مدیرها
-                    "profanity_filter":True,  # تذکر به پیام توهین‌آمیز
-                    "voice_stt":True}       # ویس مشتری → متن → جواب دستیار
+                    "profanity_filter":True}  # تذکر به پیام توهین‌آمیز
 
 # ── helpers
 def get_banner(k): banners.setdefault(k,{"file_id":None,"active":False}); return banners[k]
@@ -1118,9 +1116,7 @@ def settings_text():
             "\n🧠 دستیار: گفت‌وگوی طبیعی با مشتری از روی نیت‌ها (بدون API)"
             "\n📋 رونوشت: پیام‌هایی که دستیار جواب داد هم برای مدیرها فرستاده شود"
             "\n🛡 توهین: به پیام بی‌ادبانه تذکر می‌دهد؛ بار سوم گفتگو یک ساعت متوقف می‌شود"
-            " (کلمه‌ی تازه: /badword)"
-            f"\n🎤 ویس به متن: ویس مشتری روی همین سرور متن می‌شود و دستیار جوابش را می‌دهد"
-            f" — {voice.status()}")
+            " (کلمه‌ی تازه: /badword)")
 
 def stats_kb():
     return InlineKeyboardMarkup(_nav(
@@ -1534,7 +1530,6 @@ def settings_kb(owner=False):
     ccad="🟢" if get_setting("ai_cc_admin") else "⚫️"
     mini="🟢" if get_setting("miniapp") else "⚫️"
     prof="🟢" if get_setting("profanity_filter") else "⚫️"
-    vst=("🟢" if get_setting("voice_stt") else "⚫️") if voice.installed() else "⚪️"
     rows=[[InlineKeyboardButton(f"{shop} فروشگاه باز است",callback_data="stg_store_open")],
           [InlineKeyboardButton(f"{notif} اعلان عضو جدید",callback_data="stg_notify_new_user")],
           [InlineKeyboardButton(f"{fwd} دریافت پیام کاربران",callback_data="stg_forward_user_msgs")],
@@ -1547,8 +1542,7 @@ def settings_kb(owner=False):
           [InlineKeyboardButton(f"{ast} دستیار هوشمند",callback_data="stg_assistant")],
           [InlineKeyboardButton(f"{typ} «در حال نوشتن…»",callback_data="stg_typing_delay"),
            InlineKeyboardButton(f"{ccad} رونوشت برای مدیر",callback_data="stg_ai_cc_admin")],
-          [InlineKeyboardButton(f"{prof} تذکر به توهین و فحش",callback_data="stg_profanity_filter")],
-          [InlineKeyboardButton(f"{vst} ویس به متن (فارسی)",callback_data="stg_voice_stt")]]
+          [InlineKeyboardButton(f"{prof} تذکر به توهین و فحش",callback_data="stg_profanity_filter")]]
     # مدیریت مدیرها و بازگردانی بک‌آپ فقط دستِ مالک است
     if owner:
         rows.append([InlineKeyboardButton(f"👮 مدیران ربات · {to_fa(len(_admins))}",
@@ -2546,8 +2540,7 @@ ASSIST_INTRO = ("🤖 <b>دستیار هوشمند {shop}</b>\n{hr}\n"
                 "💬 <i>«سلام، آیفون ۱۳ پرو قیمتش چنده؟»</i>\n"
                 "💬 <i>«قسطی با چک میشه خرید؟»</i>\n"
                 "💬 <i>«۱۳ پرو با ۱۴ چه فرقی داره؟»</i>\n\n"
-                "نمی‌دونید چی بخرید؟ بگید «کمکم کن انتخاب کنم» 🎯\n"
-                "{voice_line}\n"
+                "نمی‌دونید چی بخرید؟ بگید «کمکم کن انتخاب کنم» 🎯\n\n"
                 "هر جا لازم باشه، همکارهام همین‌جا وارد گفتگو می‌شن 🙋‍♂️\n\n"
                 "یا یکی از این‌ها رو بزنید 👇")
 INTRO_QUICK = (("💰 قیمت‌های امروز","i_price"),("💳 شرایط اقساط","i_install"),
@@ -2560,8 +2553,7 @@ async def send_assistant_intro(msg,bot):
     rows=[btns[i:i+2] for i in range(0,len(btns),2)]
     await _typing(bot,msg.chat_id,200)
     try:
-        vl="حوصله‌ی تایپ ندارید؟ ویس بفرستید 🎤\n" if voice_ready() else ""
-        await msg.reply_text(ASSIST_INTRO.format(shop=esc(SHOP_NAME),hr=HR,voice_line=vl),parse_mode="HTML",
+        await msg.reply_text(ASSIST_INTRO.format(shop=esc(SHOP_NAME),hr=HR),parse_mode="HTML",
                              reply_markup=InlineKeyboardMarkup(rows) if rows else main_menu())
     except Exception as e: logger.warning(f"assistant intro: {e}")
 
@@ -2574,8 +2566,7 @@ async def cmd_help(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
                  "سؤالتون رو مثل چت با یک آدم همین‌جا تایپ کنید — قیمت، اقساط، "
                  "گارانتی، رجیستری، معاوضه، ارسال، آدرس و… دستیار همون لحظه جواب "
                  "می‌ده و هر جا لازم باشه همکارهامون وارد گفتگو می‌شن.","",
-                 ("🎤 ویس هم بفرستید؛ دستیار گوش می‌ده و جواب می‌ده. عکس و فایل مستقیم به همکاران ما می‌رسد."
-                  if voice_ready() else "📎 عکس و ویس هم مستقیم به همکاران ما می‌رسد."),""]
+                 "📎 عکس و ویس هم مستقیم به همکاران ما می‌رسد.",""]
     else:
         body += ["از منوی پایین صفحه، بخش موردنظرتان را انتخاب کنید.","",
                  "💬 <b>سؤالی دارید؟</b>",
@@ -4016,13 +4007,11 @@ async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",a
         try: await record_event(user.id,EV_MSG)
         except Exception as e: logger.debug(f"record_event msg: {e}")
     uname=f"@{user.username}" if user.username else "—"
-    stt=getattr(msg,"stt",False)
-    head=URGENT_LABELS.get(urgent) or (f"🎤 ویس از مشتری" if stt else f"💬 {kind or 'پیام'} از مشتری")
+    head=URGENT_LABELS.get(urgent) or f"💬 {kind or 'پیام'} از مشتری"
     card=(f"<b>{esc(head)}</b>\n{HR}\n"
           f"👤 {esc(user.first_name or '—')}  ·  {esc(uname)}\n🆔 <code>{user.id}</code>")
     if getattr(msg,"text",None):
         last_text[user.id]=(msg.text,time.time())
-    if stt: card+=f"\n📝 متن خودکارِ ویس: «{esc(_fit(msg.text,300))}»"
     tl=trail_line(user.id)
     if tl: card+=f"\n{esc(tl)}"
     prof=await profile_of(user.id)
@@ -5188,91 +5177,15 @@ _KIND_BY_ATTR = (("voice","🎤 ویس"),("video_note","🎥 ویدیو پیام
                  ("audio","🎵 صوت"),("photo","🖼 عکس"),("document","📎 فایل"),
                  ("contact","📇 مخاطب"),("sticker","🙂 استیکر"))
 
-class _VoiceMsg:
-    """ویسِ تبدیل‌شده به متن، به شکلِ یک پیام متنی برای دستیار: متنش همان
-    چیزی است که شنیدیم، ولی فوروارد و جواب روی خودِ ویس انجام می‌شود."""
-    def __init__(self,msg,text):
-        self._m=msg; self.text=text; self.caption=None; self.stt=True
-    def __getattr__(self,k): return getattr(self._m,k)
-
-def voice_ready():
-    return (get_setting("voice_stt") and get_setting("assistant") and get_setting("faq_auto")
-            and voice.available())
-
-async def handle_voice(update,ctx,user,dry=False):
-    """ویس → متن → همان مسیر پیام متنی. True یعنی رسیدگی شد."""
-    msg=update.message
-    v=msg.voice or msg.video_note or msg.audio
-    if not v or (getattr(v,"duration",0) or 0)>voice.MAX_SEC: return False
-    # روی سرورِ کند، مشتری را معطل نمی‌کنیم — ویس مثل قبل به همکار می‌رود
-    if voice.too_slow() and not dry: return False
-    try: ph=await msg.reply_text("🎧 دارم گوش می‌دم…")
-    except Exception: ph=None
-    await _typing(ctx.bot,msg.chat_id)
-    res=None; t0=time.time()
-    try:
-        f=await ctx.bot.get_file(v.file_id)
-        data=bytes(await f.download_as_bytearray())
-        res=await voice.transcribe(data,duration=getattr(v,"duration",0) or 0)
-    except Exception as e: logger.error(f"voice download: {e}")
-    took=time.time()-t0
-    conf=None if not res else max(0,min(100,int(round((1+res.logprob)*100))))
-    logger.info(f"voice: uid={user.id} {getattr(v,'duration',0)}s → "
-                f"{'ok' if res and res.ok else 'unclear' if res else 'failed'} "
-                f"in {took:.1f}s conf={conf}"+(f" «{res.text}»" if dry and res else ""))
-
-    # «دارم گوش می‌دم…» پاک می‌شود و نتیجه به‌صورت جوابِ خودِ ویس می‌آید —
-    # همیشه دیده می‌شود و ترتیب گفتگو به هم نمی‌خورد
-    if ph is not None:
-        try: await ph.delete()
-        except Exception as e: logger.warning(f"voice: پاک‌کردن «دارم گوش می‌دم» نشد: {e}")
-    dbg=(f"\n🧪 ⏱ {to_fa(f'{took:.1f}')} ثانیه · اطمینان {to_fa(conf)}٪"
-         +("\n⚠️ این سرور برای مشتری‌ها کند است؛ ویس مشتری‌ها مستقیم به همکار می‌رود."
-           if voice.too_slow() else "") if dry and conf is not None
-         else "\n🧪 تبدیل انجام نشد (لاگ را ببینید)" if dry else "")
-
-    if not res or not res.ok:
-        if dry:
-            await msg.reply_text("🎤 نتونستم ویس رو واضح بشنوم."
-                                 +(f"\nشنیدم: «{res.text}»" if res and res.text else "")+dbg)
-            return True
-        await msg.reply_text("🎤 ویستون رسید؛ همکارم خودش گوش می‌ده و همین‌جا جواب می‌ده 🙏",
-                             reply_markup=main_menu())
-        await forward_to_admin(update,ctx,"🎤 ویس",ack=False)
-        return True
-    await msg.reply_text(f"🎤 <i>«{esc(_fit(res.text,600))}»</i>{esc(dbg)}",parse_mode="HTML")
-    shim=_VoiceMsg(msg,res.text)
-    upd=types.SimpleNamespace(message=shim,effective_user=user,effective_message=shim)
-    if await check_abuse(upd,ctx,res.text,user,dry=dry): return True
-    if dry:
-        await assistant_reply(upd,ctx,res.text,user,dry=True); return True
-    await assistant_reply(upd,ctx,res.text,user)
-    return True
-
 async def user_media_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     """رسانه‌ای که مشتری می‌فرستد — عکس، ویس، ویدیو، فایل، مخاطب."""
     user=update.effective_user
     msg=update.message
-    if is_admin(user.id):
-        # مدیر در حالت آزمایش می‌تواند ویس دستیار را هم امتحان کند
-        if user.id in test_mode and (msg.voice or msg.video_note):
-            if voice_ready():
-                await handle_voice(update,ctx,user,dry=True)
-            else:
-                # هیچ‌وقت سکوت — مدیر باید بداند چرا ویس جواب نگرفت
-                why=("در تنظیمات خاموش است" if not get_setting("voice_stt") else
-                     "دستیار هوشمند خاموش است" if not (get_setting("assistant") and get_setting("faq_auto"))
-                     else voice.status())
-                await msg.reply_text(f"🎤 ویس به متن آماده نیست: {why}\n"
-                                     "تا وقتی آماده نشده، ویس مشتری‌ها مثل قبل فقط برای همکارها فرستاده می‌شود.")
-        return                            # مسیر ادمین در هندلرهای اختصاصی است
+    if is_admin(user.id): return          # مسیر ادمین در هندلرهای اختصاصی است
     await save_user(user)
     if await is_blocked(user.id): return
     if spam_check(user.id)!='ok': return
     if await check_abuse(update,ctx,msg.caption or "",user): return
-    if ((msg.voice or msg.video_note) and not in_human_mode(user.id) and voice_ready()
-            and await handle_voice(update,ctx,user)):
-        return
     kind=next((lbl for attr,lbl in _KIND_BY_ATTR if getattr(msg,attr,None)),"پیام")
     if not await forward_to_admin(update,ctx,kind,ack=not in_human_mode(user.id)):
         await msg.reply_text(
@@ -5451,10 +5364,6 @@ async def post_init(app):
     _spawn(_auto_backup_loop(app.bot),"بکاپ هفتگی")
     _spawn(_bc_loop(app.bot),"پخش همگانی")
     _spawn(_pending_loop(app.bot),"پیام‌های بی‌جواب")
-    if voice.installed():
-        _spawn(voice.idle_loop(),"ویس: خالی‌کردن حافظه")
-        if get_setting("voice_stt"): _spawn(voice.warmup(),"ویس: بارگذاری مدل")
-    logger.info(f"voice: {voice.status()}")
     global BOT_USERNAME
     try:
         me=await app.bot.get_me(); BOT_USERNAME=me.username or ""
