@@ -42,6 +42,10 @@ MAX_SEC = int(os.getenv("VOICE_MAX_SEC", "90"))        # ویس بلندتر →
 THREADS = int(os.getenv("VOICE_THREADS", "0")) or min(2, os.cpu_count() or 1)
 IDLE_UNLOAD = 30 * 60
 BEAM = int(os.getenv("VOICE_BEAM", "1"))
+COMPUTE = os.getenv("VOICE_COMPUTE", "int8")
+# اگر تبدیل هر ثانیه‌ی ویس بیش از این چند ثانیه طول بکشد، سرور برای مشتری‌ها
+# «کند» حساب می‌شود و ویسشان مثل قبل مستقیم به همکار می‌رود (فقط /test ادامه می‌دهد)
+SLOW_RATIO = float(os.getenv("VOICE_SLOW_RATIO", "4"))
 MAX_CRASHES = 3          # بعد از این تعداد کرشِ پشت‌سرهم، ویس خاموش می‌ماند
 
 # واژه‌های همین فروشگاه — Whisper را به سمت املای درست می‌برد
@@ -150,7 +154,7 @@ def _worker():
                 model = "fake"
             else:
                 from faster_whisper import WhisperModel
-                model = WhisperModel(model_name(), device="cpu", compute_type="int8",
+                model = WhisperModel(model_name(), device="cpu", compute_type=COMPUTE,
                                      cpu_threads=THREADS, download_root=MODELS,
                                      local_files_only=True)
         return model
@@ -192,6 +196,33 @@ _last_used = 0.0
 _crashes = 0
 _broken = ""
 _lock = None
+SPEED_FILE = os.path.join(MODELS, "SPEED")
+
+
+def _load_ratios():
+    """سرعتِ اندازه‌گیری‌شده با ری‌استارت فراموش نمی‌شود (نصب دوباره پاکش می‌کند)."""
+    try:
+        with open(SPEED_FILE) as f:
+            v = float(f.read().strip())
+        return [v, v]
+    except (OSError, ValueError):
+        return []
+
+
+_ratios = _load_ratios()   # زمان تبدیل ÷ طول ویس، برای چند ویس اخیر
+
+
+def speed():
+    """میانه‌ی «ثانیه‌ی تبدیل به ازای هر ثانیه ویس»، یا None اگر هنوز داده نیست."""
+    if len(_ratios) < 2:
+        return None
+    r = sorted(_ratios)
+    return r[len(r) // 2]
+
+
+def too_slow():
+    sp = speed()
+    return sp is not None and sp > SLOW_RATIO
 
 
 def available():
@@ -204,8 +235,11 @@ def status():
         return "نصب نشده (bash deploy/install-voice.sh)"
     if _broken:
         return f"خاموش به‌خاطر خطا: {_broken[:80]}"
+    sp = speed()
     return (f"آماده · مدل {model_name()}" + ("" if use_vad() else " · بدون تشخیص سکوت")
-            + (" · در حافظه" if _proc and _proc.returncode is None else ""))
+            + (" · در حافظه" if _proc and _proc.returncode is None else "")
+            + (f" · سرعت: هر ثانیه ویس ≈ {sp:.1f} ثانیه" if sp is not None else "")
+            + (" · ⚠️ برای مشتری‌ها کند است (فقط /test)" if too_slow() else ""))
 
 
 async def _ensure_proc():
@@ -256,7 +290,7 @@ async def _ask(line, timeout):
         return None
 
 
-async def transcribe(data, timeout=None):
+async def transcribe(data, timeout=None, duration=0):
     """bytes ویس (ogg/opus، mp4، mp3…) → Result یا None. هرگز استثنا بیرون نمی‌دهد."""
     global _lock, _broken
     if not available():
@@ -277,8 +311,17 @@ async def transcribe(data, timeout=None):
             if "snapshot" in d["error"] or "No such file" in d["error"]:
                 _broken = "مدل پیدا نشد — دوباره: bash deploy/install-voice.sh"
             return None
-        return Result(d.get("text", ""), bool(d.get("ok")), float(d.get("logprob", 0)),
-                      float(d.get("seconds", 0)))
+        res = Result(d.get("text", ""), bool(d.get("ok")), float(d.get("logprob", 0)),
+                     float(d.get("seconds", 0)))
+        if duration and duration > 0 and res.seconds > 0:
+            _ratios.append(res.seconds / max(1.0, duration))
+            del _ratios[:-5]
+            try:
+                with open(SPEED_FILE, "w") as f:
+                    f.write(f"{speed() or _ratios[-1]:.2f}")
+            except OSError:
+                pass
+        return res
     except Exception as e:
         log.error(f"voice: {e}")
         return None

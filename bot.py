@@ -5204,6 +5204,8 @@ async def handle_voice(update,ctx,user,dry=False):
     msg=update.message
     v=msg.voice or msg.video_note or msg.audio
     if not v or (getattr(v,"duration",0) or 0)>voice.MAX_SEC: return False
+    # روی سرورِ کند، مشتری را معطل نمی‌کنیم — ویس مثل قبل به همکار می‌رود
+    if voice.too_slow() and not dry: return False
     try: ph=await msg.reply_text("🎧 دارم گوش می‌دم…")
     except Exception: ph=None
     await _typing(ctx.bot,msg.chat_id)
@@ -5211,7 +5213,7 @@ async def handle_voice(update,ctx,user,dry=False):
     try:
         f=await ctx.bot.get_file(v.file_id)
         data=bytes(await f.download_as_bytearray())
-        res=await voice.transcribe(data)
+        res=await voice.transcribe(data,duration=getattr(v,"duration",0) or 0)
     except Exception as e: logger.error(f"voice download: {e}")
     took=time.time()-t0
     conf=None if not res else max(0,min(100,int(round((1+res.logprob)*100))))
@@ -5223,8 +5225,10 @@ async def handle_voice(update,ctx,user,dry=False):
     # همیشه دیده می‌شود و ترتیب گفتگو به هم نمی‌خورد
     if ph is not None:
         try: await ph.delete()
-        except Exception as e: logger.debug(f"voice placeholder: {e}")
-    dbg=(f"\n🧪 ⏱ {to_fa(f'{took:.1f}')} ثانیه · اطمینان {to_fa(conf)}٪" if dry and conf is not None
+        except Exception as e: logger.warning(f"voice: پاک‌کردن «دارم گوش می‌دم» نشد: {e}")
+    dbg=(f"\n🧪 ⏱ {to_fa(f'{took:.1f}')} ثانیه · اطمینان {to_fa(conf)}٪"
+         +("\n⚠️ این سرور برای مشتری‌ها کند است؛ ویس مشتری‌ها مستقیم به همکار می‌رود."
+           if voice.too_slow() else "") if dry and conf is not None
          else "\n🧪 تبدیل انجام نشد (لاگ را ببینید)" if dry else "")
 
     if not res or not res.ok:

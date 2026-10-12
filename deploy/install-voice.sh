@@ -80,6 +80,7 @@ trial() {   # $1 = گزینه‌ی اضافه (خالی یا novad)
   return 1
 }
 
+rm -f "$DIR/models/SPEED"     # سرعت از نو اندازه گرفته می‌شود (مثلاً بعد از ارتقای پردازنده)
 echo "▶ آزمایش واقعیِ تبدیل ویس…"
 secs() { echo "$OUT" | grep -o '"seconds": [0-9.]*' | grep -o '[0-9.]*$' | cut -c1-5; }
 if trial ""; then
