@@ -41,6 +41,7 @@ CHOSEN = os.path.join(MODELS, "CHOSEN")
 MAX_SEC = int(os.getenv("VOICE_MAX_SEC", "90"))        # ویس بلندتر → مستقیم به همکار
 THREADS = int(os.getenv("VOICE_THREADS", "0")) or min(2, os.cpu_count() or 1)
 IDLE_UNLOAD = 30 * 60
+BEAM = int(os.getenv("VOICE_BEAM", "1"))
 MAX_CRASHES = 3          # بعد از این تعداد کرشِ پشت‌سرهم، ویس خاموش می‌ماند
 
 # واژه‌های همین فروشگاه — Whisper را به سمت املای درست می‌برد
@@ -172,7 +173,8 @@ def _worker():
                        "seconds": time.time() - t}); continue
             with open(path, "rb") as f:
                 audio = _decode(f.read())
-            segments, _info = m.transcribe(audio, language="fa", beam_size=3,
+            # beam_size=1: روی پردازنده‌ی ضعیف چند برابر سریع‌تر، با افت ناچیز دقت
+            segments, _info = m.transcribe(audio, language="fa", beam_size=BEAM,
                                            vad_filter=use_vad(),
                                            condition_on_previous_text=False,
                                            initial_prompt=PROMPT, without_timestamps=True)

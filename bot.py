@@ -5207,28 +5207,36 @@ async def handle_voice(update,ctx,user,dry=False):
     try: ph=await msg.reply_text("🎧 دارم گوش می‌دم…")
     except Exception: ph=None
     await _typing(ctx.bot,msg.chat_id)
-    res=None
+    res=None; t0=time.time()
     try:
         f=await ctx.bot.get_file(v.file_id)
         data=bytes(await f.download_as_bytearray())
         res=await voice.transcribe(data)
     except Exception as e: logger.error(f"voice download: {e}")
+    took=time.time()-t0
+    conf=None if not res else max(0,min(100,int(round((1+res.logprob)*100))))
+    logger.info(f"voice: uid={user.id} {getattr(v,'duration',0)}s → "
+                f"{'ok' if res and res.ok else 'unclear' if res else 'failed'} "
+                f"in {took:.1f}s conf={conf}"+(f" «{res.text}»" if dry and res else ""))
 
-    async def _ph(text,**k):
-        try:
-            if ph is not None: return await ph.edit_text(text,**k)
-        except Exception: pass
-        return await msg.reply_text(text,**k)
+    # «دارم گوش می‌دم…» پاک می‌شود و نتیجه به‌صورت جوابِ خودِ ویس می‌آید —
+    # همیشه دیده می‌شود و ترتیب گفتگو به هم نمی‌خورد
+    if ph is not None:
+        try: await ph.delete()
+        except Exception as e: logger.debug(f"voice placeholder: {e}")
+    dbg=(f"\n🧪 ⏱ {to_fa(f'{took:.1f}')} ثانیه · اطمینان {to_fa(conf)}٪" if dry and conf is not None
+         else "\n🧪 تبدیل انجام نشد (لاگ را ببینید)" if dry else "")
 
     if not res or not res.ok:
         if dry:
-            await _ph("🎤 نتونستم ویس رو واضح بشنوم.\n🧪 (حالت آزمایش"
-                      +(f" — تشخیص: «{res.text}»" if res and res.text else "")+")")
+            await msg.reply_text("🎤 نتونستم ویس رو واضح بشنوم."
+                                 +(f"\nشنیدم: «{res.text}»" if res and res.text else "")+dbg)
             return True
-        await _ph("🎤 ویستون رسید؛ همکارم خودش گوش می‌ده و همین‌جا جواب می‌ده 🙏")
+        await msg.reply_text("🎤 ویستون رسید؛ همکارم خودش گوش می‌ده و همین‌جا جواب می‌ده 🙏",
+                             reply_markup=main_menu())
         await forward_to_admin(update,ctx,"🎤 ویس",ack=False)
         return True
-    await _ph(f"🎤 <i>«{esc(_fit(res.text,600))}»</i>",parse_mode="HTML")
+    await msg.reply_text(f"🎤 <i>«{esc(_fit(res.text,600))}»</i>{esc(dbg)}",parse_mode="HTML")
     shim=_VoiceMsg(msg,res.text)
     upd=types.SimpleNamespace(message=shim,effective_user=user,effective_message=shim)
     if await check_abuse(upd,ctx,res.text,user,dry=dry): return True
