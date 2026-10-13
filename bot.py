@@ -164,7 +164,7 @@ DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs"
                     "typing_delay":True,    # «در حال نوشتن…» پیش از جواب
                     "ai_cc_admin":True,     # رونوشت پاسخ‌های دستیار برای مدیرها
                     "profanity_filter":True,  # تذکر به پیام توهین‌آمیز
-                    "chat_mode":True}       # بدون منو: مشتری فقط یک صفحه‌ی چت می‌بیند
+                    "chat_mode":False}      # روشن = بدون منو، فقط صفحه‌ی چت (پیش‌فرض: منو + دستیار)
 
 # ── helpers
 def get_banner(k): banners.setdefault(k,{"file_id":None,"active":False}); return banners[k]
@@ -559,6 +559,11 @@ async def load_settings():
     settings=await _rj(SETTINGS_FILE,dict)
     if not settings:
         settings=dict(DEFAULT_SETTINGS)
+        await save_settings()
+    # یک‌بار: منو برمی‌گردد (حالت چت مدتی پیش‌فرض بود). اگر مدیر بعداً خودش
+    # حالت چت را روشن کند، همان می‌ماند.
+    if not settings.get("_menu_restored"):
+        settings["chat_mode"]=False; settings["_menu_restored"]=True
         await save_settings()
 async def save_settings(): await _wj(SETTINGS_FILE,settings)
 
