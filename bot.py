@@ -2776,7 +2776,7 @@ async def user_cb(query,ctx):
             if (it.get("action") or "")=="human":
                 await forward_to_admin(upd,ctx,ack=False,count=False)
             elif get_setting("ai_cc_admin"):
-                await forward_to_admin(upd,ctx,auto=it,count=False)
+                _bg(forward_to_admin(upd,ctx,auto=it,count=False),"cc admin")
         return
 
     # مشاور خرید
@@ -4531,12 +4531,44 @@ def suggest_rows(item=None,ids=None):
 async def _typing(bot,chat_id,n=80):
     """«در حال نوشتن…» برای یک لحظه — جواب فوری و بی‌مکث، ماشینی به نظر می‌رسد."""
     if not get_setting("typing_delay"): return
-    try:
-        await bot.send_chat_action(chat_id=chat_id,action="typing")
-        await asyncio.sleep(min(1.4,0.45+n/400))
-    except Exception: pass
+    # «در حال نوشتن…» نشان داده می‌شود ولی منتظرش نمی‌مانیم — جواب فوراً می‌رود
+    async def _act():
+        try: await bot.send_chat_action(chat_id=chat_id,action="typing")
+        except Exception: pass
+    _bg(_act(),"typing")
 
 def _join(*parts): return "\n\n".join(p for p in parts if p and p.strip())
+
+# ── کارهای پشت‌صحنه: اول جواب مشتری، بعد ثبت آمار و رونوشت مدیر
+_bg_tasks: set = set()
+
+def _bg(coro,name="bg"):
+    t=asyncio.create_task(coro)
+    _bg_tasks.add(t)
+    def _done(task):
+        _bg_tasks.discard(task)
+        if not task.cancelled() and task.exception():
+            logger.error(f"{name}: {task.exception()}")
+    t.add_done_callback(_done)
+    return t
+
+async def drain_bg():
+    """منتظر ماندن برای کارهای پشت‌صحنه (برای خاموشی و آزمایش‌ها)."""
+    while _bg_tasks:
+        await asyncio.gather(*list(_bg_tasks),return_exceptions=True)
+
+_faq_save_task=None
+
+def save_faq_soon(delay=3.0):
+    """شمارنده‌ها هر چند ثانیه یک‌بار روی دیسک می‌روند، نه با هر پیام
+    (خاموشی هم یک‌بار ذخیره می‌کند، پس چیزی گم نمی‌شود)."""
+    global _faq_save_task
+    if _faq_save_task is not None and not _faq_save_task.done(): return
+    async def _later():
+        await asyncio.sleep(delay)
+        try: await save_faq()
+        except Exception as e: logger.error(f"faq save: {e}")
+    _faq_save_task=asyncio.create_task(_later())
 
 # ── مسیر گفتگو (در حافظه) — برای خلاصه‌ای که همکار بالای پیام می‌بیند
 trail: dict = {}          # uid → [(زمان, نیت, محصول)]
@@ -4884,7 +4916,7 @@ async def dym_typed(update,ctx,user,d,text,a,tags,dry=False):
         shim=_StoredMsg(msg,d["chat"],d["mid"],d["text"])
         upd=types.SimpleNamespace(message=shim,effective_user=user,effective_message=shim)
         if (it.get("action") or "")=="human": await forward_to_admin(upd,ctx,ack=False,count=False)
-        elif get_setting("ai_cc_admin"): await forward_to_admin(upd,ctx,auto=it,count=False)
+        elif get_setting("ai_cc_admin"): _bg(forward_to_admin(upd,ctx,auto=it,count=False),"cc admin")
     return True
 
 # ════════════════════════════════════════════════
@@ -5022,12 +5054,14 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
     action=item.get("action") or ""
     rows=suggest_rows(item) if tail else []
     if not dry:
-        item["hits"]=item.get("hits",0)+1; await save_faq()
-        if not action.startswith("section:"):
-            try: await record_event(uid,f"ai:{item['id']}")
-            except Exception as e: logger.debug(f"ai event: {e}")
+        item["hits"]=item.get("hits",0)+1; save_faq_soon()
         add_trail(uid,item["id"],product)
-        await remember(uid,item["id"],product)
+        async def _book(iid=item["id"],sec=action.startswith("section:")):
+            if not sec:
+                try: await record_event(uid,f"ai:{iid}")
+                except Exception as e: logger.debug(f"ai event: {e}")
+            await remember(uid,iid,product)
+        _bg(_book(),"intent bookkeeping")
     prev=brain_ctx.get(uid) or {}
     keep_product=product or prev.get("product","")
     wl_product=""
@@ -5156,9 +5190,7 @@ async def assistant_reply(update,ctx,text,user,dry=False):
     lead=""
     if "greet" in tags: lead=brain.greet_line(name,hour,text=text)
     if "tired" in tags: lead=_join(lead,brain.say("tired"))
-    if not dry:
-        try: await record_event(uid,EV_MSG)
-        except Exception as e: logger.debug(f"ev msg: {e}")
+    if not dry: _bg(record_event(uid,EV_MSG),"ev msg")
 
     # ۰) مشاور خرید وسط کار است — جواب تایپی را می‌گیریم
     st=adv_state.get(uid)
@@ -5217,7 +5249,7 @@ async def assistant_reply(update,ctx,text,user,dry=False):
             if any((x.get("action") or "")=="human" for x in items):
                 await forward_to_admin(update,ctx,ack=False,count=False)
             elif get_setting("ai_cc_admin"):
-                await forward_to_admin(update,ctx,auto=_multi_label(items),count=False)
+                _bg(forward_to_admin(update,ctx,auto=_multi_label(items),count=False),"cc admin")
         return True
 
     # ۴) نیت پیام، یا ادامه‌ی بحث قبلی («واسه ۱۴ چی؟»)، یا دو مدل = مقایسه
@@ -5235,7 +5267,7 @@ async def assistant_reply(update,ctx,text,user,dry=False):
             if (item.get("action") or "")=="human":
                 await forward_to_admin(update,ctx,ack=False,count=False)
             elif get_setting("ai_cc_admin"):
-                await forward_to_admin(update,ctx,auto=item,count=False)
+                _bg(forward_to_admin(update,ctx,auto=item,count=False),"cc admin")
         return True
 
     # ۵) فقط حرف روزمره: سلام، مرسی، خداحافظ، خوبی؟، «رباتی؟»
@@ -5632,6 +5664,9 @@ async def post_shutdown(app):
     می‌کند و ربات عملاً از کار می‌افتد.
     """
     global db,_bc_task
+    try: await drain_bg()
+    except Exception as e: logger.debug(f"drain: {e}")
+    await save_faq()
     if _stats_dirty:   await save_stats();   logger.info("shutdown: stats saved")
     # پخش نیمه‌تمام: تسک را ببند و شماره‌ی آخرین نفر را ذخیره کن تا اجرای
     # بعدی دقیقاً از نفر بعدی ادامه دهد (نه از اول، نه با پیام تکراری).
@@ -5648,6 +5683,21 @@ async def post_shutdown(app):
         except Exception as e: logger.error(f"بستن دیتابیس هنگام خاموشی: {e}")
     logger.info("✅ shutdown clean")
 
+def _fast_request(pool,read):
+    """اتصال سریع به تلگرام:
+    • IPv4 اجباری — IPv6 خروجیِ سرور کار نمی‌کند و هر اتصال تازه اول آن را
+      امتحان می‌کرد (با FORCE_IPV4=0 خاموش می‌شود)
+    • اتصال‌ها ۶۰ ثانیه گرم می‌مانند (پیش‌فرض httpx فقط ۵ ثانیه)، پس پیام
+      بعدی بدون دست‌دادن TLS تازه فرستاده می‌شود"""
+    import httpx
+    from telegram.request import HTTPXRequest
+    tkw={"limits":httpx.Limits(max_connections=pool,max_keepalive_connections=pool,
+                               keepalive_expiry=60.0),"retries":1}
+    if os.getenv("FORCE_IPV4","1")!="0": tkw["local_address"]="0.0.0.0"
+    return HTTPXRequest(connection_pool_size=pool,pool_timeout=20.0,connect_timeout=10.0,
+                        read_timeout=read,write_timeout=20.0,
+                        httpx_kwargs={"transport":httpx.AsyncHTTPTransport(**tkw)})
+
 def main():
     app=(ApplicationBuilder().token(TOKEN)
          .post_init(post_init).post_shutdown(post_shutdown)
@@ -5655,10 +5705,8 @@ def main():
          # کاربر یک ثانیه طول بکشد، بقیه‌ی کاربران پشتش صف می‌کشند. با موازی
          # کردن، هر کاربر مستقل از بقیه پاسخ می‌گیرد.
          .concurrent_updates(32)
-         # استخر اتصال بزرگ‌تر تا ارسال‌های هم‌زمان پشت هم قفل نشوند
-         .connection_pool_size(64).pool_timeout(20.0)
-         .connect_timeout(10.0).read_timeout(20.0).write_timeout(20.0)
-         .get_updates_read_timeout(35.0)
+         .request(_fast_request(64,20.0))
+         .get_updates_request(_fast_request(4,35.0))
          .build())
     # گروه ۱- : ریپلای مدیر روی پیام مشتری زودتر از هر هندلر دیگری دیده می‌شود.
     # اگر واقعاً پاسخ بود، ApplicationHandlerStop جلوی پردازش دوباره را می‌گیرد؛

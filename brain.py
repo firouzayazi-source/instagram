@@ -20,6 +20,7 @@
 import re
 import random
 import difflib
+from functools import lru_cache
 
 # ════════════════════════════════════════════════
 #  نرمال‌سازی
@@ -31,6 +32,7 @@ _EMOJI = re.compile("[\U0001F000-\U0001FAFF☀-➿️]+")
 _REPEAT = re.compile(r"(.)\1{2,}")          # «سلاااام» → «سلام»
 
 
+@lru_cache(maxsize=50000)
 def norm(text):
     """متنِ قابل مقایسه: حروف یکدست، ارقام لاتین، بدون علائم و ایموجی."""
     t = (text or "").translate(_AR_FIX).translate(_DIGITS).lower()
@@ -111,6 +113,7 @@ STOPWORDS = {
 }
 
 
+@lru_cache(maxsize=50000)
 def stem(tok):
     """ریشه‌ی ساده‌ی محاوره: پیشوند «می/نمی» و پسوندهای رایج کنده می‌شوند.
     عمداً محافظه‌کار است: پیشوندِ تک‌حرفی («ب»، «ن») فقط از کلمه‌ی بلند
@@ -302,9 +305,12 @@ GENERIC = {"مدل", "مدلش", "مدلا", "گوشی", "گوشیا", "گوشی
 _MODEL_WORDS = {"پرو", "مکس", "پلاس", "مینی", "ایر", "اولترا", "pro", "max", "plus", "mini"}
 
 
+@lru_cache(maxsize=20000)
 def _ex_words(text):
-    return {stem(t) for t in tokens(text)
-            if t not in STOPWORDS and t not in _MODEL_WORDS and not t.isdigit()}
+    return frozenset(stem(t) for t in tokens(text)
+                     if t not in STOPWORDS and t not in _MODEL_WORDS and not t.isdigit())
+
+
 EXAMPLE_MIN = 0.6     # چه سهمی از کلمه‌های یک جمله‌ی نمونه باید در پیام باشد
 
 
@@ -313,19 +319,42 @@ EXAMPLE_MIN = 0.6     # چه سهمی از کلمه‌های یک جمله‌ی 
 Q_EXACT, Q_STEM, Q_FUZZY = 1.0, 0.96, 0.93
 
 
+@lru_cache(maxsize=100000)
+def sim(a, b):
+    """شباهت دو کلمه (۰ تا ۱) — همان ratio در difflib، با دو میان‌بر:
+    سقفِ ریاضیِ شباهت از روی طول (اگر به آستانه نمی‌رسد، محاسبه نمی‌شود)
+    و حافظه‌ی نتیجه‌ها (کلمه‌ها در پیام‌ها مدام تکرار می‌شوند)."""
+    la, lb = len(a), len(b)
+    if 2.0 * min(la, lb) / (la + lb) < NEAR_FUZZY_FLOOR:
+        return 0.0
+    m = difflib.SequenceMatcher(None, a, b)
+    if m.real_quick_ratio() < NEAR_FUZZY_FLOOR or m.quick_ratio() < NEAR_FUZZY_FLOOR:
+        return 0.0
+    return m.ratio()
+
+
+NEAR_FUZZY_FLOOR = 0.72     # کمترین شباهتی که جایی به کار می‌آید
+
+
+@lru_cache(maxsize=20000)
+def _key_forms_cached(key):
+    out = []
+    for t in norm(key).split():
+        f = {t}
+        if t in SYNONYMS: f.add(SYNONYMS[t])
+        out.append(frozenset(f))
+    return tuple(out)
+
+
 def _key_forms(key):
     """کلیدواژه → شکل‌های هر کلمه‌اش. عمداً ریشه‌یابی نمی‌شود: کلیدواژه
     همان است که مدیر نوشته. اگر «چنده» ریشه‌یابی شود به «چند» می‌رسد و
     «چند سال گارانتی» را سؤال قیمت می‌فهمد؛ «بفروشم» به «فروش» می‌رسد
     و «قسطی می‌فروشید؟» را سؤال معاوضه."""
-    out = []
-    for t in norm(key).split():
-        f = {t}
-        if t in SYNONYMS: f.add(SYNONYMS[t])
-        out.append(f)
-    return out
+    return _key_forms_cached(key)
 
 
+@lru_cache(maxsize=50000)
 def _msg_forms(tok):
     """یک کلمه‌ی پیام → [(شکل, کیفیت)]."""
     out = [(tok, Q_EXACT)]
@@ -334,7 +363,7 @@ def _msg_forms(tok):
     if len(s) >= 3 and s != tok:
         out.append((s, Q_STEM))
         if s in SYNONYMS: out.append((SYNONYMS[s], Q_STEM))
-    return out
+    return tuple(out)          # در حافظه نگه داشته می‌شود؛ تغییرناپذیر
 
 
 def _tok_hit(kforms, msg):
@@ -351,7 +380,7 @@ def _tok_hit(kforms, msg):
             continue
         for forms in msg:
             for w, _ in forms:
-                if len(w) >= 4 and difflib.SequenceMatcher(None, kf, w).ratio() >= FUZZY_MIN:
+                if len(w) >= 4 and sim(kf, w) >= FUZZY_MIN:
                     return Q_FUZZY
     return 0.0
 
@@ -667,7 +696,7 @@ def near(text, intents, limit=2):
                     and not words[0].startswith(("می", "نمی"))):
                 for t in strong_words:
                     if len(t) >= 4 and not t.startswith(("می", "نمی")) and t not in GENERIC:
-                        r = difflib.SequenceMatcher(None, words[0], t).ratio()
+                        r = sim(words[0], t)
                         if NEAR_FUZZY <= r < FUZZY_MIN:
                             best = max(best, 0.62)
         for ex in it.get("examples") or []:
