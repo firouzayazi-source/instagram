@@ -527,7 +527,7 @@ async def _menu_v2_migrate():
     wh=menu_item("workhours")
     if wh: wh["enabled"]=False
     on=[m for m in menu_sorted() if m.get("enabled",True)]
-    apple=next((m for m in on if is_custom(m["key"]) and
+    apple=next((m for m in on if
                 re.search(r"اپل\s*آ?یدی|apple\s*id",m.get("label",""),re.I)),None)
     if apple:
         apple["order"]=max(m.get("order",0) for m in menu_cfg)+1
