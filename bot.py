@@ -2522,33 +2522,49 @@ async def cmd_start(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if chat_mode():
         await chat_welcome(update.message,ctx.bot,user,is_new,deep_sec)
         return
-    wt=strip_button_links(responses.get("welcome","") or "","welcome")
-    head=f"سلام {esc(name)} 👋" if name else "سلام 👋"
-    parts=[f"<b>{head}</b>",f"به <b>{esc(SHOP_NAME)}</b> خوش آمدید",HR]
+    # ── یک پیام، کوتاه: سلام · وضعیت · «از منو انتخاب کنید یا بنویسید»
+    # (قبلاً دو پیام بود — بنر + کارت دستیار با ۶ دکمه‌ی تکراریِ منو — که
+    #  هم شلوغ بود و هم حرف هم را نقض می‌کرد)
+    smart=bool(get_setting("assistant") and get_setting("faq_auto"))
+    wt=strip_button_links(responses.get("welcome","") or "","welcome").strip()
+    if _is_stock_welcome(wt): wt=""          # متن پیش‌فرض قدیمی، همان سلامِ تکراری
+    mem=await recall(user.id) if (smart and not is_new and not deep_sec) else None
+    head=f"<b>سلام{(' '+esc(name[:20])+' جان') if name else ''} 👋</b>"
+    lines=[head,"خوش برگشتید 🙂" if mem else f"به <b>{esc(SHOP_NAME)}</b> خوش اومدید."]
     st=status_line()
-    if st: parts.append(st)
-    if wt: parts += ["",esc(wt)]
-    if not get_setting("assistant"): parts += ["","از منوی پایین انتخاب کنید 👇"]
-    full=_fit("\n".join(parts),TEXT_LIMIT)
-    # منوی پایین همیشه باید ست شود — تلگرام هر پیام را فقط با یک نوع کیبورد
-    # می‌پذیرد، پس اگر بخش خوش‌آمد لینک داشته باشد، لینک‌ها جدا می‌روند.
-    await send_banner(update.message,full,"welcome",kb=main_menu())
+    if st: lines.append(st)
+    if wt: lines += ["",esc(wt)]
+    if mem:
+        lines += ["",esc(memory_text(mem,"").replace("خوش برگشتید 🙂\n",""))]
+    elif smart:
+        lines += ["","از منوی پایین انتخاب کنید، یا هر سؤالی دارید همین‌جا بنویسید 💬",
+                  "<i>مثلاً: «قیمت آیفون ۱۳ پرو چنده؟»</i>"]
+    else:
+        lines += ["","از منوی پایین انتخاب کنید 👇"]
+    await send_banner(update.message,_fit("\n".join(lines),CAP_LIMIT),"welcome",kb=main_menu())
+    if mem:
+        brain_ctx[user.id]={"intent":mem["intent"],"ts":time.time(),"product":mem["product"],
+                            "offer":mem["intent"],"offer_ts":time.time(),
+                            "offer_product":mem["product"]}
+        await mark_recalled(user.id)
     links=user_sec_kb("welcome")
     if links:
         await update.message.reply_text("🔗 دسترسی سریع:",reply_markup=links)
-    if get_setting("assistant") and get_setting("faq_auto") and not deep_sec:
-        mem=await recall(user.id) if not is_new else None
-        if mem:
-            await _typing(ctx.bot,update.message.chat_id)
-            await send_memory(update.message,user,mem)
-        else:
-            await send_assistant_intro(update.message,ctx.bot)
     # لینک استوری اینستاگرام درباره‌ی اقساط بود؟ همان کارت را باز کن،
     # نه اینکه مشتری دنبال دکمه‌اش بگردد.
     if deep_sec=="notify":
         await send_notify(update.message,user.id)
     elif deep_sec:
         await send_section(update.message,deep_sec,uid=user.id)
+
+# متنِ خوش‌آمدِ پیش‌فرضِ نسخه‌های قبلی («… خوش آمدی 🤗 گزینه مد نظرتون رو انتخاب
+# کنید») — سلام و راهنمای منو را خودمان می‌نویسیم، تکرارش شلوغ و متناقض است
+_STOCK_WELCOME = ("گزینه مد نظرتون رو انتخاب کنید","گزینه مورد نظرتون رو انتخاب کنید",
+                  "از منوی پایین انتخاب کنید")
+
+def _is_stock_welcome(t):
+    t=(t or "").strip()
+    return not t or (len(t)<90 and any(x in t for x in _STOCK_WELCOME))
 
 # ── خوش‌آمد در حالت چت: یک پیام، بدون منو و دکمه — «هر چی بنویسید، راهنماییتون می‌کنم»
 CHAT_WELCOME = ("{greet}\nبه <b>{shop}</b> خوش اومدید 🌸\n\n"
