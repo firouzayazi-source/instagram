@@ -111,7 +111,7 @@ DEFAULT_MENU = [
     {"key":"2","label":"🌐 سایت استوک لند","order":2,"enabled":True,"width":"half"},
     {"key":"3","label":"💰 شرایط اقساط","order":3,"enabled":True,"width":"half"},
     {"key":"5","label":"📍 آدرس فروشگاه","order":4,"enabled":True,"width":"half"},
-    {"key":"workhours","label":"🕐 ساعت کاری","order":6,"enabled":True,"width":"half"},
+    {"key":"workhours","label":"🕐 ساعت کاری","order":6,"enabled":False,"width":"half"},
     {"key":"4","label":"📞 پشتیبانی","order":7,"enabled":True,"width":"half"},
     {"key":"6","label":"🔖 دکمه ذخیره ۱","order":8,"enabled":False,"width":"half"},
     {"key":"7","label":"🔖 دکمه ذخیره ۲","order":9,"enabled":False,"width":"half"},
@@ -517,6 +517,23 @@ async def load_menu():
         for m in menu_cfg:
             m.setdefault("width","half")
         if dropped: await save_menu()
+    if not settings.get("_menu_v2"):
+        await _menu_v2_migrate()
+
+async def _menu_v2_migrate():
+    """یک‌بار: «ساعت کاری» از منو به زیر «آدرس فروشگاه» می‌رود و دکمه‌ی
+    ربات اپل آیدی (اگر هست) یک دکمه‌ی پهنِ تهِ منو می‌شود. اگر مدیر بعداً
+    از پنل تغییرش دهد، همان می‌ماند."""
+    wh=menu_item("workhours")
+    if wh: wh["enabled"]=False
+    on=[m for m in menu_sorted() if m.get("enabled",True)]
+    apple=next((m for m in on if is_custom(m["key"]) and
+                re.search(r"اپل\s*آ?یدی|apple\s*id",m.get("label",""),re.I)),None)
+    if apple:
+        apple["order"]=max(m.get("order",0) for m in menu_cfg)+1
+        apple["width"]="full"
+    settings["_menu_v2"]=True
+    await save_menu(); await save_settings()
 
 async def save_menu():
     invalidate_menu_cache()
@@ -2453,6 +2470,9 @@ async def send_section(msg,key,title=None,uid=None,extra_rows=None):
     """کارت یک بخش — از منو، از لینک مستقیم، یا از دستیار؛ همه همین‌جا."""
     await record_stat(key,uid)
     title=title or SECTION_NAMES.get(key,key)
+    # ساعت کاری کنار آدرس می‌نشیند (منطقی‌تر و منو خلوت‌تر)
+    if key=="5" and workhours.get("enabled",True):
+        extra_rows=list(extra_rows or [])+[[InlineKeyboardButton("🕐 ساعت کاری",callback_data="wh_today")]]
     kb=merge_kb(user_sec_kb(key),extra_rows)
     # لوکیشن فعال → یک کارت واحد: نقشه + نام + آدرس + دکمه‌های بخش.
     # (تلگرام اجازه نمی‌دهد venue همراه عکس یا caption باشد، پس همین کارت
@@ -2729,6 +2749,16 @@ async def cmd_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
 async def user_cb(query,ctx):
     data=query.data
 
+    if data=="wh_today":
+        await record_stat("wh_page",query.from_user.id)
+        wh=wh_today_block()
+        if not wh:
+            try: await query.answer("ساعت کاری تنظیم نشده.")
+            except Exception: pass
+            return
+        kb=InlineKeyboardMarkup([[InlineKeyboardButton("📆 برنامه‌ی هفتگی",callback_data="wh_weekly")]])
+        await send_banner(query.message,build_msg("🕐 ساعت کاری",wh,"workhours"),"workhours",kb=kb); return
+
     if data=="wh_weekly":
         table=wh_full_table(); sep="━"*15
         msg=f"{sep}\n📆 ساعت کار هفتگی مجموعه\n{sep}\n{table}\n{sep}"
@@ -2850,7 +2880,7 @@ async def user_cb(query,ctx):
 #  MAIN CALLBACK DISPATCHER
 # ════════════════════════════════════════════════
 # پیشوندهایی که هم ادمین هم کاربر دسترسی دارد
-_USER_CB_PREFIXES = ("wh_weekly","wh_back_today","sub_","ai_","dym_","adv_","wl_add","mem_")
+_USER_CB_PREFIXES = ("wh_today","wh_weekly","wh_back_today","sub_","ai_","dym_","adv_","wl_add","mem_")
 
 async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     global _bc_job,_bc_cancel
