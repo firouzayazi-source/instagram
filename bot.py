@@ -4302,8 +4302,11 @@ def action_label(a):
 # نمایش یک بخش است، متنش را از همان بخش پنل می‌خواند (اقساط، آدرس، شبکه‌ها،
 # سایت، پشتیبانی)؛ پس اگر متن بخش را در پنل عوض کنید، جواب دستیار هم عوض
 # می‌شود. هر نیت را می‌شود از پنل ویرایش، خاموش یا حذف کرد.
-_SHOP_LINE = ("آیفون، آیپد، مک‌بوک، اپل‌واچ، ایرپاد و لوازم جانبی — هم آک (نو و پلمب) "
-              "با گارانتی شرکتی، هم کارکرده‌ی تمیز با ۷ روز مهلت تست.")
+_SHOP_LINE = ("آیفون (هم آک، نو و پلمب با گارانتی شرکتی؛ هم کارکرده‌ی تمیز با ۷ روز "
+              "مهلت تست)، لوازم جانبی، اپل‌آیدی و خدمات نرم‌افزاری.")
+# محصولاتی که فعلاً نداریم — سؤال درباره‌شان جواب «فعلاً نداریم» می‌گیرد
+# (نیت i_other). وقتی برگشتند، کافی است آن نیت از پنل خاموش شود.
+INACTIVE_BRANDS = ("آیپد","مک‌بوک","اپل‌واچ","ایرپاد")
 DEFAULT_INTENTS = [
   {"id":"i_price","button":"💰 لیست قیمت","action":"prices",
    "keys":["قیمت","لیست قیمت","چند تومن","چند تومنه","نرخ روز","قیمتا","چقدر","چنده"],
@@ -4320,15 +4323,21 @@ DEFAULT_INTENTS = [
   {"id":"i_products","button":"🍏 محصولات ما","action":"",
    "keys":["محصولات","چه محصولاتی","چی میفروشید","چیا دارید","چه مدل هایی"],
    "examples":["چه گوشی هایی دارید","چیا میفروشید","فقط ایفون دارید"],
-   "answer":"تو استوک‌لند تخصصی محصولات اپل داریم 🍏\n\n• آیفون\n• آیپد\n• مک‌بوک\n• اپل‌واچ\n"
-            "• ایرپاد\n• لوازم جانبی\n\nهم آک (نو و پلمب) با گارانتی شرکتی، "
-            "هم کارکرده‌ی تمیز با ۷ روز مهلت تست.",
-   "suggest":["i_price","i_site"]},
+   "answer":"محصولات فعلی استوک‌لند 🍏\n\n"
+            "📱 آیفون — هم آک (نو و پلمب) با گارانتی شرکتی، هم کارکرده‌ی تمیز با ۷ روز مهلت تست\n"
+            "🎧 لوازم جانبی\n🆔 اپل‌آیدی\n🛠 خدمات نرم‌افزاری (نصب برنامه، انتقال اطلاعات)",
+   "suggest":["i_price","i_software"]},
   {"id":"i_android","button":"🤖 گوشی غیر اپل","action":"",
    "keys":["سامسونگ","شیائومی","اندروید","گلکسی","هواوی","پوکو","ناتینگ"],
-   "answer":"ما تخصصی فقط محصولات اپل کار می‌کنیم 🍏 آیفون، آیپد، مک‌بوک، اپل‌واچ، "
-            "ایرپاد و لوازم جانبی.",
+   "answer":"ما تخصصی آیفون کار می‌کنیم 🍏 به‌همراه لوازم جانبی، اپل‌آیدی و خدمات نرم‌افزاری.",
    "suggest":["i_products","i_price"]},
+  {"id":"i_other","button":"🍏 سایر محصولات اپل","action":"",
+   "keys":["ایپد","تبلت","مکبوک","مک بوک","لپتاپ","اپل واچ","ساعت هوشمند","ایرپاد","ایرپادز"],
+   "examples":["ایپد دارید","قیمت مکبوک چنده","ایرپاد پرو دارید"],
+   "answer":"فعلاً آیپد، مک‌بوک، اپل‌واچ و ایرپاد نداریم 🙏\n"
+            "الان تمرکزمون روی آیفون، لوازم جانبی، اپل‌آیدی و خدمات نرم‌افزاریه.",
+   "suggest":["i_products","i_price"],
+   "offer":"بخواید هر وقت اضافه شد خبرتون کنیم؟","offer_to":"i_notify"},
   {"id":"i_accessory","button":"🎧 لوازم جانبی","action":"",
    "keys":["لوازم جانبی","قاب","گلس","شارژر","کابل","هندزفری","محافظ صفحه","کلگی"],
    "answer":"لوازم جانبی اپل هم داریم 👌 شارژر، کابل، قاب، گلس و…\n"
@@ -4460,7 +4469,7 @@ QUICK_INTENTS = ["i_price","i_install","i_advisor","i_human"]   # زیر سلا�
 # می‌شود؛ هر فیلدی که خودش نوشته دست‌نخورده می‌ماند. در کلیدواژه‌ها و
 # جمله‌های نمونه، فقط موردهای تازه اضافه می‌شوند — چیزی که ادمین پاک کرده
 # برنمی‌گردد. نیتی که ادمین حذف کرده هم دوباره ساخته نمی‌شود.
-SEED_VERSION = 4
+SEED_VERSION = 5
 _SEED_SCALARS = ("button","answer","action","suggest","offer","offer_to","enabled")
 _SEED_LISTS = ("keys","examples")
 
@@ -4629,7 +4638,7 @@ def add_trail(uid,iid,product=""):
 
 # اسم کوتاهِ هر موضوع، برای جمله‌هایی مثل «دفعه‌ی قبل درباره‌ی … پرسیده بودید»
 TOPIC_WORDS = {"i_price":"قیمت","i_stock":"موجودی","i_products":"محصولات",
-               "i_android":"گوشی غیر اپل","i_accessory":"لوازم جانبی",
+               "i_android":"گوشی غیر اپل","i_other":"سایر محصولات اپل","i_accessory":"لوازم جانبی",
                "i_condition":"آک یا کارکرده","i_registry":"رجیستری","i_install":"خرید اقساطی",
                "i_payment":"روش پرداخت","i_warranty":"گارانتی","i_return":"مهلت تست",
                "i_shipping":"ارسال","i_tradein":"معاوضه","i_software":"خدمات نرم‌افزاری",
@@ -4790,6 +4799,9 @@ ADV_TIPS = {
 adv_state: dict = {}     # uid → {"ts","dry","await",…جواب‌ها}
 ADV_TTL = 30*60
 
+def _adv_done(st):
+    return sum(1 for k in ("c","n","b","p","f") if k in st and not (k=="c" and st.get("c_auto")))
+
 def _adv_next(st):
     for k in ("c","n","b","p"):
         if k not in st: return k
@@ -4834,7 +4846,7 @@ async def adv_typed(msg,user,bot,st,text,a):
         await adv_step(msg,user,bot,choice=(step,val)); return True
     if a["intent"] and a["intent"].get("id")!="i_advisor":
         adv_state.pop(user.id,None); return False   # سؤال دیگری پرسید — مشاور کنار می‌رود
-    done=sum(1 for k in ("c","n","b","p","f") if k in st)
+    done=_adv_done(st)
     await msg.reply_text("متوجه نشدم 🙂")
     await _adv_ask(msg,step,done+1)
     return True
@@ -4860,10 +4872,11 @@ def adv_profile(st):
     return " · ".join(x for x in parts if x)
 
 async def adv_start(msg,user,dry=False,lead=""):
-    adv_state[user.id]={"ts":time.time(),"dry":dry}
+    # فعلاً فقط آیفون می‌فروشیم — سؤال «چه محصولی؟» لازم نیست
+    adv_state[user.id]={"ts":time.time(),"dry":dry,"c":"آیفون","c_auto":True}
     await msg.reply_text(_join(lead,"🎯 بذارید کمکتون کنم بهترین انتخاب رو بکنید — "
                                "فقط چند سؤال کوتاه، با یک تپ."),reply_markup=main_menu())
-    await _adv_ask(msg,"c",1)
+    await _adv_ask(msg,_adv_next(adv_state[user.id]),1)
 
 async def adv_step(msg,user,bot,step=None,idx=None,typed=None,choice=None):
     """جواب یک مرحله (دکمه یا بودجه‌ی تایپ‌شده) → سؤال بعدی یا جمع‌بندی."""
@@ -4890,7 +4903,7 @@ async def adv_step(msg,user,bot,step=None,idx=None,typed=None,choice=None):
     st["ts"]=time.time()
     nxt=_adv_next(st)
     if nxt:
-        done=sum(1 for k in ("c","n","b","p","f") if k in st)
+        done=_adv_done(st)
         await _adv_ask(msg,nxt,done+1); return
     await adv_finish(msg,user,bot,st)
 
@@ -5277,6 +5290,13 @@ async def assistant_reply(update,ctx,text,user,dry=False):
         if mood=="complaint": set_human(uid)
         return True
     if mood=="issue": lead=_join(lead,random.choice(brain.MOOD_LEADS["issue"]))
+
+    # ۲٫۵) محصولی که فعلاً نداریم (آیپد، مک‌بوک…) — قیمت و موجودی‌اش بی‌معنی است
+    oth=faq_item("i_other")
+    if oth and oth.get("enabled",True) and brain.product(text).startswith(INACTIVE_BRANDS):
+        await _typing(ctx.bot,msg.chat_id)
+        await run_intent(msg,oth,user,ctx.bot,lead=lead,dry=dry,text=text)
+        return True
 
     fresh=now-c.get("ts",0)<CTX_TTL
     prod=brain.carry_product(text,c.get("product","") if fresh else "")
