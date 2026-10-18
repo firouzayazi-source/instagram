@@ -83,6 +83,22 @@
 docker build -t ig-bot . && docker run -p 8000:8000 --env-file .env -v $(pwd)/data:/data ig-bot
 ```
 
+### ۵ (روش دیگه). سرور شخصی (VPS)
+پیش‌نیازها:
+- سرور **خارج از ایران** باشه. سرورهای داخل ایران به API تلگرام و Claude دسترسی ندارن.
+- Docker نصب باشه.
+- یه دامنه یا ساب‌دامنه داشته باشید که رکورد A اون به IP سرور اشاره کنه. تلگرام و متا فقط به آدرس HTTPS معتبر وصل می‌شن.
+- پورت‌های ۸۰ و ۴۴۳ باز باشن.
+
+```bash
+git clone https://github.com/firouzayazi-source/instagram.git && cd instagram
+cp .env.example .env && nano .env      # DOMAIN و بقیه رو پر کنید؛ PUBLIC_URL=https://<DOMAIN>
+docker compose up -d --build
+docker compose logs -f bot             # دیدن لاگ‌ها
+```
+Caddy گواهی HTTPS رو خودکار از Let's Encrypt می‌گیره و تمدید می‌کنه. دیتابیس توی پوشه‌ی `data/` می‌مونه.
+برای آپدیت: `git pull && docker compose up -d --build`.
+
 ### ۶. وصل کردن
 1. **تلگرام:** وقتی سرور بالا اومد، webhook تلگرام خودکار ثبت می‌شه. به ربات‌تون `/start` بفرستید. عددی که جواب می‌ده رو بذارید توی `TELEGRAM_ADMIN_CHAT_ID` و سرور رو ری‌استارت کنید. از این به بعد ربات فقط به شما جواب می‌ده.
 2. **اینستاگرام:** توی App متا، بخش **Webhooks** (زیر API setup with Instagram login):
