@@ -298,3 +298,14 @@ def test_quick_replies(manual):
 
 def test_empty_app_secret_rejects_everything():
     assert not verify_signature("", b"{}", "sha256=" + hmac.new(b"", b"{}", hashlib.sha256).hexdigest())
+
+
+def test_ig_check_command(env):
+    bot, client = env
+
+    async def me():
+        return {"user_id": OWN_ID, "username": "stockland", "account_type": "BUSINESS",
+                "followers_count": 1200, "media_count": 85}
+    bot.ig.me = me
+    say(client, "/ig")
+    assert "@stockland" in bot.tg.sent[-1]["text"] and "یکیه" in bot.tg.sent[-1]["text"]

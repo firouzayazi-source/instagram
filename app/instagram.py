@@ -120,6 +120,10 @@ class InstagramClient:
         except (InstagramError, httpx.HTTPError):
             return ""
 
+    async def me(self) -> dict:
+        """The account behind the token: user_id is the ID webhooks use."""
+        return await self._call("GET", "me", params={"fields": "user_id,username,account_type,followers_count,media_count"})
+
     async def refresh_token(self) -> tuple[str, int]:
         """Refresh the long-lived token. Returns (new_token, expires_in_seconds)."""
         data = await self._call("GET", "refresh_access_token", versioned=False,

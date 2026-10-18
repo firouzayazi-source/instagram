@@ -24,6 +24,7 @@ HELP = ("ربات فعاله ✅\nکامنت‌ها و دایرکت‌های ج�
         "/qr – جواب‌های آماده\n"
         "/qradd عنوان | متن – ساخت جواب آماده\n"
         "/qrdel شماره – حذف جواب آماده\n"
+        "/ig – چک اتصال اینستاگرام\n"
         "/token – تمدید توکن اینستاگرام")
 
 
@@ -190,6 +191,19 @@ class Bot:
             lines = [f"<b>{i}.</b> {esc(t)}\n{esc(short(b, 120))}" for i, t, b in qrs]
             await self.tg.send_message(chat_id, "⚡ <b>جواب‌های آماده</b>\n\n" + "\n\n".join(lines) +
                                        "\n\nحذف: <code>/qrdel شماره</code>")
+            return
+        if text.startswith("/ig"):
+            try:
+                me = await self.ig.me()
+                ok = str(me.get("user_id")) == self.s.ig_user_id
+                await self.tg.send_message(chat_id, (
+                    f"✅ توکن اینستاگرام کار می‌کنه\n"
+                    f"پیج: @{esc(str(me.get('username', '')))} ({esc(str(me.get('account_type', '')))})\n"
+                    f"فالوور: {me.get('followers_count', '?')} — پست: {me.get('media_count', '?')}\n"
+                    f"IG_USER_ID: <code>{esc(str(me.get('user_id', '')))}</code>\n" +
+                    ("✔ با .env یکیه" if ok else "⚠️ این عدد رو جلوی IG_USER_ID توی .env بذارید و ری‌استارت کنید")))
+            except (InstagramError, httpx.HTTPError) as e:
+                await self.tg.send_message(chat_id, f"✘ توکن اینستاگرام کار نکرد: {esc(short(str(e), 200))}")
             return
         if text.startswith("/token"):
             await self.tg.send_message(chat_id, await self.refresh_ig_token(force=True))
