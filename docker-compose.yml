@@ -7,15 +7,20 @@ services:
       DATA_DIR: /data
     volumes:
       - ./data:/data
+    # Only reachable from this machine; a reverse proxy (nginx, or the caddy profile below) serves HTTPS.
+    ports:
+      - "127.0.0.1:${BOT_PORT:-8010}:8000"
 
+  # For a fresh server with nothing on ports 80/443: docker compose --profile caddy up -d
   caddy:
     image: caddy:2
+    profiles: ["caddy"]
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     environment:
-      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+      DOMAIN: ${DOMAIN:-}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

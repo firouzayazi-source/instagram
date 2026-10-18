@@ -93,10 +93,13 @@ docker build -t ig-bot . && docker run -p 8000:8000 --env-file .env -v $(pwd)/da
 ```bash
 git clone https://github.com/firouzayazi-source/instagram.git && cd instagram
 cp .env.example .env && nano .env      # DOMAIN و بقیه رو پر کنید؛ PUBLIC_URL=https://<DOMAIN>
-docker compose up -d --build
+docker compose --profile caddy up -d --build
 docker compose logs -f bot             # دیدن لاگ‌ها
 ```
-Caddy گواهی HTTPS رو خودکار از Let's Encrypt می‌گیره و تمدید می‌کنه. دیتابیس توی پوشه‌ی `data/` می‌مونه.
+Caddy گواهی HTTPS رو خودکار از Let's Encrypt می‌گیره و تمدید می‌کنه.
+
+اگه روی سرور از قبل nginx روی ۸۰/۴۴۳ هست، Caddy رو روشن نکنید: `docker compose up -d --build` (ربات فقط روی `127.0.0.1:8010`)
+و سایت nginx رو از روی [`deploy/nginx-instagram-bot.conf`](deploy/nginx-instagram-bot.conf) بسازید و با certbot گواهی بگیرید. دیتابیس توی پوشه‌ی `data/` می‌مونه.
 برای آپدیت: `git pull && docker compose up -d --build`.
 
 ### ۶. وصل کردن
