@@ -16,6 +16,8 @@ from .telegram import TelegramClient
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("app")
+# httpx logs full request URLs, and the Telegram Bot API puts the bot token in the URL.
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 def build_bot(settings: Settings) -> Bot:
