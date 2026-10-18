@@ -24,7 +24,8 @@ def build_bot(settings: Settings) -> Bot:
                          user_id=settings.ig_user_id, api_version=settings.ig_api_version,
                          base_url=settings.ig_graph_url)
     tg = TelegramClient(settings.telegram_bot_token)
-    drafter = Drafter(settings.anthropic_api_key, settings.claude_model, settings.voice)
+    drafter = (Drafter(settings.anthropic_api_key, settings.claude_model, settings.voice)
+               if settings.anthropic_api_key else None)
     return Bot(settings, store, ig, tg, drafter)
 
 

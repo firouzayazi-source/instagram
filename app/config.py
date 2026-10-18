@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     telegram_webhook_secret: str
 
     # Claude
-    anthropic_api_key: str
+    anthropic_api_key: str = ""  # empty = no AI drafts; you write replies yourself
     claude_model: str = "claude-opus-5-5"
 
     # Deployment

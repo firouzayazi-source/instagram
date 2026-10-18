@@ -256,3 +256,45 @@ def test_token_refresh(env):
     say(client, "/token")
     assert bot.store.get("ig_token") == "new-token"
     assert "تمدید شد" in bot.tg.sent[-1]["text"]
+
+
+# ---------- without Claude ----------
+
+@pytest.fixture
+def manual():
+    bot = Bot(make_settings(anthropic_api_key=""), Store(":memory:"), FakeIG(), FakeTG(), None)
+    with TestClient(create_app(bot, background=False)) as client:
+        yield bot, client
+
+
+def test_manual_mode_card_has_no_draft(manual):
+    bot, client = manual
+    post_ig(client, comment_payload())
+    card = bot.tg.sent[0]
+    labels = [b["text"] for row in card["buttons"] for b in row]
+    assert "✏️ خودم می‌نویسم" in labels and "⚡ جواب آماده" in labels
+    assert "🔄 دوباره بنویس" not in labels and "✅ ارسال" not in labels
+    press(client, "ed:1")
+    say(client, "!این متن خود منه")
+    press(client, "ap:1")
+    assert bot.ig.replies == [("c1", "!این متن خود منه")]
+
+
+def test_quick_replies(manual):
+    bot, client = manual
+    say(client, "/qradd قیمت | سلام {name}، قیمت‌ها توی هایلایت هست.")
+    say(client, "/qr")
+    assert "قیمت" in bot.tg.sent[-1]["text"]
+    post_ig(client, comment_payload())
+    press(client, "qr:1")
+    assert bot.tg.sent[-1]["buttons"][0][0]["callback_data"] == "qp:1:1"
+    press(client, "qp:1:1")
+    assert "سلام ali، قیمت‌ها" in bot.tg.sent[-1]["text"]
+    press(client, "ap:1")
+    assert bot.ig.replies == [("c1", "سلام ali، قیمت‌ها توی هایلایت هست.")]
+    say(client, "/qrdel 1")
+    assert bot.store.quick_replies() == []
+
+
+def test_empty_app_secret_rejects_everything():
+    assert not verify_signature("", b"{}", "sha256=" + hmac.new(b"", b"{}", hashlib.sha256).hexdigest())

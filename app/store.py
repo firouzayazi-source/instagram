@@ -32,6 +32,11 @@ CREATE TABLE IF NOT EXISTS dm_history (
     ts      REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS dm_history_peer ON dm_history (peer_id, id);
+CREATE TABLE IF NOT EXISTS quick_replies (
+    id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    text  TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS kv (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -106,6 +111,21 @@ class Store:
             (peer_id, limit),
         ).fetchall()
         return [(r["role"], r["text"]) for r in reversed(rows)]
+
+    # quick replies
+    def add_quick_reply(self, title: str, text: str) -> int:
+        return self._exec("INSERT INTO quick_replies (title, text) VALUES (?, ?)", (title, text)).lastrowid
+
+    def quick_replies(self) -> list[tuple[int, str, str]]:
+        rows = self._exec("SELECT id, title, text FROM quick_replies ORDER BY id").fetchall()
+        return [(r["id"], r["title"], r["text"]) for r in rows]
+
+    def get_quick_reply(self, qr_id: int) -> tuple[str, str] | None:
+        row = self._exec("SELECT title, text FROM quick_replies WHERE id = ?", (qr_id,)).fetchone()
+        return (row["title"], row["text"]) if row else None
+
+    def delete_quick_reply(self, qr_id: int) -> bool:
+        return self._exec("DELETE FROM quick_replies WHERE id = ?", (qr_id,)).rowcount > 0
 
     # key-value
     def get(self, key: str, default: str | None = None) -> str | None:

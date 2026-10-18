@@ -17,6 +17,15 @@ log = logging.getLogger("bot")
 
 TOKEN_REFRESH_EVERY = 7 * 24 * 3600
 
+QR_HOWTO = ("برای ساختن: <code>/qradd عنوان | متن جواب</code>\n"
+            "<code>{name}</code> جای اسم کاربر می‌شینه.")
+
+HELP = ("ربات فعاله ✅\nکامنت‌ها و دایرکت‌های جدید اینجا میان.\n\n"
+        "/qr – جواب‌های آماده\n"
+        "/qradd عنوان | متن – ساخت جواب آماده\n"
+        "/qrdel شماره – حذف جواب آماده\n"
+        "/token – تمدید توکن اینستاگرام")
+
 
 def esc(s: str) -> str:
     return html.escape(s, quote=False)
@@ -29,7 +38,7 @@ def short(s: str, n: int) -> str:
 
 class Bot:
     def __init__(self, settings: Settings, store: Store, ig: InstagramClient, tg: TelegramClient,
-                 drafter: Drafter):
+                 drafter: Drafter | None):
         self.s = settings
         self.store = store
         self.ig = ig
@@ -67,6 +76,10 @@ class Bot:
         await self.draft_and_notify(self.store.get_item(item.id))
 
     async def draft_and_notify(self, item: Item, instruction: str = "") -> None:
+        if self.drafter is None:  # no Claude key: the owner writes or picks a quick reply
+            self.store.update_item(item.id, status="pending", error="")
+            await self._post_card(self.store.get_item(item.id))
+            return
         history = self.store.dm_history(item.sender_id)[:-1] if item.kind == "dm" else None
         try:
             d = await self.drafter.draft(kind=item.kind, text=item.text, username=item.username,
@@ -94,7 +107,7 @@ class Bot:
             lines.append(f"🏷 دسته: {CATEGORY_LABELS.get(item.category, item.category)}")
         if item.draft:
             lines.append(f"✍️ <b>پیش‌نویس:</b>\n<blockquote>{esc(item.draft)}</blockquote>")
-        else:
+        elif self.drafter:
             lines.append("✍️ پیشنهاد: <b>بی‌جواب</b>")
         if item.note:
             lines.append(f"ℹ️ {esc(item.note)}")
@@ -113,7 +126,8 @@ class Bot:
         i = item.id
         row1 = ([{"text": "✅ ارسال", "callback_data": f"ap:{i}"}] if item.draft else []) + \
                [{"text": "✏️ ویرایش" if item.draft else "✏️ خودم می‌نویسم", "callback_data": f"ed:{i}"}]
-        row2 = [{"text": "🔄 دوباره بنویس", "callback_data": f"rg:{i}"}]
+        row1.append({"text": "⚡ جواب آماده", "callback_data": f"qr:{i}"})
+        row2 = [{"text": "🔄 دوباره بنویس", "callback_data": f"rg:{i}"}] if self.drafter else []
         if item.kind == "comment":
             row2.append({"text": "🙈 مخفی کن", "callback_data": f"hd:{i}"})
         row2.append({"text": "❌ رد", "callback_data": f"sk:{i}"})
@@ -153,8 +167,29 @@ class Bot:
                              "این عدد را در TELEGRAM_ADMIN_CHAT_ID بگذارید و سرور را ری‌استارت کنید.")
             return
         if text.startswith("/start") or text.startswith("/help"):
-            await self.tg.send_message(chat_id, "ربات فعاله ✅\nکامنت‌ها و دایرکت‌های جدید اینجا برای تأیید میان.\n"
-                                                "/token – تمدید توکن اینستاگرام")
+            await self.tg.send_message(chat_id, HELP)
+            return
+        if text.startswith("/qradd"):
+            title, sep, body = text.removeprefix("/qradd").partition("|")
+            if not sep or not title.strip() or not body.strip():
+                await self.tg.send_message(chat_id, "شکلش این‌طوریه:\n<code>/qradd قیمت | سلام {name}، قیمت‌ها توی هایلایت هست.</code>")
+                return
+            qr_id = self.store.add_quick_reply(title.strip(), body.strip())
+            await self.tg.send_message(chat_id, f"✅ جواب آماده‌ی شماره‌ی {qr_id} ذخیره شد.")
+            return
+        if text.startswith("/qrdel"):
+            arg = text.removeprefix("/qrdel").strip()
+            done = arg.isdigit() and self.store.delete_quick_reply(int(arg))
+            await self.tg.send_message(chat_id, "🗑 حذف شد." if done else "شماره پیدا نشد. فهرست: /qr")
+            return
+        if text.startswith("/qr"):
+            qrs = self.store.quick_replies()
+            if not qrs:
+                await self.tg.send_message(chat_id, "هنوز جواب آماده‌ای نیست.\n" + QR_HOWTO)
+                return
+            lines = [f"<b>{i}.</b> {esc(t)}\n{esc(short(b, 120))}" for i, t, b in qrs]
+            await self.tg.send_message(chat_id, "⚡ <b>جواب‌های آماده</b>\n\n" + "\n\n".join(lines) +
+                                       "\n\nحذف: <code>/qrdel شماره</code>")
             return
         if text.startswith("/token"):
             await self.tg.send_message(chat_id, await self.refresh_ig_token(force=True))
@@ -168,7 +203,7 @@ class Bot:
         item = self.store.get_item(int(pending))
         if not item or item.status not in ("pending", "failed"):
             return
-        if text.startswith("!"):
+        if text.startswith("!") and self.drafter:
             await self.draft_and_notify(item, instruction=text[1:].strip())
         else:
             self.store.update_item(item.id, draft=text, note="متن خودتان", status="pending", error="")
@@ -180,7 +215,8 @@ class Bot:
             await self.tg.answer_callback(cq["id"], "دسترسی ندارید")
             return
         action, _, raw_id = cq.get("data", "").partition(":")
-        item = self.store.get_item(int(raw_id)) if raw_id.isdigit() else None
+        item_part = raw_id.partition(":")[0]
+        item = self.store.get_item(int(item_part)) if item_part.isdigit() else None
         if not item or item.status not in ("pending", "failed"):
             await self.tg.answer_callback(cq["id"], "این مورد قبلاً بسته شده")
             return
@@ -191,10 +227,27 @@ class Bot:
         elif action == "ed":
             self.store.set("await_edit", str(item.id))
             await self.tg.answer_callback(cq["id"])
-            await self.tg.send_message(
-                self.admin, "متن جواب را بفرستید.\nاگر با <b>!</b> شروع کنید، دستور بازنویسی برای Claude است "
-                            "(مثلاً: <code>!کوتاه‌تر و خودمونی‌تر</code>).", force_reply=True)
-        elif action == "rg":
+            hint = ("\nاگر با <b>!</b> شروع کنید، دستور بازنویسی برای Claude است "
+                    "(مثلاً: <code>!کوتاه‌تر و خودمونی‌تر</code>).") if self.drafter else ""
+            await self.tg.send_message(self.admin, "متن جواب را بفرستید." + hint, force_reply=True)
+        elif action == "qr":
+            await self.tg.answer_callback(cq["id"])
+            qrs = self.store.quick_replies()
+            if not qrs:
+                await self.tg.send_message(self.admin, "هنوز جواب آماده‌ای نیست.\n" + QR_HOWTO)
+                return
+            buttons = [[{"text": short(t, 40), "callback_data": f"qp:{item.id}:{i}"}] for i, t, _ in qrs[:30]]
+            await self.tg.send_message(self.admin, "کدوم جواب آماده؟", buttons)
+        elif action == "qp":
+            await self.tg.answer_callback(cq["id"])
+            item_id, _, qr_raw = raw_id.partition(":")
+            qr = self.store.get_quick_reply(int(qr_raw)) if qr_raw.isdigit() else None
+            if qr:
+                title, body = qr
+                body = body.replace("{name}", item.username or "").replace("  ", " ")
+                self.store.update_item(item.id, draft=body, note=f"جواب آماده: {title}", status="pending", error="")
+                await self._post_card(self.store.get_item(item.id))
+        elif action == "rg" and self.drafter:
             await self.tg.answer_callback(cq["id"], "در حال بازنویسی…")
             await self.draft_and_notify(item, instruction="یک نسخه‌ی متفاوت با پیش‌نویس قبلی بنویس.")
         elif action == "hd" and item.kind == "comment":
@@ -241,6 +294,8 @@ class Bot:
     # ---------- token upkeep ----------
 
     async def refresh_ig_token(self, force: bool = False) -> str:
+        if not (self.store.get("ig_token") or self.s.ig_access_token):
+            return "توکن اینستاگرام هنوز تنظیم نشده."
         last = self.store.get("ig_token_refreshed_at")
         if last is None and not force:
             # First start: the token was just generated (valid 60 days), so start the clock now.
