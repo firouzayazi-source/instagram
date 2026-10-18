@@ -13,7 +13,11 @@ echo "== 1) DNS"
 MYIP=$(curl -4 -s -m 8 https://api.ipify.org || true)
 DNSIP=$(getent ahostsv4 "$DOMAIN" | awk '{print $1; exit}' || true)
 if [ -z "$DNSIP" ]; then echo "✘ $DOMAIN هنوز به هیچ IP اشاره نمی‌کند. چند دقیقه بعد دوباره اجرا کنید."; exit 1; fi
-if [ "$DNSIP" != "$MYIP" ]; then echo "✘ $DOMAIN به $DNSIP اشاره می‌کند ولی IP این سرور $MYIP است."; exit 1; fi
+if [ "$DNSIP" != "$MYIP" ]; then
+  echo "✘ $DOMAIN به $DNSIP اشاره می‌کند ولی IP این سرور $MYIP است."
+  echo "  اگر رکورد در Cloudflare است: ابر نارنجی (Proxied) را خاکستری کنید (DNS only)، مثل بقیه‌ی رکوردهای stland.ir."
+  exit 1
+fi
 echo "✔ $DOMAIN -> $DNSIP"
 
 echo "== 2) .env"
