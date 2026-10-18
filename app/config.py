@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     data_dir: Path = Path("data")
     voice_file: Path = Path("voice.md")
     dm_window_hours: int = 24
+    # Outbound calls over IPv4 only (some servers have a broken IPv6 route that stalls TLS)
+    force_ipv4: bool = True
 
     @field_validator("telegram_admin_chat_id", mode="before")
     @classmethod

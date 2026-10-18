@@ -3,6 +3,7 @@ import hmac
 import logging
 from contextlib import asynccontextmanager
 
+import httpx
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse
 
@@ -19,11 +20,14 @@ log = logging.getLogger("app")
 
 def build_bot(settings: Settings) -> Bot:
     store = Store(settings.data_dir / "bot.db")
+    # local_address 0.0.0.0 makes every outbound connection use IPv4.
+    transport = httpx.AsyncHTTPTransport(local_address="0.0.0.0", retries=2) if settings.force_ipv4 else None
+    http = httpx.AsyncClient(timeout=20, transport=transport)
     # A refreshed token is kept in the database and wins over the one in the environment.
     ig = InstagramClient(token_getter=lambda: store.get("ig_token") or settings.ig_access_token,
                          user_id=settings.ig_user_id, api_version=settings.ig_api_version,
-                         base_url=settings.ig_graph_url)
-    tg = TelegramClient(settings.telegram_bot_token)
+                         base_url=settings.ig_graph_url, http=http)
+    tg = TelegramClient(settings.telegram_bot_token, http=http)
     drafter = (Drafter(settings.anthropic_api_key, settings.claude_model, settings.voice)
                if settings.anthropic_api_key else None)
     return Bot(settings, store, ig, tg, drafter)
@@ -40,7 +44,7 @@ async def _register_webhook(bot: Bot) -> None:
             log.info("Telegram webhook registered")
             return
         except Exception as e:
-            log.warning("could not register Telegram webhook (attempt %d): %s", attempt + 1, e)
+            log.warning("could not register Telegram webhook (attempt %d): %r", attempt + 1, e)
             await asyncio.sleep(10 * (attempt + 1))
 
 
