@@ -7,6 +7,8 @@ import anthropic
 
 CATEGORIES = ["keyword", "lead", "substance", "question", "support", "noise", "critic"]
 
+FALLBACK_MODELS = {"claude-fable-5-1", "claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5"}
+
 CATEGORY_LABELS = {
     "keyword": "کلمه‌ی کلیدی",
     "lead": "مشتری احتمالی",
@@ -101,11 +103,14 @@ class Drafter:
         if instruction:
             parts.append(f"دستور صاحب پیج برای این جواب: {instruction}")
 
+        # Server-side refusal fallback exists only for some models (not Haiku).
+        extra = {}
+        if self._model in FALLBACK_MODELS:
+            extra = dict(betas=["server-side-fallback-2026-07-01"], fallbacks="default")
         response = await self._client.beta.messages.create(
             model=self._model,
             max_tokens=4000,
-            betas=["server-side-fallback-2026-07-01"],
-            fallbacks="default",
+            **extra,
             system=self._system,
             output_config={"effort": "low", "format": {"type": "json_schema", "schema": SCHEMA}},
             messages=[{"role": "user", "content": "\n\n".join(parts)}],
