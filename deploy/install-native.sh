@@ -56,13 +56,18 @@ EOF
 systemctl daemon-reload
 systemctl enable -q instagram-bot
 systemctl restart instagram-bot
-sleep 3
 
-if curl -s -m 5 http://127.0.0.1:8010/ | grep -q '"ok"'; then
+up=""
+for i in $(seq 1 30); do
+  if curl -s -m 2 http://127.0.0.1:8010/ | grep -q '"ok"'; then up=1; break; fi
+  sleep 1
+done
+if [ -n "$up" ]; then
   echo "✅ ربات روشن است"
 else
   echo "✘ ربات بالا نیامد. لاگ:"
   journalctl -u instagram-bot -n 30 --no-pager
   exit 1
 fi
-journalctl -u instagram-bot -n 10 --no-pager | grep -E "Telegram webhook|ERROR|Traceback" || true
+sleep 5
+journalctl -u instagram-bot -n 20 --no-pager | grep -E "Telegram webhook|WARNING|ERROR|Traceback" || true

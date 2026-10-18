@@ -29,6 +29,21 @@ def build_bot(settings: Settings) -> Bot:
     return Bot(settings, store, ig, tg, drafter)
 
 
+async def _register_webhook(bot: Bot) -> None:
+    if not bot.s.public_url:
+        log.warning("PUBLIC_URL is not set; Telegram webhook not registered")
+        return
+    for attempt in range(5):
+        try:
+            await bot.tg.set_webhook(f"{bot.s.public_url.rstrip('/')}/telegram/webhook",
+                                     bot.s.telegram_webhook_secret)
+            log.info("Telegram webhook registered")
+            return
+        except Exception as e:
+            log.warning("could not register Telegram webhook (attempt %d): %s", attempt + 1, e)
+            await asyncio.sleep(10 * (attempt + 1))
+
+
 async def _token_loop(bot: Bot) -> None:
     while True:
         msg = await bot.refresh_ig_token()
@@ -46,19 +61,13 @@ def create_app(bot: Bot | None = None, *, background: bool = True) -> FastAPI:
         if app.state.bot is None:
             app.state.bot = build_bot(Settings())
         b: Bot = app.state.bot
-        task = None
+        tasks = []
         if background:
-            if b.s.public_url:
-                try:
-                    await b.tg.set_webhook(f"{b.s.public_url.rstrip('/')}/telegram/webhook",
-                                           b.s.telegram_webhook_secret)
-                    log.info("Telegram webhook registered")
-                except Exception:
-                    log.exception("could not register Telegram webhook")
-            task = asyncio.create_task(_token_loop(b))
+            # Don't block startup on network calls.
+            tasks = [asyncio.create_task(_register_webhook(b)), asyncio.create_task(_token_loop(b))]
         yield
-        if task:
-            task.cancel()
+        for t in tasks:
+            t.cancel()
 
     app = FastAPI(title="Instagram reply bot", lifespan=lifespan)
     app.state.bot = bot
