@@ -101,6 +101,7 @@ docker compose logs -f bot             # دیدن لاگ‌ها
 Caddy گواهی HTTPS رو خودکار از Let's Encrypt می‌گیره و تمدید می‌کنه.
 
 اگه روی سرور از قبل nginx روی ۸۰/۴۴۳ هست، Caddy رو روشن نکنید: `docker compose up -d --build` (ربات فقط روی `127.0.0.1:8010`)
+(اگه Docker Hub در دسترس نبود، بدون Docker: `bash deploy/install-native.sh` که با venv و systemd روی همون پورت ۸۰۱۰ اجراش می‌کنه)
 و سایت nginx رو از روی [`deploy/nginx-instagram-bot.conf`](deploy/nginx-instagram-bot.conf) بسازید و با certbot گواهی بگیرید. دیتابیس توی پوشه‌ی `data/` می‌مونه.
 برای آپدیت: `git pull && docker compose up -d --build`.
 
