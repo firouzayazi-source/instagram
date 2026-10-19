@@ -39,6 +39,8 @@ env/
 Thumbs.db
 
 # ── Bot runtime data (generated, not in repo)
+data.json
+banner.json
 workhours.json
 buttons.json
 settings.json
