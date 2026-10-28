@@ -681,7 +681,9 @@ async def init_db():
                 "ALTER TABLE users ADD COLUMN mem_greet_at TEXT DEFAULT ''",
                 "ALTER TABLE users ADD COLUMN mem_profile TEXT DEFAULT ''",
                 # مدیری که گفتگو با این مشتری به او سپرده شده (۰ = همه‌ی مدیرها)
-                "ALTER TABLE users ADD COLUMN assignee INTEGER DEFAULT 0"]:
+                "ALTER TABLE users ADD COLUMN assignee INTEGER DEFAULT 0",
+                # تاپیکِ این مشتری در گروه پشتیبانی (۰ = هنوز ندارد)
+                "ALTER TABLE users ADD COLUMN topic_id INTEGER DEFAULT 0"]:
         try: await db.execute(sql)
         except Exception as e:
             # «ستون تکراری» یعنی مهاجرت قبلاً انجام شده — بقیه خطاها واقعی‌اند
@@ -772,6 +774,61 @@ def reply_kb(uid):
     return InlineKeyboardMarkup([row])
 
 REPLY_HINT="↩️ برای پاسخ «✍️ پاسخ» را بزنید یا روی همین پیام ریپلای کنید."
+
+# ── گروه پشتیبانی با تاپیک: هر مشتری یک تاپیک جدا، تیم داخل همان تاپیک
+# عادی می‌نویسد و ربات برای مشتری می‌فرستد. با ده مشتری هم‌زمان چیزی قاطی نمی‌شود.
+TOPIC_HINT=("✍️ برای پاسخ، همین‌جا عادی بنویسید — هر پیامی برای مشتری می‌رود.\n"
+            "📝 یادداشت داخلی (برای مشتری نمی‌رود): با ! یا @ شروع کنید.")
+
+def support_group(): return settings.get("support_group") or 0
+
+async def topic_of(uid):
+    async with db.execute("SELECT topic_id FROM users WHERE user_id=?",(uid,)) as c:
+        r=await c.fetchone()
+    return r[0] if r and r[0] else 0
+
+async def set_topic(uid,tid):
+    await db.execute("UPDATE users SET topic_id=? WHERE user_id=?",(tid,uid)); await db.commit()
+
+async def topic_customer(tid):
+    async with db.execute("SELECT user_id FROM users WHERE topic_id=?",(tid,)) as c:
+        r=await c.fetchone()
+    return r[0] if r else None
+
+async def to_topic(bot,user,card,send=None,note=""):
+    """پیام مشتری را در تاپیکِ خودش در گروه پشتیبانی می‌گذارد.
+
+    تاپیک اولین بار ساخته می‌شود و کارت شناخت مشتری اولش می‌نشیند؛ بعد از آن
+    فقط send(gid,tid) (مثلاً فوروارد پیام) و یادداشت کوتاه note. تاپیکی که تیم
+    پاک کرده یک‌بار از نو ساخته می‌شود. False یعنی گروه نیست یا نرسید — آن وقت
+    کارت مثل قبل به چت خصوصی مدیرها می‌رود.
+    """
+    gid=support_group()
+    if not gid: return False
+    for _ in range(2):
+        tid=await topic_of(user.id); new=not tid
+        try:
+            if new:
+                name=" ".join(x for x in (user.first_name,f"@{user.username}" if user.username else "") if x)
+                t=await bot.create_forum_topic(gid,_fit(f"{name or '—'} · {user.id}",120))
+                tid=t.message_thread_id; await set_topic(user.id,tid)
+                await bot.send_message(gid,f"{card}\n{HR}\n{TOPIC_HINT}",parse_mode="HTML",
+                                       message_thread_id=tid)
+            if send: await send(gid,tid)
+            if note and not new:          # تاپیکِ تازه همین را در کارت اولش دارد
+                await bot.send_message(gid,note,parse_mode="HTML",message_thread_id=tid)
+            return True
+        except BadRequest as e:
+            err=str(e).lower()
+            if "closed" in err:          # تاپیکِ بسته‌شده با پیام تازه‌ی مشتری دوباره باز می‌شود
+                try: await bot.reopen_forum_topic(gid,tid); continue
+                except Exception: pass
+            if not new and ("thread" in err or "topic" in err):
+                await set_topic(user.id,0); continue      # تیم تاپیک را پاک کرده
+            logger.error(f"topic {user.id}: {e}"); return False
+        except Exception as e:
+            logger.error(f"topic {user.id}: {e}"); return False
+    return False
 
 # ── کارت شناخت مشتری
 async def customer_card(uid):
@@ -1382,7 +1439,13 @@ async def _pending_loop(bot):
     while True:
         try:
             for uid,fn in await open_stale(2):
-                for aid in admin_ids():
+                tid=await topic_of(uid)
+                if tid and support_group():
+                    try:
+                        await bot.send_message(support_group(),
+                            f"⏰ پیام {fn or uid} بیش از ۲ ساعت بی‌جواب مانده.",message_thread_id=tid)
+                    except Exception as e: logger.debug(f"reminder topic {uid}: {e}")
+                for aid in ([] if tid and support_group() else admin_ids()):
                     mid=await thread_last_msg(aid,uid)
                     if mid is None: continue
                     try:
@@ -2728,6 +2791,35 @@ async def cmd_badword(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         return await update.message.reply_text(f"➖ «{word}» برداشته شد.")
     if word not in extra: extra.append(word); await save_settings()
     await update.message.reply_text(f"➕ «{word}» اضافه شد — از این به بعد تذکر می‌گیرد.")
+
+async def cmd_setgroup(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    """/setgroup — داخل گروه پشتیبانی (با Topics روشن) بزنید تا هر مشتری تاپیک
+    خودش را بگیرد. در چت خصوصی: وضعیت؛ «/setgroup off» یعنی برگشت به چت خصوصی."""
+    user=update.effective_user; chat=update.effective_chat; msg=update.message
+    if not is_admin(user.id) or msg is None: return
+    if chat.type=="private":
+        if (getattr(ctx,"args",None) or [""])[0]=="off" and support_group():
+            settings.pop("support_group",None); await save_settings()
+            return await msg.reply_text("✅ گروه پشتیبانی برداشته شد؛ پیام مشتری‌ها دوباره به همین چت می‌آید.")
+        return await msg.reply_text(
+            ("🟢 گروه پشتیبانی فعال است.\nبرداشتن:  /setgroup off" if support_group() else
+             "⚫️ گروه پشتیبانی تنظیم نشده.\n\n"
+             "۱) یک گروه بسازید و در تنظیماتش Topics را روشن کنید.\n"
+             "۲) ربات را عضو و ادمین گروه کنید (با دسترسی مدیریت تاپیک‌ها).\n"
+             "۳) داخل همان گروه بنویسید:  /setgroup"))
+    if not getattr(chat,"is_forum",False):
+        return await msg.reply_text("❌ Topics در این گروه روشن نیست. از تنظیمات گروه روشنش کنید و دوباره /setgroup بزنید.")
+    try:      # آزمایش واقعی: اگر ربات نتواند تاپیک بسازد، همین حالا بگوییم نه وقت پیام مشتری
+        t=await ctx.bot.create_forum_topic(chat.id,"✅ آزمایش ربات")
+        await ctx.bot.delete_forum_topic(chat.id,t.message_thread_id)
+    except Exception as e:
+        return await msg.reply_text(f"❌ ربات نمی‌تواند تاپیک بسازد. ربات را ادمین گروه کنید و "
+                                    f"دسترسی «مدیریت تاپیک‌ها» بدهید، بعد دوباره /setgroup.\n({e})")
+    if support_group()!=chat.id:
+        settings["support_group"]=chat.id; await save_settings()
+        await db.execute("UPDATE users SET topic_id=0"); await db.commit()  # تاپیک‌های گروه قبلی به کار نمی‌آیند
+    await msg.reply_text("✅ این گروه، گروه پشتیبانی شد.\nاز این به بعد هر مشتری که پیام بدهد "
+                         "تاپیک خودش را اینجا می‌گیرد؛ داخل تاپیک عادی بنویسید تا برایش برود.")
 
 async def cmd_test(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     """/test — مدیر مثل مشتری با دستیار حرف بزند (روشن/خاموش)."""
@@ -4209,13 +4301,18 @@ async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",a
     if auto:
         # مدیر باید بداند مشتری همین حالا یک جواب گرفته — تا جواب تکراری ندهد
         card += f"\n✅ پاسخ خودکار داده شد: «{esc(faq_title(auto))}»"
+    async def fwd_topic(gid,tid):
+        await ctx.bot.forward_message(gid,msg.chat_id,msg.message_id,message_thread_id=tid)
+    note=""
+    if auto: note=f"✅ پاسخ خودکار داده شد: «{esc(faq_title(auto))}»"
+    elif urgent: note=f"<b>{esc(head)}</b>"
+    delivered=1 if await to_topic(ctx.bot,user,card,fwd_topic,note) else 0
     asg=await get_assignee(user.id)
     if asg: card += f"\n👮 مسئول: {esc(await admin_label(asg))}"
     card += "\n"+REPLY_HINT
-    delivered=0
     # به همه‌ی مدیرها (یا فقط مدیرِ مسئول) می‌رود تا هرکس زودتر دید جواب بدهد؛
     # خطای یکی نباید جلوی بقیه را بگیرد.
-    for aid in await card_targets(user.id):
+    for aid in ([] if delivered else await card_targets(user.id)):
         try:
             fwd=await ctx.bot.forward_message(aid,msg.chat_id,msg.message_id)
             note=await ctx.bot.send_message(aid,card,parse_mode="HTML",
@@ -4300,6 +4397,29 @@ async def reply_relay(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         target=ctx.user_data.get("chat_with")
         if (target is None or ctx.user_data.get("mode")
                 or (msg.text or "").strip() in _menu_texts()): return
+    await deliver_reply(ctx,msg,target,src)
+
+async def topic_relay(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    """پیام تیم داخل تاپیکِ یک مشتری در گروه پشتیبانی → برای همان مشتری.
+
+    گروه خصوصیِ خود تیم است، پس هر عضوی که آنجا بنویسد جواب می‌دهد. هیچ پیام
+    گروهی به مسیرهای مشتری (دستیار، منو) نمی‌رسد — وگرنه ربات وسط گروه جواب می‌داد.
+    """
+    msg=update.message
+    if msg is None or msg.chat.type=="private": return
+    if msg.chat_id!=support_group() or not msg.is_topic_message or not msg.from_user \
+            or msg.from_user.is_bot or not (msg.text or msg.effective_attachment):
+        # پیام‌های سیستمی تاپیک (ساخت، بستن، سنجاق…) محتوایی برای مشتری ندارند
+        raise ApplicationHandlerStop
+    body=(msg.text or msg.caption or "").lstrip()
+    if body.startswith(("!","@")): raise ApplicationHandlerStop   # یادداشت داخلی تیم
+    target=await topic_customer(msg.message_thread_id)
+    if target is None: raise ApplicationHandlerStop
+    await deliver_reply(ctx,msg,target,msg.reply_to_message)
+    raise ApplicationHandlerStop
+
+async def deliver_reply(ctx,msg,target,src):
+    """پاسخ تیم (از چت خصوصی یا تاپیک) را برای مشتری می‌فرستد."""
     # میان‌بر: به‌جای تایپ دوباره‌ی متن، فقط #کلیدواژه — همان جواب آماده می‌رود.
     # با دو مدیر یعنی جواب‌ها یکدست هم می‌مانند.
     body=(msg.text or "").strip()
@@ -4320,7 +4440,7 @@ async def reply_relay(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             logger.error(f"faq shortcut → {target}: {e}")
             await msg.reply_text(f"❌ ارسال نشد: {e}"); raise ApplicationHandlerStop
         it["hits"]=it.get("hits",0)+1; await save_faq()
-        await link_thread(user.id,msg.message_id,target)
+        await link_thread(msg.chat_id,msg.message_id,target)
         await mark_answered(target); set_human(target)
         await _ok_mark(ctx.bot,msg,f"✅ «{faq_title(it)}» ارسال شد")
         # جواب # یعنی «این سؤال همان نیت است» — دستیار همین را یاد می‌گیرد
@@ -4347,7 +4467,7 @@ async def reply_relay(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         await msg.reply_text(f"❌ ارسال نشد: {e}")
         raise ApplicationHandlerStop
     # پاسخ خودِ مدیر هم به همین مشتری گره می‌خورد تا رشته ادامه پیدا کند
-    await link_thread(user.id,msg.message_id,target)
+    await link_thread(msg.chat_id,msg.message_id,target)
     await mark_answered(target); set_human(target)
     await _ok_mark(ctx.bot,msg)
     # جوابِ متنیِ مدیر به سؤالی که دستیار نفهمیده بود، کنار همان سؤال
@@ -5307,8 +5427,9 @@ async def notify_handoff(bot,user,why="درخواست صحبت با همکار",
         more=await customer_card(user.id)
         if more: card+=f"\n{HR}\n{more}"
     except Exception: pass
+    topic=await to_topic(bot,user,card,note=card)
     card+="\n"+REPLY_HINT
-    for aid in await card_targets(user.id):
+    for aid in ([] if topic else await card_targets(user.id)):
         try:
             m=await bot.send_message(aid,card,parse_mode="HTML",reply_markup=reply_kb(user.id))
             await link_thread(aid,m.message_id,user.id)
@@ -5522,7 +5643,7 @@ async def check_abuse(update,ctx,text,user,dry=False):
               f"👤 {esc(user.first_name or '—')}"+(f"  ·  @{esc(user.username)}" if user.username else "")+
               f"\n🆔 <code>{uid}</code>\n💬 «{esc(_fit(text,120))}»\n"
               "↩️ اگر لازم است، روی همین پیام ریپلای کنید.")
-        for aid in admin_ids():
+        for aid in ([] if await to_topic(ctx.bot,user,card,note=card) else admin_ids()):
             try:
                 m=await ctx.bot.send_message(aid,card,parse_mode="HTML")
                 await link_thread(aid,m.message_id,uid)
@@ -5862,7 +5983,9 @@ def main():
     # گروه ۱- : ریپلای مدیر روی پیام مشتری زودتر از هر هندلر دیگری دیده می‌شود.
     # اگر واقعاً پاسخ بود، ApplicationHandlerStop جلوی پردازش دوباره را می‌گیرد؛
     # وگرنه پیام مسیر عادی خودش را ادامه می‌دهد.
+    app.add_handler(MessageHandler(~filters.COMMAND,topic_relay),group=-2)
     app.add_handler(MessageHandler(~filters.COMMAND,reply_relay),group=-1)
+    app.add_handler(CommandHandler("setgroup",cmd_setgroup))
     app.add_handler(CommandHandler("start",cmd_start))
     app.add_handler(CommandHandler("help",cmd_help))
     app.add_handler(CommandHandler("admin",cmd_admin))
