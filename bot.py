@@ -2796,7 +2796,13 @@ async def cmd_setgroup(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     """/setgroup — داخل گروه پشتیبانی (با Topics روشن) بزنید تا هر مشتری تاپیک
     خودش را بگیرد. در چت خصوصی: وضعیت؛ «/setgroup off» یعنی برگشت به چت خصوصی."""
     user=update.effective_user; chat=update.effective_chat; msg=update.message
-    if not is_admin(user.id) or msg is None: return
+    if msg is None: return
+    logger.info(f"/setgroup از {user.id if user else '—'} در {chat.type} {chat.id}")
+    if not user or not is_admin(user.id):
+        # بی‌صدا نماند: مدیر ناشناس گروه یا حساب دیگر، علت را همین‌جا ببیند
+        anon=" — به نظر می‌رسد «ناشناس» (Remain anonymous) پیام می‌دهید" if msg.sender_chat else ""
+        return await msg.reply_text(f"⛔ فقط مدیر ربات می‌تواند گروه را تنظیم کند.\n"
+                                    f"آیدی فرستنده: {user.id if user else '—'}{anon}")
     if chat.type=="private":
         if (getattr(ctx,"args",None) or [""])[0]=="off" and support_group():
             settings.pop("support_group",None); await save_settings()
