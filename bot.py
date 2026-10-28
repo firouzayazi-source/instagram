@@ -2825,7 +2825,8 @@ async def cmd_setgroup(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         settings["support_group"]=chat.id; await save_settings()
         await db.execute("UPDATE users SET topic_id=0"); await db.commit()  # تاپیک‌های گروه قبلی به کار نمی‌آیند
     await msg.reply_text("✅ این گروه، گروه پشتیبانی شد.\nاز این به بعد هر مشتری که پیام بدهد "
-                         "تاپیک خودش را اینجا می‌گیرد؛ داخل تاپیک عادی بنویسید تا برایش برود.")
+                         "تاپیک خودش را اینجا می‌گیرد؛ داخل تاپیک عادی بنویسید تا برایش برود.",
+                         reply_markup=ReplyKeyboardRemove())   # منوی مشتری که قبلاً در گروه مانده پاک شود
 
 async def cmd_test(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     """/test — مدیر مثل مشتری با دستیار حرف بزند (روشن/خاموش)."""
