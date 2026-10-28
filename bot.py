@@ -548,6 +548,9 @@ def menu_sorted():
     """آیتم‌های منو مرتب‌شده بر اساس order."""
     return sorted(menu_cfg, key=lambda m: m.get("order", 99))
 
+def _menu_texts():
+    return {m.get("label","") for m in menu_cfg} | {"❌ لغو عملیات"}
+
 def menu_item(key):
     return next((m for m in menu_cfg if m["key"] == key), None)
 
@@ -676,7 +679,9 @@ async def init_db():
                 "ALTER TABLE users ADD COLUMN mem_product TEXT DEFAULT ''",
                 "ALTER TABLE users ADD COLUMN mem_at TEXT DEFAULT ''",
                 "ALTER TABLE users ADD COLUMN mem_greet_at TEXT DEFAULT ''",
-                "ALTER TABLE users ADD COLUMN mem_profile TEXT DEFAULT ''"]:
+                "ALTER TABLE users ADD COLUMN mem_profile TEXT DEFAULT ''",
+                # مدیری که گفتگو با این مشتری به او سپرده شده (۰ = همه‌ی مدیرها)
+                "ALTER TABLE users ADD COLUMN assignee INTEGER DEFAULT 0"]:
         try: await db.execute(sql)
         except Exception as e:
             # «ستون تکراری» یعنی مهاجرت قبلاً انجام شده — بقیه خطاها واقعی‌اند
@@ -745,6 +750,28 @@ async def thread_last_msg(admin_id,user_id):
         (admin_id,user_id)) as c:
         r=await c.fetchone()
     return r[0] if r else None
+
+# ── سپردن گفتگو به یک مدیر: پیام‌های بعدی آن مشتری فقط برای همان مدیر می‌رود
+async def get_assignee(uid):
+    async with db.execute("SELECT assignee FROM users WHERE user_id=?",(uid,)) as c:
+        r=await c.fetchone()
+    return r[0] if r and r[0] in _admins else 0   # مدیرِ حذف‌شده یعنی دوباره همه
+
+async def set_assignee(uid,aid):
+    await db.execute("UPDATE users SET assignee=? WHERE user_id=?",(aid,uid)); await db.commit()
+
+async def card_targets(uid):
+    """مدیرهایی که کارت پیام این مشتری را می‌گیرند."""
+    a=await get_assignee(uid)
+    return [a] if a else admin_ids()
+
+def reply_kb(uid):
+    """دکمه‌های زیر کارت پیام مشتری: ورود به گفتگو و سپردن به مدیر دیگر."""
+    row=[InlineKeyboardButton("✍️ پاسخ",callback_data=f"chat_{uid}")]
+    if len(_admins)>1: row.append(InlineKeyboardButton("👮 سپردن",callback_data=f"asg_{uid}"))
+    return InlineKeyboardMarkup([row])
+
+REPLY_HINT="↩️ برای پاسخ «✍️ پاسخ» را بزنید یا روی همین پیام ریپلای کنید."
 
 # ── کارت شناخت مشتری
 async def customer_card(uid):
@@ -1590,6 +1617,11 @@ async def user_label(uid):
         r=await c.fetchone()
     if not r: return "—"
     return (r[0] or "—")+(f" · @{r[1]}" if r[1] else "")
+
+async def admin_label(aid):
+    """مدیری که هنوز ربات را استارت نکرده نامی در دیتابیس ندارد — آیدی‌اش را نشان بده."""
+    l=await user_label(aid)
+    return str(aid) if l=="—" else l
 
 async def admins_text():
     lines=["<b>👮 مدیران ربات</b>",HR]
@@ -2924,6 +2956,52 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             await safe_edit(query.message,await pending_text(),
                             reply_markup=pending_kb(bool(rows)),parse_mode="HTML")
 
+        elif data.startswith("chat_"):
+            if data=="chat_end":
+                ctx.user_data.pop("chat_with",None)
+                await query.answer("🔚 گفتگو بسته شد.")
+                try: await query.message.edit_reply_markup(None)
+                except Exception: pass
+                return
+            cu=int(data[5:]); ctx.user_data["chat_with"]=cu
+            await query.answer()
+            m=await query.message.reply_text(
+                f"💬 <b>گفتگو با {esc(await user_label(cu))}</b>\n"
+                "از الان هر پیامی (متن، عکس، ویس…) بفرستید مستقیم برای همین مشتری می‌رود.",
+                parse_mode="HTML",reply_markup=InlineKeyboardMarkup(
+                    [[InlineKeyboardButton("🔚 پایان گفتگو",callback_data="chat_end")]]))
+            await link_thread(uid,m.message_id,cu)
+
+        elif data.startswith("asg_"):
+            cu=int(data[4:]); cur=await get_assignee(cu)
+            rows=[[InlineKeyboardButton(("✅ " if a==cur else "")+await admin_label(a),
+                                        callback_data=f"asgto_{cu}_{a}")] for a in admin_ids()]
+            rows.append([InlineKeyboardButton(("✅ " if not cur else "")+"👥 همه‌ی مدیرها",
+                                              callback_data=f"asgto_{cu}_0")])
+            await query.answer("این گفتگو را به کدام مدیر بسپارم؟")
+            await query.message.edit_reply_markup(InlineKeyboardMarkup(rows))
+
+        elif data.startswith("asgto_"):
+            cu,aid=(int(x) for x in data[6:].split("_"))
+            if aid and aid not in _admins: await query.answer("این مدیر دیگر نیست.",show_alert=True); return
+            await set_assignee(cu,aid)
+            who=await admin_label(aid) if aid else "همه‌ی مدیرها"
+            await query.answer(f"👮 سپرده شد به {who}",show_alert=True)
+            try: await query.message.edit_reply_markup(reply_kb(cu))
+            except Exception: pass
+            if aid and aid!=uid:
+                try:
+                    m=await ctx.bot.send_message(aid,
+                        f"<b>👮 یک گفتگو به شما سپرده شد</b>\n{HR}\n"
+                        f"👤 {esc(await user_label(cu))}\n🆔 <code>{cu}</code>\n"
+                        f"سپرده‌شده توسط: {esc(await admin_label(uid))}\n"
+                        "از این به بعد پیام‌های این مشتری فقط برای شما می‌آید.\n"+REPLY_HINT,
+                        parse_mode="HTML",reply_markup=reply_kb(cu))
+                    await link_thread(aid,m.message_id,cu)
+                except Exception as e:
+                    logger.error(f"assign → {aid}: {e}")
+                    await query.message.reply_text("⚠️ پیام به آن مدیر نرسید (شاید ربات را استارت نکرده).")
+
         elif data=="pend_ping":
             n=await ping_open(ctx.bot,uid)
             await query.answer(f"{to_fa(n)} پیام در چت بالا آمد." if n
@@ -4131,15 +4209,18 @@ async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",a
     if auto:
         # مدیر باید بداند مشتری همین حالا یک جواب گرفته — تا جواب تکراری ندهد
         card += f"\n✅ پاسخ خودکار داده شد: «{esc(faq_title(auto))}»"
-    card += "\n↩️ برای پاسخ، روی همین پیام ریپلای کنید."
+    asg=await get_assignee(user.id)
+    if asg: card += f"\n👮 مسئول: {esc(await admin_label(asg))}"
+    card += "\n"+REPLY_HINT
     delivered=0
-    # به همه‌ی مدیرها می‌رود تا هرکس زودتر دید جواب بدهد؛ خطای یکی
-    # نباید جلوی بقیه را بگیرد.
-    for aid in admin_ids():
+    # به همه‌ی مدیرها (یا فقط مدیرِ مسئول) می‌رود تا هرکس زودتر دید جواب بدهد؛
+    # خطای یکی نباید جلوی بقیه را بگیرد.
+    for aid in await card_targets(user.id):
         try:
             fwd=await ctx.bot.forward_message(aid,msg.chat_id,msg.message_id)
             note=await ctx.bot.send_message(aid,card,parse_mode="HTML",
-                                            reply_to_message_id=fwd.message_id)
+                                            reply_to_message_id=fwd.message_id,
+                                            reply_markup=reply_kb(user.id))
             # ریپلای روی هرکدام از این دو پیام باید کار کند
             await link_thread(aid,fwd.message_id,user.id)
             await link_thread(aid,note.message_id,user.id)
@@ -4212,9 +4293,13 @@ async def reply_relay(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     msg=update.message; user=update.effective_user
     if msg is None or user is None or not is_admin(user.id): return
     src=msg.reply_to_message
-    if src is None: return
-    target=await thread_user(user.id,src.message_id)
-    if target is None: return          # ریپلای بی‌ربط — بگذار بقیه رسیدگی کنند
+    target=await thread_user(user.id,src.message_id) if src else None
+    if target is None:
+        # حالت گفتگو (دکمه‌ی «✍️ پاسخ»): هر پیام مدیر برای همان مشتری می‌رود،
+        # جز دکمه‌های منو و وقتی مدیر وسط کار دیگری در پنل است
+        target=ctx.user_data.get("chat_with")
+        if (target is None or ctx.user_data.get("mode")
+                or (msg.text or "").strip() in _menu_texts()): return
     # میان‌بر: به‌جای تایپ دوباره‌ی متن، فقط #کلیدواژه — همان جواب آماده می‌رود.
     # با دو مدیر یعنی جواب‌ها یکدست هم می‌مانند.
     body=(msg.text or "").strip()
@@ -5222,10 +5307,10 @@ async def notify_handoff(bot,user,why="درخواست صحبت با همکار",
         more=await customer_card(user.id)
         if more: card+=f"\n{HR}\n{more}"
     except Exception: pass
-    card+="\n↩️ برای پاسخ، روی همین پیام ریپلای کنید."
-    for aid in admin_ids():
+    card+="\n"+REPLY_HINT
+    for aid in await card_targets(user.id):
         try:
-            m=await bot.send_message(aid,card,parse_mode="HTML")
+            m=await bot.send_message(aid,card,parse_mode="HTML",reply_markup=reply_kb(user.id))
             await link_thread(aid,m.message_id,user.id)
         except Exception as e: logger.error(f"handoff → {aid}: {e}")
     await mark_open(user.id)
@@ -5777,7 +5862,7 @@ def main():
     # گروه ۱- : ریپلای مدیر روی پیام مشتری زودتر از هر هندلر دیگری دیده می‌شود.
     # اگر واقعاً پاسخ بود، ApplicationHandlerStop جلوی پردازش دوباره را می‌گیرد؛
     # وگرنه پیام مسیر عادی خودش را ادامه می‌دهد.
-    app.add_handler(MessageHandler(filters.REPLY & ~filters.COMMAND,reply_relay),group=-1)
+    app.add_handler(MessageHandler(~filters.COMMAND,reply_relay),group=-1)
     app.add_handler(CommandHandler("start",cmd_start))
     app.add_handler(CommandHandler("help",cmd_help))
     app.add_handler(CommandHandler("admin",cmd_admin))
