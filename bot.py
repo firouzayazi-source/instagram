@@ -4,6 +4,7 @@ import aiofiles, types
 import brain       # موتور فهم پیام — بدون هیچ API بیرونی
 import specs       # مشخصات فنی آیفون‌ها (مقایسه)
 import profanity   # تشخیص فحش و توهین
+import catalog     # لیست کالای زنده از سایت (stland.ir)
 from telegram import (Update, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardMarkup,
                       InlineKeyboardButton, BotCommand, BotCommandScopeChat,
                       BotCommandScopeDefault, WebAppInfo)
@@ -52,6 +53,7 @@ SETTINGS_FILE = "settings.json"; STATS_FILE = "stats.json"
 ADMINS_FILE = "admins.json"; BROADCAST_FILE = "broadcast.json"
 FAQ_FILE = "faq.json"; UNMATCHED_FILE = "unmatched.json"
 PAGES_FILE = "pages.json"; TOPICS_FILE = "topics.json"
+CATALOG_FILE = "catalog.json"  # آخرین لیست کالای سایت — اگر سایت موقتاً در دسترس نبود
 LEARN_FILE = "learn.json"      # آنچه دستیار خودش یاد گرفته (با امکان پس‌گرفتن)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -5207,9 +5209,14 @@ async def adv_finish(msg,user,bot,st):
     adv_state.pop(user.id,None)
     prof=adv_profile(st)
     tip=ADV_TIPS.get(st.get("f",""),"")
+    picks=catalog.suggest(st) if catalog.fresh() else []
     await msg.reply_text(_join("عالیه، ممنون 🙌 خلاصه‌ی نیازتون:",f"🎯 {prof}",tip,
-                               "همکارم با توجه به موجودی امروز، بهترین گزینه‌ها رو همین‌جا "
-                               "براتون می‌فرسته 🙏"),reply_markup=main_menu())
+                               "" if picks else "همکارم با توجه به موجودی امروز، بهترین گزینه‌ها رو "
+                               "همین‌جا براتون می‌فرسته 🙏"),reply_markup=main_menu())
+    if picks:
+        await msg.reply_text(catalog.list_html(picks,"📱 از موجودی امروز اینا به نیازتون می‌خوره:",
+                                               "همکارم هم همین‌جا راهنماییتون می‌کنه 🙏")[0],
+                             parse_mode="HTML",disable_web_page_preview=True,reply_markup=main_menu())
     if st.get("dry"):
         await msg.reply_text("🧪 (حالت آزمایش: کارت «مشتری آماده‌ی خرید» برای همکارها فرستاده می‌شد)")
         return
@@ -5219,7 +5226,8 @@ async def adv_finish(msg,user,bot,st):
     except Exception as e: logger.debug(f"profile: {e}")
     add_trail(uid,"i_advisor"); await remember(uid,"i_advisor","")
     await notify_handoff(bot,user,why="مشتری آماده‌ی خرید — مشاور خرید",
-                         icon="🎯",extra=f"🎯 نیاز: {prof}")
+                         icon="🎯",extra=f"🎯 نیاز: {prof}"+
+                         (f"\n📱 پیشنهاد ربات: {'، '.join(x['name'] for x in picks)}" if picks else ""))
     set_human(uid,bot)
 
 # ── «منظورتون کدومه؟»
@@ -5397,6 +5405,53 @@ async def _send_html(msg,html,rows=None):
                          reply_markup=InlineKeyboardMarkup(rows) if rows else main_menu(),
                          disable_web_page_preview=True)
 
+# «لیست»، «چی دارید؟»، «موجودیاتون» — لیست کالای امروز از سایت
+LIST_RX = re.compile(r"(?:^|\s)(?:لیست|لیستتون|لیستو|لیستش)(?:\s|$)|چی\s*(?:دارید|دارین|داری)|"
+                     r"چه\s*(?:گوشی|مدل|محصول|کالا|ایفون)\S*\s*(?:دارید|دارین|موجود)|"
+                     r"موجودی(?:ا|ها)?(?:تون|تان)|محصولات(?:تون)?|کالاها(?:تون)?")
+
+async def send_catalog(msg,text,product,lead="",rows=None):
+    """جواب قیمت/موجودی/لیست از روی لیست زنده‌ی سایت. False یعنی لیست در
+    دسترس نیست و رفتار قبلی (عکس لیست قیمت / لینک سایت) اجرا شود."""
+    if not catalog.fresh(): return False
+    hit,exact,label=catalog.find(text,product)
+    at=datetime.fromtimestamp(catalog.updated,IRAN_TZ).strftime("%H:%M")
+    foot=f"🕐 به‌روز {to_fa(at)} · جزئیات و عکس هر کالا با زدن نامش در سایت"
+    if hit is None:
+        hit=catalog.in_stock(); title=f"📱 کالاهای موجود امروز ({to_fa(len(hit))} مورد)"
+    elif not hit:
+        await msg.reply_text(_join(lead,f"🙏 {label} الان موجود نداریم.\n"
+                                   "اگه بنویسید «خبرم کن»، هر وقت رسید همین‌جا خبرتون می‌کنم 🔔"),
+                             reply_markup=main_menu())
+        return True
+    else:
+        title=f"✅ {label} موجود داریم:" if exact else f"{label} الان موجود نیست؛ از همین خانواده اینا هست:"
+    parts=catalog.list_html(hit,title,foot)
+    if lead: await msg.reply_text(lead,reply_markup=main_menu())
+    for i,h in enumerate(parts):
+        last=i==len(parts)-1
+        await msg.reply_text(h,parse_mode="HTML",disable_web_page_preview=True,
+                             reply_markup=InlineKeyboardMarkup(rows) if last and rows else main_menu())
+    return True
+
+async def _catalog_loop():
+    """هر ۱۰ دقیقه لیست کالا از سایت؛ خطا یعنی ربات با آخرین لیست ادامه می‌دهد."""
+    import httpx
+    tkw={"local_address":"0.0.0.0"} if os.getenv("FORCE_IPV4","1")!="0" else {}
+    fails=0
+    while True:
+        try:
+            async with httpx.AsyncClient(timeout=30,transport=httpx.AsyncHTTPTransport(**tkw)) as cl:
+                new=await catalog.fetch(cl)
+            if new:
+                catalog.set_items(new,CATALOG_FILE)
+                if fails: logger.info(f"catalog: دوباره وصل شد — {len(new)} کالا")
+                fails=0
+        except Exception as e:
+            fails+=1
+            if fails in (1,6): logger.warning(f"catalog: سایت در دسترس نیست ({fails}): {e}")
+        await asyncio.sleep(600)
+
 async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail=True):
     """یک نیت را اجرا می‌کند: متن (چندشکلی، پرشده) + کارِ نیت + پیشنهادها.
     tail=False یعنی این جواب وسط یک جواب چندتایی است: پیشنهاد و سؤال
@@ -5421,7 +5476,14 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
     keep_product=product or prev.get("product","")
     wl_product=""
 
-    if action.startswith("section:") and action[8:] in SECTION_NAMES:
+    if (action=="prices" or item.get("id")=="i_stock") and \
+            await send_catalog(msg,text,keep_product,lead,rows):
+        pass
+    elif item.get("id")=="i_accessory" and await send_catalog(
+            msg,text if any(w in brain.norm(text) for w in catalog.ACCESSORY_WORDS) else "لوازم جانبی",
+            "",lead,rows):     # «قاب ۱۳» یعنی لوازم جانبی، نه خودِ آیفون ۱۳
+        pass
+    elif action.startswith("section:") and action[8:] in SECTION_NAMES:
         pre=_join(lead,answer)
         if pre: await msg.reply_text(pre,reply_markup=main_menu())
         await send_section(msg,action[8:],uid=None if dry else uid,extra_rows=rows)
@@ -5593,6 +5655,13 @@ async def assistant_reply(update,ctx,text,user,dry=False):
     if oth and oth.get("enabled",True) and brain.product(text).startswith(INACTIVE_BRANDS):
         await _typing(ctx.bot,msg.chat_id)
         await run_intent(msg,oth,user,ctx.bot,lead=lead,dry=dry,text=text)
+        return True
+
+    # ۲٫۷) «لیست»، «چی دارید؟» — لیست کالای امروز (از مسیر نیتِ قیمت، تا آمار و حافظه ثبت شود)
+    pit=faq_item("i_price")
+    if pit and catalog.fresh() and LIST_RX.search(brain.norm(text)):
+        await _typing(ctx.bot,msg.chat_id)
+        await run_intent(msg,pit,user,ctx.bot,lead=lead,dry=dry,text=text,product=a["product"])
         return True
 
     fresh=now-c.get("ts",0)<CTX_TTL
@@ -5933,7 +6002,7 @@ def _spawn(coro,name):
     return t
 
 async def post_init(app):
-    await init_db(); await load_human(); await load_pages(); await load_topics(); await load_data(); await load_banners()
+    await init_db(); await load_human(); catalog.load(CATALOG_FILE); await load_pages(); await load_topics(); await load_data(); await load_banners()
     await load_workhours(); await load_buttons(); await load_settings()
     await load_stats(); await load_menu(); await load_places(); await load_backup_registry()
     await load_admins(); await bc_load(); await load_faq(); await load_unmatched()
@@ -5944,6 +6013,7 @@ async def post_init(app):
     _spawn(_bc_loop(app.bot),"پخش همگانی")
     _spawn(_pending_loop(app.bot),"پیام‌های بی‌جواب")
     _spawn(_human_wait_loop(app.bot),"انتظار برای همکار")
+    _spawn(_catalog_loop(),"لیست کالای سایت")
     global BOT_USERNAME
     try:
         me=await app.bot.get_me(); BOT_USERNAME=me.username or ""
