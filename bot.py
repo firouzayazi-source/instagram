@@ -683,7 +683,9 @@ async def init_db():
                 # مدیری که گفتگو با این مشتری به او سپرده شده (۰ = همه‌ی مدیرها)
                 "ALTER TABLE users ADD COLUMN assignee INTEGER DEFAULT 0",
                 # تاپیکِ این مشتری در گروه پشتیبانی (۰ = هنوز ندارد)
-                "ALTER TABLE users ADD COLUMN topic_id INTEGER DEFAULT 0"]:
+                "ALTER TABLE users ADD COLUMN topic_id INTEGER DEFAULT 0",
+                # تا کِی گفتگو دست همکار است (epoch) — تا با ری‌استارت از دست نرود
+                "ALTER TABLE users ADD COLUMN human_until REAL DEFAULT 0"]:
         try: await db.execute(sql)
         except Exception as e:
             # «ستون تکراری» یعنی مهاجرت قبلاً انجام شده — بقیه خطاها واقعی‌اند
@@ -778,7 +780,9 @@ REPLY_HINT="↩️ برای پاسخ «✍️ پاسخ» را بزنید یا ر
 # ── گروه پشتیبانی با تاپیک: هر مشتری یک تاپیک جدا، تیم داخل همان تاپیک
 # عادی می‌نویسد و ربات برای مشتری می‌فرستد. با ده مشتری هم‌زمان چیزی قاطی نمی‌شود.
 TOPIC_HINT=("✍️ برای پاسخ، همین‌جا عادی بنویسید — هر پیامی برای مشتری می‌رود.\n"
-            "📝 یادداشت داخلی (برای مشتری نمی‌رود): با ! یا @ شروع کنید.")
+            "📝 یادداشت داخلی (برای مشتری نمی‌رود): با ! یا @ شروع کنید.\n"
+            "🧑‍💼 با اولین جواب شما ربات برای این مشتری ساکت می‌شود؛ ۶۰ دقیقه بی‌پیامیِ تیم "
+            "یا «🤖 برگرداندن به ربات» یا بستن تاپیک = ربات دوباره جواب می‌دهد.")
 
 def support_group(): return settings.get("support_group") or 0
 
@@ -907,7 +911,8 @@ async def open_stale(hours=2):
     """بی‌جواب‌هایی که وقتشان گذشته و هنوز یادآوری نشده‌اند."""
     async with db.execute(
         "SELECT user_id,first_name FROM users WHERE COALESCE(open_msg_at,'')<>'' "
-        "AND reminded=0 AND open_msg_at<datetime('now',?,'localtime')",(f"-{hours} hours",)) as c:
+        "AND reminded=0 AND open_msg_at<?",
+        ((datetime.now(IRAN_TZ)-timedelta(hours=hours)).strftime("%Y-%m-%d %H:%M:%S"),)) as c:
         return await c.fetchall()
 
 def ago_text(ts):
@@ -3017,6 +3022,18 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     global _bc_job,_bc_cancel
     query=update.callback_query
     data=query.data; uid=query.from_user.id
+    if data.startswith(("tobot_","tohuman_")) and query.message \
+            and query.message.chat.id==support_group() and support_group():
+        cu=int(data.split("_")[1])
+        try: await query.message.edit_reply_markup(None)
+        except Exception: pass
+        if data.startswith("tobot_"):
+            await release_human(cu,ctx.bot,"🤖 گفتگو به ربات برگشت — دستیار دوباره جواب می‌دهد.")
+            await query.answer("🤖 برگشت به ربات")
+        else:
+            human_until.pop(cu,None); set_human(cu,ctx.bot)   # pop تا خبرِ ورود در تاپیک بیاید
+            await query.answer("🧑‍💼 گفتگو دست شماست")
+        return
 
     # ── محافظت اسپم
     if not is_admin(uid):
@@ -4255,7 +4272,7 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if st and st.get("await")=="budget" and time.time()-st["ts"]<ADV_TTL:
         await adv_step(update.message,user,ctx.bot,typed=text); return
     # گفت‌وگو دستِ همکار است؟ دستیار کنار می‌کشد و پیام مستقیم به او می‌رسد
-    if in_human_mode(user.id):
+    if await human_active(user.id,ctx.bot):
         if await forward_to_admin(update,ctx,ack=False): return
     if get_setting("assistant") and get_setting("faq_auto"):
         if await assistant_reply(update,ctx,text,user): return
@@ -4414,6 +4431,10 @@ async def topic_relay(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     """
     msg=update.message
     if msg is None or msg.chat.type=="private": return
+    if msg.chat_id==support_group() and getattr(msg,"forum_topic_closed",None):
+        cu=await topic_customer(msg.message_thread_id)
+        if cu and in_human_mode(cu): await release_human(cu,ctx.bot,"")
+        raise ApplicationHandlerStop
     if msg.chat_id!=support_group() or not msg.is_topic_message or not msg.from_user \
             or msg.from_user.is_bot or not (msg.text or msg.effective_attachment):
         # پیام‌های سیستمی تاپیک (ساخت، بستن، سنجاق…) محتوایی برای مشتری ندارند
@@ -4448,7 +4469,7 @@ async def deliver_reply(ctx,msg,target,src):
             await msg.reply_text(f"❌ ارسال نشد: {e}"); raise ApplicationHandlerStop
         it["hits"]=it.get("hits",0)+1; await save_faq()
         await link_thread(msg.chat_id,msg.message_id,target)
-        await mark_answered(target); set_human(target)
+        await mark_answered(target); set_human(target,ctx.bot)
         await _ok_mark(ctx.bot,msg,f"✅ «{faq_title(it)}» ارسال شد")
         # جواب # یعنی «این سؤال همان نیت است» — دستیار همین را یاد می‌گیرد
         lt=_replied_text(src,target)
@@ -4475,7 +4496,7 @@ async def deliver_reply(ctx,msg,target,src):
         raise ApplicationHandlerStop
     # پاسخ خودِ مدیر هم به همین مشتری گره می‌خورد تا رشته ادامه پیدا کند
     await link_thread(msg.chat_id,msg.message_id,target)
-    await mark_answered(target); set_human(target)
+    await mark_answered(target); set_human(target,ctx.bot)
     await _ok_mark(ctx.bot,msg)
     # جوابِ متنیِ مدیر به سؤالی که دستیار نفهمیده بود، کنار همان سؤال
     # می‌نشیند تا در پنل با یک تپ «نیت» شود
@@ -4774,16 +4795,79 @@ def brain_intents():
 # ── حافظه‌ی کوتاه گفت‌وگو (در حافظه؛ با ری‌استارت پاک می‌شود و اشکالی ندارد)
 brain_ctx: dict = {}      # uid → {"intent","ts","offer","offer_ts"}
 human_until: dict = {}    # uid → تا کِی گفت‌وگو دست همکار است
-CTX_TTL, OFFER_TTL, HUMAN_TTL = 15*60, 10*60, 30*60
+CTX_TTL, OFFER_TTL, HUMAN_TTL = 15*60, 10*60, 60*60
 
 def in_human_mode(uid): return human_until.get(uid,0)>time.time()
 
+WAIT_ACK_MIN = 10          # مشتریِ منتظرِ همکار بعد از این‌قدر دقیقه «پیامتون رسید» می‌گیرد
+_wait_acked: dict = {}     # uid → open_msg_at که برایش «پیامتون رسید» رفته (یک‌بار برای هر انتظار)
+
+def _mode_kb(uid,human):
+    return InlineKeyboardMarkup([[InlineKeyboardButton(
+        "🤖 برگرداندن به ربات" if human else "🧑‍💼 من جواب می‌دم",
+        callback_data=f"{'tobot' if human else 'tohuman'}_{uid}")]])
+
+async def topic_note(bot,uid,text,kb=None):
+    """یک خط وضعیت در تاپیکِ مشتری؛ بی‌گروه یا بی‌تاپیک کاری نمی‌کند."""
+    gid=support_group(); tid=await topic_of(uid) if gid else 0
+    if not tid: return
+    try: await bot.send_message(gid,text,message_thread_id=tid,reply_markup=kb)
+    except Exception as e: logger.debug(f"topic_note {uid}: {e}")
+
+async def _save_human(uid,bot=None):
+    await db.execute("UPDATE users SET human_until=? WHERE user_id=?",(human_until.get(uid,0),uid))
+    await db.commit()
+    if bot:
+        await topic_note(bot,uid,"🧑‍💼 گفتگو دست همکار است — ربات برای این مشتری ساکت است.",
+                         _mode_kb(uid,True))
+
+async def release_human(uid,bot,note):
+    """گفتگو به ربات برمی‌گردد (دکمه، بستن تاپیک یا ۶۰ دقیقه بی‌پیامیِ تیم)."""
+    human_until.pop(uid,None); await _save_human(uid)
+    if note: await topic_note(bot,uid,note,_mode_kb(uid,False))
+
+async def human_active(uid,bot):
+    """ربات برای این مشتری ساکت بماند؟ خارج از ساعت کاری نه — ساعت ۲ بامداد کسی
+    از تیم نیست و مشتری نباید بی‌جواب بماند."""
+    if in_human_mode(uid): return is_open()
+    if human_until.get(uid):          # همین الان سر رسید
+        await release_human(uid,bot,"🤖 ۶۰ دقیقه کسی از تیم ننوشت — ربات دوباره جواب می‌دهد.")
+    return False
+
+async def load_human():
+    async with db.execute("SELECT user_id,human_until FROM users WHERE human_until>?",(time.time(),)) as c:
+        human_until.update({u:t for u,t in await c.fetchall()})
+
+async def _human_wait_loop(bot):
+    """مشتری‌ای که گفتگویش دست همکار است و ۱۰ دقیقه بی‌جواب مانده: یک‌بار
+    «پیامتون رسید» می‌گیرد و تاپیکش هشدار — تا هیچ پیامی گم نشود."""
+    while True:
+        await asyncio.sleep(60)
+        try:
+            if not is_open(): continue
+            cut=(datetime.now(IRAN_TZ)-timedelta(minutes=WAIT_ACK_MIN)).strftime("%Y-%m-%d %H:%M:%S")
+            async with db.execute("SELECT user_id,open_msg_at FROM users WHERE "
+                                  "COALESCE(open_msg_at,'')<>'' AND open_msg_at<? AND human_until>?",
+                                  (cut,time.time())) as c:
+                rows=await c.fetchall()
+            for uid,ts in rows:
+                if _wait_acked.get(uid)==ts: continue
+                _wait_acked[uid]=ts
+                try: await bot.send_message(uid,"پیامتون رسید 🙏 همکارم به‌زودی همین‌جا جواب می‌ده.")
+                except Exception as e: logger.debug(f"wait ack {uid}: {e}")
+                await topic_note(bot,uid,f"⏰ مشتری {to_fa(WAIT_ACK_MIN)} دقیقه است منتظر جواب است — "
+                                         "«پیامتون رسید» برایش رفت.")
+        except Exception as e: logger.error(f"human_wait_loop: {e}")
+
 def now_fresh(c): return time.time()-(c or {}).get("ts",0)<CTX_TTL
 
-def set_human(uid):
+def set_human(uid,bot=None):
     """همکار وارد گفت‌وگو شد: دستیار برای این مشتری کنار می‌کشد تا
-    وسط حرفِ آدم‌ها جواب خودکار نپرد."""
+    وسط حرفِ آدم‌ها جواب خودکار نپرد. هر پیام تیم ۶۰ دقیقه را از نو می‌شمارد؛
+    فقط ورودِ تازه به حالت همکار در تاپیک خبر داده می‌شود."""
+    was=in_human_mode(uid)
     human_until[uid]=time.time()+HUMAN_TTL; brain_ctx.pop(uid,None)
+    _bg(_save_human(uid,None if was else bot),"human")
 
 def suggest_rows(item=None,ids=None):
     if chat_mode(): return []
@@ -5136,7 +5220,7 @@ async def adv_finish(msg,user,bot,st):
     add_trail(uid,"i_advisor"); await remember(uid,"i_advisor","")
     await notify_handoff(bot,user,why="مشتری آماده‌ی خرید — مشاور خرید",
                          icon="🎯",extra=f"🎯 نیاز: {prof}")
-    set_human(uid)
+    set_human(uid,bot)
 
 # ── «منظورتون کدومه؟»
 DYM_TTL = 30*60
@@ -5369,7 +5453,7 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
             await send_notify(msg,uid)
     elif action=="human":
         await msg.reply_text(_join(lead,answer) or "🙏",reply_markup=main_menu())
-        if not dry: set_human(uid)
+        if not dry: set_human(uid,bot)
     elif action in ("specs","compare"):
         keys=specs.find_models(text)
         pk=specs.key_of(keep_product)
@@ -5500,7 +5584,7 @@ async def assistant_reply(update,ctx,text,user,dry=False):
         await forward_to_admin(update,ctx,ack=False,count=False,urgent=mood)
         # شکایت دستِ آدم است؛ ولی «چرا جواب نمیدید» شاید نیمه‌شب باشد — دستیار
         # کنار نمی‌کشد تا مشتری بی‌جواب نماند
-        if mood=="complaint": set_human(uid)
+        if mood=="complaint": set_human(uid,ctx.bot)
         return True
     if mood=="issue": lead=_join(lead,random.choice(brain.MOOD_LEADS["issue"]))
 
@@ -5681,7 +5765,7 @@ async def user_media_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if spam_check(user.id)!='ok': return
     if await check_abuse(update,ctx,msg.caption or "",user): return
     kind=next((lbl for attr,lbl in _KIND_BY_ATTR if getattr(msg,attr,None)),"پیام")
-    if not await forward_to_admin(update,ctx,kind,ack=not in_human_mode(user.id)):
+    if not await forward_to_admin(update,ctx,kind,ack=not await human_active(user.id,ctx.bot)):
         await msg.reply_text(
             ("سؤالتون رو همین‌جا بنویسید 🙂" if chat_mode()
              else "لطفاً یکی از گزینه‌های منوی زیر را انتخاب کنید 👇"),reply_markup=main_menu())
@@ -5849,7 +5933,7 @@ def _spawn(coro,name):
     return t
 
 async def post_init(app):
-    await init_db(); await load_pages(); await load_topics(); await load_data(); await load_banners()
+    await init_db(); await load_human(); await load_pages(); await load_topics(); await load_data(); await load_banners()
     await load_workhours(); await load_buttons(); await load_settings()
     await load_stats(); await load_menu(); await load_places(); await load_backup_registry()
     await load_admins(); await bc_load(); await load_faq(); await load_unmatched()
@@ -5859,6 +5943,7 @@ async def post_init(app):
     _spawn(_auto_backup_loop(app.bot),"بکاپ هفتگی")
     _spawn(_bc_loop(app.bot),"پخش همگانی")
     _spawn(_pending_loop(app.bot),"پیام‌های بی‌جواب")
+    _spawn(_human_wait_loop(app.bot),"انتظار برای همکار")
     global BOT_USERNAME
     try:
         me=await app.bot.get_me(); BOT_USERNAME=me.username or ""
