@@ -397,13 +397,16 @@ async def _rj(path,default):
             logger.error(f"⚠️ {path} خراب است ({e}) و قرنطینه هم نشد: {e2}")
     return default() if callable(default) else default
 
+_wj_locks: dict = {}   # path → قفل؛ دو نوشتن هم‌زمانِ یک فایل یک .tmp مشترک را خراب می‌کردند
+
 async def _wj(path,data):
     """نوشتن اتمیک. در صورت شکست False برمی‌گرداند تا فراخوان بتواند خبر بدهد."""
     tmp=path+".tmp"
     try:
-        async with aiofiles.open(tmp,"w",encoding="utf-8") as f:
-            await f.write(json.dumps(data,ensure_ascii=False,indent=2))
-        os.replace(tmp,path)   # atomic — اگر crash کند فایل اصلی سالم می‌ماند
+        async with _wj_locks.setdefault(path,asyncio.Lock()):
+            async with aiofiles.open(tmp,"w",encoding="utf-8") as f:
+                await f.write(json.dumps(data,ensure_ascii=False,indent=2))
+            os.replace(tmp,path)   # atomic — اگر crash کند فایل اصلی سالم می‌ماند
         return True
     except Exception as e:
         logger.error(f"write {path}: {e}")
@@ -2886,6 +2889,7 @@ async def cmd_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
 # ════════════════════════════════════════════════
 async def user_cb(query,ctx):
     data=query.data
+    if data.startswith("cat_"): return await cat_cb(query)
 
     if data=="wh_today":
         await record_stat("wh_page",query.from_user.id)
@@ -3018,7 +3022,7 @@ async def user_cb(query,ctx):
 #  MAIN CALLBACK DISPATCHER
 # ════════════════════════════════════════════════
 # پیشوندهایی که هم ادمین هم کاربر دسترسی دارد
-_USER_CB_PREFIXES = ("wh_today","wh_weekly","wh_back_today","sub_","ai_","dym_","adv_","wl_add","mem_")
+_USER_CB_PREFIXES = ("wh_today","wh_weekly","wh_back_today","sub_","ai_","dym_","adv_","wl_add","mem_","cat_")
 
 async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     global _bc_job,_bc_cancel
@@ -3232,7 +3236,9 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             x=next((e for e in learn_data["log"] if e.get("id")==lid),None)
             if not x: await query.answer("یافت نشد!",show_alert=True); return
             it=faq_item(x["intent"])
-            if it:
+            if x["intent"]=="cat":
+                learn_data.get("aliases",{}).pop(x.get("alias",""),None)
+            elif it:
                 it["examples"]=[e for e in it.get("examples") or [] if e!=x["text"]]
                 await save_faq()
             learn_data["log"]=[e for e in learn_data["log"] if e.get("id")!=lid]
@@ -5215,7 +5221,7 @@ async def adv_finish(msg,user,bot,st):
                                "همین‌جا براتون می‌فرسته 🙏"),reply_markup=main_menu())
     if picks:
         await msg.reply_text(catalog.list_html(picks,"📱 از موجودی امروز اینا به نیازتون می‌خوره:",
-                                               "همکارم هم همین‌جا راهنماییتون می‌کنه 🙏")[0],
+                                               "همکارم هم همین‌جا راهنماییتون می‌کنه 🙏"),
                              parse_mode="HTML",disable_web_page_preview=True,reply_markup=main_menu())
     if st.get("dry"):
         await msg.reply_text("🧪 (حالت آزمایش: کارت «مشتری آماده‌ی خرید» برای همکارها فرستاده می‌شد)")
@@ -5293,7 +5299,7 @@ async def dym_typed(update,ctx,user,d,text,a,tags,dry=False):
 #           دست‌کم دو نفرِ مختلف همین کار را کردند
 # چیزی یاد گرفته نمی‌شود اگر: خیلی کوتاه/بلند باشد، توهین‌آمیز باشد، یا
 # (برای منابع غیرمدیر) همین حالا محکم به نیت دیگری بخورد.
-learn_data: dict = {"votes":{},"log":[]}
+learn_data: dict = {"votes":{},"log":[],"aliases":{}}
 LEARN_NEED = {"admin":1,"dym":1,"click":2}
 LEARN_SRC = {"admin":"👨‍💼 جواب # مدیر","dym":"🤔 انتخاب مشتری","click":"👆 رفتار مشتری‌ها",
              "admin-reply":"✨ از سؤال و جواب مدیر"}
@@ -5305,7 +5311,9 @@ async def load_learn():
     d=await _rj(LEARN_FILE,dict)
     d=d if isinstance(d,dict) else {}
     learn_data={"votes":d.get("votes") if isinstance(d.get("votes"),dict) else {},
-                "log":d.get("log") if isinstance(d.get("log"),list) else []}
+                "log":d.get("log") if isinstance(d.get("log"),list) else [],
+                # جستجوی کالا: «کلمه‌های مشتری» → دسته/مدل (از رفتار مشتری‌ها)
+                "aliases":d.get("aliases") if isinstance(d.get("aliases"),dict) else {}}
 
 async def save_learn(): return await _wj(LEARN_FILE,learn_data)
 
@@ -5359,12 +5367,14 @@ def learn_view():
            "👨‍💼 جوابی که شما با <code>#کلیدواژه</code> می‌دهید (همان لحظه)",
            "🤔 انتخاب مشتری در «منظورتون کدومه؟» (همان لحظه)",
            "👆 رفتار مشتری‌ها: سؤالِ نافهمیده و بعد زدن یک موضوع (دست‌کم ۲ نفر)",
+           "📦 جستجوی کالا: کلمه‌ی نافهمیده و بعد زدن یک دسته یا مدل (دست‌کم ۲ نفر)",
            "✨ سؤال بی‌پاسخ + جوابی که شما دادید (با یک تپ در «سؤال‌های بی‌پاسخ»)",HR]
     if not log: lines.append("هنوز چیزی یاد نگرفته — با اولین گفتگوها شروع می‌کند.")
     for i,x in enumerate(log,1):
         it=faq_item(x["intent"])
+        dest=f"📦 {x.get('label','')}" if x["intent"]=="cat" else (faq_title(it) if it else "—")
         lines.append(f"{to_fa(i)}. «{esc(_fit(x['text'],45))}» → "
-                     f"{esc(faq_title(it) if it else '—')}  ·  {LEARN_SRC.get(x['src'],x['src'])}")
+                     f"{esc(dest)}  ·  {LEARN_SRC.get(x['src'],x['src'])}")
     pend=len(learn_data["votes"])
     if pend: lines += ["",f"⏳ {to_fa(pend)} مورد منتظر تأیید رفتار مشتری‌های بیشتر"]
     if log: lines += ["","اگر چیزی اشتباه یاد گرفته، شماره‌اش را بزنید تا پس گرفته شود."]
@@ -5410,29 +5420,137 @@ LIST_RX = re.compile(r"(?:^|\s)(?:لیست|لیستتون|لیستو|لیستش)
                      r"چه\s*(?:گوشی|مدل|محصول|کالا|ایفون)\S*\s*(?:دارید|دارین|موجود)|"
                      r"موجودی(?:ا|ها)?(?:تون|تان)|محصولات(?:تون)?|کالاها(?:تون)?")
 
-async def send_catalog(msg,text,product,lead="",rows=None):
-    """جواب قیمت/موجودی/لیست از روی لیست زنده‌ی سایت. False یعنی لیست در
-    دسترس نیست و رفتار قبلی (عکس لیست قیمت / لینک سایت) اجرا شود."""
-    if not catalog.fresh(): return False
-    hit,exact,label=catalog.find(text,product)
+cat_state: dict = {}   # uid → آخرین نتیجه‌ی جستجو (برای «بعدی ▶️» و «بیشتر»)
+cat_unk: dict = {}     # uid → (کلمه‌های ناشناخته، زمان) — اگر بعدش دسته‌ای زد، یاد می‌گیریم
+CAT_TTL, CAT_UNK_TTL = 30*60, 5*60
+MORE_WORDS = {"بیشتر","ادامه","بقیه","بعدی","بیشتر بفرست","بقیش","بقیه اش","ادامش"}
+
+def _cat_foot():
     at=datetime.fromtimestamp(catalog.updated,IRAN_TZ).strftime("%H:%M")
-    foot=f"🕐 به‌روز {to_fa(at)} · جزئیات و عکس هر کالا با زدن نامش در سایت"
-    if hit is None:
-        hit=catalog.in_stock(); title=f"📱 کالاهای موجود امروز ({to_fa(len(hit))} مورد)"
-    elif not hit:
-        await msg.reply_text(_join(lead,f"🙏 {label} الان موجود نداریم.\n"
-                                   "اگه بنویسید «خبرم کن»، هر وقت رسید همین‌جا خبرتون می‌کنم 🔔"),
-                             reply_markup=main_menu())
-        return True
-    else:
-        title=f"✅ {label} موجود داریم:" if exact else f"{label} الان موجود نیست؛ از همین خانواده اینا هست:"
-    parts=catalog.list_html(hit,title,foot)
+    return f"🕐 به‌روز {to_fa(at)} · با زدن نام هر کالا، عکس و جزئیاتش در سایت باز می‌شود"
+
+def _cat_markup(rows):
+    """دکمه‌های لیست؛ در حالت چت (بی‌دکمه) منوی همیشگی."""
+    if chat_mode() or not rows: return main_menu()
+    return InlineKeyboardMarkup([[InlineKeyboardButton(l,callback_data=d) for l,d in r] for r in rows])
+
+def _cat_hint(html_,rows):
+    """در حالت چت راهنمای تایپی به جای دکمه."""
+    if not chat_mode(): return html_
+    if any(d.startswith("cat_g_") for r in rows for _,d in r):
+        return html_+"\n\n✍️ بنویسید مثلاً «آیفون کارکرده»، «شارژر» یا «۱۳ پرو مشکی»."
+    if any(d.startswith(("cat_r_","cat_a_","cat_m_")) and "بعدی" in l for r in rows for l,d in r):
+        return html_+"\n\n✍️ برای صفحه‌ی بعد بنویسید «بیشتر»."
+    return html_
+
+async def _cat_send(msg,view,note=""):
+    html_,rows=view
+    await msg.reply_text(_cat_hint(_join(note,html_),rows),parse_mode="HTML",
+                         disable_web_page_preview=True,reply_markup=_cat_markup(rows))
+
+def _cat_alias(rest):
+    a=learn_data.get("aliases",{}).get(_sig(" ".join(rest)))
+    return dict(a["pick"]) if a else None
+
+HAVE_RX = re.compile(r"(?<!\S)(?:دارید|دارین|داری|دارن|هست|هستش|موجود\S*|قیمت\S*|چند|چنده|چقدر\S*|چقد)(?!\S)")
+
+async def send_catalog(msg,text,product,lead="",rows=None,uid=None,force=None):
+    """جواب قیمت/موجودی/لیست از روی لیست زنده‌ی سایت. False یعنی لیست در
+    دسترس نیست و رفتار قبلی (عکس لیست قیمت / لینک سایت) اجرا شود.
+
+    بی‌فیلتر → دسته‌ها؛ با فیلتر («۱۳ پرو مشکی زیر ۲۰۰») → نتیجه، صفحه‌به‌صفحه."""
+    if not catalog.fresh(): return False
+    q=catalog.parse(text,product,alias=_cat_alias)
+    if force and not any(k in q for k in force): q.update(force); q.pop("phone",None)
+    foot=_cat_foot()
     if lead: await msg.reply_text(lead,reply_markup=main_menu())
-    for i,h in enumerate(parts):
-        last=i==len(parts)-1
-        await msg.reply_text(h,parse_mode="HTML",disable_web_page_preview=True,
-                             reply_markup=InlineKeyboardMarkup(rows) if last and rows else main_menu())
+    if not catalog.is_search(q) or set(q)-{"rest"}=={"phone"}:
+        note=""
+        if q.get("rest") and not catalog.is_search(q):
+            note="🙏 دقیق متوجه نشدم دنبال چه کالایی هستید — از دسته‌ها انتخاب کنید یا مدل رو بنویسید (مثلاً «۱۳ پرو»)."
+            if uid: cat_unk[uid]=(q["rest"],time.time())
+            _bg(log_unmatched(text),"unmatched catalog")
+        await _cat_send(msg,catalog.view_home(foot),note); return True
+    keys=set(q)-{"rest","phone"}
+    if keys in ({"new"},{"gid"},{"gid","model"}):     # فقط یک دسته (یا مدلِ یادگرفته) — همان نما
+        gid=q.get("gid") or ("new" if q["new"] else "used")
+        v=catalog.view_model(gid,q["model"],0,foot) if "model" in q else catalog.view_group(gid,0,foot)
+        if v: await _cat_send(msg,v); return True
+    res=catalog.search(q); note=""; title=None
+    if not res and q.get("model") and "acc" not in q:
+        fam=catalog.search(q,family=True) or catalog.search({"model":q["model"],"phone":True},family=True)
+        note=f"🙏 {catalog.describe(q)} الان موجود نیست."
+        if fam:
+            res=fam; note+=" از همین خانواده اینا هست 👇"
+            title=f"📱 هم‌خانواده‌های {catalog.model_name(q['model'])} — {to_fa(len(fam))} مورد موجود"
+        else:
+            note+="\nاگه بنویسید «خبرم کن»، هر وقت رسید همین‌جا خبرتون می‌کنم 🔔"
+    if not res:
+        await msg.reply_text(note or f"🙏 {catalog.describe(q) or 'با این مشخصات'} الان موجود نداریم.",
+                             reply_markup=_cat_markup([[("📦 دیدن همه‌ی دسته‌ها","cat_home")]]))
+        return True
+    title=title or catalog.results_title(q,len(res))
+    if uid: cat_state[uid]={"ids":[x["id"] for x in res],"q":q,"title":title,"page":0,"ts":time.time()}
+    await _cat_send(msg,catalog.view_results(res,q,0,foot,title),note)
     return True
+
+def _cat_results(uid):
+    st=cat_state.get(uid)
+    if not st or time.time()-st["ts"]>CAT_TTL: return None,None
+    by={x["id"]:x for x in catalog.in_stock()}
+    return st,[by[i] for i in st["ids"] if i in by]
+
+async def _cat_vote(uid,pick,label):
+    """مشتری بعد از جستجوی نافهمیده خودش دسته/مدلی را زد → رأی؛ با دو نفر یاد گرفته می‌شود."""
+    u=cat_unk.pop(uid,None)
+    if not u or time.time()-u[1]>CAT_UNK_TTL or len(u[0])>6 or profanity.find(" ".join(u[0])): return
+    text=" ".join(u[0]); sig=_sig(text)
+    if not sig: return
+    key=f"cat|{sig}|{json.dumps(pick,sort_keys=True)}"
+    v=learn_data["votes"].setdefault(key,{"text":text,"intent":"cat","users":[],"src":"click",
+                                          "ts":gregorian_now(),"pick":pick,"label":label})
+    if uid not in v["users"]: v["users"].append(uid)
+    v["ts"]=gregorian_now()
+    if len(v["users"])>=LEARN_NEED["click"]:
+        learn_data["votes"].pop(key,None)
+        learn_data.setdefault("aliases",{})[sig]={"text":text,"pick":pick,"label":label,"ts":gregorian_now()}
+        learn_data["log"].insert(0,{"id":new_btn_id(),"text":text,"intent":"cat","label":label,
+                                    "alias":sig,"src":"click","ts":gregorian_now()})
+        del learn_data["log"][300:]
+        logger.info(f"learn: «{text}» → 📦 {label} (catalog)")
+    await save_learn()
+
+async def cat_cb(query):
+    """دکمه‌های لیست کالا: دسته → مدل → کالاها، صفحه‌به‌صفحه (پیام همان‌جا عوض می‌شود)."""
+    data=query.data; uid=query.from_user.id; foot=_cat_foot()
+    if data=="cat_noop": return
+    if not catalog.fresh():
+        await query.message.reply_text("🙏 لیست کالا الان در دسترس نیست؛ کمی بعد دوباره امتحان کنید.",
+                                       reply_markup=main_menu()); return
+    parts=data.split("_",4)       # cat, نوع, …
+    kind=parts[1]; view=None
+    if kind=="home": view=catalog.view_home(foot)
+    elif kind=="r":
+        st,res=_cat_results(uid)
+        if not res:
+            await query.message.reply_text("این جستجو قدیمی شده 🙏 دوباره بنویسید دنبال چی هستید.",
+                                           reply_markup=main_menu()); return
+        st["page"]=int(parts[2]); st["ts"]=time.time()
+        view=catalog.view_results(res,st["q"],st["page"],foot,st["title"])
+    elif kind in ("g","a"):
+        gid,page=parts[2],int(parts[3])
+        view=(catalog.view_group if kind=="g" else catalog.view_all)(gid,page,foot)
+        g=catalog.group(gid)
+        if g and kind=="g" and page==0: await _cat_vote(uid,{"gid":gid},g[1])
+    elif kind=="m":
+        gid,page,model=parts[2],int(parts[3]),parts[4]
+        view=catalog.view_model(gid,model,page,foot)
+        g=catalog.group(gid)
+        if g and page==0: await _cat_vote(uid,{"gid":gid,"model":model},f"{catalog.model_name(model)} · {g[1]}")
+    if view is None: view=catalog.view_home(foot)   # دسته خالی شد — از اول
+    html_,rows=view
+    await safe_edit(query.message,_cat_hint(html_,rows),parse_mode="HTML",disable_web_page_preview=True,
+                    reply_markup=_cat_markup(rows))
 
 async def _catalog_loop():
     """هر ۱۰ دقیقه لیست کالا از سایت؛ خطا یعنی ربات با آخرین لیست ادامه می‌دهد."""
@@ -5477,11 +5595,10 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
     wl_product=""
 
     if (action=="prices" or item.get("id")=="i_stock") and \
-            await send_catalog(msg,text,keep_product,lead,rows):
+            await send_catalog(msg,text,keep_product,lead,rows,uid=None if dry else uid):
         pass
-    elif item.get("id")=="i_accessory" and await send_catalog(
-            msg,text if any(w in brain.norm(text) for w in catalog.ACCESSORY_WORDS) else "لوازم جانبی",
-            "",lead,rows):     # «قاب ۱۳» یعنی لوازم جانبی، نه خودِ آیفون ۱۳
+    elif item.get("id")=="i_accessory" and await send_catalog(   # «قاب ۱۳» یعنی لوازم جانبی، نه آیفون ۱۳
+            msg,text,"",lead,rows,uid=None if dry else uid,force={"acc":"لوازم جانبی"}):
         pass
     elif action.startswith("section:") and action[8:] in SECTION_NAMES:
         pre=_join(lead,answer)
@@ -5657,12 +5774,28 @@ async def assistant_reply(update,ctx,text,user,dry=False):
         await run_intent(msg,oth,user,ctx.bot,lead=lead,dry=dry,text=text)
         return True
 
-    # ۲٫۷) «لیست»، «چی دارید؟» — لیست کالای امروز (از مسیر نیتِ قیمت، تا آمار و حافظه ثبت شود)
-    pit=faq_item("i_price")
-    if pit and catalog.fresh() and LIST_RX.search(brain.norm(text)):
-        await _typing(ctx.bot,msg.chat_id)
-        await run_intent(msg,pit,user,ctx.bot,lead=lead,dry=dry,text=text,product=a["product"])
-        return True
+    # ۲٫۷) لیست کالا: «بیشتر» (صفحه‌ی بعدِ جستجوی قبلی)، «لیست»/«چی دارید؟»، یا جستجوی
+    # کالایی («مشکی زیر ۱۵۰»، «شارژر دارید») — از مسیر نیتِ قیمت، تا آمار و حافظه ثبت شود.
+    # نیتِ دیگری که محکم فهمیده شده («گارانتی ۱۳ پرو») جلوتر است.
+    if catalog.fresh():
+        if brain.norm(text) in MORE_WORDS:
+            st,res=_cat_results(uid)
+            if res and (st["page"]+1)*catalog.PAGE<len(res):
+                st["page"]+=1; st["ts"]=now
+                await _cat_send(msg,catalog.view_results(res,st["q"],st["page"],_cat_foot(),st["title"]))
+                return True
+        pit=faq_item("i_price"); q=catalog.parse(text,a["product"])
+        # قیمت، رنگ، حافظه، باتری، «ارزون‌ترین» حتماً جستجوی کالاست؛ لوازم جانبی و «پرو مکس»
+        # فقط وقتی نیت دیگری محکم نخورده باشد
+        shop=any(k in q for k in ("color","max","min","sort","storage","battery"))
+        strong=shop or any(k in q for k in ("variant","acc"))
+        other=a["intent"] and a["intent"].get("id") not in ("i_price","i_stock","i_accessory")
+        # «۱۶e دارید؟»، «۱۳ پرو هست؟» — مدل + پرسش موجودی/قیمت
+        ask=q.get("model") and HAVE_RX.search(brain.norm(text))
+        if pit and (LIST_RX.search(brain.norm(text)) or shop or ((strong or ask) and not other)):
+            await _typing(ctx.bot,msg.chat_id)
+            await run_intent(msg,pit,user,ctx.bot,lead=lead,dry=dry,text=text,product=a["product"])
+            return True
 
     fresh=now-c.get("ts",0)<CTX_TTL
     prod=brain.carry_product(text,c.get("product","") if fresh else "")
