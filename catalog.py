@@ -564,24 +564,37 @@ def card_html(x):
     return "\n".join(lines)
 
 
+def _up(n, step=10000):
+    return -(-int(n) // step) * step
+
+
 def installments(price, cfg):
-    """[(ماه, پیش‌پرداخت, قسط ماهانه, جمع)] — سود ساده‌ی ماهانه روی مانده، قسط به ۱۰ هزار تومان گرد بالا."""
+    """[(ماه, پیش‌پرداخت, هزینه‌ی اقساط, قسط ماهانه, جمع)] — شرایط فروشگاه (بدون راس):
+    پیش‌پرداخت حداقل down٪؛ مانده + هزینه‌ی نقد به اقساط (fee_pct٪ قیمت، حداکثر fee_cap)؛
+    سود ساده‌ی rate٪ ماهانه روی آن؛ تا max_months ماه. مبالغ به ۱۰ هزار تومان گرد بالا."""
     if not price or not cfg: return []
-    down = int(price * cfg.get("down", 0) / 100)
+    down = _up(price * cfg["down"] / 100)
+    fee = min(int(price * cfg.get("fee_pct", 0) / 100), cfg.get("fee_cap") or 10**15)
+    base = price - down + fee
+    mx = cfg["max_months"]
     out = []
-    for months, rate in cfg.get("plans", []):
-        rem = (price - down) * (1 + rate / 100 * months)
-        monthly = -(-int(rem / months) // 10000) * 10000
-        out.append((months, down, monthly, down + monthly * months))
+    for m in sorted({x for x in (3, 6, mx) if 0 < x <= mx}):
+        monthly = _up(base * (1 + cfg["rate"] / 100 * m) / m)
+        out.append((m, down, fee, monthly, down + monthly * m))
     return out
 
 
 def installment_html(x, cfg):
     rows = installments(x["price"], cfg)
     if not rows: return ""
+    pct = lambda v: fa(f"{v:g}")
+    down_txt = "یک‌سوم" if abs(cfg["down"] - 100 / 3) < 0.5 else f"{pct(cfg['down'])}٪"
     lines = [f"<b>💳 اقساط {html.escape(x['name'])}</b>", f"قیمت نقدی: {fmt_price(x['price'])}",
-             f"پیش‌پرداخت ({fa(f'{cfg.get("down", 0):g}')}٪): {fmt_price(rows[0][1])}", ""]
-    for months, _, monthly, total in rows:
-        lines.append(f"🗓 {fa(months)} ماهه: ماهی <b>{fmt_price(monthly)}</b>  (جمع {short_price(total)})")
-    lines += ["", "محاسبه تقریبی است؛ شرایط دقیق (چک یا طلا) را همکارم می‌گوید."]
+             f"پیش‌پرداخت (حداقل {down_txt}): {fmt_price(rows[0][1])}"]
+    if rows[0][2]:
+        lines.append(f"هزینه‌ی نقد به اقساط (به مانده اضافه می‌شود): {fmt_price(rows[0][2])}")
+    lines += [f"سود {pct(cfg['rate'])}٪ ماهانه روی مانده · با چک یا طلا · تا {fa(cfg['max_months'])} ماه", ""]
+    for m, _, _, monthly, total in rows:
+        lines.append(f"🗓 {fa(m)} ماهه: ماهی <b>{fmt_price(monthly)}</b>  (جمع {short_price(total)})")
+    lines += ["", "پیش‌پرداخت بیشتر = قسط کمتر. محاسبه تقریبی است؛ دقیقش را همکارم می‌گوید."]
     return "\n".join(lines)

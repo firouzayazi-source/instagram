@@ -5651,7 +5651,14 @@ async def cmd_demand(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
 _card_photo: dict = {}     # id کالا → (آدرس عکس, file_id تلگرام)
 _rsv_seen: dict = {}       # (uid, id) → زمان آخرین رزرو — دوبار زدن دو کارت نسازد
 
-def inst_cfg(): return settings.get("installment") or None
+# شرایط اقساط فروشگاه (۹ آبان ۱۴۰۵، از کاربر): پیش‌پرداخت حداقل یک‌سوم، مانده با چک یا طلا تا ۱۰ ماه،
+# سود ۶٪ ماهانه روی مانده (بدون راس)، و یک‌دهم قیمت (حداکثر ۵ میلیون) هزینه‌ی نقد به اقساط روی مانده.
+DEFAULT_INSTALLMENT = {"down":100/3,"rate":6,"max_months":10,"fee_pct":10,"fee_cap":5_000_000}
+
+def inst_cfg():
+    v=settings.get("installment")
+    if v is False: return None                      # «/installment off»
+    return v if isinstance(v,dict) and "rate" in v else DEFAULT_INSTALLMENT
 
 def _card_kb(x):
     rows=[[InlineKeyboardButton("🛒 رزرو می‌کنم",callback_data=f"cat_rsv_{x['id']}")]]
@@ -5712,32 +5719,35 @@ async def product_cb(query,ctx,kind,pid):
         _bg(record_event(uid,"rsv" if rsv else "ai:i_human"),"ev rsv")
 
 async def cmd_installment(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
-    """/installment ۲۵ ۳:۳ ۶:۳.۵ ۱۲:۴ — پیش‌پرداخت ۲۵٪، و برای هر طرح «ماه:سود ماهانه٪».
-    بی‌آرگومان: شرایط فعلی؛ off: خاموش."""
+    """/installment ۳۳.۳ ۶ ۱۰ ۱۰ ۵ — پیش‌پرداخت٪، سود ماهانه٪، حداکثر ماه، هزینه‌ی اقساط٪ قیمت، سقف آن (میلیون).
+    بی‌آرگومان: شرایط فعلی؛ off: خاموش؛ default: شرایط پیش‌فرض فروشگاه."""
     if not is_admin(update.effective_user.id): return
-    # فقط ارقام فارسی → لاتین؛ norm علامت «:» را هم می‌کَند
+    # فقط ارقام فارسی → لاتین؛ norm علامت «.» را هم می‌کَند
     a=[x.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹٫/","0123456789..")).lower() for x in (getattr(ctx,"args",None) or [])]
-    usage=("مثال:  /installment 25 3:3 6:3.5 12:4\n"
-           "یعنی پیش‌پرداخت ۲۵٪؛ ۳ ماهه با سود ماهانه ۳٪، ۶ ماهه ۳٫۵٪، ۱۲ ماهه ۴٪.\n"
-           "خاموش:  /installment off")
+    usage=("تغییر:  /installment 33.3 6 10 10 5\n"
+           "یعنی پیش‌پرداخت ۳۳٫۳٪، سود ۶٪ ماهانه، تا ۱۰ ماه، هزینه‌ی اقساط ۱۰٪ قیمت تا سقف ۵ میلیون.\n"
+           "برگشت به پیش‌فرض:  /installment default\nخاموش:  /installment off")
+    sample=lambda c: catalog.installment_html({"name":"نمونه‌ی ۱۰۰ میلیونی","price":100_000_000},c)
     if not a:
         c=inst_cfg()
-        cur=("⚫️ محاسبه‌گر اقساط خاموش است." if not c else
-             f"🟢 پیش‌پرداخت {to_fa(f'{c["down"]:g}')}٪ · "+"، ".join(f"{to_fa(m)} ماهه {to_fa(f'{r:g}')}٪" for m,r in c["plans"]))
-        return await update.message.reply_text(cur+"\n\n"+usage)
-    if a[0]=="off":
-        settings.pop("installment",None); await save_settings()
-        return await update.message.reply_text("⚫️ محاسبه‌گر اقساط خاموش شد.")
+        return await update.message.reply_text(("⚫️ محاسبه‌گر اقساط خاموش است." if not c else sample(c))
+                                               +"\n\n"+esc(usage),parse_mode="HTML")
+    if a[0] in ("off","default"):
+        if a[0]=="off": settings["installment"]=False
+        else: settings.pop("installment",None)
+        await save_settings()
+        return await update.message.reply_text("⚫️ محاسبه‌گر اقساط خاموش شد." if a[0]=="off" else
+                                               "✅ برگشت به شرایط پیش‌فرض.\n\n"+sample(inst_cfg()),parse_mode="HTML")
     try:
-        down=float(a[0]); plans=[]
-        for x in a[1:]:
-            m,r=x.split(":"); plans.append([int(m),float(r)])
-        if not (0<=down<100 and plans and all(0<m<=60 and 0<=r<20 for m,r in plans)): raise ValueError
+        v=[float(x) for x in a]
+        if len(v) not in (3,5): raise ValueError
+        c={"down":v[0],"rate":v[1],"max_months":int(v[2]),
+           "fee_pct":v[3] if len(v)==5 else 0,"fee_cap":int(v[4]*1_000_000) if len(v)==5 else 0}
+        if not (0<=c["down"]<100 and 0<=c["rate"]<30 and 0<c["max_months"]<=60 and 0<=c["fee_pct"]<50): raise ValueError
     except ValueError:
         return await update.message.reply_text("❌ درست نیست.\n"+usage)
-    settings["installment"]={"down":down,"plans":plans}; await save_settings()
-    sample=catalog.installment_html({"name":"نمونه ۱۰۰ میلیونی","price":100_000_000},settings["installment"])
-    await update.message.reply_text("✅ ذخیره شد. نمونه:\n\n"+sample,parse_mode="HTML")
+    settings["installment"]=c; await save_settings()
+    await update.message.reply_text("✅ ذخیره شد. نمونه:\n\n"+sample(c),parse_mode="HTML")
 
 async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail=True):
     """یک نیت را اجرا می‌کند: متن (چندشکلی، پرشده) + کارِ نیت + پیشنهادها.
