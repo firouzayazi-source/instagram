@@ -10,6 +10,7 @@
 («۱۳ پرو مشکی زیر ۲۰۰ میلیون») مستقیم به نتیجه می‌رسد.
 """
 import hashlib, html, json, re, time
+import jdatetime
 import brain, specs
 
 SITE = "https://stland.ir"
@@ -564,23 +565,36 @@ def card_html(x):
     return "\n".join(lines)
 
 
-def _up(n, step=10000):
+def _up(n, step=1000):
     return -(-int(n) // step) * step
 
 
-def installments(price, cfg):
-    """[(ماه, پیش‌پرداخت, هزینه‌ی اقساط, قسط ماهانه, جمع)] — شرایط فروشگاه (بدون راس):
-    پیش‌پرداخت حداقل down٪؛ مانده + هزینه‌ی نقد به اقساط (fee_pct٪ قیمت، حداکثر fee_cap)؛
-    سود ساده‌ی rate٪ ماهانه روی آن؛ تا max_months ماه. مبالغ به ۱۰ هزار تومان گرد بالا."""
+def add_months(d, n):
+    """تاریخ شمسی + n ماه، همان روزِ ماه (۳۱ شهریور → ۳۰ مهر)."""
+    y, m = divmod(d.month - 1 + n, 12)
+    y += d.year; m += 1
+    ml = 31 if m <= 6 else 30 if m <= 11 else (30 if jdatetime.date(y, 1, 1).isleap() else 29)
+    return jdatetime.date(y, m, min(d.day, ml))
+
+
+def installments(price, cfg, start=None):
+    """[(ماه, روز, پیش‌پرداخت, هزینه‌ی اقساط, قسط ماهانه, جمع)] — فرمول فروشگاه (بدون راس):
+    مانده = قیمت − پیش‌پرداخت (حداقل down٪)؛ مانده‌ی مؤثر = مانده + fee_pct٪ مانده (حداکثر fee_cap)؛
+    سود = مانده‌ی مؤثر × rate × روز ÷ ۳۰۰۰ (روز = از امروز تا آخرین قسط، تقویم شمسی)؛
+    قسط = (مانده‌ی مؤثر + سود) ÷ ماه. مثال کاربر: ۱۰۰م، ۶٪، ۶ قسط از ۱۴۰۵/۰۶/۱۹ → ۱۸۱ روز، قسط ۲۲٬۷۰۰٬۰۰۰."""
     if not price or not cfg: return []
+    start = start or jdatetime.date.today()
     down = _up(price * cfg["down"] / 100)
-    fee = min(int(price * cfg.get("fee_pct", 0) / 100), cfg.get("fee_cap") or 10**15)
-    base = price - down + fee
+    rem = price - down
+    fee = min(int(rem * cfg.get("fee_pct", 0) / 100), cfg.get("fee_cap") or 10**15)
+    eff = rem + fee
     mx = cfg["max_months"]
     out = []
     for m in sorted({x for x in (3, 6, mx) if 0 < x <= mx}):
-        monthly = _up(base * (1 + cfg["rate"] / 100 * m) / m)
-        out.append((m, down, fee, monthly, down + monthly * m))
+        days = (add_months(start, m).togregorian() - start.togregorian()).days
+        interest = eff * cfg["rate"] * days / 3000
+        monthly = _up((eff + interest) / m)
+        out.append((m, days, down, fee, monthly, down + monthly * m))
     return out
 
 
@@ -590,11 +604,14 @@ def installment_html(x, cfg):
     pct = lambda v: fa(f"{v:g}")
     down_txt = "یک‌سوم" if abs(cfg["down"] - 100 / 3) < 0.5 else f"{pct(cfg['down'])}٪"
     lines = [f"<b>💳 اقساط {html.escape(x['name'])}</b>", f"قیمت نقدی: {fmt_price(x['price'])}",
-             f"پیش‌پرداخت (حداقل {down_txt}): {fmt_price(rows[0][1])}"]
-    if rows[0][2]:
-        lines.append(f"هزینه‌ی نقد به اقساط (به مانده اضافه می‌شود): {fmt_price(rows[0][2])}")
-    lines += [f"سود {pct(cfg['rate'])}٪ ماهانه روی مانده · با چک یا طلا · تا {fa(cfg['max_months'])} ماه", ""]
-    for m, _, _, monthly, total in rows:
-        lines.append(f"🗓 {fa(m)} ماهه: ماهی <b>{fmt_price(monthly)}</b>  (جمع {short_price(total)})")
-    lines += ["", "پیش‌پرداخت بیشتر = قسط کمتر. محاسبه تقریبی است؛ دقیقش را همکارم می‌گوید."]
+             f"پیش‌پرداخت (حداقل {down_txt}): {fmt_price(rows[0][2])}"]
+    if rows[0][3]:
+        lines.append(f"هزینه‌ی نقد به اقساط ({pct(cfg['fee_pct'])}٪ مانده"
+                     + (f"، حداکثر {short_price(cfg['fee_cap'])}" if cfg.get("fee_cap") else "")
+                     + f"): {fmt_price(rows[0][3])}")
+    lines += [f"سود {pct(cfg['rate'])}٪ ماهانه به روز · با چک یا طلا · تا {fa(cfg['max_months'])} ماه", ""]
+    for m, days, _, _, monthly, total in rows:
+        lines.append(f"🗓 {fa(m)} ماهه ({fa(days)} روز): ماهی <b>{fmt_price(monthly)}</b>  (جمع {short_price(total)})")
+    lines += ["", "اقساط از امروز ماهانه است. پیش‌پرداخت بیشتر = قسط کمتر.",
+              "محاسبه تقریبی است؛ دقیقش را همکارم می‌گوید."]
     return "\n".join(lines)

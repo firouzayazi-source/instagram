@@ -5652,7 +5652,8 @@ _card_photo: dict = {}     # id کالا → (آدرس عکس, file_id تلگر�
 _rsv_seen: dict = {}       # (uid, id) → زمان آخرین رزرو — دوبار زدن دو کارت نسازد
 
 # شرایط اقساط فروشگاه (۹ آبان ۱۴۰۵، از کاربر): پیش‌پرداخت حداقل یک‌سوم، مانده با چک یا طلا تا ۱۰ ماه،
-# سود ۶٪ ماهانه روی مانده (بدون راس)، و یک‌دهم قیمت (حداکثر ۵ میلیون) هزینه‌ی نقد به اقساط روی مانده.
+# یک‌دهم مانده (حداکثر ۵ میلیون) هزینه‌ی نقد به اقساط روی مانده، سود ۶٪ ماهانه به روز (بدون راس):
+# مانده‌ی مؤثر × ۶ × روز ÷ ۳۰۰۰ — فرمول در catalog.installments.
 DEFAULT_INSTALLMENT = {"down":100/3,"rate":6,"max_months":10,"fee_pct":10,"fee_cap":5_000_000}
 
 def inst_cfg():
@@ -5719,13 +5720,13 @@ async def product_cb(query,ctx,kind,pid):
         _bg(record_event(uid,"rsv" if rsv else "ai:i_human"),"ev rsv")
 
 async def cmd_installment(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
-    """/installment ۳۳.۳ ۶ ۱۰ ۱۰ ۵ — پیش‌پرداخت٪، سود ماهانه٪، حداکثر ماه، هزینه‌ی اقساط٪ قیمت، سقف آن (میلیون).
+    """/installment ۳۳.۳ ۶ ۱۰ ۱۰ ۵ — پیش‌پرداخت٪، سود ماهانه٪، حداکثر ماه، هزینه‌ی اقساط٪ مانده، سقف آن (میلیون).
     بی‌آرگومان: شرایط فعلی؛ off: خاموش؛ default: شرایط پیش‌فرض فروشگاه."""
     if not is_admin(update.effective_user.id): return
     # فقط ارقام فارسی → لاتین؛ norm علامت «.» را هم می‌کَند
     a=[x.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹٫/","0123456789..")).lower() for x in (getattr(ctx,"args",None) or [])]
     usage=("تغییر:  /installment 33.3 6 10 10 5\n"
-           "یعنی پیش‌پرداخت ۳۳٫۳٪، سود ۶٪ ماهانه، تا ۱۰ ماه، هزینه‌ی اقساط ۱۰٪ قیمت تا سقف ۵ میلیون.\n"
+           "یعنی پیش‌پرداخت ۳۳٫۳٪، سود ۶٪ ماهانه، تا ۱۰ ماه، هزینه‌ی اقساط ۱۰٪ مانده تا سقف ۵ میلیون.\n"
            "برگشت به پیش‌فرض:  /installment default\nخاموش:  /installment off")
     sample=lambda c: catalog.installment_html({"name":"نمونه‌ی ۱۰۰ میلیونی","price":100_000_000},c)
     if not a:
