@@ -669,6 +669,9 @@ async def init_db():
         CREATE TABLE IF NOT EXISTS threads(
             admin_id INTEGER,msg_id INTEGER,user_id INTEGER,ts TEXT,
             PRIMARY KEY(admin_id,msg_id));
+        CREATE TABLE IF NOT EXISTS searches(
+            ts TEXT,user_id INTEGER,q TEXT,found INTEGER);
+        CREATE INDEX IF NOT EXISTS idx_srch_ts ON searches(ts);
         CREATE TABLE IF NOT EXISTS waitlist(
             user_id INTEGER,product TEXT,ts TEXT,
             PRIMARY KEY(user_id,product));
@@ -2446,6 +2449,10 @@ async def weekly_digest():
             out.append("🔔 مشترک‌ها: "+"، ".join(f"{t} ({to_fa(n)})" for t,n in subs))
     nl=learned_this_week()
     if nl: out.append(f"🎓 دستیار این هفته {to_fa(nl)} جمله‌ی تازه یاد گرفت")
+    try:
+        dem=await demand_text(7)
+        if "هنوز جستجویی" not in dem: out += [HR]+dem.split("\n")[2:]
+    except Exception as e: logger.debug(f"digest demand: {e}")
     hot=[u for u in unmatched_sorted() if u.get("count",1)>1][:1]
     if hot:
         out += [HR,f"❓ پرتکرارترین سؤال بی‌پاسخ: «{esc(_fit(hot[0]['text'],60))}» "
@@ -2889,7 +2896,7 @@ async def cmd_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
 # ════════════════════════════════════════════════
 async def user_cb(query,ctx):
     data=query.data
-    if data.startswith("cat_"): return await cat_cb(query)
+    if data.startswith("cat_"): return await cat_cb(query,ctx)
 
     if data=="wh_today":
         await record_stat("wh_page",query.from_user.id)
@@ -5477,6 +5484,7 @@ async def send_catalog(msg,text,product,lead="",rows=None,uid=None,force=None):
         v=catalog.view_model(gid,q["model"],0,foot) if "model" in q else catalog.view_group(gid,0,foot)
         if v: await _cat_send(msg,v); return True
     res=catalog.search(q); note=""; title=None
+    if uid and not is_admin(uid): _bg(log_search(uid,q,len(res)),"log search")
     if not res and q.get("model") and "acc" not in q:
         fam=catalog.search(q,family=True) or catalog.search({"model":q["model"],"phone":True},family=True)
         note=f"🙏 {catalog.describe(q)} الان موجود نیست."
@@ -5520,8 +5528,9 @@ async def _cat_vote(uid,pick,label):
         logger.info(f"learn: «{text}» → 📦 {label} (catalog)")
     await save_learn()
 
-async def cat_cb(query):
-    """دکمه‌های لیست کالا: دسته → مدل → کالاها، صفحه‌به‌صفحه (پیام همان‌جا عوض می‌شود)."""
+async def cat_cb(query,ctx=None):
+    """دکمه‌های لیست کالا: دسته → مدل → کالاها، صفحه‌به‌صفحه (پیام همان‌جا عوض می‌شود)؛
+    شماره‌ی کالا → کارت محصول با رزرو، اقساط و سؤال از همکار."""
     data=query.data; uid=query.from_user.id; foot=_cat_foot()
     if data=="cat_noop": return
     if not catalog.fresh():
@@ -5529,6 +5538,8 @@ async def cat_cb(query):
                                        reply_markup=main_menu()); return
     parts=data.split("_",4)       # cat, نوع, …
     kind=parts[1]; view=None
+    if kind in ("p","rsv","ask","ins"):
+        return await product_cb(query,ctx,kind,parts[2])
     if kind=="home": view=catalog.view_home(foot)
     elif kind=="r":
         st,res=_cat_results(uid)
@@ -5552,23 +5563,181 @@ async def cat_cb(query):
     await safe_edit(query.message,_cat_hint(html_,rows),parse_mode="HTML",disable_web_page_preview=True,
                     reply_markup=_cat_markup(rows))
 
-async def _catalog_loop():
-    """هر ۱۰ دقیقه لیست کالا از سایت؛ خطا یعنی ربات با آخرین لیست ادامه می‌دهد."""
+def _site_client():
     import httpx
     tkw={"local_address":"0.0.0.0"} if os.getenv("FORCE_IPV4","1")!="0" else {}
+    return httpx.AsyncClient(timeout=30,transport=httpx.AsyncHTTPTransport(**tkw))
+
+async def _catalog_loop(bot):
+    """هر ۱۰ دقیقه لیست کالا از سایت؛ خطا یعنی ربات با آخرین لیست ادامه می‌دهد.
+    بعد از هر دریافت، منتظرهای «خبرم کن» که کالایشان رسیده خبر می‌گیرند."""
     fails=0
     while True:
         try:
-            async with httpx.AsyncClient(timeout=30,transport=httpx.AsyncHTTPTransport(**tkw)) as cl:
+            async with _site_client() as cl:
                 new=await catalog.fetch(cl)
             if new:
                 catalog.set_items(new,CATALOG_FILE)
                 if fails: logger.info(f"catalog: دوباره وصل شد — {len(new)} کالا")
                 fails=0
+                await wl_auto(bot)
         except Exception as e:
             fails+=1
             if fails in (1,6): logger.warning(f"catalog: سایت در دسترس نیست ({fails}): {e}")
         await asyncio.sleep(600)
+
+# ── «خبرم کن» خودکار: کالای منتظرها در سایت موجود شد → خبر با همان کالاها
+async def wl_auto(bot):
+    if not catalog.fresh(): return
+    for product,_ in await wl_groups():
+        q=catalog.parse(product)
+        if not catalog.is_search(q): continue
+        res=catalog.search(q)
+        if not res: continue
+        body=catalog.list_html(res[:3],f"🔔 خبر خوب! {product} رسید ✨",
+                               "برای رزرو یا سؤال، همین‌جا پیام بدید 🙏"
+                               +(f"\nهمه‌ی {to_fa(len(res))} مورد: بنویسید «{product}»" if len(res)>3 else ""))
+        sent=0
+        for uid in await wl_users(product):
+            try:
+                await bot.send_message(uid,body,parse_mode="HTML",disable_web_page_preview=True)
+                brain_ctx[uid]={"intent":"i_stock","ts":time.time(),"product":product}
+                await topic_note(bot,uid,f"🔔 «{product}» رسید — خبرش خودکار برای این مشتری رفت.")
+                sent+=1
+            except Forbidden: await mark_left(uid)
+            except Exception as e: logger.warning(f"wl_auto → {uid}: {e}")
+            await asyncio.sleep(0.05)
+        await db.execute("DELETE FROM waitlist WHERE product=?",(product,)); await db.commit()
+        logger.info(f"wl_auto: «{product}» رسید — {sent} نفر خبر گرفتند")
+
+# ── گزارش تقاضا: مشتری‌ها دنبال چه بودند و چه نداشتیم
+async def log_search(uid,q,found):
+    d=catalog.describe(q)
+    if not d: return
+    await db.execute("INSERT INTO searches(ts,user_id,q,found) VALUES(?,?,?,?)",
+                     (gregorian_now(),uid,d,found))
+    await db.commit()
+
+async def demand_text(days=7):
+    since=(datetime.now(IRAN_TZ)-timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    async with db.execute("SELECT q,COUNT(*),COUNT(DISTINCT user_id),SUM(found=0) FROM searches "
+                          "WHERE ts>=? GROUP BY q ORDER BY COUNT(DISTINCT user_id) DESC,COUNT(*) DESC",
+                          (since,)) as c:
+        rows=await c.fetchall()
+    out=[f"<b>📈 تقاضای {to_fa(days)} روز گذشته</b>",HR]
+    if not rows:
+        out.append("هنوز جستجویی ثبت نشده.")
+    else:
+        out.append("🔎 بیشترین جستجو:")
+        out += [f"• {esc(q)} — {to_fa(u)} نفر"+(f" · {to_fa(z)} بار نداشتیم ❌" if z else "")
+                for q,n,u,z in rows[:10]]
+        miss=[r for r in rows if r[3]][:5]
+        if miss:
+            out += ["",f"❌ <b>خواستند و نداشتیم</b> (برای خرید کالا):"]
+            out += [f"• {esc(q)} — {to_fa(u)} نفر" for q,n,u,z in miss]
+    wl=(await wl_groups())[:5]
+    if wl:
+        out += ["","🔔 منتظر «خبرم کن»:"]+[f"• {esc(p)} — {to_fa(n)} نفر" for p,n in wl]
+    return _fit("\n".join(out),TEXT_LIMIT)
+
+async def cmd_demand(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    """/demand [روز] — گزارش تقاضا برای مدیر."""
+    if not is_admin(update.effective_user.id): return
+    a=getattr(ctx,"args",None) or []
+    days=int(a[0]) if a and a[0].isdigit() and 0<int(a[0])<=90 else 7
+    await update.message.reply_text(await demand_text(days),parse_mode="HTML")
+
+# ── کارت محصول: عکس (از سایت، یک‌بار آپلود و بعد file_id)، جزئیات، رزرو، اقساط، سؤال
+_card_photo: dict = {}     # id کالا → (آدرس عکس, file_id تلگرام)
+_rsv_seen: dict = {}       # (uid, id) → زمان آخرین رزرو — دوبار زدن دو کارت نسازد
+
+def inst_cfg(): return settings.get("installment") or None
+
+def _card_kb(x):
+    rows=[[InlineKeyboardButton("🛒 رزرو می‌کنم",callback_data=f"cat_rsv_{x['id']}")]]
+    if inst_cfg() and x["price"]:
+        rows[0].append(InlineKeyboardButton("💳 اقساط",callback_data=f"cat_ins_{x['id']}"))
+    rows.append([InlineKeyboardButton("🧑‍💼 سؤال از همکار",callback_data=f"cat_ask_{x['id']}")])
+    if x.get("link"): rows.append([InlineKeyboardButton("🌐 صفحه‌ی کالا در سایت",url=x["link"])])
+    return InlineKeyboardMarkup(rows)
+
+async def _send_card(msg,bot,x):
+    cap=_fit(catalog.card_html(x),1000)
+    kb=_card_kb(x)
+    src=x.get("image","")
+    if src:
+        cached=_card_photo.get(x["id"])
+        try:
+            if cached and cached[0]==src:
+                return await msg.reply_photo(cached[1],caption=cap,parse_mode="HTML",reply_markup=kb)
+            # سایت درخواستِ خارج از ایران را می‌بندد، پس تلگرام خودش نمی‌تواند عکس را
+            # از آدرس بگیرد — ربات دانلود و آپلود می‌کند
+            async with _site_client() as cl:
+                r=await cl.get(src); r.raise_for_status()
+            m=await msg.reply_photo(r.content,caption=cap,parse_mode="HTML",reply_markup=kb)
+            if m.photo: _card_photo[x["id"]]=(src,m.photo[-1].file_id)
+            return m
+        except Exception as e: logger.warning(f"card photo {x['id']}: {e}")
+    return await msg.reply_text(cap,parse_mode="HTML",reply_markup=kb,disable_web_page_preview=True)
+
+async def product_cb(query,ctx,kind,pid):
+    user=query.from_user; uid=user.id; bot=ctx.bot if ctx else query.get_bot()
+    x=catalog.by_id(pid)
+    if not x or not x["stock"]:
+        await query.message.reply_text("🙏 این کالا همین الان فروش رفت یا از سایت برداشته شد. "
+                                       "برای دیدن موجودی امروز بنویسید «لیست».",reply_markup=main_menu())
+        return
+    if kind=="p":
+        await _send_card(query.message,bot,x)
+        add_trail(uid,"i_price",x["name"])
+    elif kind=="ins":
+        body=catalog.installment_html(x,inst_cfg())
+        await query.message.reply_text(body or "شرایط اقساط رو همکارم همین‌جا می‌گه 🙏",parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🛒 رزرو می‌کنم",
+                                                                     callback_data=f"cat_rsv_{x['id']}")]]))
+    elif kind in ("rsv","ask"):
+        rsv=kind=="rsv"
+        if rsv and time.time()-_rsv_seen.get((uid,x["id"]),0)<600:
+            await query.message.reply_text("✅ درخواست رزرو این کالا ثبت شده؛ همکارم همین‌جا پیام می‌ده 🙏",
+                                           reply_markup=main_menu()); return
+        if rsv: _rsv_seen[(uid,x["id"])]=time.time()
+        await query.message.reply_text(
+            (f"✅ درخواست رزرو «{x['name']}» ثبت شد.\nهمکارم همین‌جا برای نهایی کردن پیام می‌ده 🙏"
+             if rsv else f"🙏 سؤالتون درباره‌ی «{x['name']}» رو همین‌جا بنویسید؛ همکارم جواب می‌ده."),
+            reply_markup=main_menu())
+        details=re.sub(r"<[^>]+>","",catalog.card_html(x))+(f"\n🔗 {x['link']}" if x.get("link") else "")
+        await notify_handoff(bot,user,why="درخواست رزرو کالا" if rsv else "سؤال درباره‌ی یک کالا",
+                             icon="🛒" if rsv else "❓",extra=details)
+        set_human(uid,bot)
+        _bg(record_event(uid,"rsv" if rsv else "ai:i_human"),"ev rsv")
+
+async def cmd_installment(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    """/installment ۲۵ ۳:۳ ۶:۳.۵ ۱۲:۴ — پیش‌پرداخت ۲۵٪، و برای هر طرح «ماه:سود ماهانه٪».
+    بی‌آرگومان: شرایط فعلی؛ off: خاموش."""
+    if not is_admin(update.effective_user.id): return
+    # فقط ارقام فارسی → لاتین؛ norm علامت «:» را هم می‌کَند
+    a=[x.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹٫/","0123456789..")).lower() for x in (getattr(ctx,"args",None) or [])]
+    usage=("مثال:  /installment 25 3:3 6:3.5 12:4\n"
+           "یعنی پیش‌پرداخت ۲۵٪؛ ۳ ماهه با سود ماهانه ۳٪، ۶ ماهه ۳٫۵٪، ۱۲ ماهه ۴٪.\n"
+           "خاموش:  /installment off")
+    if not a:
+        c=inst_cfg()
+        cur=("⚫️ محاسبه‌گر اقساط خاموش است." if not c else
+             f"🟢 پیش‌پرداخت {to_fa(f'{c["down"]:g}')}٪ · "+"، ".join(f"{to_fa(m)} ماهه {to_fa(f'{r:g}')}٪" for m,r in c["plans"]))
+        return await update.message.reply_text(cur+"\n\n"+usage)
+    if a[0]=="off":
+        settings.pop("installment",None); await save_settings()
+        return await update.message.reply_text("⚫️ محاسبه‌گر اقساط خاموش شد.")
+    try:
+        down=float(a[0]); plans=[]
+        for x in a[1:]:
+            m,r=x.split(":"); plans.append([int(m),float(r)])
+        if not (0<=down<100 and plans and all(0<m<=60 and 0<=r<20 for m,r in plans)): raise ValueError
+    except ValueError:
+        return await update.message.reply_text("❌ درست نیست.\n"+usage)
+    settings["installment"]={"down":down,"plans":plans}; await save_settings()
+    sample=catalog.installment_html({"name":"نمونه ۱۰۰ میلیونی","price":100_000_000},settings["installment"])
+    await update.message.reply_text("✅ ذخیره شد. نمونه:\n\n"+sample,parse_mode="HTML")
 
 async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail=True):
     """یک نیت را اجرا می‌کند: متن (چندشکلی، پرشده) + کارِ نیت + پیشنهادها.
@@ -5790,6 +5959,17 @@ async def assistant_reply(update,ctx,text,user,dry=False):
         shop=any(k in q for k in ("color","max","min","sort","storage","battery"))
         strong=shop or any(k in q for k in ("variant","acc"))
         other=a["intent"] and a["intent"].get("id") not in ("i_price","i_stock","i_accessory")
+        # «قسطی ۱۳ پرو چقدر میشه؟» — اقساط ارزان‌ترین موجودهای همان مدل
+        if inst_cfg() and (q.get("model") or q.get("variant")) and \
+                re.search(r"قسط|اقساط",brain.norm(text)):
+            res=catalog.search(q)[:2]
+            if res:
+                await _typing(ctx.bot,msg.chat_id)
+                for x in res:
+                    await msg.reply_text(catalog.installment_html(x,inst_cfg()),parse_mode="HTML",
+                        reply_markup=_cat_markup([[("🖼 عکس و جزئیات",f"cat_p_{x['id']}"),
+                                                   ("🛒 رزرو",f"cat_rsv_{x['id']}")]]))
+                return True
         # «۱۶e دارید؟»، «۱۳ پرو هست؟» — مدل + پرسش موجودی/قیمت
         ask=q.get("model") and HAVE_RX.search(brain.norm(text))
         if pit and (LIST_RX.search(brain.norm(text)) or shop or ((strong or ask) and not other)):
@@ -5948,6 +6128,7 @@ async def check_abuse(update,ctx,text,user,dry=False):
 def event_label(k):
     """برچسب خوانای یک رویداد برای کارت شناخت و گزارش هفتگی."""
     if k=="wh_page": return "🕐 ساعت کاری"
+    if k=="rsv": return "🛒 رزرو کالا"
     if k.startswith("ai:"):
         it=faq_item(k[3:]); return f"💬 {faq_title(it)}" if it else "💬 پرسش"
     return SECTION_NAMES.get(k,k)
@@ -6146,7 +6327,7 @@ async def post_init(app):
     _spawn(_bc_loop(app.bot),"پخش همگانی")
     _spawn(_pending_loop(app.bot),"پیام‌های بی‌جواب")
     _spawn(_human_wait_loop(app.bot),"انتظار برای همکار")
-    _spawn(_catalog_loop(),"لیست کالای سایت")
+    _spawn(_catalog_loop(app.bot),"لیست کالای سایت")
     global BOT_USERNAME
     try:
         me=await app.bot.get_me(); BOT_USERNAME=me.username or ""
@@ -6281,6 +6462,8 @@ def main():
     app.add_handler(MessageHandler(~filters.COMMAND,topic_relay),group=-2)
     app.add_handler(MessageHandler(~filters.COMMAND,reply_relay),group=-1)
     app.add_handler(CommandHandler("setgroup",cmd_setgroup))
+    app.add_handler(CommandHandler("demand",cmd_demand))
+    app.add_handler(CommandHandler("installment",cmd_installment))
     app.add_handler(CommandHandler("start",cmd_start))
     app.add_handler(CommandHandler("help",cmd_help))
     app.add_handler(CommandHandler("admin",cmd_admin))

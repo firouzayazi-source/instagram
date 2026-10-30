@@ -48,7 +48,8 @@ def normalize(p):
     x = {"id": p.get("id"), "name": html.unescape(p.get("name", "")), "price": price,
          "stock": bool(p.get("is_in_stock")), "left": p.get("low_stock_remaining"),
          "cats": cats, "cat": cats[0] if cats else "سایر", "link": p.get("permalink", ""),
-         "model": _model_key(attrs.get("مدل")), "attrs": attrs}
+         "model": _model_key(attrs.get("مدل")), "attrs": attrs, "sku": p.get("sku") or "",
+         "image": ((p.get("images") or [{}])[0] or {}).get("src", "")}
     x["used"] = "کارکرده" in attrs.get("وضعیت", "") or any("کارکرده" in c for c in cats)
     return x
 
@@ -69,6 +70,7 @@ def set_items(new, path=None):
     global items, updated
     for x in new:                 # کش قدیمی (پیش از فیلد used) هم درست کار کند
         x.setdefault("used", "کارکرده" in x["attrs"].get("وضعیت", ""))
+        x.setdefault("sku", ""); x.setdefault("image", "")
     items, updated = new, time.time()
     if path:
         with open(path, "w", encoding="utf-8") as f:
@@ -91,6 +93,10 @@ def fresh(max_age=6 * 3600):
 
 def in_stock():
     return [x for x in items if x["stock"]]
+
+
+def by_id(i):
+    return next((x for x in items if str(x["id"]) == str(i)), None)
 
 
 # ════════════════════════════════════════════════
@@ -454,9 +460,11 @@ def view_items(xs, page, title, data, back=None, foot=""):
     lines = [f"<b>{html.escape(title)}</b>"]
     if len(xs) > PAGE:
         lines.append(f"{fa(len(xs))} مورد — صفحه‌ی {fa(page + 1)}")
+    lines.append("برای عکس، جزئیات و رزرو، شماره‌ی کالا را بزنید 👇")
     lines += [line(x, page * PAGE + i + 1) for i, x in enumerate(chunk)]
     if foot: lines.append("\n" + foot)
-    rows = _pager(len(xs), page, data)
+    nums = [(fa(page * PAGE + i + 1), f"cat_p_{x['id']}") for i, x in enumerate(chunk)]
+    rows = [nums[i:i + 4] for i in range(0, len(nums), 4)] + _pager(len(xs), page, data)
     if back: rows.append([("🔙 بازگشت", back), ("📦 همه‌ی دسته‌ها", "cat_home")] if back != "cat_home"
                          else [("📦 همه‌ی دسته‌ها", "cat_home")])
     return "\n".join(lines), rows
@@ -534,3 +542,46 @@ def view_results(xs, q, page=0, foot="", title=None):
 def list_html(xs, title, foot=""):
     """لیست ساده‌ی کوتاه (پیشنهاد مشاور خرید)."""
     return "\n".join([f"<b>{html.escape(title)}</b>"] + [line(x) for x in xs] + (["\n" + foot] if foot else []))
+
+
+# ════════════════════════════════════════════════
+#  کارت محصول و اقساط
+# ════════════════════════════════════════════════
+ATTR_ICONS = {"مدل": "📱", "حافظه": "💾", "رنگ": "🎨", "وضعیت": "✅", "سلامت باتری": "🔋",
+              "پارت نامبر": "🏷", "رجیستر": "📝"}
+
+
+def card_html(x):
+    a = x["attrs"]
+    lines = [f"<b>{html.escape(x['name'])}</b>", ""]
+    for k, v in a.items():
+        if k == "برند" or not v: continue
+        lines.append(f"{ATTR_ICONS.get(k, '▫️')} {html.escape(k)}: {html.escape(v)}")
+    lines += ["", f"💰 <b>{fmt_price(x['price'])}</b>"]
+    if x.get("left") == 1: lines.append("🔥 آخرین عدد")
+    elif x.get("left"): lines.append(f"📦 {fa(x['left'])} عدد موجود")
+    if x.get("sku"): lines.append(f"🔖 کد کالا: <code>{html.escape(x['sku'])}</code>")
+    return "\n".join(lines)
+
+
+def installments(price, cfg):
+    """[(ماه, پیش‌پرداخت, قسط ماهانه, جمع)] — سود ساده‌ی ماهانه روی مانده، قسط به ۱۰ هزار تومان گرد بالا."""
+    if not price or not cfg: return []
+    down = int(price * cfg.get("down", 0) / 100)
+    out = []
+    for months, rate in cfg.get("plans", []):
+        rem = (price - down) * (1 + rate / 100 * months)
+        monthly = -(-int(rem / months) // 10000) * 10000
+        out.append((months, down, monthly, down + monthly * months))
+    return out
+
+
+def installment_html(x, cfg):
+    rows = installments(x["price"], cfg)
+    if not rows: return ""
+    lines = [f"<b>💳 اقساط {html.escape(x['name'])}</b>", f"قیمت نقدی: {fmt_price(x['price'])}",
+             f"پیش‌پرداخت ({fa(f'{cfg.get("down", 0):g}')}٪): {fmt_price(rows[0][1])}", ""]
+    for months, _, monthly, total in rows:
+        lines.append(f"🗓 {fa(months)} ماهه: ماهی <b>{fmt_price(monthly)}</b>  (جمع {short_price(total)})")
+    lines += ["", "محاسبه تقریبی است؛ شرایط دقیق (چک یا طلا) را همکارم می‌گوید."]
+    return "\n".join(lines)
