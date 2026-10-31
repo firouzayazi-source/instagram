@@ -5241,7 +5241,8 @@ async def adv_finish(msg,user,bot,st):
     await notify_handoff(bot,user,why="مشتری آماده‌ی خرید — مشاور خرید",
                          icon="🎯",extra=f"🎯 نیاز: {prof}"+
                          (f"\n📱 پیشنهاد ربات: {'، '.join(x['name'] for x in picks)}" if picks else ""))
-    set_human(uid,bot)
+    # ربات ساکت نمی‌شود: مشتری ممکن است همین حالا قیمت یا اقساط بپرسد. با اولین جواب همکار
+    # در تاپیک، گفتگو خودش دست همکار می‌شود.
 
 # ── «منظورتون کدومه؟»
 DYM_TTL = 30*60
@@ -5311,6 +5312,7 @@ LEARN_NEED = {"admin":1,"dym":1,"click":2}
 LEARN_SRC = {"admin":"👨‍💼 جواب # مدیر","dym":"🤔 انتخاب مشتری","click":"👆 رفتار مشتری‌ها",
              "admin-reply":"✨ از سؤال و جواب مدیر"}
 UNK_TTL = 120            # ثانیه — «سؤال نافهمیده، بعد دکمه» فقط اگر پشت سر هم باشد
+CLARIFY_TTL = 10*60      # دومین پیامِ نافهمیده در این فاصله → همکار (اولی فقط «بازتر بنویسید»)
 last_text: dict = {}     # uid → (متن آخرین پیام مشتری که به مدیر رسید, زمان)
 
 async def load_learn():
@@ -6061,7 +6063,7 @@ async def assistant_reply(update,ctx,text,user,dry=False):
         brain_ctx[uid]={"ts":now,"product":prod,
                         "dym":{"text":text,"chat":msg.chat_id,"mid":msg.message_id,
                                "ids":[x[0]["id"] for x in cands],"ts":now,"dry":dry},
-                        "unk":(text,now)}
+                        "unk":(text,now),"unk_n":1}
         await _typing(ctx.bot,msg.chat_id)
         if chat_mode():
             names=[f"«{topic_word(it['id']) or faq_title(it)}»" for it,_ in cands]
@@ -6077,7 +6079,21 @@ async def assistant_reply(update,ctx,text,user,dry=False):
         if not dry: await log_unmatched(text,user)
         return True
 
-    # ۷) نفهمیدم — حدس نمی‌زنیم؛ به همکار می‌سپاریم
+    # ۷) نفهمیدم — حدس نمی‌زنیم. بار اول از خودِ مشتری می‌خواهیم بازتر بنویسد (با چند موضوع
+    # پرکاربرد)؛ فقط اگر پشت سر هم دوباره نفهمیدیم، یا مشکلِ دستگاه است، به همکار می‌سپاریم.
+    # قبلاً همان اولین پیامِ نافهمیده گفت‌وگو را به همکار می‌داد — مشتری‌ای که فقط جور دیگری
+    # پرسیده بود بی‌دلیل منتظر آدم می‌ماند.
+    misses=c.get("unk_n",0) if now-c.get("ts",0)<CLARIFY_TTL else 0
+    if misses==0 and mood!="issue":
+        brain_ctx[uid]={"ts":now,"product":prod,"unk":(text,now),"unk_n":1}
+        if not dry: await log_unmatched(text,user)
+        await _typing(ctx.bot,msg.chat_id)
+        quick=[] if chat_mode() else suggest_rows(ids=QUICK_INTENTS)
+        await msg.reply_text(_join(lead,"🤔 دقیق متوجه نشدم. می‌شه یه‌کم بازتر بنویسید؟",
+                                   "مثلاً: «قیمت ۱۳ پرو»، «شرایط اقساط»، «آدرس فروشگاه»"
+                                   +("" if chat_mode() else " — یا یکی از این‌ها 👇")),
+                             reply_markup=InlineKeyboardMarkup(quick) if quick else main_menu())
+        return True
     if dry:
         await msg.reply_text(_join(lead,random.choice(brain.UNKNOWN_LEADS),
                                    "(در حالت واقعی، پیام برای همکار فرستاده می‌شد)"))
