@@ -5459,7 +5459,8 @@ def _cat_alias(rest):
     a=learn_data.get("aliases",{}).get(_sig(" ".join(rest)))
     return dict(a["pick"]) if a else None
 
-HAVE_RX = re.compile(r"(?<!\S)(?:دارید|دارین|داری|دارن|هست|هستش|موجود\S*|قیمت\S*|چند|چنده|چقدر\S*|چقد)(?!\S)")
+HAVE_RX = re.compile(r"(?<!\S)(?:دارید|دارین|داری|دارن|هست|هستش|موجود\S*|قیمت\S*|چند|چنده|چقدر\S*|چقد|"
+                     r"میخوام|میخواستم|میخام|میخواهم|لازم دارم|بخرم)(?!\S)")   # «یه ۱۳ نرمال میخوام»
 
 async def send_catalog(msg,text,product,lead="",rows=None,uid=None,force=None):
     """جواب قیمت/موجودی/لیست از روی لیست زنده‌ی سایت. False یعنی لیست در
