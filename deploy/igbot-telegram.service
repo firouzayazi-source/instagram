@@ -1,0 +1,24 @@
+[Unit]
+Description=Telegram bot of the igbot project (stock_land.ir)
+After=network-online.target
+
+[Service]
+Type=simple
+User=igbot
+# داده‌ی ربات تلگرام (users.db و فایل‌های JSON) کنار داده‌ی igbot؛ کد در /opt/igbot/tgbot
+WorkingDirectory=/opt/igbot/data/telegram
+EnvironmentFile=/opt/igbot/.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/igbot/.venv/bin/python /opt/igbot/tgbot/bot.py
+Restart=on-failure
+RestartSec=5
+# سریع بسته شود تا نسخه‌ی تازه با نسخه‌ی قبلی روی getUpdates تداخل (Conflict) پیدا نکند
+TimeoutStopSec=20
+KillMode=mixed
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/igbot/data
+
+[Install]
+WantedBy=multi-user.target

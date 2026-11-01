@@ -21,8 +21,22 @@ main() {
     echo "فایل سرویس به‌روز شد"
   fi
 
+  # ربات تلگرام: فقط اگر منتقل شده باشد (deploy/migrate-telegram.sh) به‌روز و ری‌استارت می‌شود
+  if [ -f /etc/systemd/system/igbot-telegram.service ] && ! cmp -s deploy/igbot-telegram.service /etc/systemd/system/igbot-telegram.service; then
+    mkdir -p /var/backups/igbot
+    cp /etc/systemd/system/igbot-telegram.service "/var/backups/igbot/igbot-telegram.service.$(date +%Y%m%d-%H%M%S)"
+    cp deploy/igbot-telegram.service /etc/systemd/system/igbot-telegram.service
+    systemctl daemon-reload
+    echo "فایل سرویس تلگرام به‌روز شد"
+  fi
+
   chown -R igbot:igbot /opt/igbot
   systemctl restart igbot
+  if systemctl is-enabled --quiet igbot-telegram 2>/dev/null; then
+    systemctl restart igbot-telegram
+    sleep 3
+    systemctl is-active --quiet igbot-telegram && echo "ربات تلگرام فعال است" || { echo "❌ ربات تلگرام بالا نیامد"; journalctl -u igbot-telegram -n 20 --no-pager; }
+  fi
   sleep 2
   curl -fsS https://ig.stland.ir/health && echo
 }

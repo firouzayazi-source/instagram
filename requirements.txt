@@ -6,3 +6,9 @@ pytest-asyncio>=0.23
 cryptography>=42
 anthropic>=1.0
 pypdf>=5
+# ربات تلگرام (tgbot/)
+python-telegram-bot==22.7
+aiosqlite==0.20.0
+aiofiles==24.1.0
+jdatetime==5.0.0
+pytz==2024.2

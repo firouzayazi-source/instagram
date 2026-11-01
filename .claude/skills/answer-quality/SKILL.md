@@ -3,6 +3,9 @@ name: answer-quality
 description: Improves how well the Stockland support bot understands and answers customers, from real unanswered messages. Use whenever the user asks to make the bot's answers smarter or stronger, to cover questions it didn't understand, to review unanswered questions (سؤال‌های بی‌پاسخ), to add words or phrasings, or says things like «ربات نفهمید»، «پاسخ‌گویی رو قوی کن»، «دیکشنری رو بیشتر کن» — even if they don't name this skill.
 ---
 
+> کد ربات تلگرام حالا در `tgbot/` همین ریپوست: مسیرهای زیر (`brain.py`، `faq.json`، `tools/answer_check.py`، `tests/phrases.tsv`) نسبت به `tgbot/` هستند. روی سرور داده در `/opt/igbot/data/telegram` است.
+
+
 # Answer quality loop
 
 The bot understands messages with its own engine (`brain.py` + intents in `faq.json` + the product search in
