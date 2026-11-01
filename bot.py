@@ -8,7 +8,7 @@ import catalog     # لیست کالای زنده از سایت (stland.ir)
 from telegram import (Update, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardMarkup,
                       InlineKeyboardButton, BotCommand, BotCommandScopeChat,
                       BotCommandScopeDefault, WebAppInfo)
-from telegram.error import Forbidden, BadRequest, Conflict
+from telegram.error import Forbidden, BadRequest, Conflict, NetworkError
 from telegram.ext import (ApplicationBuilder, ApplicationHandlerStop, CommandHandler,
                            MessageHandler, CallbackQueryHandler, ContextTypes, filters)
 
@@ -6408,6 +6408,11 @@ async def on_error(update:object,ctx:ContextTypes.DEFAULT_TYPE):
         logger.error("⛔ Conflict — یک نسخه دیگر از همین ربات هم‌زمان در حال اجراست. "
                      "با `systemctl status telegram-bot` و `pgrep -af bot.py` بررسی کنید "
                      "و نسخه اضافی را ببندید.")
+        return
+    # قطعیِ چندثانیه‌ایِ خودِ تلگرام (Bad Gateway، timeout) — ربات خودش دوباره وصل می‌شود؛ پیام «خطا»
+    # به مشتری و گزارش به مالک فقط نگرانی بی‌مورد بود. BadRequest هم زیرشاخه‌ی NetworkError است ولی باگ واقعی است.
+    if isinstance(ctx.error,NetworkError) and not isinstance(ctx.error,BadRequest):
+        logger.warning(f"قطعی موقت تلگرام: {ctx.error}")
         return
     logger.error("خطای گرفته‌نشده:",exc_info=ctx.error)
     # ۱) کاربر بی‌پاسخ نماند
