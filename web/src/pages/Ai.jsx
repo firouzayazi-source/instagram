@@ -475,6 +475,74 @@ function Faq() {
 const COND = { new: 'نو', used: 'کارکرده', stock: 'استوک' }
 const EMPTY_P = { name: '', storage: '', color: '', condition: 'new', price: '', in_stock: true, notes: '', enabled: true }
 
+function SiteSync({ onSynced }) {
+  const [st, setSt] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState(null)
+  useEffect(() => { api.get('/api/ai/site-sync').then(setSt).catch(() => {}) }, [])
+  if (!st) return null
+  const set = (patch) => setSt({ ...st, ...patch })
+
+  async function save(e) {
+    e.preventDefault(); setBusy(true); setMsg(null)
+    try {
+      setSt(await api.put('/api/ai/site-sync', { url: st.url, enabled: st.enabled, interval_hours: st.interval_hours, currency: st.currency }))
+      setMsg({ ok: true, text: 'ذخیره شد ✅' })
+    } catch (ex) { setMsg({ ok: false, text: ex.message }) }
+    finally { setBusy(false) }
+  }
+  async function run() {
+    setBusy(true); setMsg(null)
+    try {
+      await api.put('/api/ai/site-sync', { url: st.url, interval_hours: st.interval_hours, currency: st.currency })
+      const r = await api.post('/api/ai/site-sync/run')
+      setSt(r)
+      setMsg(r.last_error ? { ok: false, text: r.last_error } : { ok: true, text: `${fa(r.last_count)} محصول از سایت خوانده شد ✅` })
+      onSynced()
+    } catch (ex) { setMsg({ ok: false, text: ex.message }) }
+    finally { setBusy(false) }
+  }
+
+  return (
+    <form className="card" onSubmit={save}>
+      <h2>همگام‌سازی با سایت</h2>
+      <p className="muted">قیمت و موجودی خودکار از فروشگاه ووکامرس (وردپرس) خوانده می‌شود. محصولات سایت هر بار کامل به‌روز می‌شوند و محصولاتی که دستی وارد کرده‌اید دست نمی‌خورند.</p>
+      <div className="field">
+        <label>آدرس سایت</label>
+        <input type="url" dir="ltr" value={st.url} placeholder="https://example.ir" onChange={(e) => set({ url: e.target.value })} />
+      </div>
+      <div className="grid2">
+        <div className="field">
+          <label>هر چند ساعت یک بار</label>
+          <input type="number" min="1" max="48" value={st.interval_hours} onChange={(e) => set({ interval_hours: Number(e.target.value) })} />
+        </div>
+        <div className="field">
+          <label>واحد قیمت در سایت</label>
+          <select value={st.currency} onChange={(e) => set({ currency: e.target.value })}>
+            <option value="auto">خودکار (از تنظیمات ووکامرس)</option>
+            <option value="IRT">تومان</option>
+            <option value="IRR">ریال</option>
+          </select>
+        </div>
+      </div>
+      <label className="check"><input type="checkbox" checked={st.enabled} onChange={(e) => set({ enabled: e.target.checked })} /> همگام‌سازی خودکار روشن باشد</label>
+      {st.last_at > 0 && (
+        <p className={st.last_error ? 'err' : 'muted'}>
+          آخرین همگام‌سازی: {timeAgo(st.last_at)} · {fa(st.last_count)} محصول{st.last_api === 'v3' ? ' (با کلید ووکامرس)' : ''}{st.last_error ? ` · خطا: ${st.last_error}` : ''}
+        </p>
+      )}
+      {st.last_error && !st.has_wc_key && (
+        <p className="hint muted">اگر سایت دسترسی عمومی به فهرست محصولات را بسته باشد، در ووکامرس از مسیر تنظیمات ← پیشرفته ← REST API یک کلید «فقط خواندنی» بسازید و WC_CONSUMER_KEY و WC_CONSUMER_SECRET را در ‎.env سرور بگذارید.</p>
+      )}
+      <Msg m={msg} />
+      <div className="actions">
+        <button className="btn primary" disabled={busy}>ذخیره</button>
+        <button type="button" className="btn" disabled={busy || !st.url} onClick={run}>{busy ? 'در حال خواندن…' : 'همگام‌سازی الان'}</button>
+      </div>
+    </form>
+  )
+}
+
 function Products() {
   const [items, setItems] = useState([])
   const [edit, setEdit] = useState(null)
@@ -496,7 +564,7 @@ function Products() {
   async function remove(p) { if (confirm(`«${p.name}» حذف شود؟`)) { await api.del(`/api/ai/products/${p.id}`); load() } }
   async function doImport(e) {
     e.preventDefault(); setMsg(null)
-    if (imp.replace && !confirm('همه‌ی محصولات فعلی پاک و با این فهرست جایگزین شوند؟')) return
+    if (imp.replace && !confirm('همه‌ی محصولاتی که دستی وارد شده‌اند پاک و با این فهرست جایگزین شوند؟ (محصولات سایت دست نمی‌خورند)')) return
     try {
       const r = await api.post('/api/ai/products/import', imp)
       setMsg({ ok: true, text: `${fa(r.imported)} محصول وارد شد ✅` }); setImp(null); load()
@@ -506,10 +574,12 @@ function Products() {
   return (
     <>
       <p className="muted">ربات قیمت و موجودی را فقط از همین فهرست می‌گوید. قیمت خالی یعنی «استعلام» و ربات مشتری را به شما ارجاع می‌دهد.</p>
+      {!edit && !imp && <SiteSync onSynced={load} />}
       <Msg m={msg} />
       {edit && (
         <form className="card" onSubmit={save}>
           <h2>{edit.id ? 'ویرایش محصول' : 'محصول جدید'}</h2>
+          {edit.source === 'site' && <p className="hint muted">این محصول از سایت آمده؛ تغییر قیمت یا موجودی اینجا در همگام‌سازی بعدی با مقدار سایت جایگزین می‌شود. برای تغییر ماندگار، در خود سایت عوضش کنید.</p>}
           <div className="grid2">
             <div className="field"><label>نام / مدل</label><input type="text" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} placeholder="iPhone 13 Pro Max" autoFocus /></div>
             <div className="field"><label>حافظه</label><input type="text" value={edit.storage} onChange={(e) => setEdit({ ...edit, storage: e.target.value })} placeholder="256GB" /></div>
@@ -532,7 +602,7 @@ function Products() {
           <h2>وارد کردن از اکسل</h2>
           <p className="muted">ستون‌ها را از اکسل کپی کنید و اینجا بچسبانید، به این ترتیب: نام، حافظه، رنگ، وضعیت (نو/کارکرده/استوک)، قیمت، موجودی (بله/خیر)، توضیح.</p>
           <textarea rows={8} dir="auto" value={imp.text} onChange={(e) => setImp({ ...imp, text: e.target.value })} placeholder={'iPhone 13 Pro Max\t256\tآبی\tکارکرده\t45000000\tبله\tباتری ۸۸٪'} />
-          <label className="check"><input type="checkbox" checked={imp.replace} onChange={(e) => setImp({ ...imp, replace: e.target.checked })} /> فهرست فعلی پاک و جایگزین شود</label>
+          <label className="check"><input type="checkbox" checked={imp.replace} onChange={(e) => setImp({ ...imp, replace: e.target.checked })} /> محصولات دستی فعلی پاک و جایگزین شوند</label>
           <div className="actions"><button className="btn primary" disabled={!imp.text.trim()}>وارد کن</button><button type="button" className="btn" onClick={() => setImp(null)}>انصراف</button></div>
         </form>
       )}
@@ -544,7 +614,7 @@ function Products() {
         </div>
       )}
       {!items.length && !edit && !imp && <div className="empty">فهرست محصول خالی است</div>}
-      {items.length > 0 && <p className="muted">{fa(items.length)} محصول · {fa(items.filter((p) => p.in_stock).length)} موجود</p>}
+      {items.length > 0 && <p className="muted">{fa(items.length)} محصول ({fa(items.filter((p) => p.source === 'site').length)} از سایت) · {fa(items.filter((p) => p.in_stock).length)} موجود</p>}
       <div className="list">
         {shown.map((p) => (
           <div key={p.id} className={`item ${p.enabled ? '' : 'disabled'}`} style={{ cursor: 'default' }}>
@@ -553,7 +623,7 @@ function Products() {
               <span className="price">{money(p.price)}</span>
             </div>
             <div className="row" style={{ marginTop: 4 }}>
-              <span><span className="pill muted">{COND[p.condition]}</span> <button className={`pill ${p.in_stock ? 'good' : 'warn'} as-btn`} onClick={() => toggleStock(p)} title="تغییر موجودی">{p.in_stock ? 'موجود' : 'ناموجود'}</button> {p.notes && <span className="muted">{p.notes}</span>}</span>
+              <span>{p.source === 'site' && <a className="pill" href={p.url || undefined} target="_blank" rel="noreferrer">سایت</a>} <span className="pill muted">{COND[p.condition]}</span> <button className={`pill ${p.in_stock ? 'good' : 'warn'} as-btn`} onClick={() => toggleStock(p)} title="تغییر موجودی">{p.in_stock ? 'موجود' : 'ناموجود'}</button> {p.notes && <span className="muted">{p.notes}</span>}</span>
               <span className="actions">
                 <button className="btn sm" onClick={() => setEdit({ ...p, in_stock: !!p.in_stock, enabled: !!p.enabled, price: p.price ?? '' })}>ویرایش</button>
                 <button className="btn sm danger" onClick={() => remove(p)}>حذف</button>

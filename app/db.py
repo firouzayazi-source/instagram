@@ -145,7 +145,9 @@ CREATE TABLE IF NOT EXISTS products (
   in_stock INTEGER NOT NULL DEFAULT 1,
   notes TEXT NOT NULL DEFAULT '',
   enabled INTEGER NOT NULL DEFAULT 1,
-  updated_at REAL NOT NULL
+  updated_at REAL NOT NULL,
+  source TEXT NOT NULL DEFAULT '',         -- '' دستی | site همگام‌شده از سایت
+  url TEXT NOT NULL DEFAULT ''             -- لینک محصول در سایت
 );
 
 CREATE TABLE IF NOT EXISTS blocked_users (
@@ -206,6 +208,21 @@ def init(path: str | None = None) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
     with connect(str(p)) as c:
         c.executescript(SCHEMA)
+        _migrate(c)
+
+
+# ستون‌هایی که بعد از ساخت جدول اضافه شده‌اند؛ پایگاه داده‌ی قدیمی بی‌خطر ارتقا می‌یابد
+_COLUMNS = {
+    "products": {"source": "TEXT NOT NULL DEFAULT ''", "url": "TEXT NOT NULL DEFAULT ''"},
+}
+
+
+def _migrate(c) -> None:
+    for table, cols in _COLUMNS.items():
+        have = {r[1] for r in c.execute(f"PRAGMA table_info({table})")}
+        for name, decl in cols.items():
+            if name not in have:
+                c.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
 
 
 @contextmanager

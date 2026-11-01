@@ -43,6 +43,10 @@ CUSTOM_AI_BASE_URL = os.environ.get("CUSTOM_AI_BASE_URL", "")
 CUSTOM_AI_API_KEY = os.environ.get("CUSTOM_AI_API_KEY", "")
 CUSTOM_AI_NAME = os.environ.get("CUSTOM_AI_NAME", "")
 
+# همگام‌سازی محصول از ووکامرس: فقط اگر Store API عمومی سایت بسته باشد لازم است (کلید فقط‌خواندنی)
+WC_CONSUMER_KEY = os.environ.get("WC_CONSUMER_KEY", "")
+WC_CONSUMER_SECRET = os.environ.get("WC_CONSUMER_SECRET", "")
+
 # پنل
 PANEL_PASSWORD = os.environ.get("PANEL_PASSWORD", "")
 SESSION_TTL = int(os.environ.get("SESSION_TTL", str(30 * 86400)))

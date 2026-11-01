@@ -224,7 +224,7 @@ def import_products(c, text: str, replace: bool = False) -> int:
     if rows and normalize(rows[0][0]) in ("name", "نام", "مدل", "محصول"):
         rows = rows[1:]
     if replace:
-        c.execute("DELETE FROM products")
+        c.execute("DELETE FROM products WHERE source=''")  # محصولات همگام‌شده از سایت دست نمی‌خورند
     n = 0
     for r in rows:
         r = (r + [""] * 7)[:7]
@@ -234,12 +234,13 @@ def import_products(c, text: str, replace: bool = False) -> int:
 
 
 def products_text(c, limit: int = 400) -> str:
-    rows = c.execute("SELECT * FROM products WHERE enabled=1 ORDER BY name, storage, condition").fetchall()
+    # موجودها اول، تا اگر فهرست بلند بود، ناموجودها حذف شوند نه موجودها
+    rows = c.execute("SELECT * FROM products WHERE enabled=1 ORDER BY in_stock DESC, name, storage, condition").fetchall()
     lines = []
     for r in rows[:limit]:
         price = f"{r['price']:,} تومان" if r["price"] else "قیمت: استعلام"
         parts = [r["name"], r["storage"], r["color"], CONDITIONS.get(r["condition"], r["condition"]), price,
-                 "موجود" if r["in_stock"] else "ناموجود", r["notes"]]
+                 "موجود" if r["in_stock"] else "ناموجود", r["notes"], r["url"]]
         lines.append(" | ".join(p for p in parts if p))
     if len(rows) > limit:
         lines.append(f"(و {len(rows) - limit} مورد دیگر که اینجا نیامده)")

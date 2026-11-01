@@ -4,7 +4,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
-from . import ai, auth, db, knowledge
+from . import ai, auth, config, db, knowledge, site_sync
 
 router = APIRouter(prefix="/api/ai", dependencies=[Depends(auth.require_session)])
 
@@ -176,6 +176,35 @@ class ImportIn(BaseModel):
 def products_import(body: ImportIn):
     with db.connect() as c:
         return {"imported": _guard(knowledge.import_products, c, body.text, body.replace)}
+
+
+# ---------- همگام‌سازی با سایت ----------
+
+def _sync_view(st: dict) -> dict:
+    return {**st, "has_wc_key": bool(config.WC_CONSUMER_KEY and config.WC_CONSUMER_SECRET)}
+
+
+@router.get("/site-sync")
+def site_sync_get():
+    with db.connect() as c:
+        return _sync_view(site_sync.get_settings(c))
+
+
+@router.put("/site-sync")
+def site_sync_put(body: dict):
+    with db.connect() as c:
+        return _sync_view(_guard(site_sync.save_settings, c, body))
+
+
+@router.post("/site-sync/run")
+async def site_sync_run():
+    """همگام‌سازی همین الان. خطای خواندن سایت در last_error برمی‌گردد، نه به صورت خطای HTTP."""
+    with db.connect() as c:
+        try:
+            st = await site_sync.sync(c)
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+        return _sync_view(st)
 
 
 # ---------- لاگ و بازخورد ----------
