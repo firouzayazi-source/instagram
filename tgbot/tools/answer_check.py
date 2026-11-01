@@ -138,6 +138,7 @@ async def main():
         n = len(rows)
         print(f"\n{n - fails - known_fails}/{n} درست · {fails} شکست تازه · {known_fails} شکست شناخته‌شده"
               + (f" · {fixed} شناخته‌شده درست شد" if fixed else ""))
+        sys.stdout.flush()   # os._exit بافر را خالی نمی‌کند
         os._exit(1 if fails else 0)
     else:
         msgs = _load_messages(target)
@@ -153,9 +154,12 @@ async def main():
             items = sorted(by[r], reverse=True)
             print(f"── {r} ({sum(c for c, _ in items)})")
             for c, t in items[:40]: print(f"   ×{c}  {t}")
+        sys.stdout.flush()
         os._exit(0)
 
 
 if __name__ == "__main__":
     try: asyncio.run(main())
-    finally: os._exit(2)     # رشته‌ی aiosqlite نگذارد پایان برنامه گیر کند (خروجی‌های عادی زودتر os._exit می‌زنند)
+    finally:
+        sys.stdout.flush()
+        os._exit(2)     # رشته‌ی aiosqlite نگذارد پایان برنامه گیر کند (خروجی‌های عادی زودتر os._exit می‌زنند)

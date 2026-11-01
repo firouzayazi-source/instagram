@@ -13,6 +13,6 @@ def test_tgbot_compiles():
 
 
 def test_tgbot_answer_check():
-    r = subprocess.run([sys.executable, "tools/answer_check.py"], cwd=TG, capture_output=True, text=True, timeout=300)
+    r = subprocess.run([sys.executable, "-u", "tools/answer_check.py"], cwd=TG, capture_output=True, text=True, timeout=300)
     assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
     assert "0 شکست تازه" in r.stdout
