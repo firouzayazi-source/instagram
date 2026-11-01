@@ -8,7 +8,7 @@ import re
 import time
 from dataclasses import dataclass, field
 
-from . import brain_engine, config, db, knowledge
+from . import brain_engine, config, db, knowledge, shared_kb
 from .normalize import normalize
 
 DEFAULTS = {
@@ -344,7 +344,7 @@ def build_system(c, s: dict) -> list:
 لحن: {_TONE.get(s['tone'], _TONE['friendly'])}. طول پاسخ: {_LENGTH.get(s['length'], _LENGTH['short'])}. از یکی دو ایموجی مناسب استفاده کن، نه بیشتر.
 
 قانون‌ها:
-- فقط بر اساس «اطلاعات کسب‌وکار»، «پرسش‌های رایج»، «محصولات» و «متن‌های مرتبط» جواب بده. قیمت، موجودی، شرایط اقساط، گارانتی، تخفیف یا هر قول دیگری را که در این اطلاعات نیست از خودت نساز.
+- فقط بر اساس «اطلاعات کسب‌وکار»، «دانش مشترک فروشگاه»، «پرسش‌های رایج»، «محصولات» و «متن‌های مرتبط» جواب بده. قیمت، موجودی، شرایط اقساط، گارانتی، تخفیف یا هر قول دیگری را که در این اطلاعات نیست از خودت نساز.
 - اگر جواب در اطلاعات نیست، یا مطمئن نیستی، action را handoff بگذار و در reply مودبانه بگو همکار انسانی به‌زودی جواب می‌دهد؛ می‌توانی همزمان چیزی را که مطمئنی بگویی.
 - وقتی کسی قصد خرید دارد (می‌خواهد سفارش بدهد، آدرس یا شماره‌ی تماس می‌خواهد، شرایط پرداخت را برای خرید قطعی می‌پرسد)، جواب مفید بده و action را handoff بگذار تا فروشنده پیگیری کند.
 - شکایت یا عصبانیت: همدلی کن، عذرخواهی کوتاه، و handoff.
@@ -368,6 +368,9 @@ def build_system(c, s: dict) -> list:
     extra = []
     if s.get("business_info", "").strip():
         extra.append(f"## اطلاعات کسب‌وکار\n{s['business_info'].strip()}")
+    shared = shared_kb.prompt_text() if shared_kb.ready() else ""
+    if shared:
+        extra.append(f"## دانش مشترک فروشگاه (همان جواب‌های ربات تلگرام)\n{shared}")
     extra.append(f"## پرسش‌های رایج\n{faq}")
     extra.append(f"## محصولات و قیمت‌ها (به تومان)\n{products}")
     return [{"type": "text", "text": rules + "\n\n" + "\n\n".join(extra), "cache_control": {"type": "ephemeral"}}]

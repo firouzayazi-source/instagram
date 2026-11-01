@@ -4,7 +4,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
-from . import ai, auth, config, db, knowledge, site_sync
+from . import ai, auth, config, db, knowledge, shared_kb, site_sync
 
 router = APIRouter(prefix="/api/ai", dependencies=[Depends(auth.require_session)])
 
@@ -245,11 +245,59 @@ def log_feedback(lid: int, body: FeedbackIn):
         if not row:
             raise HTTPException(404)
         c.execute("UPDATE ai_log SET feedback=? WHERE id=?", (body.feedback or None, lid))
-        faq_id = None
+        faq_id, shared = None, False
         if body.correct_answer.strip():
-            faq_id = knowledge.save_faq(c, {"question": row["input"][:300], "keywords": body.keywords,
-                                            "answer": body.correct_answer})
-    return {"ok": True, "faq_id": faq_id}
+            if shared_kb.ready():
+                # دانش مشترک: از این به بعد هم اینستاگرام و هم تلگرام همین را جواب می‌دهند
+                _guard(shared_kb.save_intent, {"keys": body.keywords, "examples": [row["input"][:300]],
+                                               "answer": body.correct_answer.strip()})
+                shared = True
+            else:
+                faq_id = knowledge.save_faq(c, {"question": row["input"][:300], "keywords": body.keywords,
+                                                "answer": body.correct_answer})
+    return {"ok": True, "faq_id": faq_id, "shared": shared}
+
+
+# ---------- دانش مشترک اینستاگرام و تلگرام ----------
+
+@router.get("/kb")
+def kb_get():
+    with db.connect() as c:
+        old = len(knowledge.list_faq(c))
+    return {"ready": shared_kb.ready(), "intents": shared_kb.intents() if shared_kb.ready() else [],
+            "sections": shared_kb.sections(), "actions": shared_kb.ACTIONS, "pending": shared_kb.pending(),
+            "old_faq": old}
+
+
+@router.post("/kb/intents")
+def kb_intent_save(body: dict):
+    _guard(shared_kb.save_intent, body)
+    return {"queued": True}
+
+
+@router.delete("/kb/intents/{iid}")
+def kb_intent_delete(iid: str):
+    _guard(shared_kb.delete_intent, iid)
+    return {"queued": True}
+
+
+@router.put("/kb/sections/{key}")
+def kb_section_save(key: str, body: dict):
+    _guard(shared_kb.save_section, key, body.get("text", ""))
+    return {"queued": True}
+
+
+@router.post("/kb/migrate-faq")
+def kb_migrate_faq():
+    """پرسش‌های رایج قدیمی (فقط اینستاگرام) به دانش مشترک می‌روند و از جدول قدیمی پاک می‌شوند."""
+    with db.connect() as c:
+        moved = 0
+        for f in knowledge.list_faq(c):
+            _guard(shared_kb.save_intent, {"keys": f["keywords"], "examples": [f["question"]], "answer": f["answer"],
+                                           "enabled": bool(f["enabled"])})
+            knowledge.delete_faq(c, f["id"])
+            moved += 1
+    return {"moved": moved}
 
 
 # ---------- ارجاع به انسان ----------

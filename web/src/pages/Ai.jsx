@@ -6,7 +6,7 @@ const SUBS = [
   ['overview', 'نمای کلی'],
   ['handoffs', 'ارجاع به شما'],
   ['settings', 'تنظیمات ربات'],
-  ['faq', 'پرسش‌های رایج'],
+  ['faq', 'دانش مشترک'],
   ['products', 'محصولات و قیمت'],
   ['docs', 'فایل‌ها'],
   ['rules', 'دستورها'],
@@ -32,7 +32,7 @@ export default function Ai({ sub = 'overview', badges = {} }) {
       {cur === 'overview' && <Overview />}
       {cur === 'handoffs' && <Handoffs />}
       {cur === 'settings' && <Settings />}
-      {cur === 'faq' && <Faq />}
+      {cur === 'faq' && <Kb />}
       {cur === 'products' && <Products />}
       {cur === 'docs' && <Docs />}
       {cur === 'rules' && <Rules embedded />}
@@ -434,6 +434,139 @@ function Settings() {
 // ---------- پرسش‌های رایج ----------
 
 const EMPTY_FAQ = { question: '', keywords: '', answer: '', enabled: true }
+
+const EMPTY_INTENT = { id: '', keys: '', examples: '', answer: '', action: '', enabled: true }
+const firstVariant = (a) => (a || '').split('\n---\n')[0]
+
+function Kb() {
+  const [kb, setKb] = useState(null)
+  const [edit, setEdit] = useState(null)
+  const [q, setQ] = useState('')
+  const [msg, setMsg] = useState(null)
+  const [sec, setSec] = useState({})
+  const load = () => api.get('/api/ai/kb').then((r) => {
+    setKb(r); setSec(Object.fromEntries(r.sections.map((v) => [v.key, v.text])))
+  }).catch(() => {})
+  useEffect(() => { load() }, [])
+  const later = () => setTimeout(load, 3500)
+  const shown = useMemo(() => (kb?.intents || []).filter((x) => !q || `${x.keys.join(' ')} ${x.examples.join(' ')} ${x.answer}`.includes(q)), [kb, q])
+
+  if (!kb) return <div className="empty">در حال بارگذاری…</div>
+  if (!kb.ready) return (
+    <>
+      <p className="err">دانش مشترک هنوز در دسترس نیست: ربات تلگرام روی این سرور منتقل نشده. تا آن موقع پرسش‌های رایج فقط برای اینستاگرام است.</p>
+      <Faq />
+    </>
+  )
+  const ok = (text) => { setMsg({ ok: true, text }); later() }
+  const fail = (ex) => setMsg({ ok: false, text: ex.message })
+
+  async function save(e) {
+    e.preventDefault(); setMsg(null)
+    try { await api.post('/api/ai/kb/intents', edit); setEdit(null); ok('ثبت شد ✅ تا چند ثانیه در تلگرام و اینستاگرام فعال می‌شود.') } catch (ex) { fail(ex) }
+  }
+  async function toggle(x) {
+    try { await api.post('/api/ai/kb/intents', { ...x, enabled: !x.enabled }); ok(x.enabled ? 'خاموش شد' : 'روشن شد') } catch (ex) { fail(ex) }
+  }
+  async function remove(x) {
+    const warn = x.builtin ? ' (این از پیش‌فرض‌های ربات است؛ بهتر است به‌جای حذف خاموشش کنید)' : ''
+    if (!confirm(`حذف شود؟${warn}`)) return
+    try { await api.del(`/api/ai/kb/intents/${x.id}`); ok('حذف شد') } catch (ex) { fail(ex) }
+  }
+  async function saveSection(k) {
+    try { await api.put(`/api/ai/kb/sections/${k}`, { text: sec[k] || '' }); ok('متن بخش ثبت شد ✅') } catch (ex) { fail(ex) }
+  }
+  async function migrate() {
+    try { const r = await api.post('/api/ai/kb/migrate-faq'); ok(`${fa(r.moved)} پرسش به دانش مشترک منتقل شد ✅`) } catch (ex) { fail(ex) }
+  }
+
+  return (
+    <>
+      <p className="muted">یک بار اینجا وارد کنید؛ ربات تلگرام و اینستاگرام هر دو همین را جواب می‌دهند. از پنل داخل تلگرام هم قابل ویرایش است.</p>
+      {kb.pending.count > 0 && (
+        <p className={kb.pending.stale ? 'err' : 'muted'}>
+          {kb.pending.stale ? `⚠️ ${fa(kb.pending.count)} تغییر منتظر است و ربات تلگرام برشان نداشته؛ سرویس igbot-telegram روشن است؟` : `⏳ ${fa(kb.pending.count)} تغییر در حال اعمال…`}
+        </p>
+      )}
+      {kb.old_faq > 0 && (
+        <div className="card">
+          <p style={{ margin: 0 }}>{fa(kb.old_faq)} پرسش رایج قدیمی فقط برای اینستاگرام ثبت شده.</p>
+          <button className="btn primary sm" style={{ marginTop: 8 }} onClick={migrate}>انتقال به دانش مشترک</button>
+        </div>
+      )}
+      <Msg m={msg} />
+
+      {edit && (
+        <form className="card" onSubmit={save}>
+          <h2>{edit.id ? 'ویرایش' : 'پرسش یا دستور تازه'}</h2>
+          <div className="field">
+            <label>کلیدواژه‌ها (با ویرگول جدا)</label>
+            <input type="text" value={edit.keys} onChange={(e) => setEdit({ ...edit, keys: e.target.value })} placeholder="مثلاً: تعمیر، تعمیرات، خرابی" autoFocus />
+          </div>
+          <div className="field">
+            <label>جمله‌های نمونه‌ی مشتری (هر خط یکی)</label>
+            <textarea rows={3} value={edit.examples} onChange={(e) => setEdit({ ...edit, examples: e.target.value })} placeholder={'گوشیمو تعمیر میکنید؟\nصفحه‌ی آیفون عوض میکنید؟'} />
+            <p className="hint muted">ربات با غلط تایپی و شکل‌های دیگر جمله هم می‌فهمد؛ چند نمونه‌ی متفاوت کافی است.</p>
+          </div>
+          <div className="field">
+            <label>جواب</label>
+            <textarea rows={5} value={edit.answer} onChange={(e) => setEdit({ ...edit, answer: e.target.value })} />
+            <p className="hint muted">برای چند شکل جواب (ربات هر بار یکی را می‌گوید)، بین آن‌ها یک خط فقط با --- بگذارید. {'{product}'} جای نام مدلی می‌نشیند که مشتری گفته.</p>
+          </div>
+          <div className="field">
+            <label>کار همراه جواب</label>
+            <select value={edit.action} onChange={(e) => setEdit({ ...edit, action: e.target.value })}>
+              {Object.entries(kb.actions).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+            </select>
+          </div>
+          <label className="check"><input type="checkbox" checked={edit.enabled} onChange={(e) => setEdit({ ...edit, enabled: e.target.checked })} /> فعال</label>
+          <div className="actions"><button className="btn primary">ذخیره</button><button type="button" className="btn" onClick={() => setEdit(null)}>انصراف</button></div>
+        </form>
+      )}
+
+      {!edit && (
+        <>
+          <details className="card">
+            <summary><b>متن‌های پایه</b> <span className="muted">— آدرس، اقساط، تماس، سایت…</span></summary>
+            <p className="muted">هم در منوی تلگرام و هم در جواب اینستاگرام همین متن می‌آید.</p>
+            {kb.sections.map((v) => (
+              <div className="field" key={v.key}>
+                <label>{v.title}</label>
+                <textarea rows={3} value={sec[v.key] || ''} onChange={(e) => setSec({ ...sec, [v.key]: e.target.value })} />
+                {(sec[v.key] || '') !== v.text && <button type="button" className="btn sm primary" style={{ marginTop: 4 }} onClick={() => saveSection(v.key)}>ذخیره‌ی {v.title}</button>}
+              </div>
+            ))}
+          </details>
+
+          <div className="actions" style={{ marginBottom: 10 }}>
+            <button className="btn primary" onClick={() => setEdit(EMPTY_INTENT)}>+ پرسش یا دستور تازه</button>
+            <input type="text" style={{ flex: 1, minWidth: 140 }} placeholder="جست‌وجو…" value={q} onChange={(e) => setQ(e.target.value)} />
+          </div>
+          <p className="muted">{fa(kb.intents.length)} پرسش و دستور · {fa(kb.intents.filter((x) => x.enabled).length)} فعال</p>
+          <div className="list">
+            {shown.map((x) => (
+              <div key={x.id} className={`item ${x.enabled ? '' : 'disabled'}`} style={{ cursor: 'default' }}>
+                <div className="row">
+                  <span className="who">{(x.keys.length ? x.keys : x.examples).slice(0, 4).join('، ')}</span>
+                  <span className="muted">{fa(x.hits)} بار</span>
+                </div>
+                <p className="text" style={{ whiteSpace: 'pre-line' }}>{firstVariant(x.answer).slice(0, 220) || '—'}</p>
+                <div className="row">
+                  <span>{x.action && <span className="pill muted">{kb.actions[x.action] || x.action}</span>}</span>
+                  <span className="actions">
+                    <button className={`btn sm ${x.enabled ? '' : 'primary'}`} onClick={() => toggle(x)}>{x.enabled ? 'خاموش' : 'روشن'}</button>
+                    <button className="btn sm" onClick={() => setEdit({ ...x, keys: x.keys.join('، '), examples: x.examples.join('\n') })}>ویرایش</button>
+                    <button className="btn sm danger" onClick={() => remove(x)}>حذف</button>
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </>
+  )
+}
 
 function Faq() {
   const [items, setItems] = useState([])

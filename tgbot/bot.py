@@ -4925,6 +4925,75 @@ async def drain_bg():
 
 _faq_save_task=None
 
+# ════════════════════════════════════════════════
+#  تغییرهای پنل وب igbot (دانش مشترک اینستاگرام و تلگرام)
+# ════════════════════════════════════════════════
+# پنل وب نیت‌ها و متن بخش‌ها را ویرایش می‌کند، ولی مستقیم روی faq.json و data.json
+# نمی‌نویسد (وگرنه نسخه‌ی داخل حافظه‌ی همین ربات رویش می‌نوشت). هر تغییر یک فایل JSON
+# در پوشه‌ی inbox است؛ ربات آن را مثل ویرایش از پنل داخل تلگرام اعمال و ذخیره می‌کند.
+PANEL_INBOX = "inbox"
+_PANEL_ID_RX = re.compile(r"^[A-Za-z0-9_]{1,40}$")
+PANEL_ACTIONS = ("prices","hours","human","notify","specs","compare","advisor")
+
+def _panel_list(v,n=80,ln=300):
+    return [str(x).strip()[:ln] for x in (v or []) if str(x).strip()][:n]
+
+def apply_panel_op(op):
+    """یک تغییر پنل وب را اعمال می‌کند. خروجی: (faq عوض شد، data عوض شد)."""
+    kind=op.get("op") if isinstance(op,dict) else None
+    if kind=="intent_upsert":
+        src=op.get("item") or {}
+        iid=str(src.get("id") or "")
+        it=faq_item(iid) if iid else None
+        if it is None:
+            if iid and not _PANEL_ID_RX.match(iid): return False,False
+            it={"id":iid or "p_"+secrets.token_hex(4),"hits":0,"enabled":True}
+            faq.append(it)
+        for k in ("keys","examples"):
+            if k in src: it[k]=_panel_list(src[k])
+        if "answer" in src: it["answer"]=str(src["answer"] or "")[:4000]
+        if "action" in src:
+            a=str(src["action"] or "")
+            if not a: it.pop("action",None)
+            elif a in PANEL_ACTIONS or (a.startswith("section:") and a[8:] in SECTION_NAMES): it["action"]=a
+        if "enabled" in src: it["enabled"]=bool(src["enabled"])
+        if not (it.get("answer") or it.get("action")): faq.remove(it)
+        return True,False
+    if kind=="intent_delete":
+        it=faq_item(str(op.get("id") or ""))
+        if it is None: return False,False
+        faq.remove(it); return True,False
+    if kind=="section_set":
+        key=str(op.get("key") or "")
+        if key in SECTION_NAMES and key not in ("workhours","notify") and isinstance(responses,dict):
+            responses[key]=str(op.get("text") or "")[:4000]; return False,True
+    return False,False
+
+async def process_panel_inbox():
+    """یک دور: همه‌ی تغییرهای در صف، به ترتیب زمان. فایل هر تغییر بعد از اعمال پاک می‌شود."""
+    try: files=sorted(f for f in os.listdir(PANEL_INBOX) if f.endswith(".json"))
+    except FileNotFoundError: return 0
+    fc=dc=False
+    for f in files:
+        p=os.path.join(PANEL_INBOX,f)
+        try:
+            with open(p,encoding="utf-8") as fh: a,b=apply_panel_op(json.load(fh))
+            fc|=a; dc|=b
+        except Exception as e: logger.warning(f"panel op {f}: {e}")
+        finally:
+            try: os.remove(p)
+            except OSError: pass
+    if fc: await save_faq()
+    if dc: await save_data()
+    if files: logger.info(f"پنل وب: {len(files)} تغییر اعمال شد")
+    return len(files)
+
+async def _panel_inbox_loop():
+    while True:
+        await asyncio.sleep(2)
+        try: await process_panel_inbox()
+        except Exception as e: logger.error(f"panel inbox: {e}")
+
 def save_faq_soon(delay=3.0):
     """شمارنده‌ها هر چند ثانیه یک‌بار روی دیسک می‌روند، نه با هر پیام
     (خاموشی هم یک‌بار ذخیره می‌کند، پس چیزی گم نمی‌شود)."""
@@ -6356,6 +6425,7 @@ async def post_init(app):
     _spawn(_pending_loop(app.bot),"پیام‌های بی‌جواب")
     _spawn(_human_wait_loop(app.bot),"انتظار برای همکار")
     _spawn(_catalog_loop(app.bot),"لیست کالای سایت")
+    _spawn(_panel_inbox_loop(),"تغییرهای پنل وب")
     global BOT_USERNAME
     try:
         me=await app.bot.get_me(); BOT_USERNAME=me.username or ""
