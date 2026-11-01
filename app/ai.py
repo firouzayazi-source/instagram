@@ -3,11 +3,12 @@
 این ماژول فقط تصمیم می‌گیرد و لاگ می‌کند؛ ارسال با worker است.
 """
 import json
+import random
 import re
 import time
 from dataclasses import dataclass, field
 
-from . import config, db, knowledge
+from . import brain_engine, config, db, knowledge
 from .normalize import normalize
 
 DEFAULTS = {
@@ -34,6 +35,7 @@ DEFAULTS = {
     "skip_emoji_only": True,
     "history_messages": 10,
     "monthly_budget_usd": 30.0,
+    "brain_enabled": False,      # موتور فهم مشترک با تلگرام (رایگان، بدون API) پیش از هوش مصنوعی
     # فروشندگی
     "sales_mode": True,          # مثل فروشنده: پیشنهاد جایگزین، سؤال برای فهم نیاز، دعوت به خرید
     "send_links": True,          # لینک محصول سایت را در دایرکت بفرستد
@@ -137,7 +139,7 @@ def save_settings(c, patch: dict) -> dict:
             v = max(0.0, float(v or 0))
         if k == "history_messages":
             v = min(30, max(0, int(v)))
-        if k in ("sales_mode", "send_links", "upsell", "ask_contact"):
+        if k in ("sales_mode", "send_links", "upsell", "ask_contact", "brain_enabled"):
             v = bool(v)
         if k == "cta":
             v = str(v or "").strip()[:500]
@@ -434,13 +436,30 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
     s = s or settings(c)
     ctx = dict(event_id=event_id, channel=channel, user_id=user_id, username=username, text=text, is_test=is_test)
 
+    brain_on = s["brain_enabled"] or is_test
     if not is_test:
-        if not s["enabled"]:
+        if not s["enabled"] and not brain_on:
             return Decision("skip", skip_reason="disabled")  # لاگ نمی‌شود
         if (channel == "comment" and not s["comment_enabled"]) or (channel == "dm" and not s["dm_enabled"]):
             return Decision("skip", skip_reason="channel_disabled")
     if s["skip_emoji_only"] and is_emoji_only(text):
         return _log(c, Decision("skip", skip_reason="emoji"), **ctx)
+
+    # لایه‌ی ۱: موتور فهم مشترک با تلگرام (رایگان، فوری، همان دانش ربات تلگرام)
+    if brain_on and brain_engine.available():
+        r = brain_engine.decide(text, username)
+        if r:
+            action, reply, intent, score, reason = r
+            d = Decision(action, reply=reply, intent=intent, confidence=score, handoff_reason=reason)
+            return _finish(c, d, s, channel, text, is_test, ctx, model="brain", cost=0.0, check_confidence=False)
+        if not s["enabled"] and not is_test:
+            # هوش مصنوعی خاموش است و موتور فهم نفهمید: دایرکت به همکار، کامنت بی‌جواب
+            if channel == "dm":
+                d = Decision("handoff", reply=random.choice(brain_engine.brain.UNKNOWN_LEADS),
+                             handoff_reason=f"ربات نفهمید: {text[:120]}")
+                return _finish(c, d, s, channel, text, is_test, ctx, model="brain", cost=0.0, check_confidence=False)
+            return _log(c, Decision("ignore", skip_reason="not_understood"), model="brain", **ctx)
+
     if s["monthly_budget_usd"] and month_cost(c) >= s["monthly_budget_usd"]:
         return _log(c, Decision("skip", skip_reason="budget"), **ctx)
 
@@ -483,7 +502,13 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
     except (ValueError, KeyError, TypeError, AttributeError) as e:
         return _log(c, Decision("error", usage=usage), model=model, cost=cost, error=f"خروجی نامعتبر: {e}", **ctx)
 
-    if d.action == "reply" and d.confidence < s["min_confidence"]:
+    return _finish(c, d, s, channel, text, is_test, ctx, model=model, cost=cost, note=note)
+
+
+def _finish(c, d: Decision, s: dict, channel: str, text: str, is_test: bool, ctx: dict, *, model: str, cost: float,
+            note: str | None = None, check_confidence: bool = True) -> Decision:
+    """مرحله‌ی پایانی مشترک هر دو لایه: آستانه‌ی اطمینان، پیام ارجاع، شکل کامنت، کوتاه‌سازی، ثبت."""
+    if check_confidence and d.action == "reply" and d.confidence < s["min_confidence"]:
         d.action = "handoff"
         d.handoff_reason = d.handoff_reason or f"اطمینان پایین ({d.confidence:.0%})"
     if d.action == "handoff" and not d.reply:
@@ -545,6 +570,8 @@ def stats(c) -> dict:
     s = settings(c)
     return {
         "enabled": s["enabled"],
+        "brain_enabled": s["brain_enabled"],
+        "brain_ready": brain_engine.available(),
         "has_key": has_key(s["provider"]),
         "provider": s["provider"],
         "provider_label": next(p["label"] for p in providers_info() if p["id"] == s["provider"]),

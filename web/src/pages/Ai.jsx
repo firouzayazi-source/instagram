@@ -90,7 +90,8 @@ function Overview() {
           </div>
           <label className="switch"><input type="checkbox" checked={st.enabled} disabled={toggling} onChange={toggle} /><span /> {st.enabled ? 'روشن' : 'خاموش'}</label>
         </div>
-        {!st.has_key && <p className="err">کلید API تنظیم نشده؛ تا وقتی {st.key_env} در ‎.env سرور نباشد ربات جواب نمی‌دهد (یا در تنظیمات سرویس دیگری انتخاب کنید).</p>}
+        <p className="muted" style={{ margin: '6px 0 0' }}>موتور فهم مشترک با تلگرام: {st.brain_enabled ? 'روشن ✅' : 'خاموش'}{st.brain_ready ? '' : ' · دانش ربات تلگرام هنوز روی سرور پیدا نشد'} <a href="#/ai/settings">تغییر</a></p>
+        {st.enabled && !st.has_key && <p className="err">کلید API تنظیم نشده؛ تا وقتی {st.key_env} در ‎.env سرور نباشد ربات جواب نمی‌دهد (یا در تنظیمات سرویس دیگری انتخاب کنید).</p>}
       </section>
 
       <section className="card">
@@ -267,7 +268,9 @@ function Settings() {
     <form onSubmit={save}>
       <section className="card">
         <h2>روشن و خاموش</h2>
-        <label className="check"><input type="checkbox" checked={s.enabled} onChange={(e) => set({ enabled: e.target.checked })} /> ربات هوشمند روشن باشد</label>
+        <label className="check"><input type="checkbox" checked={s.brain_enabled} onChange={(e) => set({ brain_enabled: e.target.checked })} /> موتور فهم مشترک با تلگرام روشن باشد (رایگان، بدون کلید)</label>
+        <p className="hint muted">همان مغز و دانش ربات تلگرام: نیت‌ها و پرسش‌هایی که در پنل ربات تلگرام تعریف کرده‌اید، فهرست کالای سایت، آدرس، اقساط و ساعت کاری. اول این جواب می‌دهد؛ اگر نفهمید، نوبت هوش مصنوعی است (اگر روشن باشد)، وگرنه دایرکت به شما ارجاع می‌شود.</p>
+        <label className="check"><input type="checkbox" checked={s.enabled} onChange={(e) => set({ enabled: e.target.checked })} /> هوش مصنوعی روشن باشد (برای سؤال‌هایی که موتور فهم جواب نداد؛ کلید API لازم است)</label>
         <label className="check"><input type="checkbox" checked={s.dm_enabled} onChange={(e) => set({ dm_enabled: e.target.checked })} /> به دایرکت‌ها جواب بدهد</label>
         <label className="check"><input type="checkbox" checked={s.comment_enabled} onChange={(e) => set({ comment_enabled: e.target.checked })} /> به کامنت‌ها جواب بدهد</label>
         <label className="check"><input type="checkbox" checked={s.skip_emoji_only} onChange={(e) => set({ skip_emoji_only: e.target.checked })} /> پیام‌هایی که فقط ایموجی‌اند را نادیده بگیرد (بدون هزینه)</label>

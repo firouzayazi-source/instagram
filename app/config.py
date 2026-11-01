@@ -47,6 +47,9 @@ CUSTOM_AI_NAME = os.environ.get("CUSTOM_AI_NAME", "")
 WC_CONSUMER_KEY = os.environ.get("WC_CONSUMER_KEY", "")
 WC_CONSUMER_SECRET = os.environ.get("WC_CONSUMER_SECRET", "")
 
+# داده‌ی ربات تلگرام (نیت‌ها، فهرست کالا، متن بخش‌ها) که موتور فهم مشترک از آن می‌خواند
+TG_DATA_DIR = os.environ.get("TG_DATA_DIR", str(ROOT / "data" / "telegram"))
+
 # پنل
 PANEL_PASSWORD = os.environ.get("PANEL_PASSWORD", "")
 SESSION_TTL = int(os.environ.get("SESSION_TTL", str(30 * 86400)))
