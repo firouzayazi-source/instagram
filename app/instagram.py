@@ -63,6 +63,21 @@ class Instagram:
         except RuntimeError:
             return None
 
+    async def profile(self, igsid: str) -> dict:
+        """نام کاربری فرستنده‌ی دایرکت."""
+        try:
+            return await self._get(igsid, fields="username,name,is_user_follow_business")
+        except RuntimeError:
+            return {}
+
+    async def media(self, limit: int = 50) -> list[dict]:
+        d = await self._get(
+            f"{self.user_id}/media",
+            fields="id,caption,media_type,media_product_type,permalink,thumbnail_url,media_url,timestamp",
+            limit=limit,
+        )
+        return d.get("data", [])
+
     async def refresh_token(self) -> tuple[str, int]:
         """توکن بلندمدت ۶۰ روزه را تمدید می‌کند. (token, expires_in_seconds)"""
         d = await self._get("refresh_access_token", grant_type="ig_refresh_token")

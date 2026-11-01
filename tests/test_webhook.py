@@ -29,6 +29,12 @@ class FakeIG:
     async def is_follower(self, uid):
         return uid == "follower"
 
+    async def profile(self, uid):
+        return {"username": f"user_{uid}", "is_user_follow_business": uid == "follower"}
+
+    async def media(self, limit=50):
+        return [{"id": "m1", "caption": "پست یک"}]
+
 
 @pytest.fixture
 def env(tmp_path, monkeypatch):

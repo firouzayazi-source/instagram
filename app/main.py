@@ -2,10 +2,12 @@
 import asyncio
 import contextlib
 import json
+from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
+from fastapi.responses import FileResponse
 
-from . import config, db, worker
+from . import api, config, db, worker
 from .instagram import Instagram, verify_signature
 
 
@@ -78,6 +80,20 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
             for event_id, kind, payload in extract_events(data):
                 added += db.add_event(c, event_id, kind, payload)
         return {"queued": added}
+
+    app.include_router(api.router)
+    app.include_router(api.protected)
+
+    dist = Path(config.WEB_DIST)
+    if dist.is_dir():
+        @app.get("/{path:path}", include_in_schema=False)
+        async def spa(path: str):
+            """فایل‌های پنل؛ هر مسیر ناشناخته به index.html می‌رود (SPA)."""
+            target = (dist / path).resolve()
+            if path and target.is_file() and dist.resolve() in target.parents:
+                headers = {"Cache-Control": "no-cache"} if path in ("sw.js", "index.html", "manifest.webmanifest") else {}
+                return FileResponse(target, headers=headers)
+            return FileResponse(dist / "index.html", headers={"Cache-Control": "no-cache"})
 
     return app
 

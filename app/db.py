@@ -63,6 +63,49 @@ CREATE TABLE IF NOT EXISTS followups (
 );
 CREATE INDEX IF NOT EXISTS followups_due ON followups(status, due_at);
 
+CREATE TABLE IF NOT EXISTS comments (
+  id TEXT PRIMARY KEY,
+  media_id TEXT,
+  user_id TEXT NOT NULL,
+  username TEXT,
+  text TEXT NOT NULL,
+  parent_id TEXT,
+  created_at REAL NOT NULL,
+  read INTEGER NOT NULL DEFAULT 0,
+  answered INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS comments_created ON comments(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS conversations (
+  user_id TEXT PRIMARY KEY,
+  username TEXT,
+  last_text TEXT,
+  last_at REAL NOT NULL,
+  read INTEGER NOT NULL DEFAULT 0,
+  answered INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  direction TEXT NOT NULL,       -- in | out
+  text TEXT NOT NULL,
+  created_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS messages_user ON messages(user_id, created_at);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  token TEXT PRIMARY KEY,
+  created_at REAL NOT NULL,
+  expires_at REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS push_subs (
+  endpoint TEXT PRIMARY KEY,
+  sub TEXT NOT NULL,             -- JSON کامل اشتراک
+  created_at REAL NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 """
 
@@ -186,6 +229,150 @@ def due_followups(c: sqlite3.Connection, now: float | None = None) -> list[sqlit
 
 def finish_followup(c: sqlite3.Connection, fid: int, status: str, error: str | None = None) -> None:
     c.execute("UPDATE followups SET status=?, error=? WHERE id=?", (status, error, fid))
+
+
+# ---------- صندوق کامنت و پیام ----------
+
+def add_comment(c, cid, media_id, user_id, username, text, parent_id=None) -> None:
+    c.execute(
+        "INSERT OR IGNORE INTO comments(id,media_id,user_id,username,text,parent_id,created_at) VALUES (?,?,?,?,?,?,?)",
+        (cid, media_id, user_id, username, text, parent_id, time.time()),
+    )
+
+
+def mark_comment(c, cid, *, read=None, answered=None) -> None:
+    if read is not None:
+        c.execute("UPDATE comments SET read=? WHERE id=?", (int(read), cid))
+    if answered is not None:
+        c.execute("UPDATE comments SET answered=? WHERE id=?", (int(answered), cid))
+
+
+_FILTERS = {"all": "1", "unread": "read=0", "unanswered": "answered=0", "answered": "answered=1"}
+
+
+def list_comments(c, filt="all", limit=50, before: float | None = None) -> list[dict]:
+    where = _FILTERS.get(filt, "1")
+    args: list = []
+    if before:
+        where += " AND created_at<?"
+        args.append(before)
+    rows = c.execute(f"SELECT * FROM comments WHERE {where} ORDER BY created_at DESC LIMIT ?", [*args, limit])
+    return [dict(r) for r in rows]
+
+
+def add_message(c, mid, user_id, direction, text, created_at=None) -> None:
+    created_at = created_at or time.time()
+    c.execute(
+        "INSERT OR IGNORE INTO messages(id,user_id,direction,text,created_at) VALUES (?,?,?,?,?)",
+        (mid, user_id, direction, text, created_at),
+    )
+    incoming = direction == "in"
+    c.execute(
+        "INSERT INTO conversations(user_id,last_text,last_at,read,answered) VALUES (?,?,?,?,?) "
+        "ON CONFLICT(user_id) DO UPDATE SET last_text=excluded.last_text, last_at=excluded.last_at, "
+        "read=CASE WHEN excluded.read=0 THEN 0 ELSE read END, answered=excluded.answered",
+        (user_id, text, created_at, 0 if incoming else 1, 0 if incoming else 1),
+    )
+
+
+def set_conversation_username(c, user_id, username) -> None:
+    c.execute("UPDATE conversations SET username=? WHERE user_id=?", (username, user_id))
+
+
+def conversation_username(c, user_id) -> str | None:
+    r = c.execute("SELECT username FROM conversations WHERE user_id=?", (user_id,)).fetchone()
+    return r[0] if r else None
+
+
+def mark_conversation(c, user_id, *, read=None, answered=None) -> None:
+    if read is not None:
+        c.execute("UPDATE conversations SET read=? WHERE user_id=?", (int(read), user_id))
+    if answered is not None:
+        c.execute("UPDATE conversations SET answered=? WHERE user_id=?", (int(answered), user_id))
+
+
+def list_conversations(c, filt="all", limit=50) -> list[dict]:
+    where = _FILTERS.get(filt, "1")
+    rows = c.execute(f"SELECT * FROM conversations WHERE {where} ORDER BY last_at DESC LIMIT ?", (limit,))
+    return [dict(r) for r in rows]
+
+
+def list_messages(c, user_id, limit=100) -> list[dict]:
+    rows = c.execute(
+        "SELECT * FROM messages WHERE user_id=? ORDER BY created_at DESC LIMIT ?", (user_id, limit)
+    ).fetchall()
+    return [dict(r) for r in reversed(rows)]
+
+
+def all_rules(c) -> list[dict]:
+    out = []
+    for r in c.execute("SELECT * FROM rules ORDER BY priority, id"):
+        d = dict(r)
+        for k in ("channels", "post_scope", "triggers", "actions", "advanced"):
+            d[k] = json.loads(d[k])
+        out.append(d)
+    return out
+
+
+def delete_rule(c, rule_id) -> None:
+    c.execute("DELETE FROM rules WHERE id=?", (rule_id,))
+
+
+def set_rule_enabled(c, rule_id, enabled: bool) -> None:
+    c.execute("UPDATE rules SET enabled=? WHERE id=?", (int(enabled), rule_id))
+
+
+def recent_replies(c, limit=30) -> list[dict]:
+    return [dict(r) for r in c.execute("SELECT * FROM replies ORDER BY created_at DESC LIMIT ?", (limit,))]
+
+
+def stats(c) -> dict:
+    day = time.time() - 86400
+    q = lambda sql, *a: c.execute(sql, a).fetchone()[0]  # noqa: E731
+    return {
+        "replies_ok_24h": q("SELECT COUNT(*) FROM replies WHERE ok=1 AND created_at>?", day),
+        "replies_failed_24h": q("SELECT COUNT(*) FROM replies WHERE ok=0 AND created_at>?", day),
+        "comments_24h": q("SELECT COUNT(*) FROM comments WHERE created_at>?", day),
+        "comments_unanswered": q("SELECT COUNT(*) FROM comments WHERE answered=0"),
+        "conversations_unread": q("SELECT COUNT(*) FROM conversations WHERE read=0"),
+        "conversations_unanswered": q("SELECT COUNT(*) FROM conversations WHERE answered=0"),
+        "events_pending": q("SELECT COUNT(*) FROM events WHERE status='pending'"),
+        "events_error": q("SELECT COUNT(*) FROM events WHERE status='error'"),
+        "rules_enabled": q("SELECT COUNT(*) FROM rules WHERE enabled=1"),
+        "token_expires_at": float(kv_get(c, "token_expires_at") or 0),
+    }
+
+
+# ---------- نشست و پوش ----------
+
+def add_session(c, token, ttl) -> None:
+    now = time.time()
+    c.execute("INSERT INTO sessions(token,created_at,expires_at) VALUES (?,?,?)", (token, now, now + ttl))
+    c.execute("DELETE FROM sessions WHERE expires_at<?", (now,))
+
+
+def session_valid(c, token) -> bool:
+    r = c.execute("SELECT expires_at FROM sessions WHERE token=?", (token,)).fetchone()
+    return bool(r) and r[0] > time.time()
+
+
+def delete_session(c, token) -> None:
+    c.execute("DELETE FROM sessions WHERE token=?", (token,))
+
+
+def add_push_sub(c, sub: dict) -> None:
+    c.execute(
+        "INSERT OR REPLACE INTO push_subs(endpoint,sub,created_at) VALUES (?,?,?)",
+        (sub["endpoint"], json.dumps(sub), time.time()),
+    )
+
+
+def delete_push_sub(c, endpoint) -> None:
+    c.execute("DELETE FROM push_subs WHERE endpoint=?", (endpoint,))
+
+
+def push_subs(c) -> list[dict]:
+    return [json.loads(r[0]) for r in c.execute("SELECT sub FROM push_subs")]
 
 
 def kv_get(c: sqlite3.Connection, key: str) -> str | None:

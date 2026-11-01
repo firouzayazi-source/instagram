@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from . import config, db
+from . import config, db, push
 from .rules import Incoming, find_rule, pick
 
 MAX_RETRIES = 3
@@ -26,12 +26,29 @@ def parse_event(kind: str, payload: dict) -> Incoming | None:
     return None
 
 
+async def store_incoming(ig, c, kind: str, payload: dict, inc: Incoming) -> None:
+    """کامنت یا پیام را در صندوق ثبت می‌کند."""
+    if kind == "comment":
+        db.add_comment(c, payload["id"], inc.media_id, inc.user_id,
+                       payload.get("from", {}).get("username"), inc.text, payload.get("parent_id"))
+    else:
+        ts = payload.get("timestamp")
+        db.add_message(c, payload["message"]["mid"], inc.user_id, "in", inc.text, ts / 1000 if ts else None)
+        if not db.conversation_username(c, inc.user_id):
+            p = await ig.profile(inc.user_id)
+            if p.get("username"):
+                db.set_conversation_username(c, inc.user_id, p["username"])
+            if "is_user_follow_business" in p:
+                inc.is_follower = bool(p["is_user_follow_business"])
+
+
 async def handle_event(ig, row, c) -> str:
     """یک رویداد را پردازش می‌کند. خروجی: done | skipped"""
     payload = json.loads(row["payload"])
     inc = parse_event(row["kind"], payload)
     if inc is None or not inc.user_id or inc.user_id == config.IG_USER_ID:
         return "skipped"
+    await store_incoming(ig, c, row["kind"], payload, inc)
     rules = db.load_rules(c)
     rule = find_rule(rules, inc, lambda rid, uid: db.last_hit(c, rid, uid))
     if rule is None:
@@ -91,6 +108,12 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text) -> bool:
             else:
                 ig_id = await ig.send_dm(target, text)
             db.log_reply(c, event_id, rule_id, kind, target, text, ig_id=ig_id, ok=True)
+            if kind == "public":
+                db.mark_comment(c, target, answered=True)
+            else:
+                if kind == "private":
+                    db.mark_comment(c, target, answered=True)
+                db.add_message(c, ig_id or f"out:{event_id}:{kind}", inc.user_id, "out", text)
             return True
         except Exception as e:  # noqa: BLE001
             err = str(e)
@@ -116,7 +139,23 @@ async def run_forever(ig, stop: asyncio.Event) -> None:
                     status = await handle_event(ig, row, c)
                     db.finish_event(c, row["id"], status)
                 except Exception as e:  # noqa: BLE001
+                    status = "error"
                     db.finish_event(c, row["id"], "error", str(e))
+                mode = db.kv_get(c, "push_mode") or "unanswered"
+            if status == "error" or mode == "all" or (mode == "unanswered" and status == "skipped"):
+                asyncio.create_task(_notify(row, status))
+
+
+async def _notify(row, status: str) -> None:
+    payload = json.loads(row["payload"])
+    inc = parse_event(row["kind"], payload)
+    if inc is None:
+        return
+    who = payload.get("from", {}).get("username") or inc.user_id
+    kind = "کامنت" if inc.channel == "comment" else "دایرکت"
+    title = f"{kind} جدید" + (" (بی‌پاسخ)" if status != "done" else "")
+    url = "/#/comments" if inc.channel == "comment" else f"/#/messages/{inc.user_id}"
+    await push.notify_all(title, f"{who}: {inc.text[:80]}", url)
 
 
 async def refresh_token_loop(ig, stop: asyncio.Event) -> None:
