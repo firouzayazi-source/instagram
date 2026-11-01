@@ -132,7 +132,11 @@ async def test_low_confidence_refusal_and_bad_output_become_safe(env):
         env.stop = "refusal"
         d = await ai.decide(c, channel="dm", text="قیمت؟", user_id="u")
         assert d.action == "handoff" and d.reply == ai.DEFAULTS["handoff_message"]
-        env.stop, env.out = "end_turn", {"action": "reply"}
+        # خروجی ناقص: بدون confidence یعنی اطمینان صفر، پس ارجاع (نه جواب)
+        env.stop, env.out = "end_turn", {"action": "reply", "reply": "x"}
+        d = await ai.decide(c, channel="dm", text="قیمت؟", user_id="u")
+        assert d.action == "handoff"
+        env.out = {"action": "dance"}
         d = await ai.decide(c, channel="dm", text="قیمت؟", user_id="u")
         assert d.action == "error"
         env.raise_exc = RuntimeError("boom")
@@ -158,6 +162,90 @@ async def test_no_api_key_with_real_client(env):
         enable(c)
         d = await ai.decide(c, channel="dm", text="قیمت؟", user_id="u")
         assert d.action == "error" and d.skip_reason == "no_api_key"
+
+
+# ---------- چند سرویس ----------
+
+def _openai_transport(responses, seen):
+    """پاسخ‌های پشت‌سرهم یک سرویس سازگار با OpenAI."""
+    import httpx
+
+    def handler(request):
+        seen.append(json.loads(request.content))
+        status, body = responses.pop(0)
+        return httpx.Response(status, json=body)
+    return httpx.MockTransport(handler)
+
+
+def _chat(content, finish="stop"):
+    return {"choices": [{"message": {"content": content}, "finish_reason": finish}],
+            "usage": {"prompt_tokens": 1000, "completion_tokens": 100}}
+
+
+@pytest.mark.asyncio
+async def test_openai_compatible_client_schema_then_json_object():
+    seen = []
+    out = {"action": "reply", "reply": "سلام", "public_reply": "", "intent": "greeting", "confidence": 0.9, "handoff_reason": ""}
+    tr = _openai_transport([(200, _chat(json.dumps(out)))], seen)
+    cl = ai.OpenAICompatClient("https://x.test/v1", "k", transport=tr)
+    raw, usage, stop = await cl.complete("m", [{"type": "text", "text": "SYS"}], [{"role": "user", "content": "hi"}], "low")
+    assert json.loads(raw)["reply"] == "سلام" and usage["input_tokens"] == 1000 and stop == "stop"
+    assert seen[0]["response_format"]["type"] == "json_schema" and seen[0]["messages"][0] == {"role": "system", "content": "SYS"}
+
+    # سرویسی که طرح JSON را نمی‌شناسد: یک بار ۴۰۰، بعد حالت ساده؛ دفعه‌ی بعد مستقیم حالت ساده
+    seen.clear()
+    tr = _openai_transport([(400, {"error": "json_schema unsupported"}), (200, _chat("```json\n" + json.dumps(out) + "\n```")),
+                            (200, _chat(json.dumps(out)))], seen)
+    cl = ai.OpenAICompatClient("https://x.test/v1", "k", transport=tr)
+    raw, _, _ = await cl.complete("m", [{"type": "text", "text": "SYS"}], [{"role": "user", "content": "hi"}], "low")
+    assert ai.parse_output(raw)["intent"] == "greeting"
+    assert seen[1]["response_format"] == {"type": "json_object"} and "JSON" in seen[1]["messages"][0]["content"]
+    await cl.complete("m", [{"type": "text", "text": "SYS"}], [{"role": "user", "content": "hi"}], "low")
+    assert len(seen) == 3 and seen[2]["response_format"] == {"type": "json_object"}
+
+    tr = _openai_transport([(401, {"error": "bad key sk-secret-9"})], [])
+    with pytest.raises(RuntimeError) as e:
+        await ai.OpenAICompatClient("https://x.test/v1", "sk-secret-9", transport=tr).complete("m", [], [], "low")
+    assert "sk-secret-9" not in str(e.value)
+
+
+def test_parse_output_tolerates_wrapping():
+    assert ai.parse_output('بفرمایید:\n{"action": "ignore"}\nتمام')["action"] == "ignore"
+    with pytest.raises(ValueError):
+        ai.parse_output("بدون JSON")
+
+
+@pytest.mark.asyncio
+async def test_fallback_provider_and_custom_price(env, monkeypatch):
+    monkeypatch.setattr(config, "DEEPSEEK_API_KEY", "")
+    ai.set_client(None)
+    ai.set_client(FakeClaude(raise_exc=RuntimeError("overloaded")), "anthropic")
+    backup = FakeClaude()
+    ai.set_client(backup, "openai")
+    with db.connect() as c:
+        enable(c, fallback_provider="openai", price_in=1.0, price_out=2.0)
+        s = ai.settings(c)
+        assert s["fallback_model"] == ai.PROVIDERS["openai"]["models"][0]
+        d = await ai.decide(c, channel="dm", text="قیمت؟", user_id="u")
+        assert d.action == "reply" and backup.calls[0]["model"] == s["fallback_model"]
+        row = c.execute("SELECT model, cost, error FROM ai_log WHERE id=?", (d.log_id,)).fetchone()
+        assert row["model"] == f"openai:{s['fallback_model']}" and "overloaded" in row["error"]
+        assert row["cost"] == pytest.approx((100 * 1.0 + 50 * 2.0 + 2000 * 1.0) / 1e6)
+
+        # سرویس بدون کلید و بدون پشتیبان: no_api_key
+        ai.save_settings(c, {"provider": "deepseek", "model": "", "fallback_provider": ""})
+        assert ai.settings(c)["model"] == "deepseek-chat"
+        d = await ai.decide(c, channel="dm", text="قیمت؟", user_id="u")
+        assert d.action == "error" and d.skip_reason == "no_api_key"
+
+
+def test_providers_info_never_leaks_keys(monkeypatch):
+    monkeypatch.setattr(config, "OPENAI_API_KEY", "sk-secret-123")
+    monkeypatch.setattr(config, "CUSTOM_AI_BASE_URL", "https://ai.example.ir/v1")
+    monkeypatch.setattr(config, "CUSTOM_AI_NAME", "واسط داخلی")
+    info = {p["id"]: p for p in ai.providers_info()}
+    assert info["openai"]["configured"] and info["custom"]["configured"] and info["custom"]["label"] == "واسط داخلی"
+    assert "sk-secret-123" not in json.dumps(info)
 
 
 # ---------- worker ----------
@@ -212,8 +300,12 @@ def test_api_flow(env):
         assert cl.get("/api/ai/settings").status_code == 401
         cl.post("/api/login", json={"password": "pw"})
         s = cl.get("/api/ai/settings").json()
-        assert s["settings"]["enabled"] is False and "claude-haiku-5-5" in s["models"]
-        assert cl.put("/api/ai/settings", json={"model": "gpt"}).status_code == 422
+        assert s["settings"]["enabled"] is False and s["settings"]["provider"] == "anthropic"
+        claude = next(p for p in s["providers"] if p["id"] == "anthropic")
+        assert "claude-haiku-5-5" in claude["models"] and claude["configured"] is False
+        assert all("sk-" not in json.dumps(p) for p in s["providers"])
+        assert cl.put("/api/ai/settings", json={"model": "bad model!"}).status_code == 422
+        assert cl.put("/api/ai/settings", json={"provider": "nope"}).status_code == 422
         assert cl.put("/api/ai/settings", json={"enabled": True, "tone": "formal"}).json()["settings"]["tone"] == "formal"
 
         fid = cl.post("/api/ai/faq", json={"question": "ساعت کاری؟", "keywords": "ساعت", "answer": "۱۰ تا ۲۲"}).json()["id"]

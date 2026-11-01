@@ -71,7 +71,7 @@ function Overview() {
   if (!st) return <div className="empty">در حال بارگذاری…</div>
   const budgetPct = st.budget ? Math.min(100, (st.cost_month / st.budget) * 100) : 0
   const steps = [
-    [st.has_key, 'کلید API روی سرور تنظیم شده (ANTHROPIC_API_KEY)', null],
+    [st.has_key, `کلید سرویس «${st.provider_label}» روی سرور تنظیم شده (${st.key_env})`, '#/ai/settings'],
     [counts.info, 'اطلاعات کسب‌وکار نوشته شده (آدرس، ساعت کاری، اقساط، گارانتی…)', '#/ai/settings'],
     [counts.products > 0, `فهرست محصول و قیمت وارد شده (${fa(counts.products)} مورد)`, '#/ai/products'],
     [counts.faq > 0, `پرسش‌های رایج ثبت شده (${fa(counts.faq)} مورد)`, '#/ai/faq'],
@@ -86,11 +86,11 @@ function Overview() {
         <div className="row-between">
           <div>
             <h2 style={{ margin: 0 }}>ربات هوشمند</h2>
-            <p className="muted" style={{ margin: 0 }}>وقتی هیچ دستوری به پیام نخورد، ربات با پایگاه دانش جواب می‌دهد. مدل: {st.model}</p>
+            <p className="muted" style={{ margin: 0 }}>وقتی هیچ دستوری به پیام نخورد، ربات با پایگاه دانش جواب می‌دهد. سرویس: {st.provider_label} · مدل: {st.model}{st.fallback ? ` · پشتیبان: ${st.fallback}` : ''}</p>
           </div>
           <label className="switch"><input type="checkbox" checked={st.enabled} disabled={toggling} onChange={toggle} /><span /> {st.enabled ? 'روشن' : 'خاموش'}</label>
         </div>
-        {!st.has_key && <p className="err">کلید API تنظیم نشده؛ تا وقتی ANTHROPIC_API_KEY در ‎.env سرور نباشد ربات جواب نمی‌دهد.</p>}
+        {!st.has_key && <p className="err">کلید API تنظیم نشده؛ تا وقتی {st.key_env} در ‎.env سرور نباشد ربات جواب نمی‌دهد (یا در تنظیمات سرویس دیگری انتخاب کنید).</p>}
       </section>
 
       <section className="card">
@@ -239,12 +239,14 @@ const INFO_TEMPLATE = `آدرس فروشگاه: …
 
 function Settings() {
   const [s, setS] = useState(null)
-  const [models, setModels] = useState([])
+  const [providers, setProviders] = useState([])
   const [msg, setMsg] = useState(null)
   const [busy, setBusy] = useState(false)
-  useEffect(() => { api.get('/api/ai/settings').then((r) => { setS(r.settings); setModels(r.models) }) }, [])
+  useEffect(() => { api.get('/api/ai/settings').then((r) => { setS(r.settings); setProviders(r.providers) }) }, [])
   if (!s) return <div className="empty">در حال بارگذاری…</div>
   const set = (patch) => setS({ ...s, ...patch })
+  const prov = providers.find((p) => p.id === s.provider)
+  const fb = providers.find((p) => p.id === s.fallback_provider)
 
   async function save(e) {
     e.preventDefault(); setBusy(true); setMsg(null)
@@ -333,13 +335,58 @@ function Settings() {
       <section className="card">
         <h2>مدل و هزینه</h2>
         <div className="field">
-          <label>مدل</label>
-          <select value={s.model} onChange={(e) => set({ model: e.target.value })}>
-            {models.map((m) => <option key={m} value={m}>{MODEL_FA[m] || m}</option>)}
+          <label>سرویس هوش مصنوعی</label>
+          <select value={s.provider} onChange={(e) => {
+            const p = providers.find((x) => x.id === e.target.value)
+            set({ provider: p.id, model: p.models[0] || '', fallback_provider: s.fallback_provider === p.id ? '' : s.fallback_provider })
+          }}>
+            {providers.map((p) => <option key={p.id} value={p.id}>{p.label} {p.configured ? '✅' : '— کلید ندارد'}</option>)}
           </select>
+          {prov && !prov.configured && <p className="hint err">برای این سرویس، {prov.key_env} را در ‎/opt/igbot/.env بگذارید و سرویس igbot را ری‌استارت کنید.</p>}
         </div>
         <div className="field">
-          <label>دقت فکر کردن</label>
+          <label>مدل</label>
+          {prov?.claude ? (
+            <select value={s.model} onChange={(e) => set({ model: e.target.value })}>
+              {prov.models.map((m) => <option key={m} value={m}>{MODEL_FA[m] || m}</option>)}
+            </select>
+          ) : (
+            <>
+              <input type="text" dir="ltr" list="ai-models" value={s.model} placeholder="نام مدل، مثلاً gpt-4.1-mini" onChange={(e) => set({ model: e.target.value })} />
+              <datalist id="ai-models">{(prov?.models || []).map((m) => <option key={m} value={m} />)}</datalist>
+              <p className="hint muted">نام دقیق مدل را از سایت همان سرویس بردارید؛ فهرست بالا فقط پیشنهاد است.</p>
+            </>
+          )}
+        </div>
+        {prov && !prov.claude && (
+          <div className="field">
+            <label>قیمت مدل (دلار برای هر یک میلیون توکن) — برای محاسبه‌ی هزینه و سقف ماهانه</label>
+            <div className="actions">
+              <input type="number" min="0" step="0.01" value={s.price_in} onChange={(e) => set({ price_in: Number(e.target.value) })} placeholder="ورودی" />
+              <input type="number" min="0" step="0.01" value={s.price_out} onChange={(e) => set({ price_out: Number(e.target.value) })} placeholder="خروجی" />
+            </div>
+            <p className="hint muted">ورودی و خروجی را از صفحه‌ی قیمت سرویس وارد کنید. صفر یعنی نامعلوم؛ آن وقت هزینه صفر ثبت می‌شود و سقف ماهانه کار نمی‌کند.</p>
+          </div>
+        )}
+        <div className="field">
+          <label>سرویس پشتیبان (اگر سرویس اصلی خطا داد یا در دسترس نبود)</label>
+          <select value={s.fallback_provider} onChange={(e) => {
+            const p = providers.find((x) => x.id === e.target.value)
+            set({ fallback_provider: e.target.value, fallback_model: p ? (p.models[0] || '') : '' })
+          }}>
+            <option value="">بدون پشتیبان</option>
+            {providers.filter((p) => p.id !== s.provider).map((p) => <option key={p.id} value={p.id}>{p.label} {p.configured ? '✅' : '— کلید ندارد'}</option>)}
+          </select>
+          {fb && (
+            <>
+              <input type="text" dir="ltr" list="ai-fb-models" style={{ marginTop: 6 }} value={s.fallback_model} placeholder="مدل پشتیبان" onChange={(e) => set({ fallback_model: e.target.value })} />
+              <datalist id="ai-fb-models">{fb.models.map((m) => <option key={m} value={m} />)}</datalist>
+              {!fb.claude && <p className="hint muted">هزینه‌ی سرویس پشتیبان هم با همان قیمت بالا حساب می‌شود.</p>}
+            </>
+          )}
+        </div>
+        <div className="field">
+          <label>دقت فکر کردن {prov && !prov.claude && '(فقط برای Claude)'}</label>
           <div className="actions">
             {[['low', 'سریع'], ['medium', 'متعادل'], ['high', 'دقیق']].map(([k, l]) => (
               <button type="button" key={k} className={`chip ${s.effort === k ? 'active' : ''}`} onClick={() => set({ effort: k })}>{l}</button>

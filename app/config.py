@@ -30,8 +30,18 @@ SEND_DELAY_MIN = float(os.environ.get("SEND_DELAY_MIN", "2"))
 SEND_DELAY_MAX = float(os.environ.get("SEND_DELAY_MAX", "8"))
 
 # پاسخ هوشمند
+# سرویس پیش‌فرض؛ از پنل هم عوض می‌شود. کلیدها فقط اینجا خوانده می‌شوند و هرگز به پنل نمی‌روند.
+AI_PROVIDER = os.environ.get("AI_PROVIDER", "anthropic")
+AI_MODEL = os.environ.get("AI_MODEL", "")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-AI_MODEL = os.environ.get("AI_MODEL", "claude-opus-5-5")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+# هر سرویس سازگار با OpenAI (مثلاً واسط‌های داخلی با پرداخت ریالی، یا Ollama)
+CUSTOM_AI_BASE_URL = os.environ.get("CUSTOM_AI_BASE_URL", "")
+CUSTOM_AI_API_KEY = os.environ.get("CUSTOM_AI_API_KEY", "")
+CUSTOM_AI_NAME = os.environ.get("CUSTOM_AI_NAME", "")
 
 # پنل
 PANEL_PASSWORD = os.environ.get("PANEL_PASSWORD", "")

@@ -21,8 +21,9 @@ def _guard(fn, *a, **kw):
 @router.get("/settings")
 def get_settings():
     with db.connect() as c:
-        return {"settings": ai.settings(c), "models": ai.MODELS, "intents": ai.INTENT_FA,
-                "has_key": bool(ai.config.ANTHROPIC_API_KEY)}
+        st = ai.settings(c)
+        return {"settings": st, "providers": ai.providers_info(), "intents": ai.INTENT_FA,
+                "has_key": ai.has_key(st["provider"])}
 
 
 @router.put("/settings")

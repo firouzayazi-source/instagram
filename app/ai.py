@@ -1,4 +1,4 @@
-"""پاسخ هوشمند با Claude: تصمیم می‌گیرد جواب بدهد، به انسان ارجاع دهد، یا نادیده بگیرد.
+"""پاسخ هوشمند با Claude یا هر سرویس سازگار با OpenAI: تصمیم می‌گیرد جواب بدهد، به انسان ارجاع دهد، یا نادیده بگیرد.
 
 این ماژول فقط تصمیم می‌گیرد و لاگ می‌کند؛ ارسال با worker است.
 """
@@ -14,8 +14,13 @@ DEFAULTS = {
     "enabled": False,
     "comment_enabled": True,
     "dm_enabled": True,
-    "model": "",                 # خالی یعنی config.AI_MODEL
-    "effort": "low",             # low | medium | high
+    "provider": "",              # خالی یعنی config.AI_PROVIDER
+    "model": "",                 # خالی یعنی config.AI_MODEL یا اولین مدل پیشنهادی سرویس
+    "fallback_provider": "",     # اگر سرویس اصلی خطا داد؛ خالی یعنی بدون پشتیبان
+    "fallback_model": "",
+    "price_in": 0.0,             # دلار به ازای یک میلیون توکن ورودی، برای سرویس‌های غیر Claude
+    "price_out": 0.0,
+    "effort": "low",             # low | medium | high (فقط Claude)
     "tone": "friendly",          # formal | friendly | casual
     "length": "short",           # short | medium
     "business_info": "",
@@ -37,7 +42,27 @@ PRICES = {
     "claude-sonnet-5-5": (2.0, 10.0, 0.20, 2.5),
     "claude-haiku-5-5": (0.10, 0.50, 0.01, 0.125),
 }
-MODELS = list(PRICES)
+
+# سرویس‌ها. kind=openai یعنی API سازگار با OpenAI (‎/chat/completions). مدل‌ها فقط پیشنهادند؛ هر نامی پذیرفته می‌شود.
+PROVIDERS = {
+    "anthropic": {"label": "Claude (Anthropic)", "kind": "anthropic", "key": "ANTHROPIC_API_KEY",
+                  "models": list(PRICES)},
+    "openai": {"label": "OpenAI (ChatGPT)", "kind": "openai", "key": "OPENAI_API_KEY",
+               "base_url": "https://api.openai.com/v1", "models": ["gpt-4.1-mini", "gpt-4.1", "gpt-4o-mini"],
+               "max_key": "max_completion_tokens"},
+    "gemini": {"label": "Google Gemini", "kind": "openai", "key": "GEMINI_API_KEY",
+               "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+               "models": ["gemini-2.5-flash", "gemini-2.5-pro"]},
+    "deepseek": {"label": "DeepSeek", "kind": "openai", "key": "DEEPSEEK_API_KEY",
+                 "base_url": "https://api.deepseek.com/v1", "models": ["deepseek-chat"]},
+    "openrouter": {"label": "OpenRouter (همه‌ی مدل‌ها با یک کلید)", "kind": "openai", "key": "OPENROUTER_API_KEY",
+                   "base_url": "https://openrouter.ai/api/v1",
+                   "models": ["anthropic/claude-sonnet-5-5", "openai/gpt-4.1-mini", "google/gemini-2.5-flash"]},
+    "custom": {"label": "سرویس دلخواه (سازگار با OpenAI)", "kind": "openai", "key": "CUSTOM_AI_API_KEY",
+               "models": []},
+}
+_MODEL_RE = re.compile(r"^[\w.\-/:@]{1,100}$")
+
 INTENTS = ["greeting", "price", "availability", "installment", "purchase", "support", "complaint",
            "thanks", "spam", "other"]
 INTENT_FA = {"greeting": "سلام و احوال‌پرسی", "price": "قیمت", "availability": "موجودی", "installment": "اقساط",
@@ -57,14 +82,31 @@ SCHEMA = {
     "required": ["action", "reply", "public_reply", "intent", "confidence", "handoff_reason"],
     "additionalProperties": False,
 }
+# برای سرویس‌هایی که طرح JSON را پشتیبانی نمی‌کنند، به پرامپت اضافه می‌شود
+JSON_HINT = ("\n\nخروجی را فقط به صورت یک شیء JSON با این کلیدها بده، بدون هیچ متن دیگر:\n"
+             '{"action": "reply|handoff|ignore", "reply": "...", "public_reply": "...", '
+             f'"intent": "{"|".join(INTENTS)}", "confidence": 0.0, "handoff_reason": "..."}}')
 
 _HAS_LETTER = re.compile(r"[A-Za-z؀-ۿ0-9]")
+
+
+def default_model(provider: str) -> str:
+    if provider == config.AI_PROVIDER and config.AI_MODEL:
+        return config.AI_MODEL
+    models = PROVIDERS.get(provider, {}).get("models") or []
+    return models[0] if models else ""
 
 
 def settings(c) -> dict:
     saved = json.loads(db.kv_get(c, "ai_settings") or "{}")
     s = {**DEFAULTS, **{k: v for k, v in saved.items() if k in DEFAULTS}}
-    s["model"] = s["model"] or config.AI_MODEL
+    if s["provider"] not in PROVIDERS:
+        s["provider"] = config.AI_PROVIDER if config.AI_PROVIDER in PROVIDERS else "anthropic"
+    s["model"] = s["model"] or default_model(s["provider"])
+    if s["fallback_provider"] not in PROVIDERS or s["fallback_provider"] == s["provider"]:
+        s["fallback_provider"] = ""
+    if s["fallback_provider"]:
+        s["fallback_model"] = s["fallback_model"] or default_model(s["fallback_provider"])
     return s
 
 
@@ -73,14 +115,20 @@ def save_settings(c, patch: dict) -> dict:
     for k, v in patch.items():
         if k not in DEFAULTS:
             continue
-        if k == "model" and v and v not in MODELS:
-            raise ValueError(f"مدل ناشناخته: {v}")
+        if k == "provider" and v not in PROVIDERS:
+            raise ValueError(f"سرویس ناشناخته: {v}")
+        if k == "fallback_provider" and v and v not in PROVIDERS:
+            raise ValueError(f"سرویس ناشناخته: {v}")
+        if k in ("model", "fallback_model"):
+            v = (v or "").strip()
+            if v and not _MODEL_RE.match(v):
+                raise ValueError(f"نام مدل نامعتبر: {v}")
         if k == "effort" and v not in ("low", "medium", "high"):
             raise ValueError("effort باید low، medium یا high باشد")
         if k == "min_confidence":
             v = min(1.0, max(0.0, float(v)))
-        if k in ("monthly_budget_usd",):
-            v = max(0.0, float(v))
+        if k in ("monthly_budget_usd", "price_in", "price_out"):
+            v = max(0.0, float(v or 0))
         if k == "history_messages":
             v = min(30, max(0, int(v)))
         if k == "public_ack":
@@ -90,8 +138,15 @@ def save_settings(c, patch: dict) -> dict:
     return settings(c)
 
 
-def cost_usd(model: str, usage: dict) -> float:
-    pin, pout, pread, pwrite = PRICES.get(model, PRICES["claude-opus-5-5"])
+def cost_usd(model: str, usage: dict, s: dict | None = None) -> float:
+    """model برای Claude نام خود مدل است و برای بقیه «سرویس:مدل»؛ قیمت بقیه از تنظیمات می‌آید (صفر یعنی نامعلوم)."""
+    if model in PRICES:
+        pin, pout, pread, pwrite = PRICES[model]
+    elif model.startswith("claude-"):
+        pin, pout, pread, pwrite = PRICES["claude-opus-5-5"]
+    else:
+        pin, pout = (s or {}).get("price_in", 0.0), (s or {}).get("price_out", 0.0)
+        pread, pwrite = pin, pin
     return (usage.get("input_tokens", 0) * pin + usage.get("output_tokens", 0) * pout
             + usage.get("cache_read_input_tokens", 0) * pread
             + usage.get("cache_creation_input_tokens", 0) * pwrite) / 1_000_000
@@ -102,7 +157,7 @@ def month_cost(c) -> float:
     return c.execute("SELECT COALESCE(SUM(cost),0) FROM ai_log WHERE created_at>=?", (start,)).fetchone()[0]
 
 
-# ---------- کلاینت Claude ----------
+# ---------- کلاینت‌ها ----------
 
 class ClaudeClient:
     """فراخوانی Messages API با خروجی ساختاریافته. در تست با یک کلاینت جعلی جایگزین می‌شود."""
@@ -128,20 +183,110 @@ class ClaudeClient:
         return text, usage, resp.stop_reason or ""
 
 
-_client = None
+class OpenAICompatClient:
+    """هر سرویس سازگار با OpenAI ‎(/chat/completions)‎. اول طرح JSON سخت‌گیرانه را امتحان می‌کند؛
+    اگر سرویس آن را نپذیرفت (۴۰۰)، با حالت ساده‌ی JSON و توضیح کلیدها در پرامپت دوباره می‌فرستد."""
+
+    def __init__(self, base_url: str, api_key: str, max_key: str = "max_tokens", transport=None):
+        import httpx
+        headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+        self._http = httpx.AsyncClient(base_url=base_url.rstrip("/") + "/", headers=headers, timeout=60,
+                                       transport=transport)
+        self._max_key = max_key
+        self._key = api_key
+        self._schema_ok = True   # بعد از اولین رد شدن طرح JSON، دیگر امتحانش نمی‌کند
+
+    async def _post(self, body: dict):
+        return await self._http.post("chat/completions", json=body)
+
+    async def complete(self, model: str, system: list, messages: list, effort: str) -> tuple[str, dict, str]:
+        sys_text = "\n\n".join(b["text"] for b in system)
+        msgs = [{"role": m["role"], "content": m["content"]} for m in messages]
+        body = {"model": model, self._max_key: 2048}
+        r = None
+        if self._schema_ok:
+            body["messages"] = [{"role": "system", "content": sys_text}] + msgs
+            body["response_format"] = {"type": "json_schema",
+                                       "json_schema": {"name": "decision", "strict": True, "schema": SCHEMA}}
+            r = await self._post(body)
+        if r is None or r.status_code in (400, 422):
+            body["messages"] = [{"role": "system", "content": sys_text + JSON_HINT}] + msgs
+            body["response_format"] = {"type": "json_object"}
+            r2 = await self._post(body)
+            if r2.status_code < 400 and r is not None:
+                self._schema_ok = False
+            r = r2
+        if r.status_code >= 400:
+            text = r.text[:300].replace(self._key, "***") if self._key else r.text[:300]
+            raise RuntimeError(f"HTTP {r.status_code}: {text}")  # کلید هرگز در لاگ نمی‌رود
+        data = r.json()
+        choice = (data.get("choices") or [{}])[0]
+        msg = choice.get("message") or {}
+        u = data.get("usage") or {}
+        cached = (u.get("prompt_tokens_details") or {}).get("cached_tokens", 0) or 0
+        usage = {"input_tokens": (u.get("prompt_tokens", 0) or 0) - cached, "output_tokens": u.get("completion_tokens", 0) or 0,
+                 "cache_read_input_tokens": cached}
+        stop = "refusal" if msg.get("refusal") else (choice.get("finish_reason") or "")
+        return msg.get("content") or "", usage, stop
 
 
-def get_client():
-    global _client
-    if _client is None:
-        _client = ClaudeClient()
-    return _client
+def provider_base_url(provider: str) -> str:
+    return config.CUSTOM_AI_BASE_URL if provider == "custom" else PROVIDERS[provider].get("base_url", "")
 
 
-def set_client(client) -> None:
-    """برای تست."""
-    global _client
-    _client = client
+def has_key(provider: str) -> bool:
+    """سرویس دلخواه با آدرس پایه کافی است (مثلاً Ollama کلید نمی‌خواهد)."""
+    if provider == "custom":
+        return bool(config.CUSTOM_AI_BASE_URL)
+    p = PROVIDERS.get(provider)
+    return bool(p and getattr(config, p["key"], ""))
+
+
+def providers_info() -> list:
+    """برای پنل؛ هرگز مقدار کلید را برنمی‌گرداند."""
+    out = []
+    for pid, p in PROVIDERS.items():
+        label = (config.CUSTOM_AI_NAME or p["label"]) if pid == "custom" else p["label"]
+        env = "CUSTOM_AI_BASE_URL (و در صورت نیاز CUSTOM_AI_API_KEY)" if pid == "custom" else p["key"]
+        out.append({"id": pid, "label": label, "configured": has_key(pid), "key_env": env, "models": p["models"],
+                    "claude": p["kind"] == "anthropic"})
+    return out
+
+
+_clients: dict = {}       # کلاینت واقعی هر سرویس
+_injected: dict = {}      # کلاینت تستی هر سرویس؛ کلید None یعنی همه‌ی سرویس‌ها
+
+
+def _make_client(provider: str):
+    p = PROVIDERS[provider]
+    if p["kind"] == "anthropic":
+        return ClaudeClient()
+    return OpenAICompatClient(provider_base_url(provider), getattr(config, p["key"], ""), p.get("max_key", "max_tokens"))
+
+
+def get_client(provider: str = "anthropic"):
+    if provider in _injected:
+        return _injected[provider]
+    if None in _injected:
+        return _injected[None]
+    if provider not in _clients:
+        _clients[provider] = _make_client(provider)
+    return _clients[provider]
+
+
+def set_client(client, provider: str | None = None) -> None:
+    """برای تست. بدون provider روی همه‌ی سرویس‌ها اثر دارد؛ set_client(None) همه را پاک می‌کند."""
+    if client is None and provider is None:
+        _injected.clear()
+        _clients.clear()
+    elif client is None:
+        _injected.pop(provider, None)
+    else:
+        _injected[provider] = client
+
+
+def _usable(provider: str) -> bool:
+    return provider in _injected or None in _injected or has_key(provider)
 
 
 # ---------- ساخت پرامپت ----------
@@ -261,28 +406,46 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
             return Decision("skip", skip_reason="channel_disabled")
     if s["skip_emoji_only"] and is_emoji_only(text):
         return _log(c, Decision("skip", skip_reason="emoji"), **ctx)
-    if not config.ANTHROPIC_API_KEY and (_client is None or isinstance(_client, ClaudeClient)):
-        return _log(c, Decision("error", skip_reason="no_api_key"), error="ANTHROPIC_API_KEY تنظیم نشده", **ctx)
     if s["monthly_budget_usd"] and month_cost(c) >= s["monthly_budget_usd"]:
         return _log(c, Decision("skip", skip_reason="budget"), **ctx)
 
-    model = s["model"]
-    try:
-        raw, usage, stop = await get_client().complete(
-            model, build_system(c, s), build_messages(c, s, channel, text, user_id, username), s["effort"])
-    except Exception as e:  # noqa: BLE001
-        return _log(c, Decision("error"), model=model, error=str(e)[:500], **ctx)
+    attempts = [(s["provider"], s["model"])]
+    if s["fallback_provider"]:
+        attempts.append((s["fallback_provider"], s["fallback_model"]))
+    system, messages = build_system(c, s), build_messages(c, s, channel, text, user_id, username)
+    errors, missing, result = [], 0, None
+    for prov, mdl in attempts:
+        if not _usable(prov):
+            missing += 1
+            errors.append(f"{PROVIDERS[prov]['label']}: کلید {PROVIDERS[prov]['key'] if prov != 'custom' else 'CUSTOM_AI_BASE_URL'} تنظیم نشده")
+            continue
+        try:
+            result = (prov, mdl, *await get_client(prov).complete(mdl, system, messages, s["effort"]))
+            break
+        except Exception as e:  # noqa: BLE001
+            errors.append(f"{PROVIDERS[prov]['label']}: {str(e)[:300]}")
+    if result is None:
+        reason = "no_api_key" if missing == len(attempts) else ""
+        return _log(c, Decision("error", skip_reason=reason), model=_label(*attempts[0]),
+                    error=" | ".join(errors)[:500], **ctx)
+    prov, mdl, raw, usage, stop = result
+    model = _label(prov, mdl)
+    note = " | ".join(errors)[:500] or None   # خطای سرویس اصلی وقتی پشتیبان جواب داده
 
-    cost = cost_usd(model, usage)
+    cost = cost_usd(model, usage, s)
     if stop == "refusal":
         d = Decision("handoff", reply=s["handoff_message"], handoff_reason="مدل از جواب دادن خودداری کرد", usage=usage)
-        return _log(c, d, model=model, cost=cost, **ctx)
+        return _log(c, d, model=model, cost=cost, error=note, **ctx)
     try:
-        out = json.loads(raw)
-        d = Decision(out["action"], reply=out["reply"].strip(), public_reply=out["public_reply"].strip(),
-                     intent=out["intent"], confidence=float(out["confidence"]),
-                     handoff_reason=out["handoff_reason"].strip(), usage=usage)
-    except (ValueError, KeyError, TypeError) as e:
+        out = parse_output(raw)
+        d = Decision(out["action"], reply=str(out.get("reply") or "").strip(),
+                     public_reply=str(out.get("public_reply") or "").strip(),
+                     intent=out.get("intent") if out.get("intent") in INTENTS else "other",
+                     confidence=float(out.get("confidence") or 0),
+                     handoff_reason=str(out.get("handoff_reason") or "").strip(), usage=usage)
+        if d.action not in ("reply", "handoff", "ignore"):
+            raise ValueError(f"action نامعتبر: {d.action}")
+    except (ValueError, KeyError, TypeError, AttributeError) as e:
         return _log(c, Decision("error", usage=usage), model=model, cost=cost, error=f"خروجی نامعتبر: {e}", **ctx)
 
     if d.action == "reply" and d.confidence < s["min_confidence"]:
@@ -302,7 +465,29 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
     if not is_test:
         for fid in knowledge.matching_faq_ids(c, text):
             c.execute("UPDATE faq SET hits=hits+1 WHERE id=?", (fid,))
-    return _log(c, d, model=model, cost=cost, **ctx)
+    return _log(c, d, model=model, cost=cost, error=note, **ctx)
+
+
+def _label(provider: str, model: str) -> str:
+    return model if provider == "anthropic" else f"{provider}:{model}"
+
+
+_FENCE = re.compile(r"^```(?:json)?\s*|\s*```$")
+
+
+def parse_output(raw: str) -> dict:
+    """JSON خروجی؛ حصار ```json و متن اضافه‌ی اطراف را هم تحمل می‌کند."""
+    t = _FENCE.sub("", (raw or "").strip())
+    try:
+        out = json.loads(t)
+    except ValueError:
+        i, j = t.find("{"), t.rfind("}")
+        if i < 0 or j <= i:
+            raise
+        out = json.loads(t[i:j + 1])
+    if not isinstance(out, dict):
+        raise ValueError("خروجی شیء JSON نیست")
+    return out
 
 
 def mark_log(c, log_id: int, status: str, error: str | None = None) -> None:
@@ -325,8 +510,12 @@ def stats(c) -> dict:
     s = settings(c)
     return {
         "enabled": s["enabled"],
-        "has_key": bool(config.ANTHROPIC_API_KEY),
+        "has_key": has_key(s["provider"]),
+        "provider": s["provider"],
+        "provider_label": next(p["label"] for p in providers_info() if p["id"] == s["provider"]),
+        "key_env": next(p["key_env"] for p in providers_info() if p["id"] == s["provider"]),
         "model": s["model"],
+        "fallback": _label(s["fallback_provider"], s["fallback_model"]) if s["fallback_provider"] else "",
         "replies_24h": q("SELECT COUNT(*) FROM ai_log WHERE is_test=0 AND action='reply' AND status='sent' AND created_at>?", day),
         "handoffs_24h": q("SELECT COUNT(*) FROM ai_log WHERE is_test=0 AND action='handoff' AND created_at>?", day),
         "ignored_24h": q("SELECT COUNT(*) FROM ai_log WHERE is_test=0 AND action IN ('ignore','skip') AND created_at>?", day),

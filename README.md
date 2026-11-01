@@ -27,7 +27,7 @@ cd web && npm run build                  # خروجی در web/dist؛ بک‌ا�
 
 ## پاسخ هوشمند
 
-کلید `ANTHROPIC_API_KEY` را در `.env` بگذارید و از پنل ← هوش مصنوعی ← تنظیمات ربات روشنش کنید. برای بارگذاری فایل تا ۱۰ مگابایت، `client_max_body_size 11m;` در تنظیم nginx لازم است.
+کلید یکی از سرویس‌ها را در `.env` بگذارید: `ANTHROPIC_API_KEY`، `OPENAI_API_KEY`، `GEMINI_API_KEY`، `DEEPSEEK_API_KEY`، `OPENROUTER_API_KEY`، یا برای هر سرویس سازگار با OpenAI، `CUSTOM_AI_BASE_URL` و `CUSTOM_AI_API_KEY`. بعد از ری‌استارت سرویس، از پنل ← هوش مصنوعی ← تنظیمات ربات ← «مدل و هزینه» سرویس، مدل و در صورت تمایل سرویس پشتیبان را انتخاب و ربات را روشن کنید. جزئیات در بخش ۸ `docs/PLAN.md`. برای بارگذاری فایل تا ۱۰ مگابایت، `client_max_body_size 11m;` در تنظیم nginx لازم است.
 
 ## وارد کردن قانون‌ها
 
