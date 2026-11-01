@@ -105,3 +105,20 @@ def test_api_and_migrate_old_faq(env):
     assert tg_apply(env) == 2
     moved = [x for x in shared_kb.intents() if x["answer"] == "به همه‌ی شهرها"]
     assert moved and moved[0]["examples"] == ["ارسال دارید؟"] and "پست" in moved[0]["keys"]
+
+
+
+def test_unremovable_op_is_not_applied_again(env):
+    """فایلی که ربات تلگرام نتواند پاکش کند نباید اعمال شود (وگرنه هر ۲ ثانیه نیت تکراری می‌ساخت)."""
+    tg = env
+    tg_apply(tg)
+    n0 = len(shared_kb.intents())
+    shared_kb.save_intent({"keys": "تست", "answer": "x"})
+    deny = APPLY.replace("    n = await B.process_panel_inbox()",
+                         "    def _deny(p): raise PermissionError('denied')\n"
+                         "    B.os.remove = _deny\n"
+                         "    n = await B.process_panel_inbox(); n = await B.process_panel_inbox()")
+    r = subprocess.run([sys.executable, "-u", "-c", deny], cwd=tg, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0, r.stderr[-2000:]
+    assert len(shared_kb.intents()) == n0 and shared_kb.pending()["count"] == 1
+    assert tg_apply(tg) == 1 and len(shared_kb.intents()) == n0 + 1   # وقتی پاک شد، یک بار اعمال می‌شود

@@ -10,7 +10,10 @@ main() {
   git -c safe.directory=/opt/igbot pull --ff-only
   .venv/bin/pip install -q -r requirements.txt
   (cd web && npm ci --no-audit --no-fund --silent && npm run build --silent)
-  .venv/bin/python -m pytest -q -p no:cacheprovider
+  # تست‌ها هرگز روی داده‌ی زنده: مسیرها به پوشه‌ی موقت (لایه‌ی دوم ایمنی کنار tests/conftest.py)
+  T=$(mktemp -d)
+  DB_PATH=$T/bot.db TG_DATA_DIR=$T/telegram .venv/bin/python -m pytest -q -p no:cacheprovider
+  rm -rf "$T"
 
   # فایل سرویس اگر در ریپو عوض شده باشد، با بکاپ از نسخه‌ی قبلی
   if ! cmp -s deploy/igbot.service /etc/systemd/system/igbot.service; then

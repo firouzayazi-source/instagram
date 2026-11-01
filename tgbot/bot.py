@@ -4976,13 +4976,19 @@ async def process_panel_inbox():
     fc=dc=False
     for f in files:
         p=os.path.join(PANEL_INBOX,f)
+        # اول فایل برداشته (پاک) می‌شود، بعد اعمال؛ اگر پاک نشد (مثلاً دسترسی) اعمال نمی‌شود،
+        # وگرنه هر ۲ ثانیه دوباره اعمال می‌شد (نیت تازه‌ی تکراری)
         try:
-            with open(p,encoding="utf-8") as fh: a,b=apply_panel_op(json.load(fh))
-            fc|=a; dc|=b
+            with open(p,encoding="utf-8") as fh: op=json.load(fh)
+        except Exception as e:
+            logger.warning(f"panel op {f}: {e}"); op=None
+        try: os.remove(p)
+        except OSError as e:
+            logger.error(f"panel op {f}: پاک نشد، اعمال نمی‌شود: {e}"); continue
+        if op is None: continue
+        try:
+            a,b=apply_panel_op(op); fc|=a; dc|=b
         except Exception as e: logger.warning(f"panel op {f}: {e}")
-        finally:
-            try: os.remove(p)
-            except OSError: pass
     if fc: await save_faq()
     if dc: await save_data()
     if files: logger.info(f"پنل وب: {len(files)} تغییر اعمال شد")
