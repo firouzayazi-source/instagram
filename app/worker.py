@@ -58,7 +58,25 @@ async def handle_event(ig, row, c) -> str:
             sent |= await _send(ig, c, row["id"], rule["id"], "dm", payload, inc, text)
     if sent:
         db.record_hit(c, rule["id"], inc.user_id)
+        fu = adv.get("followup")  # {"after_seconds": 3600, "text": "..."}
+        if fu and fu.get("text") and fu.get("after_seconds"):
+            db.add_followup(c, rule["id"], inc.user_id, fu["text"], float(fu["after_seconds"]))
     return "done"
+
+
+async def process_followups(ig, c, now: float | None = None) -> int:
+    """پیگیری‌های سررسیده را به دایرکت می‌فرستد. فقط اگر پنجره‌ی ۲۴ ساعت باز باشد موفق می‌شود."""
+    n = 0
+    for f in db.due_followups(c, now):
+        try:
+            ig_id = await ig.send_dm(f["user_id"], f["text"])
+            db.log_reply(c, f"fu:{f['id']}", f["rule_id"], "dm", f["user_id"], f["text"], ig_id=ig_id, ok=True)
+            db.finish_followup(c, f["id"], "done")
+            n += 1
+        except Exception as e:  # noqa: BLE001
+            db.log_reply(c, f"fu:{f['id']}", f["rule_id"], "dm", f["user_id"], f["text"], ok=False, error=str(e))
+            db.finish_followup(c, f["id"], "error", str(e))
+    return n
 
 
 async def _send(ig, c, event_id, rule_id, kind, payload, inc, text) -> bool:
@@ -88,6 +106,7 @@ async def run_forever(ig, stop: asyncio.Event) -> None:
     while not stop.is_set():
         with db.connect() as c:
             rows = db.pending_events(c)
+            await process_followups(ig, c)
         if not rows:
             await asyncio.sleep(1)
             continue

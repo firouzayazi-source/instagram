@@ -103,6 +103,21 @@ async def test_worker_dm_and_skips(env):
 
 
 @pytest.mark.asyncio
+async def test_followup_scheduled_and_sent_when_due(env):
+    import time
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "x", "channels": ["dm"], "triggers": [{"match": "any"}],
+                           "actions": {"dm_replies": ["سلام"]},
+                           "advanced": {"followup": {"after_seconds": 3600, "text": "هنوز سوالی داری؟"}}})
+        db.add_event(c, "m:mid1", "message", MESSAGE["entry"][0]["messaging"][0])
+        await worker.handle_event(env, db.pending_events(c)[0], c)
+        assert await worker.process_followups(env, c) == 0            # هنوز سررسید نشده
+        assert await worker.process_followups(env, c, now=time.time() + 3601) == 1
+        assert await worker.process_followups(env, c, now=time.time() + 7200) == 0  # دوباره نمی‌فرستد
+    assert env.calls[-1] == ("dm", "u2", "هنوز سوالی داری؟")
+
+
+@pytest.mark.asyncio
 async def test_require_follow(env):
     with db.connect() as c:
         db.upsert_rule(c, {"name": "x", "channels": ["comment"], "actions": {"private_replies": ["لینک"]},

@@ -52,6 +52,17 @@ CREATE TABLE IF NOT EXISTS user_rule_hits (
   PRIMARY KEY (rule_id, user_id)
 );
 
+CREATE TABLE IF NOT EXISTS followups (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  rule_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
+  text TEXT NOT NULL,
+  due_at REAL NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',  -- pending | done | error
+  error TEXT
+);
+CREATE INDEX IF NOT EXISTS followups_due ON followups(status, due_at);
+
 CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 """
 
@@ -157,6 +168,24 @@ def log_reply(c, event_id, rule_id, kind, target_id, text, ig_id=None, ok=True, 
         "VALUES (?,?,?,?,?,?,?,?,?)",
         (event_id, rule_id, kind, target_id, text, ig_id, int(ok), error, time.time()),
     )
+
+
+def add_followup(c: sqlite3.Connection, rule_id: int, user_id: str, text: str, after_seconds: float) -> None:
+    c.execute(
+        "INSERT INTO followups(rule_id,user_id,text,due_at) VALUES (?,?,?,?)",
+        (rule_id, user_id, text, time.time() + after_seconds),
+    )
+
+
+def due_followups(c: sqlite3.Connection, now: float | None = None) -> list[sqlite3.Row]:
+    return c.execute(
+        "SELECT * FROM followups WHERE status='pending' AND due_at<=? ORDER BY due_at LIMIT 20",
+        (now or time.time(),),
+    ).fetchall()
+
+
+def finish_followup(c: sqlite3.Connection, fid: int, status: str, error: str | None = None) -> None:
+    c.execute("UPDATE followups SET status=?, error=? WHERE id=?", (status, error, fid))
 
 
 def kv_get(c: sqlite3.Connection, key: str) -> str | None:
