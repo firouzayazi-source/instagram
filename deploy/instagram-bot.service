@@ -1,0 +1,17 @@
+[Unit]
+Description=Instagram bot (stock_land.ir)
+After=network-online.target
+
+[Service]
+User=igbot
+WorkingDirectory=/opt/instagram-bot
+EnvironmentFile=/opt/instagram-bot/.env
+ExecStart=/opt/instagram-bot/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8010
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/instagram-bot/data
+
+[Install]
+WantedBy=multi-user.target

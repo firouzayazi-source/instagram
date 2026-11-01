@@ -1,0 +1,59 @@
+"""وارد کردن قانون‌ها از فایل JSON.
+
+فرمت ما (rules.json):
+[
+  {
+    "name": "تقویم",
+    "channels": ["comment"],
+    "post_scope": "all",
+    "triggers": [{"match": "contains", "value": "تقویم"}, {"match": "exact", "value": "لینک"}],
+    "actions": {
+      "public_replies": ["چک کن دایرکت رو ✅", "فرستادم برات 📥"],
+      "private_replies": ["📅 تقویم فارسی آیفون: https://..."],
+      "dm_replies": []
+    },
+    "advanced": {"cooldown_seconds": 3600}
+  }
+]
+
+نگاشت از خروجی نوین‌هاب بعد از دیدن فرمت واقعی فایل اضافه می‌شود.
+"""
+import json
+import sys
+
+from . import db
+from .rules import MATCHES
+
+CHANNELS = {"comment", "dm"}
+
+
+def validate(rule: dict) -> list[str]:
+    errs = []
+    if not rule.get("name"):
+        errs.append("name لازم است")
+    if not set(rule.get("channels", [])) <= CHANNELS or not rule.get("channels"):
+        errs.append("channels باید زیرمجموعه‌ی comment/dm باشد")
+    for t in rule.get("triggers", []):
+        if t.get("match", "any") not in MATCHES:
+            errs.append(f"match نامعتبر: {t.get('match')}")
+    acts = rule.get("actions", {})
+    if not any(acts.get(k) for k in ("public_replies", "private_replies", "dm_replies")):
+        errs.append("حداقل یک پیام پاسخ لازم است")
+    return errs
+
+
+def import_file(path: str) -> int:
+    rules = json.load(open(path, encoding="utf-8"))
+    bad = {r.get("name", f"#{i}"): validate(r) for i, r in enumerate(rules)}
+    bad = {k: v for k, v in bad.items() if v}
+    if bad:
+        raise ValueError(json.dumps(bad, ensure_ascii=False, indent=1))
+    db.init()
+    with db.connect() as c:
+        for r in rules:
+            db.upsert_rule(c, r)
+    return len(rules)
+
+
+if __name__ == "__main__":
+    print("imported", import_file(sys.argv[1]))
