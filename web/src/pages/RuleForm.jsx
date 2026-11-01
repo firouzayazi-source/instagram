@@ -55,19 +55,19 @@ export default function RuleForm({ id }) {
     delete body.id; delete body.use_count
     try {
       if (isNew) await api.post('/api/rules', body); else await api.put(`/api/rules/${id}`, body)
-      location.hash = '#/rules'
+      location.hash = '#/ai/rules'
     } catch (ex) { setErr(ex.message) }
     finally { setBusy(false) }
   }
 
   async function remove() {
     if (!confirm('این دستور حذف شود؟')) return
-    await api.del(`/api/rules/${id}`); location.hash = '#/rules'
+    await api.del(`/api/rules/${id}`); location.hash = '#/ai/rules'
   }
 
   return (
     <form onSubmit={save}>
-      <header className="topbar"><h1>{isNew ? 'دستور جدید' : 'ویرایش دستور'}</h1><a href="#/rules" className="btn sm">انصراف</a></header>
+      <header className="topbar"><h1>{isNew ? 'دستور جدید' : 'ویرایش دستور'}</h1><a href="#/ai/rules" className="btn sm">انصراف</a></header>
 
       <section className="card">
         <div className="field"><label htmlFor="name">نام دستور</label><input id="name" type="text" value={r.name} onChange={(e) => set({ name: e.target.value })} required /></div>

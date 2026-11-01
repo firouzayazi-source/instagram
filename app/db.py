@@ -107,6 +107,97 @@ CREATE TABLE IF NOT EXISTS push_subs (
 );
 
 CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+
+-- ---------- پاسخ هوشمند ----------
+CREATE TABLE IF NOT EXISTS faq (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  question TEXT NOT NULL,
+  keywords TEXT NOT NULL DEFAULT '',
+  answer TEXT NOT NULL,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  hits INTEGER NOT NULL DEFAULT 0,
+  updated_at REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS docs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  chars INTEGER NOT NULL,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  created_at REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS doc_chunks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  doc_id INTEGER NOT NULL REFERENCES docs(id) ON DELETE CASCADE,
+  idx INTEGER NOT NULL,
+  text TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS doc_chunks_doc ON doc_chunks(doc_id);
+
+CREATE TABLE IF NOT EXISTS products (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  storage TEXT NOT NULL DEFAULT '',
+  color TEXT NOT NULL DEFAULT '',
+  condition TEXT NOT NULL DEFAULT 'new',   -- new | used | stock
+  price INTEGER,                           -- تومان؛ خالی یعنی «استعلام»
+  in_stock INTEGER NOT NULL DEFAULT 1,
+  notes TEXT NOT NULL DEFAULT '',
+  enabled INTEGER NOT NULL DEFAULT 1,
+  updated_at REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS blocked_users (
+  user_id TEXT PRIMARY KEY,
+  username TEXT,
+  reason TEXT NOT NULL DEFAULT '',
+  created_at REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ai_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at REAL NOT NULL,
+  event_id TEXT,
+  channel TEXT NOT NULL,
+  user_id TEXT,
+  username TEXT,
+  input TEXT NOT NULL,
+  action TEXT NOT NULL,          -- reply | handoff | ignore | skip | error
+  intent TEXT,
+  confidence REAL,
+  reply TEXT,
+  public_reply TEXT,
+  handoff_reason TEXT,
+  skip_reason TEXT,
+  model TEXT,
+  input_tokens INTEGER NOT NULL DEFAULT 0,
+  output_tokens INTEGER NOT NULL DEFAULT 0,
+  cache_read INTEGER NOT NULL DEFAULT 0,
+  cache_write INTEGER NOT NULL DEFAULT 0,
+  cost REAL NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'pending',  -- pending | sent | failed | test | none
+  error TEXT,
+  feedback TEXT,                 -- good | bad
+  is_test INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS ai_log_created ON ai_log(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS handoffs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at REAL NOT NULL,
+  channel TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  username TEXT,
+  comment_id TEXT,
+  text TEXT NOT NULL,
+  reason TEXT NOT NULL DEFAULT '',
+  intent TEXT,
+  ai_log_id INTEGER,
+  status TEXT NOT NULL DEFAULT 'open',     -- open | done
+  resolved_at REAL
+);
+CREATE INDEX IF NOT EXISTS handoffs_status ON handoffs(status, created_at DESC);
 """
 
 

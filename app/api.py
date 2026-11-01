@@ -4,7 +4,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 
-from . import auth, config, db
+from . import ai, auth, config, db
 from .importer import validate
 from .rules import Incoming, find_rule
 
@@ -60,7 +60,15 @@ def me():
 @protected.get("/stats")
 def stats():
     with db.connect() as c:
-        return {**db.stats(c), "recent": db.recent_replies(c, 20)}
+        st = db.stats(c)
+        day = time.time() - 86400
+        incoming = st["comments_24h"] + c.execute(
+            "SELECT COUNT(*) FROM messages WHERE direction='in' AND created_at>?", (day,)).fetchone()[0]
+        auto = c.execute(
+            "SELECT COUNT(DISTINCT event_id) FROM replies WHERE ok=1 AND created_at>? "
+            "AND event_id NOT LIKE 'manual:%' AND event_id NOT LIKE 'fu:%'", (day,)).fetchone()[0]
+        return {**st, "incoming_24h": incoming, "auto_answered_24h": auto, "ai": ai.stats(c),
+                "recent": db.recent_replies(c, 20)}
 
 
 # ---------- کامنت‌ها ----------

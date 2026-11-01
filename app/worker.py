@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from . import config, db, push
+from . import ai, config, db, knowledge, push
 from .rules import Incoming, find_rule, pick
 
 MAX_RETRIES = 3
@@ -49,10 +49,12 @@ async def handle_event(ig, row, c) -> str:
     if inc is None or not inc.user_id or inc.user_id == config.IG_USER_ID:
         return "skipped"
     await store_incoming(ig, c, row["kind"], payload, inc)
+    if knowledge.is_blocked(c, inc.user_id):
+        return "ignored"
     rules = db.load_rules(c)
     rule = find_rule(rules, inc, lambda rid, uid: db.last_hit(c, rid, uid))
     if rule is None:
-        return "skipped"  # مرحله‌ی ۳: این‌جا پاسخ هوشمند می‌آید
+        return await handle_ai(ig, row, c, payload, inc)
     adv = rule.get("advanced", {})
     if adv.get("require_follow"):
         if inc.is_follower is None:
@@ -78,6 +80,34 @@ async def handle_event(ig, row, c) -> str:
         fu = adv.get("followup")  # {"after_seconds": 3600, "text": "..."}
         if fu and fu.get("text") and fu.get("after_seconds"):
             db.add_followup(c, rule["id"], inc.user_id, fu["text"], float(fu["after_seconds"]))
+    return "done"
+
+
+async def handle_ai(ig, row, c, payload, inc: Incoming) -> str:
+    """وقتی هیچ قانونی نخورد: پاسخ هوشمند. خروجی: done | ignored | skipped"""
+    if inc.channel == "comment":
+        username = payload.get("from", {}).get("username")
+    else:
+        username = db.conversation_username(c, inc.user_id)
+    d = await ai.decide(c, channel=inc.channel, text=inc.text, user_id=inc.user_id, username=username, event_id=row["id"])
+    if d.action == "ignore" or (d.action == "skip" and d.skip_reason == "emoji"):
+        return "ignored"
+    if d.action in ("skip", "error"):
+        return "skipped"
+    sent = False
+    if inc.channel == "comment":
+        if d.reply:
+            sent |= await _send(ig, c, row["id"], None, "private", payload, inc, d.reply)
+        if d.public_reply:
+            sent |= await _send(ig, c, row["id"], None, "public", payload, inc, d.public_reply)
+    elif d.reply:
+        sent = await _send(ig, c, row["id"], None, "dm", payload, inc, d.reply)
+    ai.mark_log(c, d.log_id, "sent" if sent else "failed")
+    if d.action == "handoff":
+        ai.create_handoff(c, d, channel=inc.channel, user_id=inc.user_id, username=username, text=inc.text,
+                          comment_id=payload.get("id") if inc.channel == "comment" else None)
+        asyncio.create_task(push.notify_all(
+            "نیاز به پاسخ شما 🙋", f"{username or inc.user_id}: {inc.text[:80]}", "/#/ai/handoffs"))
     return "done"
 
 

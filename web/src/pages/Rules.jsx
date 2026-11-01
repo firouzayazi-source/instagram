@@ -3,7 +3,7 @@ import { api } from '../api.js'
 
 const MATCH = { any: 'هر مقداری', exact: 'برابر دقیق', contains: 'شامل', starts_with: 'شروع با', regex: 'الگو' }
 
-export default function Rules() {
+export default function Rules({ embedded = false }) {
   const [rules, setRules] = useState([])
   const [test, setTest] = useState({ channel: 'comment', text: '' })
   const [result, setResult] = useState(null)
@@ -23,7 +23,9 @@ export default function Rules() {
 
   return (
     <>
-      <header className="topbar"><h1>پاسخ هوشمند</h1><a href="#/rules/new" className="btn primary sm">+ دستور جدید</a></header>
+      {embedded
+        ? <div className="actions" style={{ marginBottom: 10 }}><a href="#/rules/new" className="btn primary">+ دستور جدید</a><span className="muted" style={{ alignSelf: 'center' }}>دستورها قبل از هوش مصنوعی بررسی می‌شوند؛ مثل «کامنت بگذار، دایرکت بگیر».</span></div>
+        : <header className="topbar"><h1>دستورها</h1><a href="#/rules/new" className="btn primary sm">+ دستور جدید</a></header>}
       <form className="card" onSubmit={runTest}>
         <h2>آزمایش</h2>
         <div className="trigger">

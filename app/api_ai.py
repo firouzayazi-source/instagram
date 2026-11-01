@@ -1,0 +1,273 @@
+"""API پاسخ هوشمند و پایگاه دانش. همه‌ی مسیرها نشست می‌خواهند."""
+import time
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from pydantic import BaseModel
+
+from . import ai, auth, db, knowledge
+
+router = APIRouter(prefix="/api/ai", dependencies=[Depends(auth.require_session)])
+
+
+def _guard(fn, *a, **kw):
+    try:
+        return fn(*a, **kw)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+
+
+# ---------- تنظیمات و آمار ----------
+
+@router.get("/settings")
+def get_settings():
+    with db.connect() as c:
+        return {"settings": ai.settings(c), "models": ai.MODELS, "intents": ai.INTENT_FA,
+                "has_key": bool(ai.config.ANTHROPIC_API_KEY)}
+
+
+@router.put("/settings")
+def put_settings(body: dict):
+    with db.connect() as c:
+        return {"settings": _guard(ai.save_settings, c, body)}
+
+
+@router.get("/stats")
+def get_stats():
+    with db.connect() as c:
+        return ai.stats(c)
+
+
+class TestIn(BaseModel):
+    channel: str = "dm"
+    text: str
+
+
+@router.post("/test")
+async def test(body: TestIn):
+    """پاسخ ربات را بدون ارسال نشان می‌دهد. هزینه‌ی API دارد."""
+    if body.channel not in ("comment", "dm") or not body.text.strip():
+        raise HTTPException(422, "کانال یا متن نامعتبر")
+    with db.connect() as c:
+        d = await ai.decide(c, channel=body.channel, text=body.text.strip(), user_id="test", username="test", is_test=True)
+        cost = c.execute("SELECT cost FROM ai_log WHERE id=?", (d.log_id,)).fetchone()
+        err = c.execute("SELECT error FROM ai_log WHERE id=?", (d.log_id,)).fetchone()
+    return {"action": d.action, "reply": d.reply, "public_reply": d.public_reply, "intent": d.intent,
+            "confidence": d.confidence, "handoff_reason": d.handoff_reason, "skip_reason": d.skip_reason,
+            "cost": cost[0] if cost else 0, "error": err[0] if err else None}
+
+
+# ---------- پرسش‌های رایج ----------
+
+class FaqIn(BaseModel):
+    question: str
+    keywords: str = ""
+    answer: str
+    enabled: bool = True
+
+
+@router.get("/faq")
+def faq_list():
+    with db.connect() as c:
+        return knowledge.list_faq(c)
+
+
+@router.post("/faq")
+def faq_create(body: FaqIn):
+    with db.connect() as c:
+        return {"id": _guard(knowledge.save_faq, c, body.model_dump())}
+
+
+@router.put("/faq/{fid}")
+def faq_update(fid: int, body: FaqIn):
+    with db.connect() as c:
+        return {"id": _guard(knowledge.save_faq, c, {**body.model_dump(), "id": fid})}
+
+
+@router.delete("/faq/{fid}")
+def faq_delete(fid: int):
+    with db.connect() as c:
+        knowledge.delete_faq(c, fid)
+    return {"ok": True}
+
+
+# ---------- فایل‌ها ----------
+
+@router.get("/docs")
+def docs_list():
+    with db.connect() as c:
+        return knowledge.list_docs(c)
+
+
+@router.post("/docs")
+async def docs_upload(request: Request, name: str = Query(..., min_length=1, max_length=200)):
+    """بدنه‌ی درخواست خود فایل است (نه فرم)."""
+    data = await request.body()
+    if not data:
+        raise HTTPException(422, "فایل خالی است")
+    with db.connect() as c:
+        return _guard(knowledge.add_doc, c, name, data)
+
+
+@router.get("/docs/{did}")
+def docs_preview(did: int):
+    with db.connect() as c:
+        return {"preview": knowledge.doc_preview(c, did)}
+
+
+@router.post("/docs/{did}/enable")
+def docs_enable(did: int, body: dict):
+    with db.connect() as c:
+        knowledge.set_doc_enabled(c, did, bool(body.get("enabled")))
+    return {"ok": True}
+
+
+@router.delete("/docs/{did}")
+def docs_delete(did: int):
+    with db.connect() as c:
+        knowledge.delete_doc(c, did)
+    return {"ok": True}
+
+
+# ---------- محصولات ----------
+
+class ProductIn(BaseModel):
+    name: str
+    storage: str = ""
+    color: str = ""
+    condition: str = "new"
+    price: int | str | None = None
+    in_stock: bool = True
+    notes: str = ""
+    enabled: bool = True
+
+
+@router.get("/products")
+def products_list():
+    with db.connect() as c:
+        return knowledge.list_products(c)
+
+
+@router.post("/products")
+def products_create(body: ProductIn):
+    with db.connect() as c:
+        return {"id": _guard(knowledge.save_product, c, body.model_dump())}
+
+
+@router.put("/products/{pid}")
+def products_update(pid: int, body: ProductIn):
+    with db.connect() as c:
+        return {"id": _guard(knowledge.save_product, c, {**body.model_dump(), "id": pid})}
+
+
+@router.delete("/products/{pid}")
+def products_delete(pid: int):
+    with db.connect() as c:
+        knowledge.delete_product(c, pid)
+    return {"ok": True}
+
+
+class ImportIn(BaseModel):
+    text: str
+    replace: bool = False
+
+
+@router.post("/products/import")
+def products_import(body: ImportIn):
+    with db.connect() as c:
+        return {"imported": _guard(knowledge.import_products, c, body.text, body.replace)}
+
+
+# ---------- لاگ و بازخورد ----------
+
+_LOG_FILTERS = {
+    "all": "1", "reply": "action='reply'", "handoff": "action='handoff'",
+    "ignore": "action IN ('ignore','skip')", "error": "action='error' OR status='failed'", "bad": "feedback='bad'",
+    "test": "is_test=1",
+}
+
+
+@router.get("/log")
+def log_list(filter: str = "all", limit: int = Query(50, le=200), before: float | None = None):
+    where = f"({_LOG_FILTERS.get(filter, '1')})"
+    if filter != "test":
+        where += " AND is_test=0"
+    args: list = []
+    if before:
+        where += " AND created_at<?"
+        args.append(before)
+    with db.connect() as c:
+        return [dict(r) for r in c.execute(
+            f"SELECT * FROM ai_log WHERE {where} ORDER BY created_at DESC LIMIT ?", [*args, limit])]
+
+
+class FeedbackIn(BaseModel):
+    feedback: str                      # good | bad | ""
+    correct_answer: str = ""           # اگر پر شود، به پرسش‌های رایج اضافه می‌شود
+    keywords: str = ""
+
+
+@router.post("/log/{lid}/feedback")
+def log_feedback(lid: int, body: FeedbackIn):
+    if body.feedback not in ("good", "bad", ""):
+        raise HTTPException(422, "بازخورد نامعتبر")
+    with db.connect() as c:
+        row = c.execute("SELECT input FROM ai_log WHERE id=?", (lid,)).fetchone()
+        if not row:
+            raise HTTPException(404)
+        c.execute("UPDATE ai_log SET feedback=? WHERE id=?", (body.feedback or None, lid))
+        faq_id = None
+        if body.correct_answer.strip():
+            faq_id = knowledge.save_faq(c, {"question": row["input"][:300], "keywords": body.keywords,
+                                            "answer": body.correct_answer})
+    return {"ok": True, "faq_id": faq_id}
+
+
+# ---------- ارجاع به انسان ----------
+
+@router.get("/handoffs")
+def handoffs_list(status: str = "open"):
+    where = "status=?" if status in ("open", "done") else "1"
+    args = (status,) if status in ("open", "done") else ()
+    with db.connect() as c:
+        return [dict(r) for r in c.execute(
+            f"SELECT h.*, l.reply AS bot_reply FROM handoffs h LEFT JOIN ai_log l ON l.id=h.ai_log_id "
+            f"WHERE {where.replace('status', 'h.status')} ORDER BY h.created_at DESC LIMIT 200", args)]
+
+
+@router.post("/handoffs/{hid}/resolve")
+def handoff_resolve(hid: int, body: dict | None = None):
+    done = (body or {}).get("done", True)
+    with db.connect() as c:
+        c.execute("UPDATE handoffs SET status=?, resolved_at=? WHERE id=?",
+                  ("done" if done else "open", time.time() if done else None, hid))
+    return {"ok": True}
+
+
+# ---------- کاربران مسدود ----------
+
+class BlockIn(BaseModel):
+    user_id: str
+    username: str | None = None
+    reason: str = ""
+
+
+@router.get("/blocked")
+def blocked_list():
+    with db.connect() as c:
+        return knowledge.list_blocked(c)
+
+
+@router.post("/blocked")
+def blocked_add(body: BlockIn):
+    if not body.user_id.strip():
+        raise HTTPException(422, "شناسه‌ی کاربر لازم است")
+    with db.connect() as c:
+        knowledge.block(c, body.user_id.strip(), body.username, body.reason)
+    return {"ok": True}
+
+
+@router.delete("/blocked/{user_id}")
+def blocked_remove(user_id: str):
+    with db.connect() as c:
+        knowledge.unblock(c, user_id)
+    return {"ok": True}

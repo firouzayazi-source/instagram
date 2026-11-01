@@ -29,6 +29,10 @@ DB_PATH = os.environ.get("DB_PATH", str(ROOT / "data" / "bot.db"))
 SEND_DELAY_MIN = float(os.environ.get("SEND_DELAY_MIN", "2"))
 SEND_DELAY_MAX = float(os.environ.get("SEND_DELAY_MAX", "8"))
 
+# پاسخ هوشمند
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+AI_MODEL = os.environ.get("AI_MODEL", "claude-opus-5-5")
+
 # پنل
 PANEL_PASSWORD = os.environ.get("PANEL_PASSWORD", "")
 SESSION_TTL = int(os.environ.get("SESSION_TTL", str(30 * 86400)))

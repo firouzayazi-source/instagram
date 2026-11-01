@@ -25,6 +25,10 @@ cd web && npm run build                  # خروجی در web/dist؛ بک‌ا�
 .venv/bin/python -m app.push --gen   # دو خط خروجی را در .env بگذارید
 ```
 
+## پاسخ هوشمند
+
+کلید `ANTHROPIC_API_KEY` را در `.env` بگذارید و از پنل ← هوش مصنوعی ← تنظیمات ربات روشنش کنید. برای بارگذاری فایل تا ۱۰ مگابایت، `client_max_body_size 11m;` در تنظیم nginx لازم است.
+
 ## وارد کردن قانون‌ها
 
 ```bash

@@ -30,6 +30,12 @@ export default function Comments() {
     finally { setBusy(false) }
   }
 
+  async function block(c) {
+    if (!confirm(`ربات دیگر به ${c.username || c.user_id} جواب ندهد؟`)) return
+    await api.post('/api/ai/blocked', { user_id: c.user_id, username: c.username, reason: 'از صفحه‌ی کامنت‌ها' })
+    setMsg('کاربر مسدود شد ✅')
+  }
+
   return (
     <>
       <header className="topbar"><h1>کامنت‌ها</h1><button className="btn sm" onClick={load}>تازه‌سازی</button></header>
@@ -49,6 +55,7 @@ export default function Comments() {
                 <div className="actions">
                   <button className="btn primary" disabled={busy || !text.trim()} onClick={() => send('reply', c)}>پاسخ عمومی</button>
                   <button className="btn" disabled={busy || !text.trim()} onClick={() => send('private', c)}>دایرکت خصوصی</button>
+                  <button className="btn danger" disabled={busy} onClick={() => block(c)}>مسدود</button>
                 </div>
                 {msg && <p className={msg.includes('✅') ? 'ok' : 'err'}>{msg}</p>}
               </div>

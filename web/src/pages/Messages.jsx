@@ -48,6 +48,12 @@ function Thread({ userId }) {
     return () => clearInterval(t)
   }, [userId])
 
+  async function block() {
+    if (!confirm(`ربات دیگر به ${name} جواب ندهد؟`)) return
+    await api.post('/api/ai/blocked', { user_id: userId, username: name === userId ? null : name, reason: 'از صفحه‌ی پیام‌ها' })
+    setErr('کاربر مسدود شد؛ ربات دیگر جوابش را نمی‌دهد.')
+  }
+
   async function send(e) {
     e.preventDefault(); setBusy(true); setErr('')
     try { await api.post(`/api/conversations/${userId}/send`, { text }); setText(''); load() }
@@ -57,7 +63,7 @@ function Thread({ userId }) {
 
   return (
     <>
-      <header className="topbar"><h1>{name}</h1><a href="#/messages" className="btn sm">بازگشت</a></header>
+      <header className="topbar"><h1>{name}</h1><span className="actions"><button className="btn sm danger" onClick={block}>مسدود</button><a href="#/messages" className="btn sm">بازگشت</a></span></header>
       <div className="thread">
         {msgs.map((m) => (
           <div key={m.id} className={`bubble ${m.direction}`}>{m.text}<span className="when">{timeAgo(m.created_at)}</span></div>
