@@ -125,6 +125,15 @@ def _store_attrs(p: dict) -> list[tuple[str, str]]:
             for a in p.get("attributes") or [] if not a.get("has_variations")]
 
 
+_FA_EN = {"آیفون": "iphone", "ایفون": "iphone", "پرو": "pro", "مکس": "max", "مینی": "mini", "پلاس": "plus",
+          "اپل": "apple", "واچ": "watch", "سری": "series", "ایرپاد": "airpods", "ایرپادز": "airpods",
+          "آیپد": "ipad", "ایپد": "ipad", "مک": "mac", "بوک": "book", "اولترا": "ultra", "ایر": "air"}
+
+
+def _tokens(text: str) -> set:
+    return {_FA_EN.get(w, w) for w in re.findall(r"[\w]+", normalize(text).lower())}
+
+
 def _classify(attrs: list[tuple[str, str]], extra: str) -> dict:
     """ویژگی‌ها را به حافظه، رنگ و وضعیت نگاشت می‌کند؛ بقیه در توضیح (هر کلید یک بار)."""
     out = {"storage": "", "color": "", "condition": "", "notes": []}
@@ -139,8 +148,8 @@ def _classify(attrs: list[tuple[str, str]], extra: str) -> dict:
             out["color"] = v
         elif any(w in n for w in ("وضعیت", "condition", "نوع کالا", "کیفیت")):
             out["condition"] = out["condition"] or v
-        elif any(w in n for w in ("برند", "brand", "مدل", "model")) and normalize(v) in normalize(extra):
-            continue   # تکرار نام محصول
+        elif any(w in n for w in ("برند", "brand", "مدل", "model")) and _tokens(v) <= _tokens(extra):
+            continue   # تکرار نام محصول (مثلاً «مدل: iPhone 11 Pro» برای «آیفون 11 پرو»)
         elif n not in seen:
             seen.add(n)
             out["notes"].append(f"{_text(name)}: {v}")

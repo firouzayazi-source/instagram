@@ -139,9 +139,9 @@ def test_migration_adds_columns(tmp_path):
 async def test_stland_style_simple_product_details_from_description(c):
     """هر گوشی یک محصول ساده است و مشخصاتش در توضیح کوتاه و فهرست توضیح آمده (نمونه‌ی واقعی stland.ir)."""
     routes = {"/wp-json/wc/store/v1/products": [{
-        "id": 45129, "type": "simple", "name": "آیفون 13 256 گیگ", "attributes": [],
+        "id": 45129, "type": "simple", "name": "آیفون 13 پرو 256 گیگ", "attributes": [],
         "permalink": "https://stland.ir/Product/BKP-45129/x/",
-        "short_description": "<p>برند: iPhone · مدل: آیفون 13 · حافظه ۲۵۶ گیگابایت · رنگ Midnight · پارت نامبر CH/A · وضعیت کارکرده</p>",
+        "short_description": "<p>برند: iPhone · مدل: iPhone 13 Pro · نسخه: Apple Watch 44mm · حافظه ۲۵۶ گیگابایت · رنگ Midnight · پارت نامبر CH/A · وضعیت کارکرده</p>",
         "description": "<p><strong>آیفون 13 256 گیگ</strong> — کارکرده</p>\n<h3>وضعیت</h3>\n<ul>\n<li>وضعیت: کارکرده</li>\n"
                        "<li>سلامت باتری: ۷۷٪</li>\n<li>جعبه: دارد</li>\n<li>کابل: دارد</li>\n<li>رجیستر: شده</li>\n</ul>",
         "prices": _prices(31_500_000), "is_in_stock": True}]}
@@ -151,6 +151,7 @@ async def test_stland_style_simple_product_details_from_description(c):
     assert p["storage"] == "۲۵۶ گیگابایت" and p["color"] == "Midnight" and p["condition"] == "used"
     assert "سلامت باتری: ۷۷٪" in p["notes"] and "پارت نامبر: CH/A" in p["notes"] and "رجیستر: شده" in p["notes"]
     assert p["notes"].count("وضعیت") == 0 and "برند" not in p["notes"] and "مدل" not in p["notes"]
+    assert "نسخه: Apple Watch 44mm" in p["notes"]
 
 
 def test_products_text_caps_sold_items(c):
