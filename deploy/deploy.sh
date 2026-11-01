@@ -1,11 +1,30 @@
 #!/usr/bin/env bash
-# انتشار روی سرور: کد تازه، وابستگی‌ها، ساخت پنل، تست، راه‌اندازی مجدد، وارسی سلامت
+# انتشار روی سرور: کد تازه، وابستگی‌ها، ساخت پنل، تست، راه‌اندازی مجدد، وارسی سلامت.
+# فقط به /opt/igbot و سرویس igbot دست می‌زند.
+# کل اسکریپت داخل تابع است تا bash پیش از اجرا همه‌اش را بخواند؛ وگرنه git pull وسط اجرا خود همین فایل را عوض می‌کند.
 set -euo pipefail
-cd /opt/igbot
-git pull --ff-only
-.venv/bin/pip install -q -r requirements.txt
-(cd web && npm ci --no-audit --no-fund --silent && npm run build --silent)
-.venv/bin/python -m pytest -q
-sudo systemctl restart igbot
-sleep 2
-curl -fsS https://ig.stland.ir/health && echo
+
+main() {
+  cd /opt/igbot
+  # مخزن مال کاربر igbot است و اسکریپت با root اجرا می‌شود
+  git -c safe.directory=/opt/igbot pull --ff-only
+  .venv/bin/pip install -q -r requirements.txt
+  (cd web && npm ci --no-audit --no-fund --silent && npm run build --silent)
+  .venv/bin/python -m pytest -q -p no:cacheprovider
+
+  # فایل سرویس اگر در ریپو عوض شده باشد، با بکاپ از نسخه‌ی قبلی
+  if ! cmp -s deploy/igbot.service /etc/systemd/system/igbot.service; then
+    mkdir -p /var/backups/igbot
+    cp /etc/systemd/system/igbot.service "/var/backups/igbot/igbot.service.$(date +%Y%m%d-%H%M%S)" 2>/dev/null || true
+    cp deploy/igbot.service /etc/systemd/system/igbot.service
+    systemctl daemon-reload
+    echo "فایل سرویس به‌روز شد"
+  fi
+
+  chown -R igbot:igbot /opt/igbot
+  systemctl restart igbot
+  sleep 2
+  curl -fsS https://ig.stland.ir/health && echo
+}
+
+main "$@"

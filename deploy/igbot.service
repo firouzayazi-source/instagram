@@ -6,6 +6,8 @@ After=network-online.target
 User=igbot
 WorkingDirectory=/opt/igbot
 EnvironmentFile=/opt/igbot/.env
+# ساعت فعال دستورها و شروع ماه برای سقف هزینه به وقت ایران؛ ساعت کل سرور دست نمی‌خورد
+Environment=TZ=Asia/Tehran
 ExecStart=/opt/igbot/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8011
 Restart=always
 RestartSec=3
