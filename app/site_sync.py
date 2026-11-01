@@ -96,9 +96,39 @@ def _toman(amount: float | None, currency: str) -> int | None:
     return int(round(amount * _TO_TOMAN.get(currency.upper(), 1)))
 
 
+# کلیدهای رایج در توضیح کوتاه محصول، مثل «حافظه ۲۵۶ گیگابایت · رنگ Midnight · وضعیت کارکرده»
+_DESC_KEYS = ("سلامت باتری", "پارت نامبر", "حافظه", "ظرفیت", "رنگ", "وضعیت", "رجیستر", "ریجستر", "گارانتی")
+_LI = re.compile(r"<li[^>]*>(.*?)</li>", re.S | re.I)
+
+
+def desc_attrs(short_desc: str, desc: str) -> list[tuple[str, str]]:
+    """ویژگی‌ها از متن محصول: بخش‌های جداشده با «·» در توضیح کوتاه، و سطرهای «کلید: مقدار» در فهرست توضیح."""
+    out = []
+    for seg in re.split(r"\s*[·•|]\s*", _text(short_desc)):
+        key = next((k for k in _DESC_KEYS if seg.startswith(k)), None)
+        if key:
+            out.append((key, seg[len(key):].strip(" :：")))
+        elif ":" in seg:
+            k, v = seg.split(":", 1)
+            out.append((k.strip(), v.strip()))
+    for li in _LI.findall(desc or "")[:12]:
+        t = _text(li)
+        if ":" in t:
+            k, v = t.split(":", 1)
+            if len(k) <= 30:
+                out.append((k.strip(), v.strip()))
+    return out
+
+
+def _store_attrs(p: dict) -> list[tuple[str, str]]:
+    return [(a.get("name", ""), "، ".join(t.get("name", "") for t in a.get("terms") or []))
+            for a in p.get("attributes") or [] if not a.get("has_variations")]
+
+
 def _classify(attrs: list[tuple[str, str]], extra: str) -> dict:
-    """ویژگی‌ها را به حافظه، رنگ و وضعیت نگاشت می‌کند؛ بقیه در توضیح."""
+    """ویژگی‌ها را به حافظه، رنگ و وضعیت نگاشت می‌کند؛ بقیه در توضیح (هر کلید یک بار)."""
     out = {"storage": "", "color": "", "condition": "", "notes": []}
+    seen = set()
     for name, value in attrs:
         n, v = normalize(name), _text(value)
         if not v:
@@ -108,8 +138,9 @@ def _classify(attrs: list[tuple[str, str]], extra: str) -> dict:
         elif any(w in n for w in ("رنگ", "color", "colour")):
             out["color"] = v
         elif any(w in n for w in ("وضعیت", "condition", "نوع کالا", "کیفیت")):
-            out["condition"] = v
-        else:
+            out["condition"] = out["condition"] or v
+        elif n not in seen:
+            seen.add(n)
             out["notes"].append(f"{_text(name)}: {v}")
     hay = normalize(f"{out['condition']} {extra}")
     if any(w in hay for w in ("کارکرده", "دست دوم", "used")):
@@ -152,12 +183,13 @@ async def fetch_store_api(http, base: str, currency: str) -> list[dict]:
             raise ValueError("پاسخ Store API فهرست محصول نیست")
         for p in items:
             extra = " ".join(x.get("name", "") for x in p.get("categories") or []) + " " + p.get("name", "")
+            common = _store_attrs(p) + desc_attrs(p.get("short_description", ""), p.get("description", ""))
             if p.get("type") == "variable" and p.get("variations"):
                 for v in p["variations"]:
                     attrs = [(a.get("name", ""), a.get("value", "")) for a in v.get("attributes") or []]
-                    var_jobs.append((p, v["id"], attrs, extra))
+                    var_jobs.append((p, v["id"], attrs + common, extra))
             else:
-                rows.append(_row(p.get("name"), [], extra, _store_price(p, currency), p.get("is_in_stock"),
+                rows.append(_row(p.get("name"), common, extra, _store_price(p, currency), p.get("is_in_stock"),
                                  p.get("permalink")))
         if len(items) < 100:
             break
@@ -193,15 +225,17 @@ async def fetch_rest_v3(http, base: str, currency: str) -> list[dict]:
                            params={"per_page": 100, "page": page, "status": "publish"})
         for p in items:
             extra = " ".join(x.get("name", "") for x in p.get("categories") or []) + " " + p.get("name", "")
+            common = [(a.get("name", ""), "، ".join(a.get("options") or [])) for a in p.get("attributes") or []
+                      if not a.get("variation")] + desc_attrs(p.get("short_description", ""), p.get("description", ""))
             if p.get("type") == "variable":
                 vs = await _get(http, f"{base}/wp-json/wc/v3/products/{p['id']}/variations", auth=auth,
                                 params={"per_page": 100})
                 for v in vs:
                     attrs = [(a.get("name", ""), a.get("option", "")) for a in v.get("attributes") or []]
-                    rows.append(_row(p.get("name"), attrs, extra, price(v), v.get("stock_status") == "instock",
+                    rows.append(_row(p.get("name"), attrs + common, extra, price(v), v.get("stock_status") == "instock",
                                      v.get("permalink") or p.get("permalink")))
             else:
-                rows.append(_row(p.get("name"), [], extra, price(p), p.get("stock_status") == "instock",
+                rows.append(_row(p.get("name"), common, extra, price(p), p.get("stock_status") == "instock",
                                  p.get("permalink")))
         if len(items) < 100:
             break

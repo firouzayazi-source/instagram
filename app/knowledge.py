@@ -233,17 +233,20 @@ def import_products(c, text: str, replace: bool = False) -> int:
     return n
 
 
-def products_text(c, limit: int = 400) -> str:
-    # موجودها اول، تا اگر فهرست بلند بود، ناموجودها حذف شوند نه موجودها
-    rows = c.execute("SELECT * FROM products WHERE enabled=1 ORDER BY in_stock DESC, name, storage, condition").fetchall()
+def products_text(c, limit: int = 400, out_of_stock: int = 50) -> str:
+    # موجودها اول؛ از ناموجودها (مثلاً گوشی‌های فروخته‌شده‌ی سایت) فقط تازه‌ترین‌ها
+    rows = c.execute("SELECT * FROM products WHERE enabled=1 AND in_stock=1 ORDER BY name, storage, condition").fetchall()
+    rows += c.execute("SELECT * FROM products WHERE enabled=1 AND in_stock=0 ORDER BY updated_at DESC, id DESC LIMIT ?",
+                      (out_of_stock,)).fetchall()
+    total = c.execute("SELECT COUNT(*) FROM products WHERE enabled=1").fetchone()[0]
     lines = []
     for r in rows[:limit]:
         price = f"{r['price']:,} تومان" if r["price"] else "قیمت: استعلام"
         parts = [r["name"], r["storage"], r["color"], CONDITIONS.get(r["condition"], r["condition"]), price,
                  "موجود" if r["in_stock"] else "ناموجود", r["notes"], r["url"]]
         lines.append(" | ".join(p for p in parts if p))
-    if len(rows) > limit:
-        lines.append(f"(و {len(rows) - limit} مورد دیگر که اینجا نیامده)")
+    if total > len(lines):
+        lines.append(f"(و {total - len(lines)} مورد دیگر که اینجا نیامده؛ اگر مشتری محصولی خواست که در این فهرست نیست، ارجاع بده)")
     return "\n".join(lines)
 
 
