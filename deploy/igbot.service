@@ -4,14 +4,14 @@ After=network-online.target
 
 [Service]
 User=igbot
-WorkingDirectory=/opt/instagram-bot
-EnvironmentFile=/opt/instagram-bot/.env
-ExecStart=/opt/instagram-bot/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8010
+WorkingDirectory=/opt/igbot
+EnvironmentFile=/opt/igbot/.env
+ExecStart=/opt/igbot/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8011
 Restart=always
 RestartSec=3
 NoNewPrivileges=true
 ProtectSystem=strict
-ReadWritePaths=/opt/instagram-bot/data
+ReadWritePaths=/opt/igbot/data
 
 [Install]
 WantedBy=multi-user.target
