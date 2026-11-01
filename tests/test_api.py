@@ -65,8 +65,11 @@ def test_inbox_flow(client):
         db.add_event(c, "c:c100", "comment", COMMENT["entry"][0]["changes"][0]["value"])
         db.add_event(c, "m:mid1", "message", MESSAGE["entry"][0]["messaging"][0])
         import asyncio
-        for row in db.pending_events(c):
-            asyncio.get_event_loop().run_until_complete(worker.handle_event(client.ig, row, c))
+
+        async def run_all():
+            for row in db.pending_events(c):
+                await worker.handle_event(client.ig, row, c)
+        asyncio.run(run_all())
     cs = client.get("/api/comments", params={"filter": "unanswered"}).json()
     assert len(cs) == 1 and cs[0]["username"] == "x" and cs[0]["read"] == 0
     assert client.post("/api/comments/c100/reply", json={"text": "ممنون"}).json()["ok"]
