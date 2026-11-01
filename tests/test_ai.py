@@ -164,6 +164,20 @@ async def test_no_api_key_with_real_client(env):
         assert d.action == "error" and d.skip_reason == "no_api_key"
 
 
+# ---------- فروشندگی ----------
+
+def test_sales_rules_follow_settings(env):
+    with db.connect() as c:
+        ai.save_settings(c, {"cta": "خرید آنلاین از stland.ir", "ask_contact": True})
+        text = ai.build_system(c, ai.settings(c))[0]["text"]
+        assert "فروشنده‌ی باهوش" in text and "stland.ir" in text and "شماره‌ی تماس" in text and "لینکش" in text
+        ai.save_settings(c, {"upsell": False, "send_links": False})
+        text = ai.build_system(c, ai.settings(c))[0]["text"]
+        assert "لوازم جانبی مرتبط" not in text and "لینکش" not in text
+        ai.save_settings(c, {"sales_mode": False})
+        assert "فروشنده‌ی باهوش" not in ai.build_system(c, ai.settings(c))[0]["text"]
+
+
 # ---------- چند سرویس ----------
 
 def _openai_transport(responses, seen):
@@ -269,7 +283,7 @@ async def test_worker_ai_comment_and_handoff(env, monkeypatch):
         h = c.execute("SELECT * FROM handoffs").fetchone()
         assert h["status"] == "open" and h["comment_id"] == "c100" and h["reason"] == "قصد خرید"
         assert c.execute("SELECT status FROM ai_log").fetchone()[0] == "sent"
-    assert sent and sent[0][1] == "/#/ai/handoffs"
+    assert sent and sent[0][1] == "/#/ai/handoffs" and sent[0][0].startswith("🔥")
 
 
 @pytest.mark.asyncio

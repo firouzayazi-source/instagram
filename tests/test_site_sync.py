@@ -62,7 +62,7 @@ async def test_store_api_simple_and_variable(c):
     v512 = rows[("iPhone 15 Pro", "512GB")]
     assert v512["in_stock"] == 0 and "گارانتی" in v512["notes"]
     assert ("دستی", "") in rows   # محصول دستی می‌ماند
-    assert "https://shop.test/p/ip15" in knowledge.products_text(c)
+    assert "https://shop.test/?p=2" in knowledge.products_text(c) and v256["url"] == "https://shop.test/?p=2"
 
     # همگام‌سازی دوباره جایگزین می‌کند، تکرار نمی‌سازد
     await site_sync.sync(c, transport=transport(STORE))

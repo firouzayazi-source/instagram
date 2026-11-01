@@ -106,8 +106,10 @@ async def handle_ai(ig, row, c, payload, inc: Incoming) -> str:
     if d.action == "handoff":
         ai.create_handoff(c, d, channel=inc.channel, user_id=inc.user_id, username=username, text=inc.text,
                           comment_id=payload.get("id") if inc.channel == "comment" else None)
-        asyncio.create_task(push.notify_all(
-            "نیاز به پاسخ شما 🙋", f"{username or inc.user_id}: {inc.text[:80]}", "/#/ai/handoffs"))
+        title = "🔥 مشتری آماده‌ی خرید" if d.intent == "purchase" else (
+            "⚠️ شکایت مشتری" if d.intent == "complaint" else "نیاز به پاسخ شما 🙋")
+        body = f"{username or inc.user_id}: {d.handoff_reason or inc.text}"[:160]
+        asyncio.create_task(push.notify_all(title, body, "/#/ai/handoffs"))
     return "done"
 
 

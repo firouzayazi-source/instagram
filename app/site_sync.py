@@ -169,6 +169,11 @@ def _row(name, attrs, extra, price, in_stock, url) -> dict:
             "url": url or ""}
 
 
+def _short(base: str, p: dict) -> str:
+    """لینک کوتاه وردپرس (‎?p=شناسه) که به صفحه‌ی محصول می‌رود؛ لینک اصلی با نامک فارسی در دایرکت خیلی بلند می‌شود."""
+    return f"{base}/?p={p['id']}" if p.get("id") else (p.get("permalink") or "")
+
+
 # ---------- Store API (عمومی) ----------
 
 def _store_price(p: dict, currency: str) -> int | None:
@@ -201,7 +206,7 @@ async def fetch_store_api(http, base: str, currency: str) -> list[dict]:
                     var_jobs.append((p, v["id"], attrs + common, extra))
             else:
                 rows.append(_row(p.get("name"), common, extra, _store_price(p, currency), p.get("is_in_stock"),
-                                 p.get("permalink")))
+                                 _short(base, p)))
         if len(items) < 100:
             break
     if len(var_jobs) > MAX_VARIATIONS:
@@ -213,7 +218,7 @@ async def fetch_store_api(http, base: str, currency: str) -> list[dict]:
         async with sem:
             v = await _get(http, f"{base}/wp-json/wc/store/v1/products/{vid}")
         return _row(parent.get("name"), attrs, extra, _store_price(v, currency), v.get("is_in_stock"),
-                    v.get("permalink") or parent.get("permalink"))
+                    _short(base, parent))
     rows += await asyncio.gather(*(one(j) for j in var_jobs))
     return rows
 
@@ -244,10 +249,10 @@ async def fetch_rest_v3(http, base: str, currency: str) -> list[dict]:
                 for v in vs:
                     attrs = [(a.get("name", ""), a.get("option", "")) for a in v.get("attributes") or []]
                     rows.append(_row(p.get("name"), attrs + common, extra, price(v), v.get("stock_status") == "instock",
-                                     v.get("permalink") or p.get("permalink")))
+                                     _short(base, p)))
             else:
                 rows.append(_row(p.get("name"), common, extra, price(p), p.get("stock_status") == "instock",
-                                 p.get("permalink")))
+                                 _short(base, p)))
         if len(items) < 100:
             break
     return rows

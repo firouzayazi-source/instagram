@@ -309,6 +309,23 @@ function Settings() {
       </section>
 
       <section className="card">
+        <h2>فروشندگی</h2>
+        <p className="muted">ربات مثل یک فروشنده‌ی زبل رفتار کند: جواب دقیق، پیشنهاد جایگزین وقتی محصول نیست، سؤال برای فهم نیاز مشتری، و دعوت به خرید. همه‌چیز فقط از روی فهرست محصول و اطلاعات شما.</p>
+        <label className="check"><input type="checkbox" checked={s.sales_mode} onChange={(e) => set({ sales_mode: e.target.checked })} /> حالت فروشنده روشن باشد</label>
+        {s.sales_mode && (
+          <>
+            <label className="check"><input type="checkbox" checked={s.send_links} onChange={(e) => set({ send_links: e.target.checked })} /> لینک محصول سایت را در دایرکت بفرستد</label>
+            <label className="check"><input type="checkbox" checked={s.upsell} onChange={(e) => set({ upsell: e.target.checked })} /> به خریدار گوشی، یک لوازم جانبی موجود (کابل، شارژر…) پیشنهاد بدهد</label>
+            <label className="check"><input type="checkbox" checked={s.ask_contact} onChange={(e) => set({ ask_contact: e.target.checked })} /> برای سفارش قطعی، شماره‌ی تماس مشتری را بخواهد</label>
+            <div className="field">
+              <label>راه خرید (در دعوت به خرید گفته می‌شود)</label>
+              <input type="text" value={s.cta} placeholder="مثلاً: خرید آنلاین از stland.ir یا حضوری در فروشگاه، هماهنگی در دایرکت" onChange={(e) => set({ cta: e.target.value })} />
+            </div>
+          </>
+        )}
+      </section>
+
+      <section className="card">
         <h2>کامنت‌ها</h2>
         <label className="check"><input type="radio" checked={s.comment_mode === 'dm_and_public'} onChange={() => set({ comment_mode: 'dm_and_public' })} /> جواب کامل در دایرکت، و یک متن کوتاه عمومی زیر کامنت (پیشنهادی)</label>
         <label className="check"><input type="radio" checked={s.comment_mode === 'public_only'} onChange={() => set({ comment_mode: 'public_only' })} /> فقط جواب عمومی زیر کامنت</label>
@@ -547,11 +564,12 @@ function Products() {
   const [items, setItems] = useState([])
   const [edit, setEdit] = useState(null)
   const [q, setQ] = useState('')
+  const [onlyStock, setOnlyStock] = useState(false)
   const [imp, setImp] = useState(null)
   const [msg, setMsg] = useState(null)
   const load = () => api.get('/api/ai/products').then(setItems).catch(() => {})
   useEffect(() => { load() }, [])
-  const shown = useMemo(() => items.filter((p) => !q || `${p.name} ${p.storage} ${p.color} ${p.notes}`.toLowerCase().includes(q.toLowerCase())), [items, q])
+  const shown = useMemo(() => items.filter((p) => (!onlyStock || p.in_stock) && (!q || `${p.name} ${p.storage} ${p.color} ${p.notes}`.toLowerCase().includes(q.toLowerCase()))), [items, q, onlyStock])
 
   async function save(e) {
     e.preventDefault(); setMsg(null)
@@ -611,6 +629,7 @@ function Products() {
           <button className="btn primary" onClick={() => setEdit(EMPTY_P)}>+ محصول</button>
           <button className="btn" onClick={() => setImp({ text: '', replace: false })}>وارد کردن از اکسل</button>
           <input type="text" style={{ flex: 1, minWidth: 140 }} placeholder="جست‌وجو…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <button type="button" className={`chip ${onlyStock ? 'active' : ''}`} onClick={() => setOnlyStock(!onlyStock)}>فقط موجود</button>
         </div>
       )}
       {!items.length && !edit && !imp && <div className="empty">فهرست محصول خالی است</div>}
