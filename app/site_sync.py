@@ -139,6 +139,8 @@ def _classify(attrs: list[tuple[str, str]], extra: str) -> dict:
             out["color"] = v
         elif any(w in n for w in ("وضعیت", "condition", "نوع کالا", "کیفیت")):
             out["condition"] = out["condition"] or v
+        elif any(w in n for w in ("برند", "brand", "مدل", "model")) and normalize(v) in normalize(extra):
+            continue   # تکرار نام محصول
         elif n not in seen:
             seen.add(n)
             out["notes"].append(f"{_text(name)}: {v}")
