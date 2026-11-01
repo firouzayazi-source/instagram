@@ -1,0 +1,5 @@
+python-telegram-bot==22.7
+aiosqlite==0.20.0
+aiofiles==24.1.0
+jdatetime==5.0.0
+pytz==2024.2

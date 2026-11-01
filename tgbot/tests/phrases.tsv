@@ -1,0 +1,104 @@
+# جمله<TAB>مسیر مورد انتظار (چند مسیر با |). ! اول خط = شکست شناخته‌شده. راهنما: tools/answer_check.py
+
+# ── جمله‌های نمونه‌ی خود نیت‌ها
+قیمت گوشیاتون چنده	i_price|catalog
+لیست قیمتتون رو بفرستید	i_price|catalog
+قیمت امروز چنده	i_price|catalog
+الان موجود دارید	i_stock|catalog
+این مدل رو دارید	i_stock|catalog
+چه گوشی هایی دارید	i_products
+چیا میفروشید	i_products
+فقط ایفون دارید	i_products
+ایپد دارید	i_other
+قیمت مکبوک چنده	i_other
+ایرپاد پرو دارید	i_other
+گوشیاتون نو هستن	i_condition
+استوک تمیز دارید	i_condition
+فرق اک با استوک چیه	i_condition
+ایفوناتون رجیستر شدن	i_registry
+رجیستر نشده دارید	i_registry
+با چک میشه خرید	i_install
+شرایط قسطی چطوره	i_install
+طلا میگیرید	i_install
+چطوری پول رو بدم	i_payment
+با کارت میشه حساب کرد	i_payment
+گوشیاتون گارانتی دارن	i_warranty
+کارکرده ها ضمانت دارن	i_warranty
+اگه خراب بود میتونم پس بدم	i_return
+چند روز وقت دارم تست کنم	i_return
+به شهرستان هم میفرستید	i_shipping
+برای تهران میفرستید	i_shipping
+میتونید بفرستید برام	i_shipping
+گوشی خودمو بیارم شما میخرید	i_tradein
+گوشی قدیمیمو میخرید	i_tradein
+گوشیمو با ایفون جدید عوض میکنید	i_tradein
+اپل ایدی میسازید	i_software
+برنامه نصب میکنید	i_software
+اطلاعات گوشی قبلیمو منتقل میکنید	i_software
+استوک لند چیه	i_about
+شما کی هستید	i_about
+چیکار میکنید	i_about
+کارتون چیه	i_about
+۱۳ با ۱۴ چه فرقی داره	i_compare
+کدوم بهتره ۱۳ پرو یا ۱۴	i_compare
+دوربین ۱۵ پرو چطوره	i_specs
+۱۶ پرو مکس چند اینچه	i_specs
+با این بودجه چی پیشنهاد میدید	i_advisor
+یه گوشی خوب میخوام	i_advisor
+کمکم کنید انتخاب کنم	i_advisor
+چه کارایی میتونی انجام بدی	i_help
+چه سوالایی میشه ازت پرسید	i_help
+چطوری باهات کار کنم	i_help
+میخوام با یکی حرف بزنم	i_human
+یکی جواب بده	i_human
+با خود فروشنده کار دارم	i_human
+
+# ── لیست و جستجوی کالا
+لیست	catalog
+چی دارید؟	catalog
+لیست قیمت	catalog
+قیمت ۱۳ پرو چنده؟	catalog
+ایفون ۱۳ ۲۵۶ دارید؟	catalog
+۱۳ پرو مشکی زیر ۲۰۰ میلیون	catalog
+گوشی زیر ۱۵۰ میلیون	catalog
+ارزون‌ترین آیفون کارکرده	catalog
+گرونترین گوشی‌هاتون	catalog
+آیفون نو چی دارید	catalog
+شارژر دارید؟	catalog
+گلس ۱۳ دارید	catalog
+لوازم جانبی دارید؟	catalog
+باتری بالای ۹۰ کارکرده	catalog
+پرمکس سفید	catalog
+ایفون 16e دارید؟	catalog
+موجودیاتون رو بفرستید	catalog
+
+# ── حرف روزمره
+سلام	smalltalk
+سلام خسته نباشید	smalltalk
+مرسی	smalltalk
+خداحافظ	smalltalk
+
+# ── سپردن به همکار
+میخوام با یه آدم صحبت کنم	i_human|human
+چرا جواب نمیدید؟	human
+خیلی بدقول هستید شکایت دارم	human
+
+# ── شکست‌های گذشته که درست شده‌اند (برگشت نکنند)
+چجوری بیام فروشگاه	i_address
+ممنون از راهنماییتون	smalltalk
+مرسی بابت پیگیری	smalltalk
+
+# ── دور ۱ از پیام‌های واقعی (۱۰ آبان ۱۴۰۵)
+یه ۱۳ نرمال میخوام	catalog
+۱۶ پرومکس دارین؟	catalog
+گوشی چی داری	catalog
+قیمت؟	catalog|i_price
+آفرین بهت	smalltalk
+دسخوش	smalltalk
+دوستت دارم	smalltalk
+ایول خیلی خوب بود	smalltalk
+میخوام ۱۳ پرومو بفروشم	i_tradein|dym
+میخوام با همکار صحبت کنم	i_human|human
+کی وناو لیوان	unknown
+چی شده	unknown|dym
+شبی چند؟	dym|unknown
