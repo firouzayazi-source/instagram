@@ -15,6 +15,7 @@ class Incoming:
     text: str
     media_id: str | None = None   # فقط برای کامنت
     is_follower: bool | None = None
+    source: str = ""      # دایرکت: story_reply (جواب به استوری) | mention (منشن در استوری) | icebreaker | ""
 
 
 def trigger_matches(trigger: dict, text_norm: str) -> bool:
@@ -40,7 +41,14 @@ def trigger_matches(trigger: dict, text_norm: str) -> bool:
 
 def rule_matches(rule: dict, inc: Incoming, last_hit_at: float | None, now: float | None = None) -> bool:
     now = now or time.time()
-    if inc.channel not in rule["channels"]:
+    chs = rule["channels"]
+    if inc.source == "mention":                 # منشن متن ندارد؛ فقط دستورهای مخصوص منشن
+        if "mention" not in chs:
+            return False
+    elif inc.source == "story_reply":           # جواب به استوری هم دایرکت است
+        if "story_reply" not in chs and "dm" not in chs:
+            return False
+    elif inc.channel not in chs:
         return False
     scope = rule["post_scope"]
     if inc.channel == "comment" and scope != "all" and inc.media_id not in scope:

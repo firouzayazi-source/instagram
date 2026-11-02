@@ -32,7 +32,8 @@ export default function RuleForm({ id }) {
   const set = (patch) => setR((x) => ({ ...x, ...patch }))
   const setAdv = (patch) => set({ advanced: { ...r.advanced, ...patch } })
   const setReplies = (k, list) => set({ actions: { ...r.actions, [k]: list } })
-  const hasC = r.channels.includes('comment'), hasD = r.channels.includes('dm')
+  // جواب استوری و منشن هم در دایرکت فرستاده می‌شود
+  const hasC = r.channels.includes('comment'), hasD = ['dm', 'story_reply', 'mention'].some((c) => r.channels.includes(c))
 
   function toggleChannel(c) {
     set({ channels: r.channels.includes(c) ? r.channels.filter((x) => x !== c) : [...r.channels, c] })
@@ -50,7 +51,8 @@ export default function RuleForm({ id }) {
     const body = {
       ...r, advanced: adv,
       triggers: r.triggers.filter((t) => t.match === 'any' || t.value.trim()),
-      actions: { public_replies: hasC ? clean(r.actions.public_replies) : [], private_replies: hasC ? clean(r.actions.private_replies) : [], dm_replies: hasD ? clean(r.actions.dm_replies) : [] },
+      actions: { public_replies: hasC ? clean(r.actions.public_replies) : [], private_replies: hasC ? clean(r.actions.private_replies) : [], dm_replies: hasD ? clean(r.actions.dm_replies) : [],
+                 quick_replies: hasD ? clean(r.actions.quick_replies || []).map((t) => t.slice(0, 20)).slice(0, 13) : [] },
     }
     delete body.id; delete body.use_count
     try {
@@ -74,7 +76,9 @@ export default function RuleForm({ id }) {
         <div className="field">
           <label>محل دریافت پیام</label>
           <label className="check"><input type="checkbox" checked={hasC} onChange={() => toggleChannel('comment')} /> کامنت پست</label>
-          <label className="check"><input type="checkbox" checked={hasD} onChange={() => toggleChannel('dm')} /> دایرکت</label>
+          <label className="check"><input type="checkbox" checked={r.channels.includes('dm')} onChange={() => toggleChannel('dm')} /> دایرکت</label>
+          <label className="check"><input type="checkbox" checked={r.channels.includes('story_reply')} onChange={() => toggleChannel('story_reply')} /> جواب به استوری (بدون تیک «دایرکت»، فقط پیام‌هایی که جواب استوری‌اند)</label>
+          <label className="check"><input type="checkbox" checked={r.channels.includes('mention')} onChange={() => toggleChannel('mention')} /> منشن در استوری (متن ندارد؛ عبارت شروع را «هر مقداری» بگذارید)</label>
         </div>
       </section>
 
@@ -104,6 +108,12 @@ export default function RuleForm({ id }) {
         {hasC && <ReplyList label="دایرکت خصوصی به کامنت‌گذار" list={r.actions.private_replies} saved={saved} onChange={(l) => setReplies('private_replies', l)} />}
         {hasC && <ReplyList label="پاسخ عمومی زیر کامنت" list={r.actions.public_replies} saved={saved} onChange={(l) => setReplies('public_replies', l)} />}
         {hasD && <ReplyList label="پاسخ دایرکت" list={r.actions.dm_replies} saved={saved} onChange={(l) => setReplies('dm_replies', l)} />}
+        {hasD && (
+          <div className="field">
+            <label>دکمه‌های پاسخ سریع زیر پاسخ دایرکت (اختیاری، هر خط یکی، تا ۱۳ دکمه و هر کدام ۲۰ نویسه)</label>
+            <textarea rows={3} value={(r.actions.quick_replies || []).join('\n')} placeholder={'📄 مدارک لازم\n🙋 صحبت با همکار'} onChange={(e) => setReplies('quick_replies', e.target.value.split('\n'))} />
+          </div>
+        )}
       </section>
 
       <section className="card">

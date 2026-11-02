@@ -200,6 +200,23 @@ CREATE TABLE IF NOT EXISTS handoffs (
   resolved_at REAL
 );
 CREATE INDEX IF NOT EXISTS handoffs_status ON handoffs(status, created_at DESC);
+
+-- پرونده‌ی مشتری (CRM): هر نفر در هر کانال یک پرونده
+CREATE TABLE IF NOT EXISTS customers (
+  id TEXT PRIMARY KEY,                 -- کانال:شناسه، مثل ig:1789...
+  channel TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  username TEXT,
+  name TEXT NOT NULL DEFAULT '',
+  phone TEXT NOT NULL DEFAULT '',
+  tags TEXT NOT NULL DEFAULT '[]',
+  notes TEXT NOT NULL DEFAULT '',
+  first_seen REAL NOT NULL,
+  last_seen REAL NOT NULL,
+  messages INTEGER NOT NULL DEFAULT 0,
+  comments INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS customers_last ON customers(last_seen DESC);
 """
 
 
@@ -214,6 +231,7 @@ def init(path: str | None = None) -> None:
 # ستون‌هایی که بعد از ساخت جدول اضافه شده‌اند؛ پایگاه داده‌ی قدیمی بی‌خطر ارتقا می‌یابد
 _COLUMNS = {
     "products": {"source": "TEXT NOT NULL DEFAULT ''", "url": "TEXT NOT NULL DEFAULT ''"},
+    "comments": {"hidden": "INTEGER NOT NULL DEFAULT 0", "hidden_reason": "TEXT NOT NULL DEFAULT ''"},
 }
 
 
@@ -493,3 +511,8 @@ def kv_set(c: sqlite3.Connection, key: str, value: str) -> None:
         "INSERT INTO kv(key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
         (key, value),
     )
+
+
+def is_first_message(c, user_id: str) -> bool:
+    """اولین پیام ورودی این کاربر همین الان ثبت شده؟ (برای پیام خوش‌آمد)"""
+    return c.execute("SELECT COUNT(*) FROM messages WHERE user_id=? AND direction='in'", (user_id,)).fetchone()[0] == 1

@@ -36,7 +36,20 @@ DEFAULTS = {
     "history_messages": 10,
     "monthly_budget_usd": 30.0,
     "brain_enabled": False,
-    "telegram_ai": True,         # هوش مصنوعی مرکزی برای پیام‌هایی که موتور فهم تلگرام نفهمید (اگر هوش مصنوعی روشن باشد)      # موتور فهم مشترک با تلگرام (رایگان، بدون API) پیش از هوش مصنوعی
+    "telegram_ai": True,
+    # اینستاگرام: دایرکت
+    "welcome_text": "",          # پیام خوش‌آمد برای اولین دایرکت هر مشتری (خالی = خاموش)
+    "quick_replies_enabled": False,
+    "dm_quick_replies": ["💰 قیمت‌ها", "💳 شرایط اقساط", "📍 آدرس فروشگاه", "🙋 صحبت با همکار"],
+    "typing_indicator": True,    # «دیده شد» و «در حال نوشتن…» پیش از جواب
+    "ice_breakers": ["قیمت گوشی‌ها چنده؟", "شرایط اقساط چیه؟", "آدرس فروشگاه کجاست؟", "گارانتی دارید؟"],
+    # اینستاگرام: استوری
+    "mention_reply_enabled": False,
+    "mention_replies": ["مرسی که منشنمون کردی 🙏❤️", "ممنون از منشنت 🌸 اگه سؤالی داری همین‌جا بپرس"],
+    # اینستاگرام: نظارت کامنت
+    "mod_profanity": True,
+    "mod_links": False,
+    "mod_words": [],         # هوش مصنوعی مرکزی برای پیام‌هایی که موتور فهم تلگرام نفهمید (اگر هوش مصنوعی روشن باشد)      # موتور فهم مشترک با تلگرام (رایگان، بدون API) پیش از هوش مصنوعی
     # فروشندگی
     "sales_mode": True,          # مثل فروشنده: پیشنهاد جایگزین، سؤال برای فهم نیاز، دعوت به خرید
     "send_links": True,          # لینک محصول سایت را در دایرکت بفرستد
@@ -144,8 +157,18 @@ def save_settings(c, patch: dict) -> dict:
             v = bool(v)
         if k == "cta":
             v = str(v or "").strip()[:500]
-        if k == "public_ack":
+        if k in ("public_ack", "mention_replies"):
             v = [t.strip() for t in v if t and t.strip()][:10]
+        if k == "dm_quick_replies":
+            v = [t.strip()[:20] for t in v if t and t.strip()][:13]
+        if k == "ice_breakers":
+            v = [t.strip()[:80] for t in v if t and t.strip()][:4]
+        if k == "mod_words":
+            v = [t.strip()[:50] for t in v if t and t.strip()][:200]
+        if k == "welcome_text":
+            v = str(v or "").strip()[:900]
+        if k in ("quick_replies_enabled", "typing_indicator", "mention_reply_enabled", "mod_profanity", "mod_links"):
+            v = bool(v)
         cur[k] = v
     db.kv_set(c, "ai_settings", json.dumps(cur, ensure_ascii=False))
     return settings(c)
@@ -377,7 +400,7 @@ def build_system(c, s: dict) -> list:
     return [{"type": "text", "text": rules + "\n\n" + "\n\n".join(extra), "cache_control": {"type": "ephemeral"}}]
 
 
-def build_messages(c, s: dict, channel: str, text: str, user_id: str, username: str | None) -> list:
+def build_messages(c, s: dict, channel: str, text: str, user_id: str, username: str | None, note: str = "") -> list:
     parts = []
     chunks = knowledge.relevant_chunks(c, text)
     if chunks:
@@ -389,13 +412,15 @@ def build_messages(c, s: dict, channel: str, text: str, user_id: str, username: 
         hist = c.execute("SELECT direction, text FROM messages WHERE user_id=? ORDER BY created_at DESC LIMIT ?",
                          (user_id, s["history_messages"] + 1)).fetchall()[::-1]
         # پیام فعلی آخرین پیام ورودی است؛ از سابقه حذفش می‌کنیم تا تکرار نشود
-        if hist and hist[-1]["direction"] == "in" and hist[-1]["text"] == text:
+        if hist and hist[-1]["direction"] == "in" and text in hist[-1]["text"]:
             hist = hist[:-1]
         if hist:
             lines = [f"{'مشتری' if h['direction'] == 'in' else 'پیج'}: {h['text']}" for h in hist[-s['history_messages']:]]
             parts.append("## گفتگوی قبلی با همین مشتری\n" + "\n".join(lines))
     where = {"comment": "کامنت زیر پست اینستاگرام", "dm": "دایرکت اینستاگرام", "telegram": "پیام تلگرام"}.get(channel, channel)
     who = f" از @{username}" if username else ""
+    if note:
+        parts.append(f"## زمینه\n{note}")
     parts.append(f"## پیام جدید ({where}{who})\n<message>\n{text}\n</message>")
     return [{"role": "user", "content": "\n\n".join(parts)}]
 
@@ -437,7 +462,7 @@ def _log(c, d: Decision, *, event_id, channel, user_id, username, text, model=""
 
 async def decide(c, *, channel: str, text: str, user_id: str, username: str | None = None,
                  event_id: str | None = None, is_test: bool = False, s: dict | None = None,
-                 skip_brain: bool = False) -> Decision:
+                 skip_brain: bool = False, note: str = "") -> Decision:
     """channel: comment | dm (اینستاگرام) | telegram. skip_brain برای کانالی که موتور فهم را خودش اجرا کرده."""
     s = s or settings(c)
     ctx = dict(event_id=event_id, channel=channel, user_id=user_id, username=username, text=text, is_test=is_test)
@@ -473,7 +498,7 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
     attempts = [(s["provider"], s["model"])]
     if s["fallback_provider"]:
         attempts.append((s["fallback_provider"], s["fallback_model"]))
-    system, messages = build_system(c, s), build_messages(c, s, channel, text, user_id, username)
+    system, messages = build_system(c, s), build_messages(c, s, channel, text, user_id, username, note)
     errors, missing, result = [], 0, None
     for prov, mdl in attempts:
         if not _usable(prov):

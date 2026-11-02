@@ -6,6 +6,7 @@ export default function InboxChips({ cur }) {
     <div className="chips">
       <a href="#/comments" className={`chip ${cur === 'comments' ? 'active' : ''}`}>کامنت‌های اینستاگرام</a>
       <a href="#/messages" className={`chip ${cur === 'messages' ? 'active' : ''}`}>دایرکت اینستاگرام</a>
+      <a href="#/customers" className={`chip ${cur === 'customers' ? 'active' : ''}`}>مشتری‌ها</a>
     </div>
   )
 }

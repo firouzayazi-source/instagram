@@ -11,7 +11,7 @@ const SUBS = [
   ['log', 'لاگ پاسخ‌ها'],
 ]
 // تنظیم‌های مخصوص اینستاگرام که در «کانال‌ها ← اینستاگرام» ویرایش می‌شوند؛ صفحه‌ی مغز مرکزی آن‌ها را نمی‌فرستد
-const IG_KEYS = ['telegram_ai', 'dm_enabled', 'comment_enabled', 'comment_mode', 'public_ack', 'public_prices', 'prompt_dm', 'prompt_comment']
+const IG_KEYS = ['telegram_ai', 'welcome_text', 'quick_replies_enabled', 'dm_quick_replies', 'typing_indicator', 'ice_breakers', 'mention_reply_enabled', 'mention_replies', 'mod_profanity', 'mod_links', 'mod_words', 'dm_enabled', 'comment_enabled', 'comment_mode', 'public_ack', 'public_prices', 'prompt_dm', 'prompt_comment']
 const ACTION_FA = { reply: 'پاسخ داد', handoff: 'ارجاع', ignore: 'نادیده', skip: 'رد شد', error: 'خطا' }
 const ACTION_CLS = { reply: 'good', handoff: 'warn', ignore: 'muted', skip: 'muted', error: 'bad' }
 const SKIP_FA = { emoji: 'فقط ایموجی', budget: 'سقف بودجه', disabled: 'خاموش', channel_disabled: 'کانال خاموش', no_api_key: 'کلید API ندارد' }

@@ -48,13 +48,36 @@ class Instagram:
         )
         return d.get("message_id", "")
 
-    async def send_dm(self, recipient_id: str, text: str) -> str:
-        """پاسخ دایرکت؛ تا ۲۴ ساعت بعد از آخرین پیام کاربر مجاز است."""
-        d = await self._post(
-            f"{self.user_id}/messages",
-            json={"recipient": {"id": recipient_id}, "message": {"text": text}},
-        )
+    async def send_dm(self, recipient_id: str, text: str, quick_replies: list[str] | None = None) -> str:
+        """پاسخ دایرکت؛ تا ۲۴ ساعت بعد از آخرین پیام کاربر مجاز است.
+        quick_replies: دکمه‌های پاسخ سریع زیر پیام (حداکثر ۱۳، هر کدام تا ۲۰ نویسه)؛ لمسش همان متن را می‌فرستد."""
+        message = {"text": text}
+        if quick_replies:
+            message["quick_replies"] = [{"content_type": "text", "title": t[:20], "payload": t[:20]}
+                                        for t in quick_replies[:13]]
+        d = await self._post(f"{self.user_id}/messages", json={"recipient": {"id": recipient_id}, "message": message})
         return d.get("message_id", "")
+
+    async def sender_action(self, recipient_id: str, action: str) -> None:
+        """typing_on (در حال نوشتن) یا mark_seen (دیده شد)."""
+        await self._post(f"{self.user_id}/messages", json={"recipient": {"id": recipient_id}, "sender_action": action})
+
+    async def hide_comment(self, comment_id: str, hide: bool = True) -> None:
+        """مخفی کردن کامنت روی پست خود پیج (فقط برای کامنت‌گذار و دوستانش دیده می‌شود؛ برگشت‌پذیر)."""
+        await self._post(comment_id, data={"hide": "true" if hide else "false"})
+
+    async def set_ice_breakers(self, questions: list[str]) -> None:
+        """سؤال‌های آماده‌ی شروع گفتگو (حداکثر ۴). فهرست خالی یعنی حذف."""
+        if not questions:
+            r = await self.http.request("DELETE", f"{self.base}/{self.user_id}/messenger_profile",
+                                        params={"access_token": self.token}, json={"fields": ["ice_breakers"]})
+            if r.status_code >= 400:
+                raise RuntimeError(f"IG {r.status_code}: {r.text[:300]}")
+            return
+        await self._post(f"{self.user_id}/messenger_profile", json={
+            "platform": "instagram",
+            "ice_breakers": [{"locale": "default",
+                              "call_to_actions": [{"question": q[:80], "payload": q[:80]} for q in questions[:4]]}]})
 
     async def is_follower(self, igsid: str) -> bool | None:
         try:

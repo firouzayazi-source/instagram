@@ -4,7 +4,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 
-from . import ai, auth, channels, config, db
+from . import ai, auth, channels, config, crm, db
 from .importer import validate
 from .rules import Incoming, find_rule
 
@@ -96,6 +96,19 @@ async def comment_reply(cid: str, body: Text, request: Request):
 async def comment_private(cid: str, body: Text, request: Request):
     """دایرکت خصوصی دستی به کامنت‌گذار."""
     return await _send(request, "private", cid, body.text)
+
+
+@protected.post("/comments/{cid}/hide")
+async def comment_hide(cid: str, request: Request, body: dict | None = None):
+    """مخفی کردن یا برگرداندن کامنت در خود اینستاگرام. body: {"hide": true|false}"""
+    hide = bool((body or {}).get("hide", True))
+    try:
+        await ig(request).hide_comment(cid, hide)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(502, f"اینستاگرام قبول نکرد: {str(e)[:200]}")
+    with db.connect() as c:
+        c.execute("UPDATE comments SET hidden=?, hidden_reason=? WHERE id=?", (int(hide), "دستی" if hide else "", cid))
+    return {"ok": True, "hidden": hide}
 
 
 # ---------- دایرکت ----------
@@ -289,3 +302,46 @@ def channels_set(ch: str, body: dict):
         raise HTTPException(422, str(e))
     with db.connect() as c:
         return next(x for x in channels.describe(c) if x["id"] == ch)
+
+
+# ---------- اینستاگرام: سؤال‌های شروع گفتگو ----------
+
+@protected.post("/instagram/ice-breakers")
+async def ice_breakers_apply(request: Request, body: dict):
+    """ذخیره و ثبت در اینستاگرام. فهرست خالی یعنی برداشتن."""
+    with db.connect() as c:
+        s = ai.save_settings(c, {"ice_breakers": body.get("questions") or []})
+    if not (config.IG_ACCESS_TOKEN and config.IG_USER_ID):
+        raise HTTPException(409, "ذخیره شد، ولی اینستاگرام هنوز وصل نیست؛ بعد از اتصال دوباره «ثبت در اینستاگرام» را بزنید")
+    try:
+        await ig(request).set_ice_breakers(s["ice_breakers"])
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(502, f"اینستاگرام قبول نکرد: {str(e)[:200]}")
+    return {"ok": True, "questions": s["ice_breakers"]}
+
+
+# ---------- پرونده‌ی مشتری ----------
+
+@protected.get("/customers")
+def customers_list(q: str = "", tag: str = ""):
+    with db.connect() as c:
+        return {"items": crm.search(c, q, tag), "tags": crm.all_tags(c)}
+
+
+@protected.get("/customers/{key}")
+def customer_get(key: str):
+    with db.connect() as c:
+        d = crm.get(c, key)
+        if not d:
+            raise HTTPException(404)
+        d["blocked"] = bool(c.execute("SELECT 1 FROM blocked_users WHERE user_id=?", (d["user_id"],)).fetchone())
+        return d
+
+
+@protected.put("/customers/{key}")
+def customer_put(key: str, body: dict):
+    with db.connect() as c:
+        try:
+            return crm.update(c, key, body)
+        except ValueError as e:
+            raise HTTPException(422, str(e))

@@ -5,7 +5,7 @@ import { Blocked, Msg } from './Ai.jsx'
 
 // هر کانال قابلیت‌های خودش را دارد؛ هسته‌ی مرکزی (مغز، دانش، هوش مصنوعی) مشترک است
 const SUBS = {
-  instagram: [['connect', 'اتصال و وضعیت'], ['dm', 'دایرکت'], ['comment', 'کامنت'], ['rules', 'دستورها'], ['blocked', 'مسدودها']],
+  instagram: [['connect', 'اتصال و وضعیت'], ['dm', 'دایرکت'], ['comment', 'کامنت'], ['story', 'استوری'], ['rules', 'دستورها'], ['blocked', 'مسدودها']],
   telegram: [['connect', 'اتصال و وضعیت']],
 }
 
@@ -136,7 +136,19 @@ function IgPart({ part }) {
   useEffect(() => { api.get('/api/ai/settings').then((r) => setS(r.settings)).catch(() => {}) }, [])
   if (!s) return <div className="empty">در حال بارگذاری…</div>
   const set = (patch) => setS({ ...s, ...patch })
-  const KEYS = part === 'dm' ? ['dm_enabled', 'prompt_dm'] : ['comment_enabled', 'comment_mode', 'public_ack', 'public_prices', 'prompt_comment']
+  const KEYS = {
+    dm: ['dm_enabled', 'prompt_dm', 'welcome_text', 'quick_replies_enabled', 'dm_quick_replies', 'typing_indicator'],
+    comment: ['comment_enabled', 'comment_mode', 'public_ack', 'public_prices', 'prompt_comment', 'mod_profanity', 'mod_links', 'mod_words'],
+    story: ['mention_reply_enabled', 'mention_replies'],
+  }[part]
+  const lines = (v) => (v || []).join('\n')
+  const split = (v) => v.split('\n')
+
+  async function applyIce() {
+    setMsg(null)
+    try { await api.post('/api/instagram/ice-breakers', { questions: (s.ice_breakers || []).filter((x) => x.trim()) }); setMsg({ ok: true, text: 'در اینستاگرام ثبت شد ✅' }) }
+    catch (ex) { setMsg({ ok: ex.status === 409, text: ex.message }) }
+  }
 
   async function save(e) {
     e.preventDefault(); setMsg(null)
@@ -157,6 +169,33 @@ function IgPart({ part }) {
             <label>دستورالعمل اختصاصی دایرکت (اختیاری، برای هوش مصنوعی)</label>
             <textarea value={s.prompt_dm} placeholder="مثلاً: همیشه آخر پیام بپرس مدل گوشی فعلی‌اش چیست." onChange={(e) => set({ prompt_dm: e.target.value })} />
           </div>
+          <label className="check"><input type="checkbox" checked={s.typing_indicator} onChange={(e) => set({ typing_indicator: e.target.checked })} /> پیش از جواب «دیده شد» و «در حال نوشتن…» نشان بدهد</label>
+        </section>
+      )}
+      {part === 'dm' && (
+        <section className="card">
+          <h2>پیام خوش‌آمد</h2>
+          <p className="muted">فقط برای اولین دایرکت هر مشتری، پیش از جواب اصلی. خالی یعنی خاموش.</p>
+          <textarea rows={3} value={s.welcome_text} placeholder="سلام، به استوک لند خوش اومدید 🌸 هر سؤالی دارید بپرسید؛ قیمت، اقساط، گارانتی…" onChange={(e) => set({ welcome_text: e.target.value })} />
+        </section>
+      )}
+      {part === 'dm' && (
+        <section className="card">
+          <h2>دکمه‌های پاسخ سریع</h2>
+          <label className="check"><input type="checkbox" checked={s.quick_replies_enabled} onChange={(e) => set({ quick_replies_enabled: e.target.checked })} /> زیر جواب‌های ربات دکمه نشان بدهد</label>
+          <div className="field">
+            <label>دکمه‌ها (هر خط یکی، حداکثر ۱۳، هر کدام تا ۲۰ نویسه)</label>
+            <textarea rows={4} value={lines(s.dm_quick_replies)} onChange={(e) => set({ dm_quick_replies: split(e.target.value) })} />
+            <p className="hint muted">لمس هر دکمه همان متن را از طرف مشتری می‌فرستد و ربات جوابش را می‌دهد. برای دستورهای کلمه‌ای، دکمه‌ی جدا در فرم همان دستور تعریف می‌شود.</p>
+          </div>
+        </section>
+      )}
+      {part === 'dm' && (
+        <section className="card">
+          <h2>سؤال‌های شروع گفتگو</h2>
+          <p className="muted">وقتی کسی برای اولین بار دایرکت پیج را باز می‌کند، این سؤال‌ها (حداکثر ۴) را می‌بیند و با یک لمس می‌پرسد.</p>
+          <textarea rows={4} value={lines(s.ice_breakers)} onChange={(e) => set({ ice_breakers: split(e.target.value) })} />
+          <button type="button" className="btn" style={{ marginTop: 6 }} onClick={applyIce}>ذخیره و ثبت در اینستاگرام</button>
         </section>
       )}
       {part === 'comment' && (
@@ -174,6 +213,36 @@ function IgPart({ part }) {
             <label>دستورالعمل اختصاصی کامنت (اختیاری، برای هوش مصنوعی)</label>
             <textarea value={s.prompt_comment} placeholder="مثلاً: زیر پست‌های آموزشی فقط تشکر کن." onChange={(e) => set({ prompt_comment: e.target.value })} />
           </div>
+        </section>
+      )}
+      {part === 'comment' && (
+        <section className="card">
+          <h2>نظارت خودکار کامنت</h2>
+          <p className="muted">کامنت مشکل‌دار مخفی می‌شود (فقط نویسنده و دوستانش می‌بینند) و جواب نمی‌گیرد. در «صندوق ← کامنت‌ها» با یک لمس برمی‌گردد.</p>
+          <label className="check"><input type="checkbox" checked={s.mod_profanity} onChange={(e) => set({ mod_profanity: e.target.checked })} /> کامنت توهین‌آمیز و فحش</label>
+          <label className="check"><input type="checkbox" checked={s.mod_links} onChange={(e) => set({ mod_links: e.target.checked })} /> کامنت دارای لینک یا آدرس سایت (تبلیغ پیج‌های دیگر)</label>
+          <div className="field">
+            <label>کلمه‌های ممنوع (هر خط یکی)</label>
+            <textarea rows={3} value={lines(s.mod_words)} placeholder={'نام پیج رقیب\nکلمه‌ی تبلیغاتی'} onChange={(e) => set({ mod_words: split(e.target.value) })} />
+          </div>
+        </section>
+      )}
+      {part === 'story' && (
+        <section className="card">
+          <h2>منشن در استوری</h2>
+          <p className="muted">وقتی کسی پیج را در استوری‌اش منشن کند.</p>
+          <label className="check"><input type="checkbox" checked={s.mention_reply_enabled} onChange={(e) => set({ mention_reply_enabled: e.target.checked })} /> در دایرکت تشکر کند</label>
+          <div className="field">
+            <label>متن‌های تشکر (هر خط یکی، به نوبت)</label>
+            <textarea rows={3} value={lines(s.mention_replies)} onChange={(e) => set({ mention_replies: split(e.target.value) })} />
+          </div>
+          <p className="hint muted">برای جواب متفاوت، در «دستورها» دستوری با محل دریافت «منشن در استوری» بسازید؛ دستور اولویت دارد.</p>
+        </section>
+      )}
+      {part === 'story' && (
+        <section className="card">
+          <h2>جواب به استوری</h2>
+          <p className="muted">وقتی مشتری روی یکی از استوری‌ها جواب می‌دهد، مثل دایرکت جواب داده می‌شود؛ مغز مرکزی می‌داند پیام درباره‌ی استوری است و اگر معلوم نباشد کدام محصول، می‌پرسد. دستور مخصوص هم با محل دریافت «جواب به استوری» ساخته می‌شود.</p>
         </section>
       )}
       <Msg m={msg} />
@@ -205,6 +274,7 @@ export default function Channels({ id, sub }) {
       {cur === 'connect' && <Connect id={id} />}
       {cur === 'dm' && <IgPart part="dm" />}
       {cur === 'comment' && <IgPart part="comment" />}
+      {cur === 'story' && <IgPart part="story" />}
       {cur === 'rules' && <Rules embedded />}
       {cur === 'blocked' && <Blocked />}
     </>

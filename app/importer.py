@@ -24,7 +24,7 @@ import sys
 from . import db
 from .rules import MATCHES
 
-CHANNELS = {"comment", "dm"}
+CHANNELS = {"comment", "dm", "story_reply", "mention"}
 
 
 def validate(rule: dict) -> list[str]:
@@ -32,13 +32,16 @@ def validate(rule: dict) -> list[str]:
     if not rule.get("name"):
         errs.append("name لازم است")
     if not set(rule.get("channels", [])) <= CHANNELS or not rule.get("channels"):
-        errs.append("channels باید زیرمجموعه‌ی comment/dm باشد")
+        errs.append("channels باید زیرمجموعه‌ی comment/dm/story_reply/mention باشد")
     for t in rule.get("triggers", []):
         if t.get("match", "any") not in MATCHES:
             errs.append(f"match نامعتبر: {t.get('match')}")
     acts = rule.get("actions", {})
     if not any(acts.get(k) for k in ("public_replies", "private_replies", "dm_replies")):
         errs.append("حداقل یک پیام پاسخ لازم است")
+    qr = acts.get("quick_replies", [])
+    if not isinstance(qr, list) or len(qr) > 13 or any(not isinstance(x, str) or len(x) > 20 for x in qr):
+        errs.append("quick_replies: حداکثر ۱۳ دکمه، هر کدام تا ۲۰ نویسه")
     return errs
 
 

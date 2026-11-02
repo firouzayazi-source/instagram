@@ -65,7 +65,7 @@ function Thread({ userId }) {
 
   return (
     <>
-      <header className="topbar"><h1>{name}</h1><span className="actions"><button className="btn sm danger" onClick={block}>مسدود</button><a href="#/messages" className="btn sm">بازگشت</a></span></header>
+      <header className="topbar"><h1>{name}</h1><span className="actions"><a href={`#/customers/ig:${userId}`} className="btn sm">پرونده</a><button className="btn sm danger" onClick={block}>مسدود</button><a href="#/messages" className="btn sm">بازگشت</a></span></header>
       <div className="thread">
         {msgs.map((m) => (
           <div key={m.id} className={`bubble ${m.direction}`}>{m.text}<span className="when">{timeAgo(m.created_at)}</span></div>

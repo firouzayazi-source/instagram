@@ -24,6 +24,9 @@ def extract_events(body: dict) -> list[tuple[str, str, dict]]:
             mid = m.get("message", {}).get("mid")
             if mid:
                 out.append((f"m:{mid}", "message", m))
+            elif (m.get("postback") or {}).get("mid"):
+                # لمس یکی از سؤال‌های آماده‌ی شروع گفتگو (Ice Breaker)
+                out.append((f"p:{m['postback']['mid']}", "postback", m))
     return out
 
 

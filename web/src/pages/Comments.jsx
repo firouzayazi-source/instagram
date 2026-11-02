@@ -31,6 +31,15 @@ export default function Comments() {
     finally { setBusy(false) }
   }
 
+  async function setHidden(c, hide) {
+    setBusy(true); setMsg('')
+    try {
+      await api.post(`/api/comments/${c.id}/hide`, { hide })
+      setMsg(hide ? 'کامنت مخفی شد ✅' : 'کامنت دوباره نمایش داده می‌شود ✅'); load()
+    } catch (e) { setMsg(e.message) }
+    finally { setBusy(false) }
+  }
+
   async function block(c) {
     if (!confirm(`ربات دیگر به ${c.username || c.user_id} جواب ندهد؟`)) return
     await api.post('/api/ai/blocked', { user_id: c.user_id, username: c.username, reason: 'از صفحه‌ی کامنت‌ها' })
@@ -47,7 +56,7 @@ export default function Comments() {
         {items.map((c) => (
           <div key={c.id} className={`item ${c.read ? '' : 'unread'}`} onClick={() => toggle(c)}>
             <div className="row">
-              <span className="who">{c.username || c.user_id} {c.answered ? <span className="pill good">پاسخ داده شد</span> : <span className="pill warn">بی‌پاسخ</span>}</span>
+              <span className="who">{c.username || c.user_id} {c.hidden ? <span className="pill muted">مخفی{c.hidden_reason ? `: ${c.hidden_reason}` : ''}</span> : c.answered ? <span className="pill good">پاسخ داده شد</span> : <span className="pill warn">بی‌پاسخ</span>}</span>
               <span className="when">{timeAgo(c.created_at)}</span>
             </div>
             <div className="text">{c.text}</div>
@@ -57,7 +66,9 @@ export default function Comments() {
                 <div className="actions">
                   <button className="btn primary" disabled={busy || !text.trim()} onClick={() => send('reply', c)}>پاسخ عمومی</button>
                   <button className="btn" disabled={busy || !text.trim()} onClick={() => send('private', c)}>دایرکت خصوصی</button>
+                  <button className="btn" disabled={busy} onClick={() => setHidden(c, !c.hidden)}>{c.hidden ? 'نمایش دوباره' : 'مخفی کردن'}</button>
                   <button className="btn danger" disabled={busy} onClick={() => block(c)}>مسدود</button>
+                  <a className="btn" href={`#/customers/ig:${c.user_id}`}>پرونده</a>
                 </div>
                 {msg && <p className={msg.includes('✅') ? 'ok' : 'err'}>{msg}</p>}
               </div>
