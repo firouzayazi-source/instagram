@@ -7,7 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse
 
-from . import api, api_ai, config, db, site_sync, worker
+from . import api, api_ai, config, db, internal, site_sync, worker
 from .instagram import Instagram, verify_signature
 
 
@@ -31,6 +31,7 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
     @contextlib.asynccontextmanager
     async def lifespan(app: FastAPI):
         db.init()
+        internal.ensure_key()
         with db.connect() as c:
             saved = db.kv_get(c, "access_token")
         if saved:
@@ -85,6 +86,7 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
     app.include_router(api.router)
     app.include_router(api.protected)
     app.include_router(api_ai.router)
+    app.include_router(internal.router)
 
     dist = Path(config.WEB_DIST)
     if dist.is_dir():

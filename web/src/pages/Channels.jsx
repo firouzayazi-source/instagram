@@ -98,6 +98,7 @@ function Connect({ id }) {
         {id === 'instagram' && <p className="hint muted">آدرس وبهوک در اپ متا: <b dir="ltr">{c.webhook_url}</b> · فیلدها: comments و messages. راهنمای کامل در docs/META_SETUP.md</p>}
       </section>
 
+      {id === 'telegram' && <TgAi />}
       {id === 'telegram' && (
         <section className="card">
           <h2>تنظیمات تلگرام</h2>
@@ -107,6 +108,25 @@ function Connect({ id }) {
         </section>
       )}
     </>
+  )
+}
+
+function TgAi() {
+  const [s, setS] = useState(null)
+  const [msg, setMsg] = useState(null)
+  useEffect(() => { api.get('/api/ai/settings').then((r) => setS(r.settings)).catch(() => {}) }, [])
+  if (!s) return null
+  async function toggle(v) {
+    try { const r = await api.put('/api/ai/settings', { telegram_ai: v }); setS(r.settings); setMsg({ ok: true, text: 'ذخیره شد ✅' }) }
+    catch (ex) { setMsg({ ok: false, text: ex.message }) }
+  }
+  return (
+    <section className="card">
+      <h2>هوش مصنوعی در تلگرام</h2>
+      <label className="check"><input type="checkbox" checked={s.telegram_ai} onChange={(e) => toggle(e.target.checked)} /> وقتی موتور فهم پیامی را نفهمید، هوش مصنوعی مرکزی جواب بدهد</label>
+      <p className="hint muted">همان کلید، مدل، بودجه، دانش و لاگ «مغز مرکزی». {s.enabled ? 'هوش مصنوعی مرکزی روشن است.' : 'هوش مصنوعی مرکزی الان خاموش است؛ تا روشن نشود، ربات مثل قبل از مشتری می‌خواهد بازتر بنویسد یا به همکار می‌سپارد.'} اگر جواب کامل نداشته باشد، پیام به گروه پشتیبانی می‌رود.</p>
+      <Msg m={msg} />
+    </section>
   )
 }
 

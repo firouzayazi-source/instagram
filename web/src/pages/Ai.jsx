@@ -11,7 +11,7 @@ const SUBS = [
   ['log', 'لاگ پاسخ‌ها'],
 ]
 // تنظیم‌های مخصوص اینستاگرام که در «کانال‌ها ← اینستاگرام» ویرایش می‌شوند؛ صفحه‌ی مغز مرکزی آن‌ها را نمی‌فرستد
-const IG_KEYS = ['dm_enabled', 'comment_enabled', 'comment_mode', 'public_ack', 'public_prices', 'prompt_dm', 'prompt_comment']
+const IG_KEYS = ['telegram_ai', 'dm_enabled', 'comment_enabled', 'comment_mode', 'public_ack', 'public_prices', 'prompt_dm', 'prompt_comment']
 const ACTION_FA = { reply: 'پاسخ داد', handoff: 'ارجاع', ignore: 'نادیده', skip: 'رد شد', error: 'خطا' }
 const ACTION_CLS = { reply: 'good', handoff: 'warn', ignore: 'muted', skip: 'muted', error: 'bad' }
 const SKIP_FA = { emoji: 'فقط ایموجی', budget: 'سقف بودجه', disabled: 'خاموش', channel_disabled: 'کانال خاموش', no_api_key: 'کلید API ندارد' }
@@ -267,7 +267,7 @@ function Settings() {
         <h2>روشن و خاموش</h2>
         <label className="check"><input type="checkbox" checked={s.brain_enabled} onChange={(e) => set({ brain_enabled: e.target.checked })} /> موتور فهم روشن باشد (رایگان، بدون کلید)</label>
         <p className="hint muted">دانش مرکزی، فهرست کالای سایت، آدرس، اقساط، ساعت کاری و مقایسه‌ی آیفون‌ها. در تلگرام همیشه فعال است؛ این کلید برای اینستاگرام است. اول این جواب می‌دهد؛ اگر نفهمید، نوبت هوش مصنوعی است (اگر روشن باشد)، وگرنه به شما ارجاع می‌شود.</p>
-        <label className="check"><input type="checkbox" checked={s.enabled} onChange={(e) => set({ enabled: e.target.checked })} /> هوش مصنوعی روشن باشد (برای سؤال‌هایی که موتور فهم جواب نداد؛ کلید API لازم است)</label>
+        <label className="check"><input type="checkbox" checked={s.enabled} onChange={(e) => set({ enabled: e.target.checked })} /> هوش مصنوعی روشن باشد، برای همه‌ی کانال‌ها (برای سؤال‌هایی که موتور فهم جواب نداد؛ کلید API لازم است)</label>
         <p className="hint muted">روشن و خاموش هر کانال و تنظیم‌های مخصوص آن (مثل نحوه‌ی جواب به کامنت) در «کانال‌ها» است.</p>
         <label className="check"><input type="checkbox" checked={s.skip_emoji_only} onChange={(e) => set({ skip_emoji_only: e.target.checked })} /> پیام‌هایی که فقط ایموجی‌اند را نادیده بگیرد (بدون هزینه)</label>
       </section>

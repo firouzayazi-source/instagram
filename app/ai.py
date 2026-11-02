@@ -35,7 +35,8 @@ DEFAULTS = {
     "skip_emoji_only": True,
     "history_messages": 10,
     "monthly_budget_usd": 30.0,
-    "brain_enabled": False,      # موتور فهم مشترک با تلگرام (رایگان، بدون API) پیش از هوش مصنوعی
+    "brain_enabled": False,
+    "telegram_ai": True,         # هوش مصنوعی مرکزی برای پیام‌هایی که موتور فهم تلگرام نفهمید (اگر هوش مصنوعی روشن باشد)      # موتور فهم مشترک با تلگرام (رایگان، بدون API) پیش از هوش مصنوعی
     # فروشندگی
     "sales_mode": True,          # مثل فروشنده: پیشنهاد جایگزین، سؤال برای فهم نیاز، دعوت به خرید
     "send_links": True,          # لینک محصول سایت را در دایرکت بفرستد
@@ -139,7 +140,7 @@ def save_settings(c, patch: dict) -> dict:
             v = max(0.0, float(v or 0))
         if k == "history_messages":
             v = min(30, max(0, int(v)))
-        if k in ("sales_mode", "send_links", "upsell", "ask_contact", "brain_enabled"):
+        if k in ("sales_mode", "send_links", "upsell", "ask_contact", "brain_enabled", "telegram_ai"):
             v = bool(v)
         if k == "cta":
             v = str(v or "").strip()[:500]
@@ -337,9 +338,9 @@ def build_system(c, s: dict) -> list:
     """بخش ثابت پرامپت (برای کش): نقش، قوانین، اطلاعات کسب‌وکار، پرسش‌های رایج، محصولات."""
     faq = knowledge.faq_text(c) or "(هنوز پرسشی ثبت نشده)"
     products = knowledge.products_text(c) or "(فهرست محصول خالی است)"
-    rules = f"""تو پاسخ‌گوی پیج اینستاگرام «استوک لند» (@stock_land.ir) هستی؛ فروشگاه آیفون و محصولات اپل که محتوای آموزشی و خبری اپل هم منتشر می‌کند.
+    rules = f"""تو پاسخ‌گوی فروشگاه «استوک لند» (stland.ir) در اینستاگرام (@stock_land.ir) و تلگرام هستی؛ فروشگاه آیفون و محصولات اپل که محتوای آموزشی و خبری اپل هم منتشر می‌کند.
 
-کار تو: به کامنت‌ها و دایرکت‌های مشتری‌ها جواب درست، کوتاه و مفید بدهی، به فارسی.
+کار تو: به کامنت‌ها و دایرکت‌های اینستاگرام و پیام‌های تلگرام مشتری‌ها جواب درست، کوتاه و مفید بدهی، به فارسی.
 
 لحن: {_TONE.get(s['tone'], _TONE['friendly'])}. طول پاسخ: {_LENGTH.get(s['length'], _LENGTH['short'])}. از یکی دو ایموجی مناسب استفاده کن، نه بیشتر.
 
@@ -361,7 +362,7 @@ def build_system(c, s: dict) -> list:
 - {"قیمت را می‌توانی در public_reply هم بگویی." if s['public_prices'] else "قیمت و جزئیات خرید را فقط در reply (دایرکت) بگو، نه در public_reply."}
 - برای کامنت‌های تشکر یا ایموجی فقط public_reply کوتاه بنویس و reply را خالی بگذار.
 
-دایرکت‌ها:
+دایرکت‌ها و پیام تلگرام:
 - فقط reply را پر کن و public_reply را خالی بگذار.
 
 خروجی فقط یک شیء JSON مطابق طرح خواسته‌شده است."""
@@ -393,7 +394,7 @@ def build_messages(c, s: dict, channel: str, text: str, user_id: str, username: 
         if hist:
             lines = [f"{'مشتری' if h['direction'] == 'in' else 'پیج'}: {h['text']}" for h in hist[-s['history_messages']:]]
             parts.append("## گفتگوی قبلی با همین مشتری\n" + "\n".join(lines))
-    where = "کامنت زیر پست" if channel == "comment" else "دایرکت"
+    where = {"comment": "کامنت زیر پست اینستاگرام", "dm": "دایرکت اینستاگرام", "telegram": "پیام تلگرام"}.get(channel, channel)
     who = f" از @{username}" if username else ""
     parts.append(f"## پیام جدید ({where}{who})\n<message>\n{text}\n</message>")
     return [{"role": "user", "content": "\n\n".join(parts)}]
@@ -435,15 +436,18 @@ def _log(c, d: Decision, *, event_id, channel, user_id, username, text, model=""
 
 
 async def decide(c, *, channel: str, text: str, user_id: str, username: str | None = None,
-                 event_id: str | None = None, is_test: bool = False, s: dict | None = None) -> Decision:
+                 event_id: str | None = None, is_test: bool = False, s: dict | None = None,
+                 skip_brain: bool = False) -> Decision:
+    """channel: comment | dm (اینستاگرام) | telegram. skip_brain برای کانالی که موتور فهم را خودش اجرا کرده."""
     s = s or settings(c)
     ctx = dict(event_id=event_id, channel=channel, user_id=user_id, username=username, text=text, is_test=is_test)
 
-    brain_on = s["brain_enabled"] or is_test
+    brain_on = (s["brain_enabled"] or is_test) and not skip_brain
     if not is_test:
         if not s["enabled"] and not brain_on:
             return Decision("skip", skip_reason="disabled")  # لاگ نمی‌شود
-        if (channel == "comment" and not s["comment_enabled"]) or (channel == "dm" and not s["dm_enabled"]):
+        if (channel == "comment" and not s["comment_enabled"]) or (channel == "dm" and not s["dm_enabled"]) \
+                or (channel == "telegram" and not s["telegram_ai"]):
             return Decision("skip", skip_reason="channel_disabled")
     if s["skip_emoji_only"] and is_emoji_only(text):
         return _log(c, Decision("skip", skip_reason="emoji"), **ctx)

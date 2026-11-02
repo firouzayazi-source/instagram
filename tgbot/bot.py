@@ -5035,6 +5035,33 @@ async def _status_loop():
         except Exception as e: logger.debug(f"status: {e}")
         await asyncio.sleep(60)
 
+# ════════════════════════════════════════════════
+#  هوش مصنوعی مرکزی igbot — وقتی موتور فهم پیامی را نفهمید
+# ════════════════════════════════════════════════
+# کلید، مدل، بودجه، دانش و لاگ همان هسته‌ی مرکزی است (پنل وب ← مغز مرکزی)؛ اینجا فقط صدا زده می‌شود.
+CORE_URL = os.getenv("CORE_URL","http://127.0.0.1:8011")
+INTERNAL_KEY_FILE = os.path.join("..","internal.key")      # /opt/igbot/data/internal.key
+
+async def core_think(text,user,dry=False):
+    """جواب هوش مصنوعی مرکزی: {"action": "reply"|"handoff", "reply": ...} یا None اگر خاموش/در دسترس نبود."""
+    try:
+        with open(INTERNAL_KEY_FILE,encoding="utf-8") as f: key=f.read().strip()
+    except OSError: return None
+    if not key: return None
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=40,trust_env=False) as cl:
+            r=await cl.post(CORE_URL+"/internal/think",headers={"X-Internal-Key":key},
+                            json={"channel":"telegram","user_id":str(user.id),"username":user.username or "",
+                                  "text":(text or "")[:2000],"test":bool(dry)})
+        if r.status_code!=200:
+            logger.warning(f"core think: HTTP {r.status_code}"); return None
+        d=r.json()
+    except Exception as e:
+        logger.warning(f"core think: {type(e).__name__}: {e}"); return None
+    if d.get("action") in ("reply","handoff") and (d.get("reply") or "").strip(): return d
+    return None
+
 def save_faq_soon(delay=3.0):
     """شمارنده‌ها هر چند ثانیه یک‌بار روی دیسک می‌روند، نه با هر پیام
     (خاموشی هم یک‌بار ذخیره می‌کند، پس چیزی گم نمی‌شود)."""
@@ -6188,6 +6215,25 @@ async def assistant_reply(update,ctx,text,user,dry=False):
                                  reply_markup=InlineKeyboardMarkup(rows))
         if not dry: await log_unmatched(text,user)
         return True
+
+    # ۶٫۵) هوش مصنوعی مرکزی (اگر در پنل وب روشن است): جواب واقعی به‌جای «متوجه نشدم» یا سپردن به همکار.
+    # مشکلِ دستگاه هم از آن می‌گذرد: اگر جواب کامل نداشته باشد خودش ارجاع (handoff) می‌دهد.
+    ai=await core_think(text,user,dry)
+    if ai:
+        brain_ctx[uid]={"ts":now,"product":prod}
+        await _typing(ctx.bot,msg.chat_id)
+        body=_join(lead,ai["reply"].strip())
+        if ai["action"]=="reply":
+            await msg.reply_text(body,reply_markup=main_menu())
+            if not dry and get_setting("ai_cc_admin"):
+                _bg(forward_to_admin(update,ctx,auto={"id":"ai","button":"🤖 هوش مصنوعی: "+ai["reply"].strip()[:120]},
+                                     count=False),"cc admin")
+            return True
+        if dry:
+            await msg.reply_text(body+"\n\n🧪 (در حالت واقعی، پیام برای همکار فرستاده می‌شد)")
+            return True
+        await log_unmatched(text,user)
+        return await forward_to_admin(update,ctx,count=False,ack_lead=body)
 
     # ۷) نفهمیدم — حدس نمی‌زنیم. بار اول از خودِ مشتری می‌خواهیم بازتر بنویسد (با چند موضوع
     # پرکاربرد)؛ فقط اگر پشت سر هم دوباره نفهمیدیم، یا مشکلِ دستگاه است، به همکار می‌سپاریم.
