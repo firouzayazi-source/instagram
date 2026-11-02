@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from . import ai, config, db, knowledge, push
+from . import ai, channels, config, db, knowledge, push
 from .rules import Incoming, find_rule, pick
 
 MAX_RETRIES = 3
@@ -49,6 +49,8 @@ async def handle_event(ig, row, c) -> str:
     if inc is None or not inc.user_id or inc.user_id == config.IG_USER_ID:
         return "skipped"
     await store_incoming(ig, c, row["kind"], payload, inc)
+    if not channels.enabled("instagram"):
+        return "ignored"   # کانال خاموش: پیام در صندوق ثبت می‌شود ولی پاسخ خودکار نمی‌رود
     if knowledge.is_blocked(c, inc.user_id):
         return "ignored"
     rules = db.load_rules(c)

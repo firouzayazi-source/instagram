@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import InboxChips from './InboxChips.jsx'
 import { api, timeAgo } from '../api.js'
 
 const FILTERS = [['all', 'همه'], ['unread', 'خوانده‌نشده'], ['unanswered', 'پاسخ‌داده‌نشده'], ['answered', 'پاسخ‌داده‌شده']]
@@ -38,7 +39,8 @@ export default function Comments() {
 
   return (
     <>
-      <header className="topbar"><h1>کامنت‌ها</h1><button className="btn sm" onClick={load}>تازه‌سازی</button></header>
+      <header className="topbar"><h1>صندوق</h1><button className="btn sm" onClick={load}>تازه‌سازی</button></header>
+      <InboxChips cur="comments" />
       <div className="chips">{FILTERS.map(([k, l]) => <button key={k} className={`chip ${filter === k ? 'active' : ''}`} onClick={() => setFilter(k)}>{l}</button>)}</div>
       {!items.length && <div className="empty">کامنتی در این فیلتر نیست</div>}
       <div className="list">

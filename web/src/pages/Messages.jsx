@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import InboxChips from './InboxChips.jsx'
 import { api, timeAgo } from '../api.js'
 
 const FILTERS = [['all', 'همه'], ['unread', 'خوانده‌نشده'], ['unanswered', 'پاسخ‌داده‌نشده'], ['answered', 'پاسخ‌داده‌شده']]
@@ -14,7 +15,8 @@ function ConversationList() {
   useEffect(() => { load() }, [filter])
   return (
     <>
-      <header className="topbar"><h1>پیام‌ها</h1><button className="btn sm" onClick={load}>تازه‌سازی</button></header>
+      <header className="topbar"><h1>صندوق</h1><button className="btn sm" onClick={load}>تازه‌سازی</button></header>
+      <InboxChips cur="messages" />
       <div className="chips">{FILTERS.map(([k, l]) => <button key={k} className={`chip ${filter === k ? 'active' : ''}`} onClick={() => setFilter(k)}>{l}</button>)}</div>
       {!items.length && <div className="empty">گفتگویی نیست</div>}
       <div className="list">

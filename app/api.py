@@ -4,7 +4,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 
-from . import ai, auth, config, db
+from . import ai, auth, channels, config, db
 from .importer import validate
 from .rules import Incoming, find_rule
 
@@ -269,3 +269,23 @@ def push_unsubscribe(body: dict):
     with db.connect() as c:
         db.delete_push_sub(c, body.get("endpoint", ""))
     return {"ok": True}
+
+
+# ---------- کانال‌ها ----------
+
+@protected.get("/channels")
+def channels_list():
+    with db.connect() as c:
+        return channels.describe(c)
+
+
+@protected.put("/channels/{ch}")
+def channels_set(ch: str, body: dict):
+    if ch not in channels.CHANNELS:
+        raise HTTPException(404)
+    try:
+        channels.set_enabled(ch, bool(body.get("enabled")))
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    with db.connect() as c:
+        return next(x for x in channels.describe(c) if x["id"] == ch)

@@ -10,7 +10,7 @@ from telegram import (Update, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKe
                       BotCommandScopeDefault, WebAppInfo)
 from telegram.error import Forbidden, BadRequest, Conflict, NetworkError
 from telegram.ext import (ApplicationBuilder, ApplicationHandlerStop, CommandHandler,
-                           MessageHandler, CallbackQueryHandler, ContextTypes, filters)
+                           MessageHandler, CallbackQueryHandler, ContextTypes, TypeHandler, filters)
 
 os.environ.pop("HTTP_PROXY", None); os.environ.pop("HTTPS_PROXY", None)
 os.environ.pop("ALL_PROXY", None); os.environ["NO_PROXY"] = "*"
@@ -5000,6 +5000,41 @@ async def _panel_inbox_loop():
         try: await process_panel_inbox()
         except Exception as e: logger.error(f"panel inbox: {e}")
 
+# ════════════════════════════════════════════════
+#  کانال تلگرام در پروژه‌ی igbot: روشن/خاموش از پنل وب، و گزارش وضعیت
+# ════════════════════════════════════════════════
+CHANNELS_FILE = os.path.join("..", "channels.json")   # /opt/igbot/data/channels.json
+STATUS_FILE = "status.json"
+_ch_cache = [None, True]
+
+def channel_enabled():
+    """خاموش‌شدن از پنل وب igbot. فایل نبود یعنی روشن."""
+    try: mt=os.path.getmtime(CHANNELS_FILE)
+    except OSError: return True
+    if mt!=_ch_cache[0]:
+        try:
+            with open(CHANNELS_FILE,encoding="utf-8") as f: d=json.load(f)
+            _ch_cache[:]=[mt,bool((d.get("telegram") or {}).get("enabled",True))]
+        except Exception as e: logger.warning(f"channels.json: {e}")
+    return _ch_cache[1]
+
+async def channel_gate(update,ctx):
+    """کانال خاموش: پیام خصوصی مشتری‌ها بی‌جواب می‌ماند. مدیرها و گروه تیم کار می‌کنند."""
+    if channel_enabled(): return
+    chat=update.effective_chat; u=update.effective_user
+    if chat is not None and chat.type!="private": return
+    if u is not None and is_admin(u.id): return
+    raise ApplicationHandlerStop
+
+async def _status_loop():
+    """هر دقیقه یک گزارش کوچک برای پنل وب: زنده است، نام ربات، تعداد کاربر."""
+    await asyncio.sleep(5)        # تا نام ربات (get_me) در post_init پر شود
+    while True:
+        try: await _wj(STATUS_FILE,{"ts":time.time(),"username":BOT_USERNAME,"users":await total_users(),
+                                     "enabled":channel_enabled()})
+        except Exception as e: logger.debug(f"status: {e}")
+        await asyncio.sleep(60)
+
 def save_faq_soon(delay=3.0):
     """شمارنده‌ها هر چند ثانیه یک‌بار روی دیسک می‌روند، نه با هر پیام
     (خاموشی هم یک‌بار ذخیره می‌کند، پس چیزی گم نمی‌شود)."""
@@ -6432,6 +6467,7 @@ async def post_init(app):
     _spawn(_human_wait_loop(app.bot),"انتظار برای همکار")
     _spawn(_catalog_loop(app.bot),"لیست کالای سایت")
     _spawn(_panel_inbox_loop(),"تغییرهای پنل وب")
+    _spawn(_status_loop(),"گزارش وضعیت")
     global BOT_USERNAME
     try:
         me=await app.bot.get_me(); BOT_USERNAME=me.username or ""
@@ -6568,6 +6604,8 @@ def main():
     # گروه ۱- : ریپلای مدیر روی پیام مشتری زودتر از هر هندلر دیگری دیده می‌شود.
     # اگر واقعاً پاسخ بود، ApplicationHandlerStop جلوی پردازش دوباره را می‌گیرد؛
     # وگرنه پیام مسیر عادی خودش را ادامه می‌دهد.
+    # کانال خاموش از پنل وب igbot: پیش از هر هندلر دیگری
+    app.add_handler(TypeHandler(Update,channel_gate),group=-10)
     app.add_handler(MessageHandler(~filters.COMMAND,topic_relay),group=-2)
     app.add_handler(MessageHandler(~filters.COMMAND,reply_relay),group=-1)
     app.add_handler(CommandHandler("setgroup",cmd_setgroup))

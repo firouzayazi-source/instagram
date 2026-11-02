@@ -1,18 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { api, fa, money, timeAgo, usd } from '../api.js'
-import Rules from './Rules.jsx'
 
 const SUBS = [
   ['overview', 'نمای کلی'],
   ['handoffs', 'ارجاع به شما'],
-  ['settings', 'تنظیمات ربات'],
-  ['faq', 'دانش مشترک'],
+  ['faq', 'دانش مرکزی'],
   ['products', 'محصولات و قیمت'],
   ['docs', 'فایل‌ها'],
-  ['rules', 'دستورها'],
+  ['settings', 'تنظیمات مغز'],
   ['log', 'لاگ پاسخ‌ها'],
-  ['blocked', 'مسدودها'],
 ]
+// تنظیم‌های مخصوص اینستاگرام که در «کانال‌ها ← اینستاگرام» ویرایش می‌شوند؛ صفحه‌ی مغز مرکزی آن‌ها را نمی‌فرستد
+const IG_KEYS = ['dm_enabled', 'comment_enabled', 'comment_mode', 'public_ack', 'public_prices', 'prompt_dm', 'prompt_comment']
 const ACTION_FA = { reply: 'پاسخ داد', handoff: 'ارجاع', ignore: 'نادیده', skip: 'رد شد', error: 'خطا' }
 const ACTION_CLS = { reply: 'good', handoff: 'warn', ignore: 'muted', skip: 'muted', error: 'bad' }
 const SKIP_FA = { emoji: 'فقط ایموجی', budget: 'سقف بودجه', disabled: 'خاموش', channel_disabled: 'کانال خاموش', no_api_key: 'کلید API ندارد' }
@@ -21,7 +20,7 @@ export default function Ai({ sub = 'overview', badges = {} }) {
   const cur = SUBS.find(([k]) => k === sub) ? sub : 'overview'
   return (
     <>
-      <header className="topbar"><h1>هوش مصنوعی</h1><span className="sub">پاسخ هوشمند و پایگاه دانش</span></header>
+      <header className="topbar"><h1>مغز مرکزی</h1><span className="sub">یک مغز و یک دانش برای همه‌ی کانال‌ها</span></header>
       <div className="chips">
         {SUBS.map(([k, l]) => (
           <a key={k} href={`#/ai/${k}`} className={`chip ${cur === k ? 'active' : ''}`}>
@@ -35,14 +34,12 @@ export default function Ai({ sub = 'overview', badges = {} }) {
       {cur === 'faq' && <Kb />}
       {cur === 'products' && <Products />}
       {cur === 'docs' && <Docs />}
-      {cur === 'rules' && <Rules embedded />}
       {cur === 'log' && <Log />}
-      {cur === 'blocked' && <Blocked />}
     </>
   )
 }
 
-function Msg({ m }) {
+export function Msg({ m }) {
   if (!m) return null
   return <p className={m.ok ? 'ok' : 'err'}>{m.text}</p>
 }
@@ -90,7 +87,7 @@ function Overview() {
           </div>
           <label className="switch"><input type="checkbox" checked={st.enabled} disabled={toggling} onChange={toggle} /><span /> {st.enabled ? 'روشن' : 'خاموش'}</label>
         </div>
-        <p className="muted" style={{ margin: '6px 0 0' }}>موتور فهم مشترک با تلگرام: {st.brain_enabled ? 'روشن ✅' : 'خاموش'}{st.brain_ready ? '' : ' · دانش ربات تلگرام هنوز روی سرور پیدا نشد'} <a href="#/ai/settings">تغییر</a></p>
+        <p className="muted" style={{ margin: '6px 0 0' }}>موتور فهم (اینستاگرام): {st.brain_enabled ? 'روشن ✅' : 'خاموش'}{st.brain_ready ? '' : ' · دانش ربات تلگرام هنوز روی سرور پیدا نشد'} <a href="#/ai/settings">تغییر</a></p>
         {st.enabled && !st.has_key && <p className="err">کلید API تنظیم نشده؛ تا وقتی {st.key_env} در ‎.env سرور نباشد ربات جواب نمی‌دهد (یا در تنظیمات سرویس دیگری انتخاب کنید).</p>}
       </section>
 
@@ -252,7 +249,7 @@ function Settings() {
   async function save(e) {
     e.preventDefault(); setBusy(true); setMsg(null)
     try {
-      const r = await api.put('/api/ai/settings', s)
+      const r = await api.put('/api/ai/settings', Object.fromEntries(Object.entries(s).filter(([k]) => !IG_KEYS.includes(k))))
       setS(r.settings); setMsg({ ok: true, text: 'ذخیره شد ✅' })
     } catch (ex) { setMsg({ ok: false, text: ex.message }) }
     finally { setBusy(false) }
@@ -268,11 +265,10 @@ function Settings() {
     <form onSubmit={save}>
       <section className="card">
         <h2>روشن و خاموش</h2>
-        <label className="check"><input type="checkbox" checked={s.brain_enabled} onChange={(e) => set({ brain_enabled: e.target.checked })} /> موتور فهم مشترک با تلگرام روشن باشد (رایگان، بدون کلید)</label>
-        <p className="hint muted">همان مغز و دانش ربات تلگرام: نیت‌ها و پرسش‌هایی که در پنل ربات تلگرام تعریف کرده‌اید، فهرست کالای سایت، آدرس، اقساط و ساعت کاری. اول این جواب می‌دهد؛ اگر نفهمید، نوبت هوش مصنوعی است (اگر روشن باشد)، وگرنه دایرکت به شما ارجاع می‌شود.</p>
+        <label className="check"><input type="checkbox" checked={s.brain_enabled} onChange={(e) => set({ brain_enabled: e.target.checked })} /> موتور فهم روشن باشد (رایگان، بدون کلید)</label>
+        <p className="hint muted">دانش مرکزی، فهرست کالای سایت، آدرس، اقساط، ساعت کاری و مقایسه‌ی آیفون‌ها. در تلگرام همیشه فعال است؛ این کلید برای اینستاگرام است. اول این جواب می‌دهد؛ اگر نفهمید، نوبت هوش مصنوعی است (اگر روشن باشد)، وگرنه به شما ارجاع می‌شود.</p>
         <label className="check"><input type="checkbox" checked={s.enabled} onChange={(e) => set({ enabled: e.target.checked })} /> هوش مصنوعی روشن باشد (برای سؤال‌هایی که موتور فهم جواب نداد؛ کلید API لازم است)</label>
-        <label className="check"><input type="checkbox" checked={s.dm_enabled} onChange={(e) => set({ dm_enabled: e.target.checked })} /> به دایرکت‌ها جواب بدهد</label>
-        <label className="check"><input type="checkbox" checked={s.comment_enabled} onChange={(e) => set({ comment_enabled: e.target.checked })} /> به کامنت‌ها جواب بدهد</label>
+        <p className="hint muted">روشن و خاموش هر کانال و تنظیم‌های مخصوص آن (مثل نحوه‌ی جواب به کامنت) در «کانال‌ها» است.</p>
         <label className="check"><input type="checkbox" checked={s.skip_emoji_only} onChange={(e) => set({ skip_emoji_only: e.target.checked })} /> پیام‌هایی که فقط ایموجی‌اند را نادیده بگیرد (بدون هزینه)</label>
       </section>
 
@@ -301,14 +297,6 @@ function Settings() {
             ))}
           </div>
         </div>
-        <div className="field">
-          <label>دستورالعمل اختصاصی برای دایرکت (اختیاری)</label>
-          <textarea value={s.prompt_dm} placeholder="مثلاً: همیشه آخر پیام بپرس مدل گوشی فعلی‌اش چیست؛ برای اقساط شماره‌ی تماس بگیر." onChange={(e) => set({ prompt_dm: e.target.value })} />
-        </div>
-        <div className="field">
-          <label>دستورالعمل اختصاصی برای کامنت (اختیاری)</label>
-          <textarea value={s.prompt_comment} placeholder="مثلاً: زیر پست‌های آموزشی فقط تشکر کن و بگو پست رو ذخیره کنن." onChange={(e) => set({ prompt_comment: e.target.value })} />
-        </div>
       </section>
 
       <section className="card">
@@ -328,16 +316,6 @@ function Settings() {
         )}
       </section>
 
-      <section className="card">
-        <h2>کامنت‌ها</h2>
-        <label className="check"><input type="radio" checked={s.comment_mode === 'dm_and_public'} onChange={() => set({ comment_mode: 'dm_and_public' })} /> جواب کامل در دایرکت، و یک متن کوتاه عمومی زیر کامنت (پیشنهادی)</label>
-        <label className="check"><input type="radio" checked={s.comment_mode === 'public_only'} onChange={() => set({ comment_mode: 'public_only' })} /> فقط جواب عمومی زیر کامنت</label>
-        <label className="check"><input type="checkbox" checked={s.public_prices} onChange={(e) => set({ public_prices: e.target.checked })} /> قیمت را عمومی هم بگوید</label>
-        <div className="field">
-          <label>متن‌های عمومی زیر کامنت (هر خط یکی، به نوبت)</label>
-          <textarea value={(s.public_ack || []).join('\n')} onChange={(e) => set({ public_ack: e.target.value.split('\n') })} />
-        </div>
-      </section>
 
       <section className="card">
         <h2>ارجاع به شما</h2>
@@ -454,7 +432,7 @@ function Kb() {
   if (!kb) return <div className="empty">در حال بارگذاری…</div>
   if (!kb.ready) return (
     <>
-      <p className="err">دانش مشترک هنوز در دسترس نیست: ربات تلگرام روی این سرور منتقل نشده. تا آن موقع پرسش‌های رایج فقط برای اینستاگرام است.</p>
+      <p className="err">دانش مرکزی هنوز در دسترس نیست: ربات تلگرام روی این سرور منتقل نشده. تا آن موقع پرسش‌های رایج فقط برای اینستاگرام است.</p>
       <Faq />
     </>
   )
@@ -463,7 +441,7 @@ function Kb() {
 
   async function save(e) {
     e.preventDefault(); setMsg(null)
-    try { await api.post('/api/ai/kb/intents', edit); setEdit(null); ok('ثبت شد ✅ تا چند ثانیه در تلگرام و اینستاگرام فعال می‌شود.') } catch (ex) { fail(ex) }
+    try { await api.post('/api/ai/kb/intents', edit); setEdit(null); ok('ثبت شد ✅ تا چند ثانیه در همه‌ی کانال‌ها فعال می‌شود.') } catch (ex) { fail(ex) }
   }
   async function toggle(x) {
     try { await api.post('/api/ai/kb/intents', { ...x, enabled: !x.enabled }); ok(x.enabled ? 'خاموش شد' : 'روشن شد') } catch (ex) { fail(ex) }
@@ -477,12 +455,12 @@ function Kb() {
     try { await api.put(`/api/ai/kb/sections/${k}`, { text: sec[k] || '' }); ok('متن بخش ثبت شد ✅') } catch (ex) { fail(ex) }
   }
   async function migrate() {
-    try { const r = await api.post('/api/ai/kb/migrate-faq'); ok(`${fa(r.moved)} پرسش به دانش مشترک منتقل شد ✅`) } catch (ex) { fail(ex) }
+    try { const r = await api.post('/api/ai/kb/migrate-faq'); ok(`${fa(r.moved)} پرسش به دانش مرکزی منتقل شد ✅`) } catch (ex) { fail(ex) }
   }
 
   return (
     <>
-      <p className="muted">یک بار اینجا وارد کنید؛ ربات تلگرام و اینستاگرام هر دو همین را جواب می‌دهند. از پنل داخل تلگرام هم قابل ویرایش است.</p>
+      <p className="muted">دانش کل پروژه: یک بار اینجا وارد کنید؛ همه‌ی کانال‌ها (الان تلگرام و اینستاگرام) همین را جواب می‌دهند و هوش مصنوعی هم همین را می‌شناسد. از پنل داخل تلگرام هم قابل ویرایش است.</p>
       {kb.pending.count > 0 && (
         <p className={kb.pending.stale ? 'err' : 'muted'}>
           {kb.pending.stale ? `⚠️ ${fa(kb.pending.count)} تغییر منتظر است و ربات تلگرام برشان نداشته؛ سرویس igbot-telegram روشن است؟` : `⏳ ${fa(kb.pending.count)} تغییر در حال اعمال…`}
@@ -491,7 +469,7 @@ function Kb() {
       {kb.old_faq > 0 && (
         <div className="card">
           <p style={{ margin: 0 }}>{fa(kb.old_faq)} پرسش رایج قدیمی فقط برای اینستاگرام ثبت شده.</p>
-          <button className="btn primary sm" style={{ marginTop: 8 }} onClick={migrate}>انتقال به دانش مشترک</button>
+          <button className="btn primary sm" style={{ marginTop: 8 }} onClick={migrate}>انتقال به دانش مرکزی</button>
         </div>
       )}
       <Msg m={msg} />
@@ -528,7 +506,7 @@ function Kb() {
         <>
           <details className="card">
             <summary><b>متن‌های پایه</b> <span className="muted">— آدرس، اقساط، تماس، سایت…</span></summary>
-            <p className="muted">هم در منوی تلگرام و هم در جواب اینستاگرام همین متن می‌آید.</p>
+            <p className="muted">در همه‌ی کانال‌ها همین متن می‌آید (منوی تلگرام، جواب اینستاگرام، هوش مصنوعی).</p>
             {kb.sections.map((v) => (
               <div className="field" key={v.key}>
                 <label>{v.title}</label>
@@ -921,7 +899,7 @@ function Log() {
 
 // ---------- مسدودها ----------
 
-function Blocked() {
+export function Blocked() {
   const [items, setItems] = useState([])
   const [form, setForm] = useState({ user_id: '', username: '', reason: '' })
   const load = () => api.get('/api/ai/blocked').then(setItems).catch(() => {})

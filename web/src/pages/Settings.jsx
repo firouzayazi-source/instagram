@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { api } from '../api.js'
+import { ChannelList } from './Channels.jsx'
 
 function b64ToArray(b64) {
   const s = (b64 + '='.repeat((4 - (b64.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/')
@@ -44,6 +45,11 @@ export default function Settings({ onLogout }) {
   return (
     <>
       <header className="topbar"><h1>تنظیمات</h1></header>
+      <section className="card">
+        <h2>کانال‌ها و اتصال‌ها</h2>
+        <p className="muted">هر شبکه جدا روشن و خاموش می‌شود. همه از مغز مرکزی و دانش مرکزی جواب می‌دهند.</p>
+        <ChannelList />
+      </section>
       <section className="card">
         <h2>اعلان روی گوشی</h2>
         {!supported && <p className="muted">این مرورگر اعلان پوش ندارد.</p>}
