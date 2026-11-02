@@ -93,6 +93,16 @@ class Instagram:
         except RuntimeError:
             return {}
 
+    async def account(self) -> dict:
+        """تعداد فالوور و پست پیج."""
+        return await self._get(self.user_id, fields="username,followers_count,follows_count,media_count")
+
+    async def stories(self) -> list[dict]:
+        """استوری‌های فعال (۲۴ ساعت اخیر)."""
+        d = await self._get(f"{self.user_id}/stories",
+                            fields="id,media_type,media_url,thumbnail_url,permalink,timestamp")
+        return d.get("data", [])
+
     async def media(self, limit: int = 50) -> list[dict]:
         d = await self._get(
             f"{self.user_id}/media",

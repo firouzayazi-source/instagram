@@ -43,6 +43,9 @@ DEFAULTS = {
     "dm_quick_replies": ["💰 قیمت‌ها", "💳 شرایط اقساط", "📍 آدرس فروشگاه", "🙋 صحبت با همکار"],
     "typing_indicator": True,    # «دیده شد» و «در حال نوشتن…» پیش از جواب
     "ice_breakers": ["قیمت گوشی‌ها چنده؟", "شرایط اقساط چیه؟", "آدرس فروشگاه کجاست؟", "گارانتی دارید؟"],
+    "human_pause_minutes": 30,   # بعد از جواب همکار، ربات چند دقیقه برای همان نفر ساکت بماند (۰ = خاموش)
+    "batch_wait_seconds": 0,     # چند ثانیه صبر برای پیام‌های پشت‌سرهم و یک جواب برای همه (۰ = خاموش)
+    "notify_telegram": True,     # ارجاع‌های اینستاگرام به گروه پشتیبانی تلگرام هم برود
     # اینستاگرام: استوری
     "mention_reply_enabled": False,
     "mention_replies": ["مرسی که منشنمون کردی 🙏❤️", "ممنون از منشنت 🌸 اگه سؤالی داری همین‌جا بپرس"],
@@ -167,7 +170,12 @@ def save_settings(c, patch: dict) -> dict:
             v = [t.strip()[:50] for t in v if t and t.strip()][:200]
         if k == "welcome_text":
             v = str(v or "").strip()[:900]
-        if k in ("quick_replies_enabled", "typing_indicator", "mention_reply_enabled", "mod_profanity", "mod_links"):
+        if k == "human_pause_minutes":
+            v = min(24 * 60, max(0, int(v or 0)))
+        if k == "batch_wait_seconds":
+            v = min(120, max(0, int(v or 0)))
+        if k in ("quick_replies_enabled", "typing_indicator", "mention_reply_enabled", "mod_profanity", "mod_links",
+                 "notify_telegram"):
             v = bool(v)
         cur[k] = v
     db.kv_set(c, "ai_settings", json.dumps(cur, ensure_ascii=False))
@@ -462,7 +470,7 @@ def _log(c, d: Decision, *, event_id, channel, user_id, username, text, model=""
 
 async def decide(c, *, channel: str, text: str, user_id: str, username: str | None = None,
                  event_id: str | None = None, is_test: bool = False, s: dict | None = None,
-                 skip_brain: bool = False, note: str = "") -> Decision:
+                 skip_brain: bool = False, note: str = "", product_hint: str = "") -> Decision:
     """channel: comment | dm (اینستاگرام) | telegram. skip_brain برای کانالی که موتور فهم را خودش اجرا کرده."""
     s = s or settings(c)
     ctx = dict(event_id=event_id, channel=channel, user_id=user_id, username=username, text=text, is_test=is_test)
@@ -479,7 +487,7 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
 
     # لایه‌ی ۱: موتور فهم مشترک با تلگرام (رایگان، فوری، همان دانش ربات تلگرام)
     if brain_on and brain_engine.available():
-        r = brain_engine.decide(text, username)
+        r = brain_engine.decide(text, username, product_hint)
         if r:
             action, reply, intent, score, reason = r
             d = Decision(action, reply=reply, intent=intent, confidence=score, handoff_reason=reason)

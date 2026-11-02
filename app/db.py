@@ -217,6 +217,21 @@ CREATE TABLE IF NOT EXISTS customers (
   comments INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS customers_last ON customers(last_seen DESC);
+
+-- ربات برای این گفتگو تا این زمان ساکت است (همکار جواب داده)
+CREATE TABLE IF NOT EXISTS human_mode (
+  user_id TEXT PRIMARY KEY,
+  until REAL NOT NULL
+);
+
+-- یادداشت و محصول هر پست یا استوری، تا مغز مرکزی بداند جواب و کامنت درباره‌ی چیست
+CREATE TABLE IF NOT EXISTS media_notes (
+  media_id TEXT PRIMARY KEY,
+  kind TEXT NOT NULL DEFAULT 'post',   -- post | story
+  note TEXT NOT NULL DEFAULT '',
+  product TEXT NOT NULL DEFAULT '',
+  updated_at REAL NOT NULL
+);
 """
 
 
@@ -232,6 +247,7 @@ def init(path: str | None = None) -> None:
 _COLUMNS = {
     "products": {"source": "TEXT NOT NULL DEFAULT ''", "url": "TEXT NOT NULL DEFAULT ''"},
     "comments": {"hidden": "INTEGER NOT NULL DEFAULT 0", "hidden_reason": "TEXT NOT NULL DEFAULT ''"},
+    "messages": {"sender": "TEXT NOT NULL DEFAULT ''"},   # پیام بیرونی: bot | admin
 }
 
 
@@ -386,11 +402,12 @@ def list_comments(c, filt="all", limit=50, before: float | None = None) -> list[
     return [dict(r) for r in rows]
 
 
-def add_message(c, mid, user_id, direction, text, created_at=None) -> None:
+def add_message(c, mid, user_id, direction, text, created_at=None, sender: str = "") -> None:
+    """sender فقط برای پیام بیرونی: bot (ربات) | admin (همکار، از پنل یا خود اپ اینستاگرام)."""
     created_at = created_at or time.time()
     c.execute(
-        "INSERT OR IGNORE INTO messages(id,user_id,direction,text,created_at) VALUES (?,?,?,?,?)",
-        (mid, user_id, direction, text, created_at),
+        "INSERT OR IGNORE INTO messages(id,user_id,direction,text,created_at,sender) VALUES (?,?,?,?,?,?)",
+        (mid, user_id, direction, text, created_at, sender),
     )
     incoming = direction == "in"
     c.execute(
@@ -516,3 +533,33 @@ def kv_set(c: sqlite3.Connection, key: str, value: str) -> None:
 def is_first_message(c, user_id: str) -> bool:
     """اولین پیام ورودی این کاربر همین الان ثبت شده؟ (برای پیام خوش‌آمد)"""
     return c.execute("SELECT COUNT(*) FROM messages WHERE user_id=? AND direction='in'", (user_id,)).fetchone()[0] == 1
+
+
+def set_human(c, user_id: str, minutes: float) -> None:
+    """همکار جواب داد: ربات تا چند دقیقه برای این نفر ساکت می‌ماند (هر جواب تازه از نو می‌شمارد)."""
+    if minutes <= 0:
+        return
+    c.execute("INSERT INTO human_mode(user_id, until) VALUES (?,?) ON CONFLICT(user_id) DO UPDATE SET until=excluded.until",
+              (user_id, time.time() + minutes * 60))
+
+
+def human_until(c, user_id: str) -> float:
+    r = c.execute("SELECT until FROM human_mode WHERE user_id=?", (user_id,)).fetchone()
+    return r[0] if r and r[0] > time.time() else 0.0
+
+
+def clear_human(c, user_id: str) -> None:
+    c.execute("DELETE FROM human_mode WHERE user_id=?", (user_id,))
+
+
+def media_note(c, media_id: str | None) -> dict:
+    if not media_id:
+        return {}
+    r = c.execute("SELECT * FROM media_notes WHERE media_id=?", (media_id,)).fetchone()
+    return dict(r) if r else {}
+
+
+def set_media_note(c, media_id: str, kind: str, note: str, product: str) -> None:
+    c.execute("INSERT INTO media_notes(media_id,kind,note,product,updated_at) VALUES (?,?,?,?,?) "
+              "ON CONFLICT(media_id) DO UPDATE SET kind=excluded.kind, note=excluded.note, product=excluded.product, "
+              "updated_at=excluded.updated_at", (media_id, kind, note.strip()[:1000], product.strip()[:100], time.time()))

@@ -130,6 +130,31 @@ DAY_FA = {"0": "شنبه", "1": "یکشنبه", "2": "دوشنبه", "3": "سه�
 _HHMM = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 
 
+def open_at(ts: float):
+    """آیا فروشگاه در این لحظه باز بوده؟ None اگر ساعت کاری تعریف نشده."""
+    import jdatetime
+    wh = _load_json("workhours.json", {})
+    if not isinstance(wh, dict) or not wh.get("schedule") or not wh.get("enabled", True):
+        return None
+    dt = datetime.fromtimestamp(ts, brain_tz())
+    hm = dt.strftime("%H:%M")
+    wd = jdatetime.datetime.fromgregorian(datetime=dt).weekday()
+    sched = wh["schedule"]
+    for key, overnight in ((str(wd), False), (str((wd - 1) % 7), True)):
+        day = sched.get(key, {})
+        if not day.get("open"):
+            continue
+        for s in day.get("shifts", []):
+            f, t = s.get("from", ""), s.get("to", "")
+            if not (_HHMM.match(f) and _HHMM.match(t)):
+                continue
+            if f <= t and not overnight and f <= hm <= t:
+                return True
+            if f > t and ((not overnight and hm >= f) or (overnight and hm <= t)):
+                return True
+    return False
+
+
 def _hours_text() -> str:
     """ساعت کاری هفتگی از همان workhours.json ربات تلگرام، با وضعیت امروز."""
     import jdatetime
@@ -176,13 +201,16 @@ def _render(item: dict, text: str, product: str, name: str):
     return answer, "reply"
 
 
-def decide(text: str, username: str | None = None):
-    """تصمیم موتور فهم: (action، reply، intent، score، handoff_reason) یا None اگر محکم نفهمید."""
+def decide(text: str, username: str | None = None, product_hint: str = ""):
+    """تصمیم موتور فهم: (action، reply، intent، score، handoff_reason) یا None اگر محکم نفهمید.
+    product_hint: محصولِ پست یا استوری‌ای که پیام به آن جواب داده (وقتی خود پیام مدل را نگفته)."""
     its = intents()
     if not its:
         return None
     name = ""   # نام کوچک اینستاگرام در دسترس نیست؛ نام کاربری را در سلام نمی‌آوریم
     a = brain.analyze(text, its)
+    if not a["product"] and product_hint:
+        a["product"] = product_hint
     tags = a["tags"]
     hour = datetime.now(brain_tz()).hour
     lead = brain.greet_line(name, hour, text=text) if "greet" in tags else ""

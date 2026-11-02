@@ -5,7 +5,7 @@ import { Blocked, Msg } from './Ai.jsx'
 
 // هر کانال قابلیت‌های خودش را دارد؛ هسته‌ی مرکزی (مغز، دانش، هوش مصنوعی) مشترک است
 const SUBS = {
-  instagram: [['connect', 'اتصال و وضعیت'], ['dm', 'دایرکت'], ['comment', 'کامنت'], ['story', 'استوری'], ['rules', 'دستورها'], ['blocked', 'مسدودها']],
+  instagram: [['connect', 'اتصال و وضعیت'], ['dm', 'دایرکت'], ['comment', 'کامنت'], ['story', 'استوری'], ['media', 'پست و استوری'], ['rules', 'دستورها'], ['blocked', 'مسدودها']],
   telegram: [['connect', 'اتصال و وضعیت']],
 }
 
@@ -130,6 +130,49 @@ function TgAi() {
   )
 }
 
+function Media() {
+  const [d, setD] = useState(null)
+  const [msg, setMsg] = useState(null)
+  const [edit, setEdit] = useState({})
+  useEffect(() => { api.get('/api/instagram/media-notes').then(setD).catch((e) => setMsg({ ok: false, text: e.message })) }, [])
+  if (!d) return msg ? <Msg m={msg} /> : <div className="empty">در حال بارگذاری…</div>
+
+  async function save(m, kind) {
+    const v = edit[m.id] || { note: m.note, product: m.product }
+    try { await api.put(`/api/instagram/media-notes/${m.id}`, { ...v, kind }); m.note = v.note; m.product = v.product; setMsg({ ok: true, text: 'ذخیره شد ✅' }) }
+    catch (ex) { setMsg({ ok: false, text: ex.message }) }
+  }
+  const card = (m, kind) => {
+    const v = edit[m.id] || { note: m.note || '', product: m.product || '' }
+    const set = (patch) => setEdit({ ...edit, [m.id]: { ...v, ...patch } })
+    return (
+      <div key={m.id} className="item" style={{ cursor: 'default' }}>
+        <div className="row" style={{ alignItems: 'flex-start', gap: 10 }}>
+          <img src={m.thumbnail_url || m.media_url} alt="" loading="lazy" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8, flex: 'none' }} />
+          <div style={{ flex: 1 }}>
+            <p className="muted" style={{ margin: 0, fontSize: 12 }}>{(m.caption || '').slice(0, 90)}</p>
+            <input type="text" value={v.product} placeholder="محصول، مثلاً: آیفون ۱۲" onChange={(e) => set({ product: e.target.value })} style={{ marginTop: 4 }} />
+            <input type="text" value={v.note} placeholder="یادداشت برای ربات: حافظه، قیمت، شرایط…" onChange={(e) => set({ note: e.target.value })} style={{ marginTop: 4 }} />
+            {(v.note !== (m.note || '') || v.product !== (m.product || '')) && <button className="btn sm primary" style={{ marginTop: 4 }} onClick={() => save(m, kind)}>ذخیره</button>}
+          </div>
+        </div>
+      </div>
+    )
+  }
+  return (
+    <>
+      <p className="muted">برای هر پست یا استوری بنویسید درباره‌ی کدام محصول است. وقتی کسی زیر آن کامنت بگذارد یا روی استوری جواب بدهد (مثلاً «قیمتش چنده؟»)، ربات می‌داند منظورش کدام محصول است و از فهرست کالای سایت جواب درست می‌دهد.</p>
+      <Msg m={msg} />
+      {!d.connected && <p className="err">اینستاگرام هنوز وصل نیست؛ بعد از اتصال، پست‌ها و استوری‌ها اینجا نشان داده می‌شوند.</p>}
+      {d.error && <p className="err">{d.error}</p>}
+      {d.stories.length > 0 && <h2>استوری‌های فعال</h2>}
+      <div className="list">{d.stories.map((m) => card(m, 'story'))}</div>
+      {d.posts.length > 0 && <h2 style={{ marginTop: 14 }}>پست‌ها</h2>}
+      <div className="list">{d.posts.map((m) => card(m, 'post'))}</div>
+    </>
+  )
+}
+
 function IgPart({ part }) {
   const [s, setS] = useState(null)
   const [msg, setMsg] = useState(null)
@@ -137,7 +180,7 @@ function IgPart({ part }) {
   if (!s) return <div className="empty">در حال بارگذاری…</div>
   const set = (patch) => setS({ ...s, ...patch })
   const KEYS = {
-    dm: ['dm_enabled', 'prompt_dm', 'welcome_text', 'quick_replies_enabled', 'dm_quick_replies', 'typing_indicator'],
+    dm: ['dm_enabled', 'prompt_dm', 'welcome_text', 'quick_replies_enabled', 'dm_quick_replies', 'typing_indicator', 'human_pause_minutes', 'batch_wait_seconds', 'notify_telegram'],
     comment: ['comment_enabled', 'comment_mode', 'public_ack', 'public_prices', 'prompt_comment', 'mod_profanity', 'mod_links', 'mod_words'],
     story: ['mention_reply_enabled', 'mention_replies'],
   }[part]
@@ -170,6 +213,22 @@ function IgPart({ part }) {
             <textarea value={s.prompt_dm} placeholder="مثلاً: همیشه آخر پیام بپرس مدل گوشی فعلی‌اش چیست." onChange={(e) => set({ prompt_dm: e.target.value })} />
           </div>
           <label className="check"><input type="checkbox" checked={s.typing_indicator} onChange={(e) => set({ typing_indicator: e.target.checked })} /> پیش از جواب «دیده شد» و «در حال نوشتن…» نشان بدهد</label>
+        </section>
+      )}
+      {part === 'dm' && (
+        <section className="card">
+          <h2>همکار و ربات</h2>
+          <div className="field">
+            <label>توقف ربات بعد از جواب همکار (دقیقه، ۰ = خاموش)</label>
+            <input type="number" min="0" max="1440" value={s.human_pause_minutes} onChange={(e) => set({ human_pause_minutes: Number(e.target.value) })} />
+            <p className="hint muted">وقتی شما از پنل یا از خود اپ اینستاگرام به کسی جواب بدهید، ربات تا این مدت برای همان نفر ساکت می‌ماند تا گفتگو را ادامه دهید. هر جواب تازه زمان را از نو می‌شمارد. در صفحه‌ی گفتگو دکمه‌ی «برگرداندن به ربات» هست. ⚠️ تا وقتی ابزار دیگری (مثل وردست) به پیج وصل است، جواب‌های آن هم «جواب همکار» حساب می‌شود.</p>
+          </div>
+          <div className="field">
+            <label>انتظار برای چند پیام پشت‌سرهم (ثانیه، ۰ = خاموش)</label>
+            <input type="number" min="0" max="120" value={s.batch_wait_seconds} onChange={(e) => set({ batch_wait_seconds: Number(e.target.value) })} />
+            <p className="hint muted">ربات بعد از آخرین پیام مشتری این‌قدر صبر می‌کند و به همه‌ی پیام‌هایی که در این فاصله فرستاده یک جواب می‌دهد. برای مشتری‌هایی که سؤالشان را در چند پیام کوتاه می‌نویسند، ۱۰ تا ۲۰ ثانیه مناسب است.</p>
+          </div>
+          <label className="check"><input type="checkbox" checked={s.notify_telegram} onChange={(e) => set({ notify_telegram: e.target.checked })} /> ارجاع‌ها به گروه پشتیبانی تلگرام هم برود (تاپیک «📸 اینستاگرام»)</label>
         </section>
       )}
       {part === 'dm' && (
@@ -275,6 +334,7 @@ export default function Channels({ id, sub }) {
       {cur === 'dm' && <IgPart part="dm" />}
       {cur === 'comment' && <IgPart part="comment" />}
       {cur === 'story' && <IgPart part="story" />}
+      {cur === 'media' && <Media />}
       {cur === 'rules' && <Rules embedded />}
       {cur === 'blocked' && <Blocked />}
     </>

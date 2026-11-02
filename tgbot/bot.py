@@ -5062,6 +5062,50 @@ async def core_think(text,user,dry=False):
     if d.get("action") in ("reply","handoff") and (d.get("reply") or "").strip(): return d
     return None
 
+# ════════════════════════════════════════════════
+#  خبرهای اینستاگرام (ارجاع، سفارش…) به گروه پشتیبانی، تاپیک «📸 اینستاگرام»
+# ════════════════════════════════════════════════
+IG_NOTIFY_DIR = "notify"
+
+async def process_ig_notify(bot):
+    try: files=sorted(f for f in os.listdir(IG_NOTIFY_DIR) if f.endswith(".json"))
+    except FileNotFoundError: return 0
+    for f in files:
+        p=os.path.join(IG_NOTIFY_DIR,f)
+        try:
+            with open(p,encoding="utf-8") as fh: text=str(json.load(fh).get("text") or "")[:3500]
+        except Exception as e:
+            logger.warning(f"ig notify {f}: {e}"); text=""
+        try: os.remove(p)
+        except OSError as e:
+            logger.error(f"ig notify {f}: پاک نشد، فرستاده نمی‌شود: {e}"); continue
+        if not text: continue
+        sent=False
+        gid=support_group()
+        if gid:
+            tid=settings.get("ig_topic")
+            if not tid:
+                try:
+                    t=await bot.create_forum_topic(gid,"📸 اینستاگرام")
+                    tid=t.message_thread_id; settings["ig_topic"]=tid; await save_settings()
+                except Exception as e: logger.warning(f"ig topic: {e}"); tid=None
+            try:
+                await bot.send_message(gid,text,message_thread_id=tid,disable_web_page_preview=True); sent=True
+            except Exception as e:
+                logger.warning(f"ig notify group: {e}")
+                if settings.pop("ig_topic",None): await save_settings()   # تاپیک پاک شده بود؛ بار بعد از نو
+        if not sent:
+            for aid in admin_ids():
+                try: await bot.send_message(aid,text,disable_web_page_preview=True)
+                except Exception as e: logger.debug(f"ig notify admin {aid}: {e}")
+    return len(files)
+
+async def _ig_notify_loop(bot):
+    while True:
+        await asyncio.sleep(3)
+        try: await process_ig_notify(bot)
+        except Exception as e: logger.error(f"ig notify: {e}")
+
 def save_faq_soon(delay=3.0):
     """شمارنده‌ها هر چند ثانیه یک‌بار روی دیسک می‌روند، نه با هر پیام
     (خاموشی هم یک‌بار ذخیره می‌کند، پس چیزی گم نمی‌شود)."""
@@ -6514,6 +6558,7 @@ async def post_init(app):
     _spawn(_catalog_loop(app.bot),"لیست کالای سایت")
     _spawn(_panel_inbox_loop(),"تغییرهای پنل وب")
     _spawn(_status_loop(),"گزارش وضعیت")
+    _spawn(_ig_notify_loop(app.bot),"خبرهای اینستاگرام")
     global BOT_USERNAME
     try:
         me=await app.bot.get_me(); BOT_USERNAME=me.username or ""

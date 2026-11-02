@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from . import ai, channels, config, crm, db, knowledge, moderation, push
+from . import ai, channels, config, crm, db, knowledge, moderation, push, tg_notify
 from .rules import Incoming, find_rule, pick
 
 MAX_RETRIES = 3
@@ -27,8 +27,9 @@ def parse_event(kind: str, payload: dict) -> Incoming | None:
             return Incoming(channel="dm", user_id=sender, text=msg.get("text") or "", source="mention")
         if not msg.get("text"):
             return None     # عکس، ویس، استیکر و… بدون متن: در این نسخه جواب خودکار ندارد
-        story = bool((msg.get("reply_to") or {}).get("story"))
-        return Incoming(channel="dm", user_id=sender, text=msg["text"], source="story_reply" if story else "")
+        story = (msg.get("reply_to") or {}).get("story") or {}
+        return Incoming(channel="dm", user_id=sender, text=msg["text"], source="story_reply" if story else "",
+                        media_id=str(story.get("id") or "") or None)
     if kind == "postback":
         pb = payload.get("postback") or {}
         text = pb.get("title") or pb.get("payload") or ""
@@ -70,18 +71,40 @@ async def store_incoming(ig, c, kind: str, payload: dict, inc: Incoming) -> None
         crm.touch(c, "ig", inc.user_id, db.conversation_username(c, inc.user_id), "message", inc.text)
 
 
-async def handle_event(ig, row, c) -> str:
-    """یک رویداد را پردازش می‌کند. خروجی: done | skipped"""
+async def handle_echo(c, payload: dict) -> str:
+    """پیامی که از طرف پیج رفته. اگر ربات نفرستاده، همکار از خود اپ اینستاگرام جواب داده:
+    در صندوق ثبت می‌شود و ربات برای آن نفر ساکت می‌شود."""
+    msg = payload.get("message", {})
+    mid, user = msg.get("mid", ""), str(payload.get("recipient", {}).get("id", ""))
+    if not mid or not user or c.execute("SELECT 1 FROM messages WHERE id=?", (mid,)).fetchone():
+        return "skipped"           # پیام خود ربات (یا تکراری)
+    db.add_message(c, mid, user, "out", msg.get("text") or "📎 پیوست", sender="admin")
+    db.set_human(c, user, ai.settings(c)["human_pause_minutes"])
+    return "admin"
+
+
+async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_only: bool = False) -> str:
+    """یک رویداد را پردازش می‌کند. خروجی: done | skipped | ignored | hidden | human | merged | admin
+    extra_texts: پیام‌های قبلی همان نفر که منتظر ماندند و با این یکی یک جواب می‌گیرند.
+    store_only: فقط ثبت در صندوق (پیامی که با پیام بعدی‌اش یکی شد)."""
     payload = json.loads(row["payload"])
+    if row["kind"] == "message" and payload.get("message", {}).get("is_echo"):
+        return await handle_echo(c, payload)
     inc = parse_event(row["kind"], payload)
     if inc is None or not inc.user_id or inc.user_id == config.IG_USER_ID:
         return "skipped"
     await store_incoming(ig, c, row["kind"], payload, inc)
+    if store_only:
+        return "merged"
+    if extra_texts and inc.text:
+        inc.text = "\n".join([*extra_texts, inc.text])
     if not channels.enabled("instagram"):
         return "ignored"   # کانال خاموش: پیام در صندوق ثبت می‌شود ولی پاسخ خودکار نمی‌رود
     if knowledge.is_blocked(c, inc.user_id):
         return "ignored"
     s = ai.settings(c)
+    if inc.channel == "dm" and db.human_until(c, inc.user_id):
+        return "human"      # همکار در حال گفتگوست؛ ربات ساکت می‌ماند
     if inc.channel == "comment":
         reason = moderation.check(inc.text, s)
         if reason:
@@ -151,8 +174,14 @@ async def handle_ai(ig, row, c, payload, inc: Incoming) -> str:
     else:
         username = db.conversation_username(c, inc.user_id)
     s = ai.settings(c)
+    mnote = db.media_note(c, inc.media_id)
+    notes = [STORY_NOTE] if inc.source == "story_reply" else []
+    if mnote.get("note") or mnote.get("product"):
+        what = "استوری" if inc.source == "story_reply" else "پستی"
+        notes.append(f"این پیام درباره‌ی {what} است که صاحب پیج درباره‌اش نوشته: "
+                     f"{mnote.get('product', '')} {mnote.get('note', '')}".strip())
     d = await ai.decide(c, channel=inc.channel, text=inc.text, user_id=inc.user_id, username=username, event_id=row["id"],
-                        note=STORY_NOTE if inc.source == "story_reply" else "", s=s)
+                        note="\n".join(notes), s=s, product_hint=mnote.get("product", ""))
     crm.auto_tag(c, crm.cid("ig", inc.user_id), d.intent)
     if d.action == "ignore" or (d.action == "skip" and d.skip_reason == "emoji"):
         return "ignored"
@@ -175,6 +204,11 @@ async def handle_ai(ig, row, c, payload, inc: Incoming) -> str:
             "⚠️ شکایت مشتری" if d.intent == "complaint" else "نیاز به پاسخ شما 🙋")
         body = f"{username or inc.user_id}: {d.handoff_reason or inc.text}"[:160]
         asyncio.create_task(push.notify_all(title, body, "/#/ai/handoffs"))
+        if s["notify_telegram"]:
+            tg_notify.send(f"{title}\n📸 اینستاگرام · {'@' + username if username else inc.user_id}"
+                           f" ({'کامنت' if inc.channel == 'comment' else 'دایرکت'})\n\n💬 {inc.text[:500]}"
+                           + (f"\n\n📝 {d.handoff_reason}" if d.handoff_reason else "")
+                           + f"\n\n🔗 https://ig.stland.ir/#/customers/ig:{inc.user_id}")
     return "done"
 
 
@@ -218,7 +252,7 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replie
             else:
                 if kind == "private":
                     db.mark_comment(c, target, answered=True)
-                db.add_message(c, ig_id or f"out:{event_id}:{kind}", inc.user_id, "out", text)
+                db.add_message(c, ig_id or f"out:{event_id}:{kind}", inc.user_id, "out", text, sender="bot")
             return True
         except Exception as e:  # noqa: BLE001
             err = str(e)
@@ -230,18 +264,54 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replie
     return False
 
 
+def _sender(row) -> str:
+    try:
+        p = json.loads(row["payload"])
+    except ValueError:
+        return ""
+    return str(p.get("sender", {}).get("id", "")) if row["kind"] in ("message", "postback") else ""
+
+
+def plan_batches(rows, wait: float, now: float | None = None) -> list[tuple]:
+    """با انتظار روشن، دایرکت‌های پشت‌سرهم هر نفر یک گروه می‌شوند و فقط وقتی آخرینشان «جا افتاد»
+    (wait ثانیه از آن گذشت) با هم پردازش می‌شوند. خروجی: [(row، store_only، extra_texts)]."""
+    now = now or time.time()
+    if wait <= 0:
+        return [(r, False, None) for r in rows]
+    out, groups = [], {}
+    for r in rows:
+        s = _sender(r) if r["kind"] == "message" else ""
+        if not s:
+            out.append((r, False, None))
+        else:
+            groups.setdefault(s, []).append(r)
+    for rs in groups.values():
+        if now - rs[-1]["created_at"] < wait:
+            continue                     # هنوز ممکن است پیام بعدی بیاید؛ در صف می‌ماند
+        texts = []
+        for r in rs[:-1]:
+            out.append((r, True, None))
+            t = (json.loads(r["payload"]).get("message") or {}).get("text")
+            if t:
+                texts.append(t)
+        out.append((rs[-1], False, texts or None))
+    return out
+
+
 async def run_forever(ig, stop: asyncio.Event) -> None:
     while not stop.is_set():
         with db.connect() as c:
-            rows = db.pending_events(c)
+            rows = db.pending_events(c, limit=50)
             await process_followups(ig, c)
-        if not rows:
+            wait = ai.settings(c)["batch_wait_seconds"]
+        plan = plan_batches(rows, wait)
+        if not plan:
             await asyncio.sleep(1)
             continue
-        for row in rows:
+        for row, store_only, extra in plan:
             with db.connect() as c:
                 try:
-                    status = await handle_event(ig, row, c)
+                    status = await handle_event(ig, row, c, extra_texts=extra, store_only=store_only)
                     db.finish_event(c, row["id"], status)
                 except Exception as e:  # noqa: BLE001
                     status = "error"

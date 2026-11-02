@@ -1,10 +1,11 @@
 """API پنل. همه‌ی مسیرها جز /api/login نشست می‌خواهند."""
+import json
 import time
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 
-from . import ai, auth, channels, config, crm, db
+from . import ai, auth, channels, config, crm, db, reports
 from .importer import validate
 from .rules import Incoming, find_rule
 
@@ -155,9 +156,11 @@ async def _send(request: Request, kind: str, target: str, text: str):
             db.mark_comment(c, target, answered=True, read=True)
             row = c.execute("SELECT user_id FROM comments WHERE id=?", (target,)).fetchone()
             if row:
-                db.add_message(c, ig_id or f"out:{target}", row[0], "out", text)
+                db.add_message(c, ig_id or f"out:{target}", row[0], "out", text, sender="admin")
+                db.set_human(c, row[0], ai.settings(c)["human_pause_minutes"])
         else:
-            db.add_message(c, ig_id or f"out:{target}:{time.time()}", target, "out", text)
+            db.add_message(c, ig_id or f"out:{target}:{time.time()}", target, "out", text, sender="admin")
+            db.set_human(c, target, ai.settings(c)["human_pause_minutes"])   # همکار وارد گفتگو شد
     return {"ok": True, "id": ig_id}
 
 
@@ -304,6 +307,20 @@ def channels_set(ch: str, body: dict):
         return next(x for x in channels.describe(c) if x["id"] == ch)
 
 
+@protected.get("/conversations/{uid}/human")
+def human_get(uid: str):
+    with db.connect() as c:
+        return {"until": db.human_until(c, uid)}
+
+
+@protected.delete("/conversations/{uid}/human")
+def human_clear(uid: str):
+    """برگرداندن گفتگو به ربات پیش از تمام شدن زمان سکوت."""
+    with db.connect() as c:
+        db.clear_human(c, uid)
+    return {"until": 0}
+
+
 # ---------- اینستاگرام: سؤال‌های شروع گفتگو ----------
 
 @protected.post("/instagram/ice-breakers")
@@ -345,3 +362,50 @@ def customer_put(key: str, body: dict):
             return crm.update(c, key, body)
         except ValueError as e:
             raise HTTPException(422, str(e))
+
+
+# ---------- گزارش‌ها ----------
+
+@protected.get("/reports")
+async def reports_get(request: Request, days: int = 30):
+    days = min(365, max(1, days))
+    with db.connect() as c:
+        r = reports.report(c, days)
+        acc = json.loads(db.kv_get(c, "ig_account") or "{}")
+    if config.IG_ACCESS_TOKEN and time.time() - acc.get("at", 0) > 6 * 3600:
+        try:
+            a = await ig(request).account()
+            acc = {"at": time.time(), "followers": a.get("followers_count"), "media": a.get("media_count")}
+            with db.connect() as c:
+                db.kv_set(c, "ig_account", json.dumps(acc))
+        except Exception:  # noqa: BLE001
+            pass
+    r["followers"] = acc.get("followers")
+    return r
+
+
+# ---------- پست و استوری: یادداشت و محصول ----------
+
+@protected.get("/instagram/media-notes")
+async def media_notes(request: Request):
+    posts, stories, err = [], [], None
+    if config.IG_ACCESS_TOKEN:
+        try:
+            posts = await media(request)
+            stories = await ig(request).stories()
+        except Exception as e:  # noqa: BLE001
+            err = _friendly(str(e))
+    with db.connect() as c:
+        notes = {r["media_id"]: dict(r) for r in c.execute("SELECT * FROM media_notes")}
+    for m in posts + stories:
+        n = notes.get(m["id"], {})
+        m["note"], m["product"] = n.get("note", ""), n.get("product", "")
+    return {"posts": posts, "stories": stories, "error": err, "connected": bool(config.IG_ACCESS_TOKEN)}
+
+
+@protected.put("/instagram/media-notes/{mid}")
+def media_note_put(mid: str, body: dict):
+    kind = body.get("kind") if body.get("kind") in ("post", "story") else "post"
+    with db.connect() as c:
+        db.set_media_note(c, mid, kind, str(body.get("note") or ""), str(body.get("product") or ""))
+    return {"ok": True}
