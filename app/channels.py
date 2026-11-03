@@ -20,8 +20,6 @@ CHANNELS = {
     "telegram": {"label": "تلگرام", "ready": True,
                  "fields": [("BOT_TOKEN", "توکن ربات از BotFather"), ("ADMIN_ID", "آیدی عددی مدیرها")]},
     "bale": {"label": "بله", "ready": False, "fields": []},
-    "eitaa": {"label": "ایتا", "ready": False, "fields": []},
-    "rubika": {"label": "روبیکا", "ready": False, "fields": []},
     "whatsapp": {"label": "واتساپ", "ready": False, "fields": []},
     "webchat": {"label": "چت سایت", "ready": False, "fields": []},
 }
