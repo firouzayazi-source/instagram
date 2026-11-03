@@ -102,3 +102,18 @@
 کی وناو لیوان	unknown
 چی شده	unknown|dym
 شبی چند؟	dym|unknown
+چطوری خرید کنم	i_order
+میخوام سفارش بدم	i_order
+میخوام خرید کنم	i_order
+تخفیف میدید	i_discount
+آخرش چند میدی	i_discount
+جشنواره دارید	i_notify
+اصل هست؟	i_genuine
+تعمیر شده نیست؟	i_genuine
+باتریش چند درصده	i_genuine
+باتری ۱۵ پرو چند درصده	catalog
+شارژر اصل دارید	catalog
+پس کرایه میشه	i_shipping
+کدومش ارزش خرید داره	i_advisor
+برای بازی کدوم خوبه	i_advisor
+باتری کدوم مدل بیشتر میکشه	i_advisor
