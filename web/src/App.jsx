@@ -9,6 +9,7 @@ import RuleForm from './pages/RuleForm.jsx'
 import Settings from './pages/Settings.jsx'
 import Channels from './pages/Channels.jsx'
 import Customers from './pages/Customers.jsx'
+import Orders from './pages/Orders.jsx'
 
 const ICONS = {
   home: 'M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
@@ -74,6 +75,7 @@ export default function App() {
   else if (route.startsWith('/ai')) page = <Ai sub={route.split('/')[2]} badges={{ handoffs: stats.ai?.handoffs_open }} />
   else if (route.startsWith('/rules/')) page = <RuleForm id={route.split('/')[2]} />
   else if (route.startsWith('/customers')) page = <Customers id={route.split('/')[2]} />
+  else if (route.startsWith('/orders')) page = <Orders id={route.split('/')[2]} />
   else if (route.startsWith('/channels')) page = <Channels id={route.split('/')[2]} sub={route.split('/')[3]} />
   else if (route === '/settings') page = <Settings onLogout={() => setAuthed(false)} />
   else page = <div className="empty">صفحه پیدا نشد</div>
@@ -85,7 +87,7 @@ export default function App() {
       <nav className="nav" aria-label="منوی اصلی">
         {TABS.map(([path, label, icon]) => {
           const active = path === '/' ? route === '/'
-            : path === '/comments' ? route.startsWith('/comments') || route.startsWith('/messages') || route.startsWith('/customers')
+            : path === '/comments' ? route.startsWith('/comments') || route.startsWith('/messages') || route.startsWith('/customers') || route.startsWith('/orders')
             : path === '/channels' ? route.startsWith('/channels') || route.startsWith('/rules')
             : route.startsWith(path)
           return (

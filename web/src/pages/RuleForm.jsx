@@ -5,7 +5,7 @@ const EMPTY = {
   name: '', enabled: true, priority: 100, channels: ['comment'], post_scope: 'all',
   triggers: [{ match: 'any', value: '' }],
   actions: { public_replies: [''], private_replies: [''], dm_replies: [''] },
-  advanced: { require_follow: false, follow_prompt: '', once_per_user: false, cooldown_minutes: 0, active_hours: null, followup: null },
+  advanced: { require_follow: false, follow_prompt: '', once_per_user: false, cooldown_minutes: 0, active_hours: null, followup: null, pause_ai_minutes: 0, handoff: false },
 }
 
 export default function RuleForm({ id }) {
@@ -13,12 +13,15 @@ export default function RuleForm({ id }) {
   const [r, setR] = useState(EMPTY)
   const [saved, setSaved] = useState([])
   const [media, setMedia] = useState([])
+  const [stories, setStories] = useState([])
+  const [copyTo, setCopyTo] = useState('')
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
     api.get('/api/saved-replies').then(setSaved).catch(() => {})
     api.get('/api/media').then(setMedia).catch(() => {})
+    api.get('/api/instagram/media-notes').then((d) => setStories(d.stories || [])).catch(() => {})
     if (!isNew) api.get('/api/rules').then((rs) => {
       const x = rs.find((y) => String(y.id) === id)
       if (x) setR({
@@ -48,6 +51,9 @@ export default function RuleForm({ id }) {
     if (!adv.require_follow) delete adv.follow_prompt
     if (!adv.followup?.text) delete adv.followup
     if (!adv.active_hours) delete adv.active_hours
+    adv.pause_ai_minutes = Number(adv.pause_ai_minutes) || 0
+    if (!adv.pause_ai_minutes) delete adv.pause_ai_minutes
+    if (!adv.handoff) delete adv.handoff
     const body = {
       ...r, advanced: adv,
       triggers: r.triggers.filter((t) => t.match === 'any' || t.value.trim()),
@@ -62,6 +68,14 @@ export default function RuleForm({ id }) {
     finally { setBusy(false) }
   }
 
+  async function copy() {
+    if (!copyTo) return
+    try {
+      const { id: nid } = await api.post(`/api/rules/${id}/copy`, { channels: [copyTo] })
+      location.hash = `#/rules/${nid}`
+    } catch (ex) { setErr(ex.message) }
+  }
+
   async function remove() {
     if (!confirm('این دستور حذف شود؟')) return
     await api.del(`/api/rules/${id}`); location.hash = '#/channels/instagram/rules'
@@ -70,6 +84,8 @@ export default function RuleForm({ id }) {
   return (
     <form onSubmit={save}>
       <header className="topbar"><h1>{isNew ? 'دستور جدید' : 'ویرایش دستور'}</h1><a href="#/channels/instagram/rules" className="btn sm">انصراف</a></header>
+
+      <Flow r={r} />
 
       <section className="card">
         <div className="field"><label htmlFor="name">نام دستور</label><input id="name" type="text" value={r.name} onChange={(e) => set({ name: e.target.value })} required /></div>
@@ -117,6 +133,20 @@ export default function RuleForm({ id }) {
       </section>
 
       <section className="card">
+        <h2>بعد از اجرای دستور</h2>
+        <label className="check"><input type="checkbox" checked={!!r.advanced.handoff} onChange={(e) => setAdv({ handoff: e.target.checked })} /> 🙋 به همکار بسپار (در «ارجاع‌ها»، پوش و گروه تلگرام)</label>
+        {hasD && (
+          <div className="field">
+            <label>⏸ توقف هوش مصنوعی برای همین مشتری (دقیقه، ۰ = خاموش)</label>
+            <input type="number" min="0" max="10080" value={r.advanced.pause_ai_minutes || 0} onChange={(e) => setAdv({ pause_ai_minutes: e.target.value })} />
+            <p className="hint muted">مثل وردست: وقتی مشتری مثلاً «حضوری» یا «همکار» نوشت، ربات تا این مدت در دایرکت او ساکت می‌ماند تا همکار جواب بدهد. از گفتگو یا پرونده‌ی مشتری می‌شود زودتر به ربات برگرداند.</p>
+          </div>
+        )}
+        {!hasC && !hasD && <p className="muted">اول محل دریافت پیام را انتخاب کنید.</p>}
+        <p className="hint muted">با این گزینه‌ها دستور بدون پیام پاسخ هم ذخیره می‌شود.</p>
+      </section>
+
+      <section className="card">
         <details>
           <summary>تنظیمات پیشرفته (اختیاری)</summary>
           <div style={{ marginTop: 10 }}>
@@ -158,6 +188,25 @@ export default function RuleForm({ id }) {
                 )}
               </div>
             )}
+            {r.channels.includes('story_reply') && (
+              <div className="field">
+                <label>محدود به استوری (فقط جواب‌های همین استوری‌ها)</label>
+                <label className="check"><input type="radio" checked={r.post_scope === 'all'} onChange={() => set({ post_scope: 'all' })} /> همه‌ی استوری‌ها</label>
+                <label className="check"><input type="radio" checked={r.post_scope !== 'all'} onChange={() => set({ post_scope: [] })} /> فقط استوری‌های انتخاب‌شده</label>
+                {r.post_scope !== 'all' && (
+                  <div className="media-pick">
+                    {!stories.length && <span className="muted">استوری فعالی نیست (فقط استوری‌های ۲۴ ساعت اخیر دیده می‌شوند)</span>}
+                    {stories.map((m) => (
+                      <label key={m.id}>
+                        <input type="checkbox" checked={r.post_scope.includes(m.id)} onChange={(e) => set({ post_scope: e.target.checked ? [...r.post_scope, m.id] : r.post_scope.filter((x) => x !== m.id) })} />
+                        {(m.thumbnail_url || m.media_url) && <img src={m.thumbnail_url || m.media_url} alt="" />}
+                        <span>{m.product || m.note || new Date(m.timestamp).toLocaleString('fa-IR')}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="field"><label>اولویت (عدد کوچک‌تر زودتر بررسی می‌شود)</label><input type="number" value={r.priority} onChange={(e) => set({ priority: Number(e.target.value) })} /></div>
           </div>
         </details>
@@ -168,6 +217,19 @@ export default function RuleForm({ id }) {
         <button className="btn primary" disabled={busy}>{isNew ? 'ایجاد و فعال‌سازی' : 'ذخیره'}</button>
         {!isNew && <button type="button" className="btn danger" onClick={remove}>حذف</button>}
       </div>
+      {!isNew && (
+        <section className="card" style={{ marginTop: 12 }}>
+          <h2>کپی برای کانال دیگر</h2>
+          <p className="hint muted">همین شرط‌ها و پاسخ‌ها برای جای دیگر؛ کپی خاموش ساخته می‌شود تا بازبینی‌اش کنید.</p>
+          <div className="actions">
+            <select value={copyTo} onChange={(e) => setCopyTo(e.target.value)} style={{ width: 'auto' }}>
+              <option value="">کجا؟</option><option value="comment">کامنت پست</option><option value="dm">دایرکت</option>
+              <option value="story_reply">جواب به استوری</option><option value="mention">منشن در استوری</option>
+            </select>
+            <button type="button" className="btn sm" disabled={!copyTo} onClick={copy}>کپی کن</button>
+          </div>
+        </section>
+      )}
     </form>
   )
 }
@@ -193,5 +255,34 @@ function ReplyList({ label, list, saved, onChange }) {
         )}
       </div>
     </div>
+  )
+}
+
+const WHERE = { comment: 'کامنت پست', dm: 'دایرکت', story_reply: 'جواب استوری', mention: 'منشن استوری' }
+const MATCH = { any: 'هر پیامی', exact: 'دقیقاً', contains: 'شامل', starts_with: 'شروع با', regex: 'الگو' }
+
+// نمای جریان دستور، مثل جریان‌ساز وردست: از کجا ← چه شرطی ← چه پاسخی ← بعدش چه
+function Flow({ r }) {
+  const where = r.channels.map((c) => WHERE[c]).join('، ') || '—'
+  const when = r.triggers.map((t) => t.match === 'any' ? MATCH.any : `${MATCH[t.match]} «${t.value || '…'}»`).join(' یا ')
+  const n = (k) => (r.actions[k] || []).filter((t) => t && t.trim()).length
+  const replies = [n('private_replies') && `${n('private_replies')} دایرکت به کامنت‌گذار`, n('public_replies') && `${n('public_replies')} جواب زیر کامنت`,
+    n('dm_replies') && `${n('dm_replies')} پاسخ دایرکت`, (r.actions.quick_replies || []).filter(Boolean).length && 'دکمه‌ی سریع'].filter(Boolean)
+  const adv = r.advanced
+  const conds = [adv.require_follow && 'فقط فالوورها', adv.once_per_user && 'یک بار برای هر نفر', Number(adv.cooldown_minutes) > 0 && `فاصله ${adv.cooldown_minutes} دقیقه`,
+    adv.active_hours && `ساعت ${adv.active_hours[0]} تا ${adv.active_hours[1]}`, r.post_scope !== 'all' && `${(r.post_scope || []).length} پست/استوری خاص`].filter(Boolean)
+  const after = [adv.handoff && '🙋 سپردن به همکار', Number(adv.pause_ai_minutes) > 0 && `⏸ توقف ربات ${adv.pause_ai_minutes} دقیقه`,
+    adv.followup?.text && `⏰ پیگیری بعد از ${Math.round((adv.followup.after_seconds || 0) / 60)} دقیقه`].filter(Boolean)
+  const steps = [['📥 از کجا', where], ['🔑 شرط', when + (conds.length ? ` · ${conds.join(' · ')}` : '')],
+    ['💬 پاسخ', replies.join(' · ') || 'بدون پیام'], ...(after.length ? [['➡️ بعدش', after.join(' · ')]] : [])]
+  return (
+    <section className="card flow">
+      {steps.map(([t, d], i) => (
+        <React.Fragment key={t}>
+          {i > 0 && <div className="flow-arrow">↓</div>}
+          <div className="flow-step"><b>{t}</b><span>{d}</span></div>
+        </React.Fragment>
+      ))}
+    </section>
   )
 }

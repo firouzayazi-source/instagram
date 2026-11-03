@@ -68,6 +68,9 @@ def stats():
         auto = c.execute(
             "SELECT COUNT(DISTINCT event_id) FROM replies WHERE ok=1 AND created_at>? "
             "AND event_id NOT LIKE 'manual:%' AND event_id NOT LIKE 'fu:%'", (day,)).fetchone()[0]
+        st["orders_open"] = c.execute("SELECT COUNT(*) FROM orders WHERE status IN ('new','awaiting_payment','receipt')").fetchone()[0]
+        st["orders_receipt"] = c.execute("SELECT COUNT(*) FROM orders WHERE status='receipt'").fetchone()[0]
+        st["lost_open"] = sum(1 for x in reports.lost(c, 7, 3) if x["window_left"] > 0)
         return {**st, "incoming_24h": incoming, "auto_answered_24h": auto, "ai": ai.stats(c),
                 "recent": db.recent_replies(c, 20)}
 

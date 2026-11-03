@@ -76,6 +76,8 @@ export default function Dashboard({ stats: s }) {
         <div className="tiles">
           <a href="#/comments" className={`tile ${s.comments_unanswered ? 'warn' : ''}`}><b>{fa(s.comments_unanswered)}</b><span>کامنت بی‌پاسخ</span></a>
           <a href="#/messages" className={`tile ${s.conversations_unanswered ? 'warn' : ''}`}><b>{fa(s.conversations_unanswered)}</b><span>دایرکت بی‌پاسخ</span></a>
+          <a href="#/orders" className={`tile ${s.orders_receipt ? 'bad' : s.orders_open ? 'warn' : ''}`}><b>{fa(s.orders_open)}</b><span>سفارش باز{s.orders_receipt ? ` (${fa(s.orders_receipt)} رسید رسیده)` : ''}</span></a>
+          <a href="#/customers/lost" className={`tile ${s.lost_open ? 'warn' : ''}`}><b>{fa(s.lost_open)}</b><span>فرصت ازدست‌رفته‌ی قابل پیگیری</span></a>
           <div className={`tile ${s.events_error ? 'bad' : ''}`}><b>{fa(s.events_error)}</b><span>رویداد با خطا</span></div>
           <div className={`tile ${days !== null && days < 10 ? 'bad' : ''}`}><b>{days === null ? '—' : fa(days)}</b><span>روز تا انقضای توکن</span></div>
         </div>
