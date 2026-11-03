@@ -53,3 +53,32 @@ def report(c, days: int = 30) -> dict:
         "series": series,
         "hidden_comments": q("SELECT COUNT(*) FROM comments WHERE hidden=1 AND created_at>?", since),
     }
+
+
+INTEREST = ("price", "purchase", "availability", "installment")
+
+
+def lost(c, days: int = 14, idle_hours: float = 3) -> list[dict]:
+    """فرصت‌های از‌دست‌رفته: کسانی که قیمت یا موجودی پرسیدند یا قصد خرید داشتند، سفارشی ثبت نکردند و
+    دست‌کم idle_hours ساعت است پیامی نداده‌اند. پنجره‌ی باز یعنی هنوز می‌شود پیام پیگیری فرستاد."""
+    from . import crm
+    now = time.time()
+    since, idle = now - days * 86400, now - idle_hours * 3600
+    ph = ",".join("?" * len(INTEREST))
+    rows = c.execute(
+        f"SELECT * FROM customers WHERE last_seen>? AND last_seen<? AND ("
+        f" tags LIKE '%\"قصد خرید\"%' OR user_id IN (SELECT user_id FROM ai_log WHERE intent IN ({ph}) AND created_at>?))"
+        " AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.user_id=customers.user_id AND o.created_at>?)"
+        " ORDER BY last_seen DESC LIMIT 200", (since, idle, *INTEREST, since, since)).fetchall()
+    out = []
+    for r in rows:
+        d = dict(r)
+        d["tags"] = json.loads(d["tags"] or "[]")
+        last_in = c.execute("SELECT MAX(created_at) FROM messages WHERE user_id=? AND direction='in'",
+                            (d["user_id"],)).fetchone()[0] or 0
+        d["window_left"] = max(0, int(last_in + crm.WINDOW - now))
+        q = c.execute("SELECT input, intent FROM ai_log WHERE user_id=? AND intent IN "
+                      f"({ph}) ORDER BY created_at DESC LIMIT 1", (d["user_id"], *INTEREST)).fetchone()
+        d["asked"] = q["input"][:200] if q else ""
+        out.append(d)
+    return out

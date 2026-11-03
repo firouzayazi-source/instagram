@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from . import ai, channels, config, crm, db, knowledge, moderation, push, tg_notify
+from . import ai, channels, config, crm, db, knowledge, moderation, orders, push, tg_notify
 from .rules import Incoming, find_rule, pick
 
 MAX_RETRIES = 3
@@ -25,15 +25,20 @@ def parse_event(kind: str, payload: dict) -> Incoming | None:
             return None
         if any(a.get("type") == "story_mention" for a in msg.get("attachments") or []):
             return Incoming(channel="dm", user_id=sender, text=msg.get("text") or "", source="mention")
+        images = [str((a.get("payload") or {}).get("url") or "") for a in msg.get("attachments") or []
+                  if a.get("type") == "image" and str((a.get("payload") or {}).get("url") or "").startswith("https://")]
         if not msg.get("text"):
-            return None     # عکس، ویس، استیکر و… بدون متن: در این نسخه جواب خودکار ندارد
+            if images:     # عکس بدون متن: شاید رسید پرداخت سفارش باشد
+                return Incoming(channel="dm", user_id=sender, text="", images=images)
+            return None     # ویس، استیکر و… بدون متن: جواب خودکار ندارد
         story = (msg.get("reply_to") or {}).get("story") or {}
         return Incoming(channel="dm", user_id=sender, text=msg["text"], source="story_reply" if story else "",
-                        media_id=str(story.get("id") or "") or None)
+                        media_id=str(story.get("id") or "") or None, images=images)
     if kind == "postback":
         pb = payload.get("postback") or {}
         text = pb.get("title") or pb.get("payload") or ""
-        return Incoming(channel="dm", user_id=sender, text=text, source="icebreaker") if text else None
+        return Incoming(channel="dm", user_id=sender, text=text, source="icebreaker",
+                        payload=str(pb.get("payload") or "")) if text else None
     return None
 
 
@@ -46,6 +51,8 @@ def _shown_text(inc: Incoming) -> str:
         return "📣 شما را در استوری‌اش منشن کرد" + (f": {inc.text}" if inc.text else "")
     if inc.source == "story_reply":
         return f"↩️ (جواب به استوری) {inc.text}"
+    if inc.images and not inc.text:
+        return "🖼 عکس"
     return inc.text
 
 
@@ -103,8 +110,24 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
     if knowledge.is_blocked(c, inc.user_id):
         return "ignored"
     s = ai.settings(c)
-    if inc.channel == "dm" and db.human_until(c, inc.user_id):
-        return "human"      # همکار در حال گفتگوست؛ ربات ساکت می‌ماند
+    if inc.channel == "dm":
+        # فروش در دایرکت: دکمه‌ی «سفارش»، گفتگوی سفارش در حال انجام، یا عکس رسید
+        username = db.conversation_username(c, inc.user_id)
+        human = bool(db.human_until(c, inc.user_id))
+        reply = None
+        if inc.payload.startswith("ORDER:") and s["order_enabled"] and not human:
+            reply = orders.start(c, inc.user_id, username, product_id=inc.payload[6:])
+        elif inc.images and not inc.text:
+            reply = orders.receipt(c, inc.user_id, username, inc.images[0])   # رسید حتی وقتی همکار در گفتگوست
+        elif not human:
+            reply = orders.handle(c, inc.user_id, username, inc.text, inc.images, s)
+        if reply:
+            await _send(ig, c, row["id"], None, "dm", payload, inc, reply)
+            return "done"
+        if inc.images and not inc.text:
+            return "skipped"    # عکس بی‌متن که رسید نبود: همکار ببیند
+        if human:
+            return "human"      # همکار در حال گفتگوست؛ ربات ساکت می‌ماند
     if inc.channel == "comment":
         reason = moderation.check(inc.text, s)
         if reason:
@@ -139,12 +162,29 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         if text:
             sent |= await _send(ig, c, row["id"], rule["id"], "dm", payload, inc, text,
                                 quick_replies=acts.get("quick_replies") or None)
+    if adv.get("pause_ai_minutes") and inc.channel == "dm":
+        db.set_human(c, inc.user_id, float(adv["pause_ai_minutes"]))   # «توقف هوش مصنوعی» بعد از این دستور
+    if adv.get("handoff"):
+        _rule_handoff(c, rule, inc, payload, s)
     if sent:
         db.record_hit(c, rule["id"], inc.user_id)
         fu = adv.get("followup")  # {"after_seconds": 3600, "text": "..."}
         if fu and fu.get("text") and fu.get("after_seconds"):
             db.add_followup(c, rule["id"], inc.user_id, fu["text"], float(fu["after_seconds"]))
     return "done"
+
+
+def _rule_handoff(c, rule: dict, inc: Incoming, payload: dict, s: dict) -> None:
+    """دستوری که «سپردن به همکار» دارد: در فهرست ارجاع‌ها، پوش و تلگرام."""
+    username = payload.get("from", {}).get("username") if inc.channel == "comment" else db.conversation_username(c, inc.user_id)
+    reason = f"دستور «{rule['name']}»"
+    c.execute("INSERT INTO handoffs(created_at,channel,user_id,username,comment_id,text,reason) VALUES (?,?,?,?,?,?,?)",
+              (time.time(), inc.channel, inc.user_id, username, payload.get("id") if inc.channel == "comment" else None,
+               inc.text, reason))
+    asyncio.create_task(push.notify_all("نیاز به پاسخ شما 🙋", f"{username or inc.user_id}: {inc.text}"[:160], "/#/ai/handoffs"))
+    if s["notify_telegram"]:
+        tg_notify.send(f"🙋 {reason}\n📸 اینستاگرام · {'@' + username if username else inc.user_id}\n\n💬 {inc.text[:500]}"
+                       f"\n\n🔗 https://ig.stland.ir/#/customers/ig:{inc.user_id}")
 
 
 async def hide_comment(ig, c, comment_id: str, reason: str) -> bool:
@@ -193,6 +233,11 @@ async def handle_ai(ig, row, c, payload, inc: Incoming) -> str:
             sent |= await _send(ig, c, row["id"], None, "private", payload, inc, d.reply)
         if d.public_reply:
             sent |= await _send(ig, c, row["id"], None, "public", payload, inc, d.public_reply)
+    elif d.cards and s["showcase_cards"]:
+        intro = d.reply.split("\n")[0].strip() or "موجودی‌ها 👇"
+        sent = await _send(ig, c, row["id"], None, "dm", payload, inc, intro)
+        if sent and not await _send_cards(ig, c, row["id"], inc, d.cards):
+            await _send(ig, c, row["id"], None, "dm", payload, inc, d.reply)    # کارت نرفت: همان متن کامل
     elif d.reply:
         sent = await _send(ig, c, row["id"], None, "dm", payload, inc, d.reply,
                            quick_replies=s["dm_quick_replies"] if s["quick_replies_enabled"] else None)
@@ -262,6 +307,18 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replie
                 return False
             await asyncio.sleep(2 ** attempt)
     return False
+
+
+async def _send_cards(ig, c, event_id, inc, cards: list[dict]) -> bool:
+    text = "🛍 " + " | ".join(x["title"] for x in cards[:10])
+    try:
+        ig_id = await ig.send_cards(inc.user_id, cards)
+    except Exception as e:  # noqa: BLE001
+        db.log_reply(c, event_id, None, "dm", inc.user_id, text, ok=False, error=str(e))
+        return False
+    db.log_reply(c, event_id, None, "dm", inc.user_id, text, ig_id=ig_id, ok=True)
+    db.add_message(c, ig_id or f"out:{event_id}:cards", inc.user_id, "out", text, sender="bot")
+    return True
 
 
 def _sender(row) -> str:

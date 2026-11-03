@@ -1,7 +1,7 @@
 """موتور قانون‌ها: کدام قانون به این رویداد می‌خورد و چه پاسخی می‌دهد."""
 import re
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .normalize import normalize
 
@@ -16,6 +16,8 @@ class Incoming:
     media_id: str | None = None   # فقط برای کامنت
     is_follower: bool | None = None
     source: str = ""      # دایرکت: story_reply (جواب به استوری) | mention (منشن در استوری) | icebreaker | ""
+    payload: str = ""     # postback دکمه‌ها، مثل ORDER:123
+    images: list = field(default_factory=list)   # آدرس عکس‌های پیام (مثلاً رسید پرداخت)
 
 
 def trigger_matches(trigger: dict, text_norm: str) -> bool:
@@ -51,7 +53,8 @@ def rule_matches(rule: dict, inc: Incoming, last_hit_at: float | None, now: floa
     elif inc.channel not in chs:
         return False
     scope = rule["post_scope"]
-    if inc.channel == "comment" and scope != "all" and inc.media_id not in scope:
+    # پست یا استوری مشخص: کامنت روی همان پست، یا جواب به همان استوری
+    if scope != "all" and (inc.channel == "comment" or inc.source == "story_reply") and inc.media_id not in scope:
         return False
     adv = rule.get("advanced", {})
     if adv.get("once_per_user") and last_hit_at is not None:

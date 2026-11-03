@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS user_rule_hits (
 
 CREATE TABLE IF NOT EXISTS followups (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  rule_id INTEGER NOT NULL,
+  rule_id INTEGER NOT NULL,          -- ۰ یعنی پیام گروهی از پنل
   user_id TEXT NOT NULL,
   text TEXT NOT NULL,
   due_at REAL NOT NULL,
@@ -230,6 +230,36 @@ CREATE TABLE IF NOT EXISTS media_notes (
   kind TEXT NOT NULL DEFAULT 'post',   -- post | story
   note TEXT NOT NULL DEFAULT '',
   product TEXT NOT NULL DEFAULT '',
+  updated_at REAL NOT NULL
+);
+
+-- سفارش‌هایی که مشتری در دایرکت ثبت کرده (فروش در دایرکت)
+CREATE TABLE IF NOT EXISTS orders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  channel TEXT NOT NULL DEFAULT 'ig',
+  user_id TEXT NOT NULL,
+  username TEXT,
+  product TEXT NOT NULL DEFAULT '',
+  product_id TEXT NOT NULL DEFAULT '',
+  price INTEGER,
+  name TEXT NOT NULL DEFAULT '',
+  phone TEXT NOT NULL DEFAULT '',
+  city TEXT NOT NULL DEFAULT '',
+  address TEXT NOT NULL DEFAULT '',
+  note TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'awaiting_payment',  -- awaiting_payment | receipt | confirmed | shipped | done | canceled
+  receipt_url TEXT NOT NULL DEFAULT '',
+  created_at REAL NOT NULL,
+  updated_at REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS orders_created ON orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS orders_user ON orders(user_id, created_at DESC);
+
+-- گفتگوی سفارش در حال انجام: ربات قدم‌به‌قدم اطلاعات را می‌پرسد
+CREATE TABLE IF NOT EXISTS order_flow (
+  user_id TEXT PRIMARY KEY,
+  step TEXT NOT NULL,
+  data TEXT NOT NULL DEFAULT '{}',
   updated_at REAL NOT NULL
 );
 """

@@ -37,8 +37,13 @@ def validate(rule: dict) -> list[str]:
         if t.get("match", "any") not in MATCHES:
             errs.append(f"match نامعتبر: {t.get('match')}")
     acts = rule.get("actions", {})
-    if not any(acts.get(k) for k in ("public_replies", "private_replies", "dm_replies")):
-        errs.append("حداقل یک پیام پاسخ لازم است")
+    adv = rule.get("advanced", {}) or {}
+    if not any(acts.get(k) for k in ("public_replies", "private_replies", "dm_replies")) \
+            and not (adv.get("handoff") or adv.get("pause_ai_minutes")):
+        errs.append("حداقل یک پیام پاسخ، یا «سپردن به همکار» یا «توقف هوش مصنوعی» لازم است")
+    pause = adv.get("pause_ai_minutes")
+    if pause not in (None, "", 0) and (not isinstance(pause, (int, float)) or not 0 < pause <= 7 * 24 * 60):
+        errs.append("توقف هوش مصنوعی باید بین ۱ دقیقه و ۷ روز باشد")
     qr = acts.get("quick_replies", [])
     if not isinstance(qr, list) or len(qr) > 13 or any(not isinstance(x, str) or len(x) > 20 for x in qr):
         errs.append("quick_replies: حداکثر ۱۳ دکمه، هر کدام تا ۲۰ نویسه")

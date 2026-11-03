@@ -58,6 +58,25 @@ class Instagram:
         d = await self._post(f"{self.user_id}/messages", json={"recipient": {"id": recipient_id}, "message": message})
         return d.get("message_id", "")
 
+    async def send_cards(self, recipient_id: str, cards: list[dict]) -> str:
+        """کارت‌های ویترین (generic template): عکس، عنوان، قیمت و دکمه‌های «مشاهده در سایت» و «سفارش».
+        حداکثر ۱۰ کارت؛ لمس «سفارش» یک postback با ORDER:<شناسه> برمی‌گرداند."""
+        elements = []
+        for x in cards[:10]:
+            buttons = []
+            if x.get("url"):
+                buttons.append({"type": "web_url", "url": x["url"], "title": "مشاهده در سایت"})
+            if x.get("id"):
+                buttons.append({"type": "postback", "title": "🛒 سفارش", "payload": f"ORDER:{x['id']}"})
+            el = {"title": x["title"][:80], "subtitle": x.get("subtitle", "")[:80], "buttons": buttons[:3]}
+            if x.get("image"):
+                el["image_url"] = x["image"]
+            elements.append(el)
+        d = await self._post(f"{self.user_id}/messages", json={
+            "recipient": {"id": recipient_id},
+            "message": {"attachment": {"type": "template", "payload": {"template_type": "generic", "elements": elements}}}})
+        return d.get("message_id", "")
+
     async def sender_action(self, recipient_id: str, action: str) -> None:
         """typing_on (در حال نوشتن) یا mark_seen (دیده شد)."""
         await self._post(f"{self.user_id}/messages", json={"recipient": {"id": recipient_id}, "sender_action": action})

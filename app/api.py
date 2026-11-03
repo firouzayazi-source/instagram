@@ -5,7 +5,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 
-from . import ai, auth, channels, config, crm, db, reports
+from . import ai, ai_admin, auth, channels, config, crm, db, orders, reports, webhook
 from .importer import validate
 from .rules import Incoming, find_rule
 
@@ -340,9 +340,10 @@ async def ice_breakers_apply(request: Request, body: dict):
 # ---------- پرونده‌ی مشتری ----------
 
 @protected.get("/customers")
-def customers_list(q: str = "", tag: str = ""):
+def customers_list(q: str = "", tag: str = "", phone: str = "", window: str = "", days: int = 0, ordered: str = ""):
     with db.connect() as c:
-        return {"items": crm.search(c, q, tag), "tags": crm.all_tags(c)}
+        return {"items": crm.search(c, q, tag, phone=phone, window=window, days=max(0, min(365, days)), ordered=ordered),
+                "tags": crm.all_tags(c)}
 
 
 @protected.get("/customers/{key}")
@@ -409,3 +410,110 @@ def media_note_put(mid: str, body: dict):
     with db.connect() as c:
         db.set_media_note(c, mid, kind, str(body.get("note") or ""), str(body.get("product") or ""))
     return {"ok": True}
+
+
+# ---------- فروش در دایرکت: سفارش‌ها ----------
+
+@protected.get("/orders")
+def orders_list(status: str = ""):
+    with db.connect() as c:
+        return {"items": orders.list_orders(c, status), "statuses": orders.STATUSES, "stats": orders.stats(c)}
+
+
+@protected.get("/orders/{oid}")
+def order_get(oid: int):
+    with db.connect() as c:
+        o = orders.get(c, oid)
+        if not o:
+            raise HTTPException(404, "سفارش پیدا نشد")
+        return {**o, "statuses": orders.STATUSES}
+
+
+@protected.put("/orders/{oid}")
+def order_put(oid: int, body: dict):
+    with db.connect() as c:
+        try:
+            return orders.update(c, oid, body)
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+
+
+# ---------- وبهوک لید و سفارش ----------
+
+@protected.get("/webhook")
+def webhook_get():
+    with db.connect() as c:
+        return webhook.public(c)
+
+
+@protected.put("/webhook")
+def webhook_put(body: dict):
+    with db.connect() as c:
+        try:
+            return webhook.save(c, body)
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+
+
+@protected.post("/webhook/test")
+async def webhook_test():
+    with db.connect() as c:
+        s = webhook.settings(c)
+    if not s["url"]:
+        raise HTTPException(422, "اول آدرس وبهوک را ذخیره کنید")
+    ok = await webhook.deliver(s["url"], s["secret"], "test", {"message": "آزمایش وبهوک از پنل استوک لند"})
+    return {"ok": ok}
+
+
+# ---------- دستورها: کپی به کانال دیگر ----------
+
+@protected.post("/rules/{rule_id}/copy")
+def rule_copy(rule_id: int, body: dict):
+    """کپی یک دستور برای کانال دیگر (مثلاً دستور دایرکت برای کامنت یا جواب استوری)."""
+    with db.connect() as c:
+        src = next((r for r in db.all_rules(c) if r["id"] == rule_id), None)
+    if not src:
+        raise HTTPException(404, "دستور پیدا نشد")
+    chs = [x for x in body.get("channels") or [] if x in ("comment", "dm", "story_reply", "mention")] or src["channels"]
+    rule = {k: src[k] for k in ("priority", "triggers", "actions", "advanced", "post_scope")}
+    rule.update(name=f"{src['name']} (کپی)", enabled=False, channels=chs)
+    if "comment" not in chs and "story_reply" not in chs:
+        rule["post_scope"] = "all"
+    return _save_rule(rule)
+
+
+# ---------- مخاطبین: کار گروهی و فرصت‌های ازدست‌رفته ----------
+
+@protected.post("/customers/bulk")
+def customers_bulk(body: dict):
+    with db.connect() as c:
+        try:
+            return crm.bulk(c, body.get("ids") or [], str(body.get("action") or ""), str(body.get("value") or ""))
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+
+
+@protected.get("/reports/lost")
+def reports_lost(days: int = 14, idle_hours: float = 3):
+    with db.connect() as c:
+        return {"items": reports.lost(c, min(90, max(1, days)), min(24 * 30, max(0.5, idle_hours)))}
+
+
+# ---------- تنظیم ربات با حرف ----------
+
+@protected.post("/ai/admin-chat")
+async def admin_chat(body: dict):
+    with db.connect() as c:
+        try:
+            return await ai_admin.propose(c, str(body.get("text") or ""), body.get("history") or [])
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+
+
+@protected.post("/ai/admin-apply")
+def admin_apply(body: dict):
+    ops = [o for o in body.get("ops") or [] if isinstance(o, dict)]
+    if not ops:
+        raise HTTPException(422, "تغییری برای اعمال نیست")
+    with db.connect() as c:
+        return {"results": ai_admin.apply(c, ops)}

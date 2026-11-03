@@ -121,6 +121,40 @@ def _catalog_reply(text: str, product: str) -> str | None:
     return f"الان {what} موجود نداریم 🙏 لیست به‌روز همه‌ی موجودی‌ها: {SITE}"
 
 
+def cards_for(text: str, product: str = "", limit: int = 10, strict: bool = False) -> list[dict]:
+    """کالاهای همان جستجوی موجودی، برای کارت ویترین دایرکت: فقط آن‌هایی که عکس و قیمت دارند.
+    strict: فقط وقتی پیام واقعاً کالایی را نام برده (برای پیدا کردن محصول سفارش)."""
+    if not _catalog_ready():
+        return []
+    q = catalog.parse(text, product)
+    if not q or (strict and not any(k in q for k in ("model", "variant", "storage", "acc", "max", "min"))):
+        return []
+    res = catalog.search(q) or (catalog.search(q, family=True) if q.get("model") else [])
+    out = []
+    for x in res:
+        if not (x.get("image") or "").startswith("https://") or not x.get("price"):
+            continue
+        a = x.get("attrs") or {}
+        bits = [a.get("حافظه", ""), a.get("رنگ", ""), f"باتری {a['سلامت باتری']}" if a.get("سلامت باتری") else ""]
+        out.append({"id": str(x.get("id") or ""), "title": x["name"][:80], "image": x["image"],
+                    "subtitle": (f"💰 {catalog.fmt_price(x['price'])}" + "".join(f" · {b}" for b in bits if b))[:80],
+                    "url": _short_link(x), "price": x["price"]})
+        if len(out) >= limit:
+            break
+    return out
+
+
+def product_by_id(pid: str) -> dict | None:
+    """کالای سایت با شناسه، برای دکمه‌ی «سفارش» کارت."""
+    if not pid or not _catalog_ready():
+        return None
+    for x in catalog.items:
+        if str(x.get("id") or "") == str(pid):
+            return {"id": str(x["id"]), "name": x["name"], "price": x.get("price") or None, "url": _short_link(x),
+                    "left": x.get("left")}
+    return None
+
+
 def _section(key: str) -> str:
     d = _load_json("data.json", {})
     return _plain(d.get(key, "")) if isinstance(d, dict) else ""

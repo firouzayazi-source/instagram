@@ -5072,8 +5072,12 @@ async def process_ig_notify(bot):
     except FileNotFoundError: return 0
     for f in files:
         p=os.path.join(IG_NOTIFY_DIR,f)
+        photo=""
         try:
-            with open(p,encoding="utf-8") as fh: text=str(json.load(fh).get("text") or "")[:3500]
+            with open(p,encoding="utf-8") as fh: d=json.load(fh)
+            text=str(d.get("text") or "")[:3500]
+            photo=str(d.get("photo") or "")
+            if not photo.startswith("https://"): photo=""
         except Exception as e:
             logger.warning(f"ig notify {f}: {e}"); text=""
         try: os.remove(p)
@@ -5091,12 +5095,17 @@ async def process_ig_notify(bot):
                 except Exception as e: logger.warning(f"ig topic: {e}"); tid=None
             try:
                 await bot.send_message(gid,text,message_thread_id=tid,disable_web_page_preview=True); sent=True
+                if photo:
+                    try: await bot.send_photo(gid,photo,message_thread_id=tid,caption="🧾 رسید پرداخت")
+                    except Exception as e: logger.warning(f"ig notify photo: {e}")
             except Exception as e:
                 logger.warning(f"ig notify group: {e}")
                 if settings.pop("ig_topic",None): await save_settings()   # تاپیک پاک شده بود؛ بار بعد از نو
         if not sent:
             for aid in admin_ids():
-                try: await bot.send_message(aid,text,disable_web_page_preview=True)
+                try:
+                    await bot.send_message(aid,text,disable_web_page_preview=True)
+                    if photo: await bot.send_photo(aid,photo,caption="🧾 رسید پرداخت")
                 except Exception as e: logger.debug(f"ig notify admin {aid}: {e}")
     return len(files)
 

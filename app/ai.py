@@ -45,7 +45,11 @@ DEFAULTS = {
     "ice_breakers": ["قیمت گوشی‌ها چنده؟", "شرایط اقساط چیه؟", "آدرس فروشگاه کجاست؟", "گارانتی دارید؟"],
     "human_pause_minutes": 30,   # بعد از جواب همکار، ربات چند دقیقه برای همان نفر ساکت بماند (۰ = خاموش)
     "batch_wait_seconds": 0,     # چند ثانیه صبر برای پیام‌های پشت‌سرهم و یک جواب برای همه (۰ = خاموش)
-    "notify_telegram": True,     # ارجاع‌های اینستاگرام به گروه پشتیبانی تلگرام هم برود
+    "notify_telegram": True,
+    # فروش در دایرکت
+    "showcase_cards": True,      # موجودی‌ها به‌شکل کارت با عکس، قیمت و دکمه‌ی «سفارش»
+    "order_enabled": True,       # گرفتن سفارش در دایرکت (نام، شماره، شهر، آدرس) و رسید پرداخت
+    "order_payment_text": "",    # روش پرداخت، مثلاً شماره‌کارت و نام صاحب حساب؛ خالی = همکار هماهنگ می‌کند     # ارجاع‌های اینستاگرام به گروه پشتیبانی تلگرام هم برود
     # اینستاگرام: استوری
     "mention_reply_enabled": False,
     "mention_replies": ["مرسی که منشنمون کردی 🙏❤️", "ممنون از منشنت 🌸 اگه سؤالی داری همین‌جا بپرس"],
@@ -174,8 +178,10 @@ def save_settings(c, patch: dict) -> dict:
             v = min(24 * 60, max(0, int(v or 0)))
         if k == "batch_wait_seconds":
             v = min(120, max(0, int(v or 0)))
+        if k == "order_payment_text":
+            v = str(v or "").strip()[:900]
         if k in ("quick_replies_enabled", "typing_indicator", "mention_reply_enabled", "mod_profanity", "mod_links",
-                 "notify_telegram"):
+                 "notify_telegram", "showcase_cards", "order_enabled"):
             v = bool(v)
         cur[k] = v
     db.kv_set(c, "ai_settings", json.dumps(cur, ensure_ascii=False))
@@ -210,7 +216,8 @@ class ClaudeClient:
         import anthropic
         self._client = anthropic.AsyncAnthropic(api_key=config.ANTHROPIC_API_KEY or None, max_retries=2, timeout=60)
 
-    async def complete(self, model: str, system: list, messages: list, effort: str) -> tuple[str, dict, str]:
+    async def complete(self, model: str, system: list, messages: list, effort: str,
+                       schema: dict | None = None, hint: str | None = None) -> tuple[str, dict, str]:
         kwargs = {}
         if model in ("claude-opus-5-5", "claude-sonnet-5-5"):
             kwargs = {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}
@@ -219,7 +226,7 @@ class ClaudeClient:
             max_tokens=2048,
             system=system,
             messages=messages,
-            output_config={"effort": effort, "format": {"type": "json_schema", "schema": SCHEMA}},
+            output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema or SCHEMA}},
             **kwargs,
         )
         usage = resp.usage.model_dump() if resp.usage else {}
@@ -243,7 +250,8 @@ class OpenAICompatClient:
     async def _post(self, body: dict):
         return await self._http.post("chat/completions", json=body)
 
-    async def complete(self, model: str, system: list, messages: list, effort: str) -> tuple[str, dict, str]:
+    async def complete(self, model: str, system: list, messages: list, effort: str,
+                       schema: dict | None = None, hint: str | None = None) -> tuple[str, dict, str]:
         sys_text = "\n\n".join(b["text"] for b in system)
         msgs = [{"role": m["role"], "content": m["content"]} for m in messages]
         body = {"model": model, self._max_key: 2048}
@@ -251,10 +259,10 @@ class OpenAICompatClient:
         if self._schema_ok:
             body["messages"] = [{"role": "system", "content": sys_text}] + msgs
             body["response_format"] = {"type": "json_schema",
-                                       "json_schema": {"name": "decision", "strict": True, "schema": SCHEMA}}
+                                       "json_schema": {"name": "output", "strict": True, "schema": schema or SCHEMA}}
             r = await self._post(body)
         if r is None or r.status_code in (400, 422):
-            body["messages"] = [{"role": "system", "content": sys_text + JSON_HINT}] + msgs
+            body["messages"] = [{"role": "system", "content": sys_text + (hint if hint is not None else JSON_HINT)}] + msgs
             body["response_format"] = {"type": "json_object"}
             r2 = await self._post(body)
             if r2.status_code < 400 and r is not None:
@@ -446,6 +454,7 @@ class Decision:
     skip_reason: str = ""
     log_id: int | None = None
     usage: dict = field(default_factory=dict)
+    cards: list = field(default_factory=list)   # کالاهای پیداشده برای کارت ویترین (فقط موتور فهم)
 
 
 def is_emoji_only(text: str) -> bool:
@@ -491,6 +500,8 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
         if r:
             action, reply, intent, score, reason = r
             d = Decision(action, reply=reply, intent=intent, confidence=score, handoff_reason=reason)
+            if intent == "price" and channel == "dm":
+                d.cards = brain_engine.cards_for(text, product_hint)
             return _finish(c, d, s, channel, text, is_test, ctx, model="brain", cost=0.0, check_confidence=False)
         if not s["enabled"] and not is_test:
             # هوش مصنوعی خاموش است و موتور فهم نفهمید: دایرکت به همکار، کامنت بی‌جواب

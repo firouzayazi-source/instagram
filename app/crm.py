@@ -34,8 +34,10 @@ def touch(c, channel: str, user_id: str, username: str | None, kind: str, text: 
               f"ON CONFLICT(id) DO UPDATE SET last_seen=excluded.last_seen, {col}={col}+1, "
               f"username=COALESCE(excluded.username, username)", (key, channel, user_id, username, now, now))
     phone = find_phone(text)
-    if phone:
-        c.execute("UPDATE customers SET phone=? WHERE id=? AND phone=''", (phone, key))
+    if phone and c.execute("UPDATE customers SET phone=? WHERE id=? AND phone=''", (phone, key)).rowcount:
+        from . import webhook
+        webhook.fire(c, "lead", {"channel": channel, "user_id": user_id, "username": username or "", "phone": phone,
+                                 "text": (text or "")[:500]})
     return key
 
 
@@ -59,8 +61,30 @@ def _row(r) -> dict:
     return d
 
 
-def search(c, q: str = "", tag: str = "", limit: int = 100) -> list[dict]:
+WINDOW = 24 * 3600     # پنجره‌ی پیام اینستاگرام: تا ۲۴ ساعت بعد از آخرین پیام مشتری می‌شود دایرکت داد
+_LAST_IN = "(SELECT MAX(created_at) FROM messages m WHERE m.user_id=customers.user_id AND m.direction='in')"
+
+
+def search(c, q: str = "", tag: str = "", limit: int = 100, *, phone: str = "", window: str = "", days: int = 0,
+           ordered: str = "") -> list[dict]:
+    """phone: yes | no · window: open (پنجره‌ی ۲۴ ساعته باز) | closed · days: آخرین پیام در این چند روز ·
+    ordered: yes (سفارش داده) | no"""
     where, args = ["1"], []
+    now = time.time()
+    if phone == "yes":
+        where.append("phone<>''")
+    elif phone == "no":
+        where.append("phone=''")
+    if window == "open":
+        where.append(f"COALESCE({_LAST_IN},0)>?"); args.append(now - WINDOW)
+    elif window == "closed":
+        where.append(f"COALESCE({_LAST_IN},0)<=?"); args.append(now - WINDOW)
+    if days:
+        where.append("last_seen>?"); args.append(now - days * 86400)
+    if ordered == "yes":
+        where.append("EXISTS (SELECT 1 FROM orders o WHERE o.user_id=customers.user_id)")
+    elif ordered == "no":
+        where.append("NOT EXISTS (SELECT 1 FROM orders o WHERE o.user_id=customers.user_id)")
     if q:
         like = f"%{q.strip().lstrip('@')}%"
         where.append("(username LIKE ? OR name LIKE ? OR phone LIKE ? OR notes LIKE ?)")
@@ -68,9 +92,51 @@ def search(c, q: str = "", tag: str = "", limit: int = 100) -> list[dict]:
     if tag:
         where.append("tags LIKE ?")
         args.append(f'%"{tag}"%')
-    rows = c.execute(f"SELECT * FROM customers WHERE {' AND '.join(where)} ORDER BY last_seen DESC LIMIT ?",
-                     [*args, limit])
-    return [_row(r) for r in rows]
+    rows = c.execute(f"SELECT *, {_LAST_IN} AS last_in FROM customers WHERE {' AND '.join(where)} "
+                     "ORDER BY last_seen DESC LIMIT ?", [*args, limit])
+    out = []
+    for r in rows:
+        d = _row(r)
+        d["window_left"] = max(0, int((d["last_in"] or 0) + WINDOW - now)) if d["channel"] == "ig" else 0
+        out.append(d)
+    return out
+
+
+def bulk(c, keys: list[str], action: str, value: str = "") -> dict:
+    """کار گروهی روی مخاطبین: tag_add | tag_remove | message (فقط برای کسانی که پنجره‌ی ۲۴ ساعته‌شان باز است،
+    با فاصله‌ی چند ثانیه از صف پیگیری‌ها فرستاده می‌شود)."""
+    keys = [k for k in dict.fromkeys(keys or []) if isinstance(k, str)][:500]
+    value = (value or "").strip()
+    if action in ("tag_add", "tag_remove"):
+        tag = value[:30]
+        if not tag:
+            raise ValueError("برچسب خالی است")
+        n = 0
+        for k in keys:
+            row = c.execute("SELECT tags FROM customers WHERE id=?", (k,)).fetchone()
+            if not row:
+                continue
+            tags = json.loads(row["tags"] or "[]")
+            new = (tags + [tag]) if action == "tag_add" and tag not in tags else [t for t in tags if t != tag]
+            if new != tags:
+                c.execute("UPDATE customers SET tags=? WHERE id=?", (json.dumps(new, ensure_ascii=False), k)); n += 1
+        return {"changed": n}
+    if action == "message":
+        if not value:
+            raise ValueError("متن پیام خالی است")
+        now, queued, closed = time.time(), 0, 0
+        for k in keys:
+            r = c.execute(f"SELECT user_id, channel, {_LAST_IN} AS last_in FROM customers WHERE id=?", (k,)).fetchone()
+            if not r or r["channel"] != "ig":
+                continue
+            if (r["last_in"] or 0) + WINDOW <= now + 60:
+                closed += 1
+                continue
+            c.execute("INSERT INTO followups(rule_id,user_id,text,due_at) VALUES (0,?,?,?)",
+                      (r["user_id"], value[:900], now + queued * 4))
+            queued += 1
+        return {"queued": queued, "window_closed": closed}
+    raise ValueError("کار ناشناخته")
 
 
 def get(c, key: str) -> dict | None:
