@@ -13,7 +13,8 @@ Restart=always
 RestartSec=3
 NoNewPrivileges=true
 ProtectSystem=strict
-ReadWritePaths=/opt/igbot/data
+# پوشه‌ی داده، و فقط خود فایل .env برای ثبت کلید سرویس‌های هوش مصنوعی از پنل (بقیه‌ی پوشه‌ی برنامه فقط‌خواندنی)
+ReadWritePaths=/opt/igbot/data /opt/igbot/.env
 
 [Install]
 WantedBy=multi-user.target

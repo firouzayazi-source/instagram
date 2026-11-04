@@ -34,6 +34,7 @@ main() {
   fi
 
   chown -R igbot:igbot /opt/igbot
+  [ -f /opt/igbot/.env ] && chmod 600 /opt/igbot/.env   # رازها فقط برای کاربر igbot
   systemctl restart igbot
   if systemctl is-enabled --quiet igbot-telegram 2>/dev/null; then
     systemctl restart igbot-telegram

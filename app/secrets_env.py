@@ -1,6 +1,6 @@
 """ثبت کلید سرویس‌های هوش مصنوعی از پنل، مستقیم در ‎/opt/igbot/.env‎ (تنها جای رازهای پروژه).
 
-کلید هیچ‌وقت به پنل برنمی‌گردد؛ فقط «تنظیم شده» و چهار نویسه‌ی آخرش. فایل اتمی و با دسترسی ۶۰۰ نوشته
+کلید هیچ‌وقت به پنل برنمی‌گردد؛ فقط «تنظیم شده» و چهار نویسه‌ی آخرش. فایل درجا و با دسترسی ۶۰۰ نوشته
 می‌شود، خط‌های دیگرش دست نمی‌خورد، و کلید تازه بی‌ری‌استارت همان لحظه به کار می‌افتد.
 فقط نام‌های فهرست ALLOWED قابل تغییرند (نه توکن اینستاگرام و تلگرام و رمز پنل).
 """
@@ -75,15 +75,22 @@ def set_value(name: str, value: str) -> list[dict]:
         out.append(ln)
     if value and not done:
         out.append(f"{name}={value}")
-    tmp = p.with_name(p.name + ".tmp")
+    data = ("\n".join(out) + "\n").encode("utf-8")
     try:
-        fd = os.open(str(tmp), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write("\n".join(out) + "\n")
-        os.replace(tmp, p)
+        # درجا نوشته می‌شود، نه فایل موقت + جابه‌جایی: سرویس فقط اجازه‌ی نوشتن در خود این فایل را دارد
+        # (پوشه‌ی برنامه فقط‌خواندنی است). فایل کوچک است و با fsync یکجا روی دیسک می‌رود.
+        fd = os.open(str(p), os.O_RDWR | os.O_CREAT, 0o600)
+        try:
+            os.ftruncate(fd, 0)
+            os.write(fd, data)
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        os.chmod(p, 0o600)
     except OSError as e:
-        raise ValueError(f"نوشتن در ‎.env‎ ممکن نشد ({e.strerror}). روی سرور: "
-                         "chown igbot:igbot /opt/igbot/.env && chmod 600 /opt/igbot/.env")
+        hint = ("سرویس igbot هنوز به‌روز نشده؛ روی سرور: bash /opt/igbot/deploy/deploy.sh"
+                if e.errno == 30 else "روی سرور: chown igbot:igbot /opt/igbot/.env && chmod 600 /opt/igbot/.env")
+        raise ValueError(f"نوشتن در ‎.env‎ ممکن نشد ({e.strerror}). {hint}")
     if value:
         os.environ[name] = value
     else:
