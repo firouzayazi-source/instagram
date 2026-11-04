@@ -362,6 +362,42 @@ def search(q, family=False):
     return out
 
 
+# معاوضه یا فروش گوشی خود مشتری («۱۳ دارم ۵۰ روش بذارم»، «چند برمی‌دارید؟») — جستجوی کالا نیست
+TRADE_RX = re.compile(r"بر ?می ?دار(?:ید|ین|ی)\b|میخرید|می ?خرین|میخری\b|خرید (?:هم )?(?:دارید|دارین)|"
+                      r"روش (?:ب[ذز]ارم|می[ذز]ارم)|ب[ذز]ارم رو(?:ی|ش)|قیمت ?گذاری|امانی|عوض کنم|معاوضه|تعویض با|"
+                      r"بفروشم|ارتقا (?:بدم|بدید|بدین)|رو بردارین|رو بردارید")
+# کلمه‌هایی که کنار «فقط اسم مدل» معنا عوض نمی‌کنند («من ۱۳ می‌خوام»، «مدل ۱۳ پرومکس»، «رییس ۱۷ پرو»)
+_BARE_OK = {"می", "خوام", "میخوام", "میخواستم", "من", "مدل", "رییس", "داداش", "ببخشید", "یه", "یک", "سلام", "لطفا",
+            "اقا", "اک", "آک", "کارکرده", "نو", "عزیز", "بزرگوار"}
+# نیت‌هایی که اگر محکم خوردند، مدلِ داخل پیام دلیل جستجوی کالا نیست («اقساط ۱۳ پرو»، «۱۳ با ۱۴ چه فرقی داره»)
+STRONG_OTHER = {"i_install", "i_tradein", "i_compare", "i_specs", "i_appleid", "i_other", "i_android", "i_human",
+                "i_address", "i_hours", "i_return", "i_warranty", "i_shipping", "i_owner", "i_software"}
+
+
+def wants_catalog(text, q, intent_id, have_rx, list_rx):
+    """آیا این پیام جستجوی کالاست؟ (قاعده‌ی مشترک تلگرام و اینستاگرام)
+    - معاوضه/فروش گوشی خود مشتری: نه
+    - «لیست»، «چی دارید»: بله
+    - رنگ، حافظه، بودجه، باتری، «ارزون‌ترین»: بله، مگر اقساط یا معاوضه یا مقایسه باشد
+    - مدل + «قیمت/دارید/می‌خوام…» یا فقط اسم مدل («۱۷ پرو مکس»): بله، مگر نیت محکم دیگری خورده باشد
+    - «پرو مکس» یا لوازم جانبی بی‌مدل: فقط وقتی نیت دیگری نخورده"""
+    n = brain.norm(text)
+    if TRADE_RX.search(n):
+        return False
+    if list_rx.search(n):
+        return True
+    if any(k in q for k in ("color", "max", "min", "sort", "storage", "battery")):
+        return intent_id not in ("i_install", "i_tradein", "i_compare")
+    if q.get("model"):
+        rest = [w for w in q.get("rest", []) if w not in _BARE_OK]
+        bare = not rest and len(n.split()) <= 6
+        if (have_rx.search(n) or bare) and intent_id not in STRONG_OTHER:
+            return True
+    if any(k in q for k in ("variant", "acc")):
+        return not intent_id or intent_id in ("i_price", "i_stock", "i_accessory")
+    return False
+
+
 _TIERS = ["mini", "", "plus", "pro", "pro max"]
 
 

@@ -286,12 +286,7 @@ def decide(text: str, username: str | None = None, product_hint: str = "", budge
 
     if _catalog_ready():
         q = _with_budget(catalog.parse(text, a["product"]), budget)
-        n = brain.norm(text)
-        shop = any(k in q for k in ("color", "max", "min", "sort", "storage", "battery"))
-        strong = shop or any(k in q for k in ("variant", "acc"))
-        other = a["intent"] and a["intent"].get("id") not in ("i_price", "i_stock", "i_accessory")
-        ask = q.get("model") and HAVE_RX.search(n)
-        if LIST_RX.search(n) or shop or ((strong or ask) and not other):
+        if catalog.wants_catalog(text, q, (a["intent"] or {}).get("id"), HAVE_RX, LIST_RX):   # قاعده‌ی مشترک با تلگرام
             cat = _catalog_reply(text, a["product"], budget)
             if cat:
                 return "reply", _join(lead, cat), "price", 1.0, ""
