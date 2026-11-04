@@ -376,7 +376,37 @@ async def test_conversation_memory_budget_and_model(env):
         # مدل مشخص: بودجه‌ی قبلی جلوی جوابش را نمی‌گیرد
         await run(ig, c, "e3", "message", msg("m3", "قیمت ۱۳ پرو چنده؟"))
         assert "آیفون 13 پرو 256" in last_dm(ig)
+        assert "«ثبت سفارش»" in last_dm(ig).split("\n")[-1]                    # دعوت به خرید، خط آخر
+        ai.save_settings(c, {"order_enabled": False})
+        await run(ig, c, "e4", "message", msg("m4", "قیمت ۱۳ پرو چنده؟"))
+        assert "ثبت سفارش" not in last_dm(ig)
+        ai.save_settings(c, {"order_enabled": True})
         assert memory.recall(c, "u9") == {"product": "آیفون ۱۳ پرو", "budget": 150_000_000}
         assert "۱۵۰ میلیون" in memory.note(memory.recall(c, "u9"))
         c.execute("UPDATE conv_memo SET updated_at=updated_at-7*3600")
         assert memory.recall(c, "u9") == {}                                   # بعد از ۶ ساعت فراموش می‌شود
+
+
+@pytest.mark.asyncio
+async def test_auto_followup_once_for_silent_interested_customer(env):
+    ig = SalesIG()
+    now = time.time()
+    with db.connect() as c:
+        await run(ig, c, "e1", "message", msg("m1", "قیمت ۱۳ پرو چنده؟"))
+        await run(ig, c, "e2", "message", msg("m2", "قیمت ۱۳ پرو چنده؟", sender="u8"))
+        c.execute("UPDATE messages SET created_at=? WHERE direction='in'", (now - 4 * 3600,))
+        c.execute("UPDATE ai_log SET created_at=?", (now - 4 * 3600,))
+        assert await worker.auto_followups(ig, c) == 0                         # پیش‌فرض خاموش
+        ai.save_settings(c, {"auto_followup_enabled": True, "auto_followup_hours": 3})
+        db.set_human(c, "u8", 60)                                             # همکار با u8 در گفتگوست
+        n = len(ig.calls)
+        assert await worker.auto_followups(ig, c) == 1
+        assert ig.calls[n][1] == "u9" and "آیفون ۱۳ پرو" in ig.calls[n][2]
+        assert await worker.auto_followups(ig, c) == 0                         # فقط یک بار
+        db.clear_human(c, "u8")
+        c.execute("INSERT INTO orders(user_id,status,created_at,updated_at) VALUES ('u8','new',?,?)", (now, now))
+        assert await worker.auto_followups(ig, c) == 0                         # سفارش داده
+        # پنجره‌ی ۲۴ ساعته بسته
+        c.execute("DELETE FROM auto_followups"); c.execute("DELETE FROM orders")
+        c.execute("UPDATE messages SET created_at=? WHERE direction='in'", (now - 25 * 3600,))
+        assert await worker.auto_followups(ig, c) == 0

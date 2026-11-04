@@ -45,7 +45,7 @@ function Row({ p, sel, onSel, extra }) {
       <input type="checkbox" checked={sel} onChange={onSel} aria-label="انتخاب" />
       <a href={`#/customers/${p.id}`}>
         <div className="row">
-          <span className="who">{p.name || (p.username ? `@${p.username}` : p.user_id)} <span className="pill muted">اینستاگرام</span>
+          <span className="who">{p.name || (p.username ? `@${p.username}` : p.user_id)} <span className="pill muted">{p.channel === 'tg' ? 'تلگرام' : 'اینستاگرام'}</span>
             {p.window_left > 0 && <span className="pill good" title="هنوز می‌شود در دایرکت پیام داد">پنجره باز: {left(p.window_left)}</span>}</span>
           <span className="when">{timeAgo(p.last_seen)}</span>
         </div>
@@ -181,7 +181,7 @@ function Profile({ id }) {
           <h2 style={{ margin: 0 }}>{p.username ? `@${p.username}` : p.user_id}</h2>
           <span className="actions">
             {p.blocked && <span className="pill bad">مسدود</span>}
-            <a className="btn sm" href={`#/messages/${p.user_id}`}>گفتگو</a>
+            {p.channel === 'ig' && <a className="btn sm" href={`#/messages/${p.user_id}`}>گفتگو</a>}
           </span>
         </div>
         <p className="muted">اولین پیام {timeAgo(p.first_seen)} · آخرین {timeAgo(p.last_seen)} · {fa(p.messages)} دایرکت · {fa(p.comments)} کامنت</p>

@@ -49,7 +49,12 @@ DEFAULTS = {
     # فروش در دایرکت
     "showcase_cards": True,      # موجودی‌ها به‌شکل کارت با عکس، قیمت و دکمه‌ی «سفارش»
     "order_enabled": True,       # گرفتن سفارش در دایرکت (نام، شماره، شهر، آدرس) و رسید پرداخت
-    "order_payment_text": "",    # روش پرداخت، مثلاً شماره‌کارت و نام صاحب حساب؛ خالی = همکار هماهنگ می‌کند     # ارجاع‌های اینستاگرام به گروه پشتیبانی تلگرام هم برود
+    "order_payment_text": "",    # روش پرداخت، مثلاً شماره‌کارت و نام صاحب حساب؛ خالی = همکار هماهنگ می‌کند
+    # پیگیری خودکار: مشتری‌ای که قیمت پرسید، جواب گرفت و ساکت شد، یک بار (قبل از بسته شدن پنجره‌ی ۲۴ ساعته)
+    "auto_followup_enabled": False,
+    "auto_followup_hours": 3,
+    "auto_followup_text": "سلام دوباره 🙂 هنوز دنبال {product} هستید؟ اگه سؤالی مونده همین‌جا بپرسید؛ "
+                          "موجودی و قیمت امروزش رو هم براتون می‌فرستم.",     # ارجاع‌های اینستاگرام به گروه پشتیبانی تلگرام هم برود
     # اینستاگرام: استوری
     "mention_reply_enabled": False,
     "mention_replies": ["مرسی که منشنمون کردی 🙏❤️", "ممنون از منشنت 🌸 اگه سؤالی داری همین‌جا بپرس"],
@@ -180,8 +185,12 @@ def save_settings(c, patch: dict) -> dict:
             v = min(120, max(0, int(v or 0)))
         if k == "order_payment_text":
             v = str(v or "").strip()[:900]
+        if k == "auto_followup_text":
+            v = str(v or "").strip()[:900] or DEFAULTS["auto_followup_text"]
+        if k == "auto_followup_hours":
+            v = min(20, max(1, int(v or 3)))
         if k in ("quick_replies_enabled", "typing_indicator", "mention_reply_enabled", "mod_profanity", "mod_links",
-                 "notify_telegram", "showcase_cards", "order_enabled"):
+                 "notify_telegram", "showcase_cards", "order_enabled", "auto_followup_enabled"):
             v = bool(v)
         cur[k] = v
     db.kv_set(c, "ai_settings", json.dumps(cur, ensure_ascii=False))

@@ -248,7 +248,10 @@ async def handle_ai(ig, row, c, payload, inc: Incoming) -> str:
         if sent and not await _send_cards(ig, c, row["id"], inc, d.cards):
             await _send(ig, c, row["id"], None, "dm", payload, inc, d.reply)    # کارت نرفت: همان متن کامل
     elif d.reply:
-        sent = await _send(ig, c, row["id"], None, "dm", payload, inc, d.reply,
+        text = d.reply
+        if s["order_enabled"] and d.intent == "price" and "💰" in text:      # نتیجه‌ی قیمت با کالای موجود
+            text = f"{text}\n\n{orders.cta(len(inc.user_id) + int(time.time() // 3600))}"
+        sent = await _send(ig, c, row["id"], None, "dm", payload, inc, text,
                            quick_replies=s["dm_quick_replies"] if s["quick_replies_enabled"] else None)
     ai.mark_log(c, d.log_id, "sent" if sent else "failed")
     if d.action == "handoff":
@@ -330,6 +333,51 @@ async def _send_cards(ig, c, event_id, inc, cards: list[dict]) -> bool:
     return True
 
 
+INTEREST = ("price", "purchase", "availability", "installment")
+
+
+def followup_candidates(c, s: dict, now: float | None = None) -> list[dict]:
+    """مشتری‌هایی که قیمت یا موجودی پرسیدند، جواب گرفتند و دست‌کم چند ساعت ساکت‌اند؛ هنوز پنجره‌ی ۲۴ ساعته باز است،
+    سفارش نداده‌اند، پیگیری نگرفته‌اند، همکار با آن‌ها در گفتگو نیست و مسدود نیستند."""
+    now = now or time.time()
+    lo, hi = now - 23 * 3600, now - s["auto_followup_hours"] * 3600
+    ph = ",".join("?" * len(INTEREST))
+    rows = c.execute(
+        f"""SELECT cv.user_id FROM conversations cv
+            WHERE cv.answered=1
+              AND (SELECT MAX(created_at) FROM messages m WHERE m.user_id=cv.user_id AND m.direction='in') BETWEEN ? AND ?
+              AND EXISTS (SELECT 1 FROM ai_log a WHERE a.user_id=cv.user_id AND a.intent IN ({ph}) AND a.created_at>?)
+              AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.user_id=cv.user_id AND o.created_at>?)
+              AND NOT EXISTS (SELECT 1 FROM auto_followups f WHERE f.user_id=cv.user_id)
+              AND NOT EXISTS (SELECT 1 FROM blocked_users b WHERE b.user_id=cv.user_id)
+              AND NOT EXISTS (SELECT 1 FROM order_flow w WHERE w.user_id=cv.user_id)
+            LIMIT 20""", (lo, hi, *INTEREST, lo, now - 7 * 86400)).fetchall()
+    return [{"user_id": r[0]} for r in rows if not db.human_until(c, r[0])]
+
+
+async def auto_followups(ig, c, now: float | None = None) -> int:
+    """پیگیری خودکار (اگر در پنل روشن باشد): هر نفر فقط یک بار، با مدلی که درباره‌اش پرسیده بود."""
+    s = ai.settings(c)
+    if not s["auto_followup_enabled"] or not channels.enabled("instagram"):
+        return 0
+    n = 0
+    for x in followup_candidates(c, s, now):
+        uid = x["user_id"]
+        product = memory.recall(c, uid, max_age=24 * 3600).get("product") or "گوشی"
+        text = s["auto_followup_text"].replace("{product}", product)
+        ok, err, ig_id = True, None, None
+        try:
+            ig_id = await ig.send_dm(uid, text)
+        except Exception as e:  # noqa: BLE001
+            ok, err = False, str(e)
+        c.execute("INSERT OR REPLACE INTO auto_followups(user_id,sent_at,ok) VALUES (?,?,?)", (uid, time.time(), int(ok)))
+        db.log_reply(c, f"afu:{uid}", None, "dm", uid, text, ig_id=ig_id, ok=ok, error=err)
+        if ok:
+            db.add_message(c, ig_id or f"afu:{uid}", uid, "out", text, sender="bot")
+            n += 1
+    return n
+
+
 def _sender(row) -> str:
     try:
         p = json.loads(row["payload"])
@@ -365,10 +413,17 @@ def plan_batches(rows, wait: float, now: float | None = None) -> list[tuple]:
 
 
 async def run_forever(ig, stop: asyncio.Event) -> None:
+    next_afu = 0.0
     while not stop.is_set():
         with db.connect() as c:
             rows = db.pending_events(c, limit=50)
             await process_followups(ig, c)
+            if time.time() >= next_afu:
+                next_afu = time.time() + 600       # پیگیری خودکار: هر ۱۰ دقیقه یک بار بررسی
+                try:
+                    await auto_followups(ig, c)
+                except Exception as e:  # noqa: BLE001
+                    print("auto followup failed:", e)
             wait = ai.settings(c)["batch_wait_seconds"]
         plan = plan_batches(rows, wait)
         if not plan:

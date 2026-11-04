@@ -5118,6 +5118,10 @@ async def core_order(user,text="",image=False,product_id="",hint=""):
     except Exception as e:
         logger.warning(f"core order: {type(e).__name__}: {e}"); return None
 
+# دعوت به خرید زیر نتیجه‌ی قیمت (ثبت سفارش در هسته؛ «رزرو می‌کنم» زیر کارت هر کالا هم همین را شروع می‌کند)
+CTA_LINES = ["🛒 کدومش رو براتون ثبت کنم؟ بنویسید «ثبت سفارش» یا شماره‌ی کالا رو بزنید و «رزرو می‌کنم».",
+             "اگه یکی‌شون رو پسندیدید، «ثبت سفارش» رو بفرستید تا براتون ثبت کنم 🛒"]
+
 async def order_done(bot,user,oid):
     """سفارش ثبت شد: همکار در گفتگوی همین مشتری خبردار می‌شود و برای پرداخت و ارسال هماهنگ می‌کند."""
     await notify_handoff(bot,user,why=f"سفارش #{oid} ثبت شد (جزئیات در تاپیک «🛒 سفارش‌ها»)",icon="🛒")
@@ -5756,6 +5760,7 @@ async def send_catalog(msg,text,product,lead="",rows=None,uid=None,force=None):
                              reply_markup=_cat_markup([[("📦 دیدن همه‌ی دسته‌ها","cat_home")]]))
         return True
     hint="" if title else catalog.neighbor_line(q)   # یک اشاره به مدل بالاتر و پایین‌تر، نه بیشتر
+    hint=_join(hint,CTA_LINES[1] if chat_mode() else random.choice(CTA_LINES)).replace("\n\n","\n")   # دعوت به خرید، یک خط
     title=title or catalog.results_title(q,len(res))
     if uid: cat_state[uid]={"ids":[x["id"] for x in res],"q":q,"title":title,"page":0,"ts":time.time()}
     await _cat_send(msg,catalog.view_results(res,q,0,(hint+"\n"+foot) if hint else foot,title),note)
