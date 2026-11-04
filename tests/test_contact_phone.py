@@ -54,3 +54,15 @@ def test_apply_replaces_only_phones(tmp_path):
         assert c.execute("SELECT phone FROM customers").fetchone()[0] == "09351112233"   # داده‌ی مشتری دست نخورد
     bk = next((tmp_path / "bk").iterdir())
     assert "۰۲۵۳۷۷۰۰۱۱۲" in (bk / "data.json").read_text(encoding="utf-8") and (bk / "bot.db").exists()
+
+
+def test_support_section_gets_phone_when_missing(tmp_path, capsys):
+    tg, db = setup(tmp_path)
+    (tg / "data.json").write_text(json.dumps({"4": "برای پشتیبانی پیام بدید 🙏", "3": "اقساط: با شماره ۰۹۱۲۱۱۱۲۲۳۳ تماس بگیرید"},
+                                             ensure_ascii=False), encoding="utf-8")
+    tool.main(["09127488434", "--tg-dir", str(tg), "--db", str(db), "--backup-dir", str(tmp_path / "bk"), "--no-service"])
+    out = capsys.readouterr().out
+    assert "۰۹۱۲۱۱۱۲۲۳۳" in out and "۰۹۱۲۷۴۸۸۴۳۴" in out and "پشتیبانی و تماس" in out    # دور خود شماره دیده می‌شود
+    tool.main(["09127488434", "--tg-dir", str(tg), "--db", str(db), "--backup-dir", str(tmp_path / "bk"), "--no-service", "--apply"])
+    d = json.loads((tg / "data.json").read_text(encoding="utf-8"))
+    assert d["4"] == "برای پشتیبانی پیام بدید 🙏\n\n📞 شماره‌ی تماس: ۰۹۱۲۷۴۸۸۴۳۴" and "۰۹۱۲۷۴۸۸۴۳۴" in d["3"]

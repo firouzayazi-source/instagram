@@ -93,7 +93,10 @@ def walk(obj, new, path, changes):
     return obj
 
 
-def plan(new: str, tg_dir: Path, db_path: Path):
+SUPPORT_KEY = "4"     # بخش «پشتیبانی و تماس» ربات تلگرام (کلید همان در shared_kb.SECTIONS)
+
+
+def plan(new: str, tg_dir: Path, db_path: Path, ensure_support: bool = True):
     """[(برچسب، داده‌ی تازه یا None، تغییرها)]"""
     out = []
     for name in TG_FILES:
@@ -103,6 +106,12 @@ def plan(new: str, tg_dir: Path, db_path: Path):
         data = json.loads(p.read_text(encoding="utf-8"))
         ch = []
         nd = walk(data, new, name, ch)
+        if name == "data.json" and ensure_support and isinstance(nd, dict):
+            cur = nd.get(SUPPORT_KEY) or ""
+            if not PHONE_RX.search(cur):     # بخش پشتیبانی شماره ندارد: یک خط تماس اضافه می‌شود
+                line = f"📞 شماره‌ی تماس: {new.translate(FA)}"
+                nd[SUPPORT_KEY] = (cur.rstrip() + "\n\n" + line) if cur.strip() else line
+                ch.append((f"{name}.{SUPPORT_KEY} (افزودن به «پشتیبانی و تماس»)", cur, nd[SUPPORT_KEY]))
         out.append((p, nd, ch))
     if db_path.exists():
         with sqlite3.connect(db_path) as c:
@@ -123,16 +132,25 @@ def main(argv=None):
     ap.add_argument("--db", default=str(ROOT / "data" / "bot.db"))
     ap.add_argument("--backup-dir", default="/var/backups/igbot")
     ap.add_argument("--no-service", action="store_true", help="برای تست: سرویس تلگرام را خاموش/روشن نکن")
+    ap.add_argument("--no-support", action="store_true", help="شماره به بخش «پشتیبانی و تماس» اضافه نشود")
     a = ap.parse_args(argv)
     new = canon(a.phone)
     if not re.fullmatch(r"0\d{10}", new):
         sys.exit("شماره نامعتبر است")
     tg_dir, db_path = Path(a.tg_dir), Path(a.db)
-    items = plan(new, tg_dir, db_path)
+    items = plan(new, tg_dir, db_path, ensure_support=not a.no_support)
     total = sum(len(ch) for _, _, ch in items)
     for target, _, ch in items:
         for path, old, nw in ch:
-            print(f"── {path}\n  قبل: {old[:300]!r}\n  بعد: {nw[:300]!r}")
+            print(f"── {path}")
+            olds = [m.group(0) for m in PHONE_RX.finditer(old)]
+            if olds:     # دور خود شماره، نه ابتدای متن
+                for m in PHONE_RX.finditer(old):
+                    print(f"  قبل: …{old[max(0, m.start() - 70):m.end() + 30]!r}…")
+                for m in re.finditer(re.escape(new) + "|" + re.escape(new.translate(FA)), nw):
+                    print(f"  بعد: …{nw[max(0, m.start() - 70):m.end() + 30]!r}…")
+            else:
+                print(f"  قبل: {old[-200:]!r}\n  بعد: {nw[-200:]!r}")
     print(f"\n{total} جای تغییر. شماره‌ی تازه: {new}")
     if not a.apply or not total:
         print("فقط نمایش بود؛ برای اعمال: --apply" if total else "چیزی برای تغییر نیست.")
