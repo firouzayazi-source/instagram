@@ -298,8 +298,8 @@ def parse(text, product="", alias=None):
     known = set(FILLER) | {w for w in COLORS} | {w for ws in ACCESSORY.values() for w in ws}
     rest = [w for w in t.split() if w not in known and not w.isdigit()
             and brain.stem(w) not in known and not any(w.startswith(k) for k in known if len(k) >= 4)
-            and w not in {v for ws in VARIANTS.values() for v in ws} | {"مکس", "max"}
-            and not (key and w == key.replace(" ", ""))]
+            and w not in {v for ws in VARIANTS.values() for v in ws} | {"مکس", "max", "ماکس"}
+            and not (key and (w == key.replace(" ", "") or re.fullmatch(r"\d{1,2}[^\d\s]+", w)))]
     if rest:
         q["rest"] = rest
         learned = alias(rest) if alias else None
@@ -360,6 +360,54 @@ def search(q, family=False):
     else:
         out.sort(key=lambda x: x["price"])
     return out
+
+
+_TIERS = ["mini", "", "plus", "pro", "pro max"]
+
+
+def _key(num, tier):
+    return f"{num} {tier}".strip()
+
+
+def neighbors(q):
+    """یک مدل بالاتر و یک مدل پایین‌تر که الان موجودند، برای یک اشاره‌ی کوتاه زیر نتیجه.
+    «۱۳ پرو مکس» → بالا: ۱۴ پرو مکس، ۱۴ پرو یا ۱۵ پرو مکس؛ پایین: ۱۲ پرو مکس، ۱۳ پرو یا ۱۲ پرو.
+    خروجی: [(کلید مدل، ارزان‌ترین کالای موجود)] — حداکثر دو مورد. وضعیت (آک/کارکرده) خواسته‌شده رعایت می‌شود."""
+    k = q.get("model") or ""
+    m = re.fullmatch(r"(\d{1,2})(?: (.+))?", k)
+    if not m or "acc" in q:
+        return []
+    num, tier = int(m.group(1)), m.group(2) or ""
+    if tier not in _TIERS:
+        return []
+    i = _TIERS.index(tier)
+    lowers = _TIERS[i - 1:0:-1] if i > 1 else []      # «پرو» → پلاس، معمولی (مینی پایین‌ترِ معمولی حساب نمی‌شود)
+    upper = _TIERS[i + 1] if 0 < i < len(_TIERS) - 1 else None
+    up = [_key(num + 1, tier)] + [_key(num + 1, t) for t in lowers[:1]] + [_key(num + 2, tier)]
+    down = [_key(num - 1, tier)] + [_key(num, t) for t in lowers] + ([_key(num - 1, upper)] if upper else [])
+    stock = {}
+    for x in in_stock():
+        if not x["model"] or x["model"] == k or not x["price"]:
+            continue
+        if "new" in q and x["used"] == q["new"]:
+            continue
+        if x["model"] not in stock or x["price"] < stock[x["model"]]["price"]:
+            stock[x["model"]] = x
+    out = []
+    for cands in (up, down):
+        hit = next((c for c in cands if c in stock), None)
+        if hit:
+            out.append((hit, stock[hit]))
+    return out
+
+
+def neighbor_line(q):
+    """«💡 شاید اینا هم به کارتون بیاد: ۱۴ پرو مکس از ۲۴۰ میلیون · ۱۲ پرو مکس از ۱۴۵ میلیون» یا «»."""
+    nb = neighbors(q)
+    if not nb:
+        return ""
+    bits = [f"{model_name(k)} از {short_price(x['price'])}" for k, x in nb]
+    return "💡 شاید اینا هم به کارتون بیاد: " + " · ".join(bits)
 
 
 def short_price(n):

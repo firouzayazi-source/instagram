@@ -114,7 +114,8 @@ def _catalog_reply(text: str, product: str) -> str | None:
     if res:
         lines = [_item_line(x) for x in res[:MAX_ITEMS]]
         more = f"\n\nو {catalog.fa(len(res) - MAX_ITEMS)} مورد دیگر؛ لیست کامل: {SITE}" if len(res) > MAX_ITEMS else ""
-        return f"موجودی‌های {what}:\n\n" + "\n\n".join(lines) + more
+        hint = catalog.neighbor_line(q)    # یک اشاره به مدل بالاتر و پایین‌تر
+        return f"موجودی‌های {what}:\n\n" + "\n\n".join(lines) + more + (f"\n\n{hint}" if hint else "")
     near = catalog.search(q, family=True) if q.get("model") else []
     if near:
         return (f"الان {what} موجود نداریم 🙏 گزینه‌های نزدیک:\n\n" + "\n\n".join(_item_line(x) for x in near[:2]))

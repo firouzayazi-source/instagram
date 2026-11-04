@@ -97,7 +97,8 @@ async def test_showcase_cards_for_stock_questions(env):
         uid, cards = ig.cards[0]
         assert uid == "u9" and cards[0]["id"] == "100" and cards[0]["image"].startswith("https://")
         assert "۱۹۰" in cards[0]["subtitle"] and cards[0]["url"] == "https://stland.ir/?p=100"
-        assert "\n" not in last_dm(ig)          # فقط سرخط، فهرست کامل در کارت‌هاست
+        intro = last_dm(ig).split("\n")       # سرخط و حداکثر یک اشاره به مدل نزدیک؛ فهرست کامل در کارت‌هاست
+        assert len(intro) <= 2 and "stland.ir" not in last_dm(ig) and all(x.startswith("💡") for x in intro[1:])
         assert c.execute("SELECT text FROM messages WHERE direction='out' ORDER BY created_at DESC").fetchone()[0].startswith("🛍")
         ai.save_settings(c, {"showcase_cards": False})
         await run(ig, c, "e2", "message", msg("m2", "قیمت آیفون ۱۳ پرو چنده؟"))

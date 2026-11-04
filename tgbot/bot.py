@@ -5718,9 +5718,10 @@ async def send_catalog(msg,text,product,lead="",rows=None,uid=None,force=None):
         await msg.reply_text(note or f"🙏 {catalog.describe(q) or 'با این مشخصات'} الان موجود نداریم.",
                              reply_markup=_cat_markup([[("📦 دیدن همه‌ی دسته‌ها","cat_home")]]))
         return True
+    hint="" if title else catalog.neighbor_line(q)   # یک اشاره به مدل بالاتر و پایین‌تر، نه بیشتر
     title=title or catalog.results_title(q,len(res))
     if uid: cat_state[uid]={"ids":[x["id"] for x in res],"q":q,"title":title,"page":0,"ts":time.time()}
-    await _cat_send(msg,catalog.view_results(res,q,0,foot,title),note)
+    await _cat_send(msg,catalog.view_results(res,q,0,(hint+"\n"+foot) if hint else foot,title),note)
     return True
 
 def _cat_results(uid):

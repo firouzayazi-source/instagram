@@ -100,3 +100,17 @@ async def test_panel_test_uses_brain_without_key(env):
     with db.connect() as c:
         d = await ai.decide(c, channel="dm", text="سلام وقت بخیر", user_id="test", is_test=True)
         assert d.action == "reply" and d.reply
+
+
+def test_short_max_means_pro_max_and_neighbor_hint(env):
+    import catalog
+    import specs
+    assert specs.find_models("قیمت ۱۳ مکس") == ["13 pro max"] and specs.find_models("13max") == ["13 pro max"]
+    assert catalog.parse("۱۴ پلاس")["model"] == "14 plus" and catalog.parse("۱۳ معمولی")["model"] == "13"
+    act, reply, intent, *_ = brain_engine.decide("قیمت ۱۳ مکس")
+    assert intent == "price" and reply.startswith("الان آیفون ۱۳ پرو مکس موجود نداریم")   # پرو مکس، نه ۱۳ معمولی
+    # کسی که ۱۳ پرو می‌خواهد: اشاره‌ی کوتاه به مدل پایین‌تر موجود (۱۳ معمولی)، در یک خط
+    hint = catalog.neighbor_line(catalog.parse("۱۳ پرو"))
+    assert hint.startswith("💡") and "آیفون ۱۳ از ۱۲۵ میلیون" in hint and hint.count("\n") == 0
+    assert hint in brain_engine.decide("قیمت ۱۳ پرو")[1]
+    assert catalog.neighbor_line(catalog.parse("شارژر")) == ""

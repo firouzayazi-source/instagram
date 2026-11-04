@@ -235,6 +235,9 @@ async def handle_ai(ig, row, c, payload, inc: Incoming) -> str:
             sent |= await _send(ig, c, row["id"], None, "public", payload, inc, d.public_reply)
     elif d.cards and s["showcase_cards"]:
         intro = d.reply.split("\n")[0].strip() or "موجودی‌ها 👇"
+        hint = next((ln for ln in d.reply.split("\n") if ln.startswith("💡")), "")
+        if hint:
+            intro = f"{intro}\n{hint}"     # اشاره به مدل‌های نزدیک، در همان پیام، نه پیام جدا
         sent = await _send(ig, c, row["id"], None, "dm", payload, inc, intro)
         if sent and not await _send_cards(ig, c, row["id"], inc, d.cards):
             await _send(ig, c, row["id"], None, "dm", payload, inc, d.reply)    # کارت نرفت: همان متن کامل
