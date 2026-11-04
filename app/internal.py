@@ -4,6 +4,7 @@
 nginx (یعنی از اینترنت) رسیده باشد رد می‌شود. کلید هیچ‌وقت در لاگ یا پاسخ نمی‌آید.
 """
 import hmac
+import time
 import os
 import secrets
 from pathlib import Path
@@ -11,7 +12,7 @@ from pathlib import Path
 from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel
 
-from . import ai, config, db
+from . import ai, config, db, orders
 
 router = APIRouter(prefix="/internal")
 
@@ -63,3 +64,39 @@ async def think(body: ThinkIn, request: Request, x_internal_key: str | None = He
             ai.mark_log(c, d.log_id, "sent")
     return {"action": d.action, "reply": d.reply, "intent": d.intent, "handoff_reason": d.handoff_reason,
             "skip_reason": d.skip_reason}
+
+
+class OrderIn(BaseModel):
+    channel: str
+    user_id: str
+    username: str = ""
+    text: str = ""
+    image: bool = False        # مشتری عکس فرستاد (شاید رسید)
+    product_id: str = ""       # دکمه‌ی «رزرو می‌کنم» زیر کارت کالا
+    hint: str = ""             # مدلی که درباره‌اش حرف می‌زد
+
+
+@router.post("/order")
+def order(body: OrderIn, request: Request, x_internal_key: str | None = Header(None)):
+    """گفتگوی سفارش برای کانال دیگر (فعلاً تلگرام)، تا سفارش‌های همه‌ی کانال‌ها یکجا در هسته باشند.
+    خروجی: reply (متن برای مشتری یا null اگر پیام به سفارش ربطی نداشت)، order_id (سفارشی که همین الان
+    ثبت شد یا رسیدش آمد) و receipt (این پیام رسید پرداخت بود)."""
+    _check(request, x_internal_key)
+    if body.channel != "telegram":
+        raise HTTPException(422)
+    ch, uid = "tg", body.user_id.strip()[:40]
+    with db.connect() as c:
+        s = ai.settings(c)
+        if not s["order_enabled"]:
+            return {"reply": None, "order_id": None, "receipt": False}
+        last = c.execute("SELECT MAX(id) FROM orders").fetchone()[0] or 0
+        user = body.username or None
+        if body.product_id:
+            reply = orders.start(c, uid, user, product_id=body.product_id, channel=ch)
+        else:
+            reply = orders.handle(c, uid, user, body.text[:2000], ["telegram"] if body.image else [], s,
+                                  channel=ch, hint=body.hint[:60])
+        new = c.execute("SELECT id FROM orders WHERE id>? AND channel=? AND user_id=?", (last, ch, uid)).fetchone()
+        rec = c.execute("SELECT id FROM orders WHERE channel=? AND user_id=? AND status='receipt' AND updated_at>?",
+                        (ch, uid, time.time() - 5)).fetchone() if body.image and reply else None
+    return {"reply": reply, "order_id": (new or rec or [None])[0], "receipt": bool(rec)}

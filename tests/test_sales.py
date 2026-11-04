@@ -178,6 +178,11 @@ async def test_order_from_text_skips_known_fields_and_cancel(env):
         assert "آیفون 13 128 گیگ" in last_dm(ig) and "شهر" in last_dm(ig)    # نام و شماره را دارد
         await run(ig, c, "e2", "message", msg("m2", "لغو"))
         assert "لغو شد" in last_dm(ig) and not orders.active(c, "u9")
+        # حافظه‌ی گفتگو: «ثبت سفارش» برای همان مدلی که قبلاً گفته بود
+        await run(ig, c, "e3a", "message", msg("m3a", "ثبت سفارش"))
+        assert "آیفون 13 128 گیگ" in last_dm(ig)
+        await run(ig, c, "e3b", "message", msg("m3b", "لغو"))
+        c.execute("DELETE FROM conv_memo")
         # بدون پیام پرداخت: همکار هماهنگ می‌کند
         await run(ig, c, "e3", "message", msg("m3", "ثبت سفارش"))
         assert "کدوم محصول" in last_dm(ig)
@@ -322,3 +327,56 @@ def test_orders_api_and_rule_copy(env):
         assert ok.status_code == 200, ok.text
         assert cl.get("/api/reports/lost").status_code == 200
         assert cl.get("/api/customers?window=open&phone=no").status_code == 200
+
+
+def test_telegram_orders_through_core(env):
+    from app import internal
+    with TestClient(create_app(SalesIG())) as cl:
+        key = internal.key_path().read_text().strip()
+        H = {"X-Internal-Key": key}
+
+        def say(**kw):
+            r = cl.post("/internal/order", headers=H, json={"channel": "telegram", "user_id": "555", "username": "ali", **kw})
+            assert r.status_code == 200, r.text
+            return r.json()
+        assert say(text="قیمت ۱۳ پرو چنده؟")["reply"] is None             # به سفارش ربطی ندارد
+        assert "آیفون 13 پرو 256" in say(product_id="100")["reply"]           # «رزرو می‌کنم» زیر کارت
+        for t in ("علی رضایی", "۰۹۱۲۱۲۳۴۵۶۷", "قم", "خیابان عمار یاسر، کوچه ۳، پلاک ۸"):
+            say(text=t)
+        done = say(text="بله")
+        assert "ثبت شد" in done["reply"] and done["order_id"] and not done["receipt"]
+        with db.connect() as c:
+            o = c.execute("SELECT * FROM orders").fetchone()
+            assert (o["channel"], o["user_id"], o["product_id"]) == ("tg", "555", "100")
+            assert crm.get(c, "tg:555")["phone"] == "09121234567"
+            assert not orders.active(c, "555") and not orders.active(c, "555", "tg")
+        n = notes(env)[-1]
+        assert n["topic"] == "orders" and "از تلگرام" in n["text"]
+        rec = say(image=True)
+        assert rec["receipt"] and rec["order_id"] == done["order_id"] and "رسید" in rec["reply"]
+        assert notes(env)[-1]["topic"] == "orders" and "photo" not in notes(env)[-1]
+        assert say(image=True)["reply"] is None                                # عکس بعدی رسید نیست
+        # «ثبت سفارش» با مدلی که درباره‌اش حرف می‌زد
+        r = say(text="ثبت سفارش", hint="آیفون ۱۳")
+        assert "شهر" in r["reply"] or "کدوم آیفون ۱۳" in r["reply"] or "آیفون 13 128" in r["reply"]
+        assert cl.post("/internal/order", json={"channel": "telegram", "user_id": "1"}).status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_conversation_memory_budget_and_model(env):
+    from app import memory
+    ig = SalesIG()
+    with db.connect() as c:
+        ai.save_settings(c, {"showcase_cards": False})
+        await run(ig, c, "e1", "message", msg("m1", "بودجه‌ام ۱۵۰ میلیونه"))
+        assert memory.recall(c, "u9")["budget"] == 150_000_000
+        # بعداً بدون گفتن بودجه: فقط تا ۱۵۰ میلیون (۱۳ پرو ۱۹۰ نمی‌آید)
+        await run(ig, c, "e2", "message", msg("m2", "یه گوشی کارکرده میخوام"))
+        assert "آیفون 13 128" in last_dm(ig) and "آیفون 13 پرو 256" not in last_dm(ig)
+        # مدل مشخص: بودجه‌ی قبلی جلوی جوابش را نمی‌گیرد
+        await run(ig, c, "e3", "message", msg("m3", "قیمت ۱۳ پرو چنده؟"))
+        assert "آیفون 13 پرو 256" in last_dm(ig)
+        assert memory.recall(c, "u9") == {"product": "آیفون ۱۳ پرو", "budget": 150_000_000}
+        assert "۱۵۰ میلیون" in memory.note(memory.recall(c, "u9"))
+        c.execute("UPDATE conv_memo SET updated_at=updated_at-7*3600")
+        assert memory.recall(c, "u9") == {}                                   # بعد از ۶ ساعت فراموش می‌شود

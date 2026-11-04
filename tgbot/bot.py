@@ -4291,6 +4291,12 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     # گفت‌وگو دستِ همکار است؟ دستیار کنار می‌کشد و پیام مستقیم به او می‌رسد
     if await human_active(user.id,ctx.bot):
         if await forward_to_admin(update,ctx,ack=False): return
+    # گفتگوی سفارش (نام، شماره، شهر، آدرس…) یا «ثبت سفارش» — در هسته، مثل اینستاگرام
+    r=await core_order(user,text=text,hint=(brain_ctx.get(user.id) or {}).get("product",""))
+    if r and r.get("reply"):
+        await update.message.reply_text(r["reply"],reply_markup=main_menu())
+        if r.get("order_id") and not r.get("receipt"): await order_done(ctx.bot,user,r["order_id"])
+        return
     if get_setting("assistant") and get_setting("faq_auto"):
         if await assistant_reply(update,ctx,text,user): return
         await update.message.reply_text(
@@ -5092,6 +5098,32 @@ async def core_think(text,user,dry=False):
     if d.get("action") in ("reply","handoff") and (d.get("reply") or "").strip(): return d
     return None
 
+async def core_order(user,text="",image=False,product_id="",hint=""):
+    """گفتگوی سفارش در هسته‌ی مرکزی (همان روند اینستاگرام؛ سفارش‌ها یکجا در پنل).
+    خروجی: {"reply","order_id","receipt"} یا None اگر هسته در دسترس نبود."""
+    try:
+        with open(INTERNAL_KEY_FILE,encoding="utf-8") as f: key=f.read().strip()
+    except OSError: return None
+    if not key: return None
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=15,trust_env=False) as cl:
+            r=await cl.post(CORE_URL+"/internal/order",headers={"X-Internal-Key":key},
+                            json={"channel":"telegram","user_id":str(user.id),"username":user.username or "",
+                                  "text":(text or "")[:2000],"image":bool(image),"product_id":str(product_id or ""),
+                                  "hint":(hint or "")[:60]})
+        if r.status_code!=200:
+            logger.warning(f"core order: HTTP {r.status_code}"); return None
+        return r.json()
+    except Exception as e:
+        logger.warning(f"core order: {type(e).__name__}: {e}"); return None
+
+async def order_done(bot,user,oid):
+    """سفارش ثبت شد: همکار در گفتگوی همین مشتری خبردار می‌شود و برای پرداخت و ارسال هماهنگ می‌کند."""
+    await notify_handoff(bot,user,why=f"سفارش #{oid} ثبت شد (جزئیات در تاپیک «🛒 سفارش‌ها»)",icon="🛒")
+    set_human(user.id,bot)
+    _bg(record_event(user.id,"rsv"),"ev order")
+
 # ════════════════════════════════════════════════
 #  خبرهای اینستاگرام (ارجاع، سفارش…) به گروه پشتیبانی، تاپیک «📸 اینستاگرام»
 # ════════════════════════════════════════════════
@@ -5102,10 +5134,11 @@ async def process_ig_notify(bot):
     except FileNotFoundError: return 0
     for f in files:
         p=os.path.join(IG_NOTIFY_DIR,f)
-        photo=""
+        photo=""; topic=""
         try:
             with open(p,encoding="utf-8") as fh: d=json.load(fh)
             text=str(d.get("text") or "")[:3500]
+            topic="orders" if d.get("topic")=="orders" else ""
             photo=str(d.get("photo") or "")
             if not photo.startswith("https://"): photo=""
         except Exception as e:
@@ -5116,12 +5149,14 @@ async def process_ig_notify(bot):
         if not text: continue
         sent=False
         gid=support_group()
+        # سفارش‌های همه‌ی کانال‌ها در تاپیک «🛒 سفارش‌ها»؛ بقیه‌ی خبرهای اینستاگرام در «📸 اینستاگرام»
+        tkey,tname=("orders_topic","🛒 سفارش‌ها") if topic=="orders" else ("ig_topic","📸 اینستاگرام")
         if gid:
-            tid=settings.get("ig_topic")
+            tid=settings.get(tkey)
             if not tid:
                 try:
-                    t=await bot.create_forum_topic(gid,"📸 اینستاگرام")
-                    tid=t.message_thread_id; settings["ig_topic"]=tid; await save_settings()
+                    t=await bot.create_forum_topic(gid,tname)
+                    tid=t.message_thread_id; settings[tkey]=tid; await save_settings()
                 except Exception as e: logger.warning(f"ig topic: {e}"); tid=None
             try:
                 await bot.send_message(gid,text,message_thread_id=tid,disable_web_page_preview=True); sent=True
@@ -5130,7 +5165,7 @@ async def process_ig_notify(bot):
                     except Exception as e: logger.warning(f"ig notify photo: {e}")
             except Exception as e:
                 logger.warning(f"ig notify group: {e}")
-                if settings.pop("ig_topic",None): await save_settings()   # تاپیک پاک شده بود؛ بار بعد از نو
+                if settings.pop(tkey,None): await save_settings()   # تاپیک پاک شده بود؛ بار بعد از نو
         if not sent:
             for aid in admin_ids():
                 try:
@@ -5927,6 +5962,9 @@ async def product_cb(query,ctx,kind,pid):
         await query.message.reply_text(body or "شرایط اقساط رو همکارم همین‌جا می‌گه 🙏",parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🛒 رزرو می‌کنم",
                                                                      callback_data=f"cat_rsv_{x['id']}")]]))
+    elif kind=="rsv" and get_setting("assistant") and (r:=await core_order(user,product_id=x["id"])) and r.get("reply"):
+        # «رزرو می‌کنم» ← گرفتن اطلاعات سفارش در همین گفتگو (اگر هسته در دسترس نبود، روال قبلی: سپردن به همکار)
+        await query.message.reply_text(r["reply"],reply_markup=main_menu())
     elif kind in ("rsv","ask"):
         rsv=kind=="rsv"
         if rsv and time.time()-_rsv_seen.get((uid,x["id"]),0)<600:
@@ -6416,6 +6454,12 @@ async def user_media_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if spam_check(user.id)!='ok': return
     if await check_abuse(update,ctx,msg.caption or "",user): return
     kind=next((lbl for attr,lbl in _KIND_BY_ATTR if getattr(msg,attr,None)),"پیام")
+    if msg.photo:     # شاید رسید پرداختِ سفارشی باشد که در هسته ثبت شده
+        r=await core_order(user,image=True)
+        if r and r.get("receipt"):
+            await msg.reply_text(r["reply"],reply_markup=main_menu())
+            await forward_to_admin(update,ctx,"🧾 رسید پرداخت",ack=False)
+            return
     if not await forward_to_admin(update,ctx,kind,ack=not await human_active(user.id,ctx.bot)):
         await msg.reply_text(
             ("سؤالتون رو همین‌جا بنویسید 🙂" if chat_mode()

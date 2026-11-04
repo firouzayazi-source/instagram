@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from . import ai, channels, config, crm, db, knowledge, moderation, orders, push, tg_notify
+from . import ai, channels, config, crm, db, knowledge, memory, moderation, orders, push, tg_notify
 from .rules import Incoming, find_rule, pick
 
 MAX_RETRIES = 3
@@ -114,13 +114,15 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         # فروش در دایرکت: دکمه‌ی «سفارش»، گفتگوی سفارش در حال انجام، یا عکس رسید
         username = db.conversation_username(c, inc.user_id)
         human = bool(db.human_until(c, inc.user_id))
+        hint = memory.recall(c, inc.user_id).get("product", "")    # «ثبت سفارش» برای همان مدلی که می‌پرسید
+        memory.remember(c, inc.user_id, inc.text)
         reply = None
         if inc.payload.startswith("ORDER:") and s["order_enabled"] and not human:
             reply = orders.start(c, inc.user_id, username, product_id=inc.payload[6:])
         elif inc.images and not inc.text:
             reply = orders.receipt(c, inc.user_id, username, inc.images[0])   # رسید حتی وقتی همکار در گفتگوست
         elif not human:
-            reply = orders.handle(c, inc.user_id, username, inc.text, inc.images, s)
+            reply = orders.handle(c, inc.user_id, username, inc.text, inc.images, s, hint=hint)
         if reply:
             await _send(ig, c, row["id"], None, "dm", payload, inc, reply)
             return "done"
@@ -220,8 +222,12 @@ async def handle_ai(ig, row, c, payload, inc: Incoming) -> str:
         what = "استوری" if inc.source == "story_reply" else "پستی"
         notes.append(f"این پیام درباره‌ی {what} است که صاحب پیج درباره‌اش نوشته: "
                      f"{mnote.get('product', '')} {mnote.get('note', '')}".strip())
+    memo = memory.recall(c, inc.user_id) if inc.channel == "dm" else {}
+    if memory.note(memo):
+        notes.append(memory.note(memo))
     d = await ai.decide(c, channel=inc.channel, text=inc.text, user_id=inc.user_id, username=username, event_id=row["id"],
-                        note="\n".join(notes), s=s, product_hint=mnote.get("product", ""))
+                        note="\n".join(notes), s=s, product_hint=mnote.get("product", "") or memo.get("product", ""),
+                        budget=memo.get("budget", 0))
     crm.auto_tag(c, crm.cid("ig", inc.user_id), d.intent)
     if d.action == "ignore" or (d.action == "skip" and d.skip_reason == "emoji"):
         return "ignored"

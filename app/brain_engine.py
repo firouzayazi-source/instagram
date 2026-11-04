@@ -104,9 +104,18 @@ def _item_line(x: dict) -> str:
     return f"• {x['name']}" + (f" · {bits}" if bits else "") + f"\n  💰 {catalog.fmt_price(x['price'])}{last}\n  {_short_link(x)}"
 
 
-def _catalog_reply(text: str, product: str) -> str | None:
+def _with_budget(q: dict, budget: int) -> dict:
+    """بودجه‌ای که مشتری قبلاً گفته، برای جستجوی کلی («یه گوشی با دوربین خوب»)؛ وقتی مدل مشخصی خواسته یا
+    خودش قیمت داده، بودجه‌ی قبلی اعمال نمی‌شود («۱۶ پرو مکس چنده؟» نباید «موجود نداریم» بگیرد)."""
+    if budget and q and not any(k in q for k in ("model", "max", "min", "sort", "acc")) and \
+            any(k in q for k in ("phone", "variant", "color", "storage", "new", "battery")):
+        q = {**q, "max": budget}
+    return q
+
+
+def _catalog_reply(text: str, product: str, budget: int = 0) -> str | None:
     """جستجوی کالا در فهرست سایت؛ None اگر پیام جستجوی کالا نبود."""
-    q = catalog.parse(text, product)
+    q = _with_budget(catalog.parse(text, product), budget)
     if not q:
         return None
     res = catalog.search(q)
@@ -122,12 +131,12 @@ def _catalog_reply(text: str, product: str) -> str | None:
     return f"الان {what} موجود نداریم 🙏 لیست به‌روز همه‌ی موجودی‌ها: {SITE}"
 
 
-def cards_for(text: str, product: str = "", limit: int = 10, strict: bool = False) -> list[dict]:
+def cards_for(text: str, product: str = "", limit: int = 10, strict: bool = False, budget: int = 0) -> list[dict]:
     """کالاهای همان جستجوی موجودی، برای کارت ویترین دایرکت: فقط آن‌هایی که عکس و قیمت دارند.
     strict: فقط وقتی پیام واقعاً کالایی را نام برده (برای پیدا کردن محصول سفارش)."""
     if not _catalog_ready():
         return []
-    q = catalog.parse(text, product)
+    q = _with_budget(catalog.parse(text, product), budget)
     if not q or (strict and not any(k in q for k in ("model", "variant", "storage", "acc", "max", "min"))):
         return []
     res = catalog.search(q) or (catalog.search(q, family=True) if q.get("model") else [])
@@ -236,7 +245,7 @@ def _render(item: dict, text: str, product: str, name: str):
     return answer, "reply"
 
 
-def decide(text: str, username: str | None = None, product_hint: str = ""):
+def decide(text: str, username: str | None = None, product_hint: str = "", budget: int = 0):
     """تصمیم موتور فهم: (action، reply، intent، score، handoff_reason) یا None اگر محکم نفهمید.
     product_hint: محصولِ پست یا استوری‌ای که پیام به آن جواب داده (وقتی خود پیام مدل را نگفته)."""
     its = intents()
@@ -265,14 +274,14 @@ def decide(text: str, username: str | None = None, product_hint: str = ""):
         return act, _join(lead, body), "other", 1.0, ""
 
     if _catalog_ready():
-        q = catalog.parse(text, a["product"])
+        q = _with_budget(catalog.parse(text, a["product"]), budget)
         n = brain.norm(text)
         shop = any(k in q for k in ("color", "max", "min", "sort", "storage", "battery"))
         strong = shop or any(k in q for k in ("variant", "acc"))
         other = a["intent"] and a["intent"].get("id") not in ("i_price", "i_stock", "i_accessory")
         ask = q.get("model") and HAVE_RX.search(n)
         if LIST_RX.search(n) or shop or ((strong or ask) and not other):
-            cat = _catalog_reply(text, a["product"])
+            cat = _catalog_reply(text, a["product"], budget)
             if cat:
                 return "reply", _join(lead, cat), "price", 1.0, ""
 

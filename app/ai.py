@@ -479,7 +479,7 @@ def _log(c, d: Decision, *, event_id, channel, user_id, username, text, model=""
 
 async def decide(c, *, channel: str, text: str, user_id: str, username: str | None = None,
                  event_id: str | None = None, is_test: bool = False, s: dict | None = None,
-                 skip_brain: bool = False, note: str = "", product_hint: str = "") -> Decision:
+                 skip_brain: bool = False, note: str = "", product_hint: str = "", budget: int = 0) -> Decision:
     """channel: comment | dm (اینستاگرام) | telegram. skip_brain برای کانالی که موتور فهم را خودش اجرا کرده."""
     s = s or settings(c)
     ctx = dict(event_id=event_id, channel=channel, user_id=user_id, username=username, text=text, is_test=is_test)
@@ -496,12 +496,12 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
 
     # لایه‌ی ۱: موتور فهم مشترک با تلگرام (رایگان، فوری، همان دانش ربات تلگرام)
     if brain_on and brain_engine.available():
-        r = brain_engine.decide(text, username, product_hint)
+        r = brain_engine.decide(text, username, product_hint, budget)
         if r:
             action, reply, intent, score, reason = r
             d = Decision(action, reply=reply, intent=intent, confidence=score, handoff_reason=reason)
             if intent == "price" and channel == "dm":
-                d.cards = brain_engine.cards_for(text, product_hint)
+                d.cards = brain_engine.cards_for(text, product_hint, budget=budget)
             return _finish(c, d, s, channel, text, is_test, ctx, model="brain", cost=0.0, check_confidence=False)
         if not s["enabled"] and not is_test:
             # هوش مصنوعی خاموش است و موتور فهم نفهمید: دایرکت به همکار، کامنت بی‌جواب

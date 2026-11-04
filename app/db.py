@@ -255,6 +255,21 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE INDEX IF NOT EXISTS orders_created ON orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS orders_user ON orders(user_id, created_at DESC);
 
+-- حافظه‌ی کوتاه گفتگو: آخرین مدل و بودجه‌ای که مشتری گفته (تا لازم نباشد دوباره بپرسیم)
+CREATE TABLE IF NOT EXISTS conv_memo (
+  user_id TEXT PRIMARY KEY,
+  product TEXT NOT NULL DEFAULT '',
+  budget INTEGER NOT NULL DEFAULT 0,
+  updated_at REAL NOT NULL
+);
+
+-- پیگیری خودکار مشتری ساکت: هر نفر فقط یک بار
+CREATE TABLE IF NOT EXISTS auto_followups (
+  user_id TEXT PRIMARY KEY,
+  sent_at REAL NOT NULL,
+  ok INTEGER NOT NULL DEFAULT 1
+);
+
 -- گفتگوی سفارش در حال انجام: ربات قدم‌به‌قدم اطلاعات را می‌پرسد
 CREATE TABLE IF NOT EXISTS order_flow (
   user_id TEXT PRIMARY KEY,
