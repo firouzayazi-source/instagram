@@ -43,14 +43,14 @@ def test_dry_run_changes_nothing(tmp_path, capsys):
 def test_apply_replaces_only_phones(tmp_path):
     tg, db = run(tmp_path, "--apply")
     data = json.loads((tg / "data.json").read_text(encoding="utf-8"))
-    assert data["4"] == "📞 تماس: ۰۹۱۲ ۷۴۸ ۸۴۳۴\n📱 موبایل: ۰۹۱۲ ۷۴۸ ۸۴۳۴"          # تکراری یکی شد
+    assert data["4"] == "📞 تماس: ۰۹۱۲۷۴۸۸۴۳۴\n📱 موبایل: ۰۹۱۲۷۴۸۸۴۳۴"          # تکراری یکی شد
     assert "۳۷۱۶۸۹۴۵۶۲" in data["5"]                                                # کد پستی دست نخورد
     faq = json.loads((tg / "faq.json").read_text(encoding="utf-8"))
-    assert faq[0]["answer"] == "زنگ بزنید 0912 748 8434" and faq[0]["hits"] == 4
+    assert faq[0]["answer"] == "زنگ بزنید 09127488434" and faq[0]["hits"] == 4
     assert faq[1]["answer"] == "قیمت ۱۹۰٬۰۰۰٬۰۰۰ تومان"
     assert json.loads((tg / "buttons.json").read_text())["4"]["items"][0]["url"] == "tel:+989127488434"
     with sqlite3.connect(db) as c:
-        assert "0912 748 8434" in c.execute("SELECT value FROM kv").fetchone()[0]
+        assert "09127488434" in c.execute("SELECT value FROM kv").fetchone()[0]
         assert c.execute("SELECT phone FROM customers").fetchone()[0] == "09351112233"   # داده‌ی مشتری دست نخورد
     bk = next((tmp_path / "bk").iterdir())
     assert "۰۲۵۳۷۷۰۰۱۱۲" in (bk / "data.json").read_text(encoding="utf-8") and (bk / "bot.db").exists()

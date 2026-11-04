@@ -1,4 +1,4 @@
-"""یکی کردن شماره‌ی تماس فروشگاه در همه‌ی دانش و تنظیمات پروژه.
+"""یکی کردن شماره‌ی تماس فروشگاه (یکپارچه، بی‌فاصله، تا در متن فارسی به‌هم نریزد) در همه‌ی دانش و تنظیمات پروژه.
 
 هر شماره‌ی تلفن (موبایل یا ثابت، با رقم فارسی یا لاتین، با فاصله یا خط تیره، و لینک‌های tel: و wa.me)
 در متن بخش‌ها، جواب نیت‌ها، دکمه‌ها، صفحه‌ها و تنظیمات ربات تلگرام و در اطلاعات کسب‌وکار هوش مصنوعی
@@ -48,8 +48,8 @@ def fmt(new: str, sample: str, ctx: str) -> str:
     c = canon(new)
     if re.search(r"(?:tel:|wa\.me/|whatsapp)\s*$", ctx, re.I):
         return ("+98" if sample.strip().startswith("+") else "98") + c[1:] if "wa.me" in ctx.lower() else "+98" + c[1:]
-    nice = f"{c[:4]} {c[4:7]} {c[7:]}"
-    return nice.translate(FA) if re.search(r"[۰-۹٠-٩]", sample) else nice
+    # یکپارچه و بی‌فاصله: «۰۹۱۲ ۷۴۸ ۸۴۳۴» در متن راست‌به‌چپ جابه‌جا نمایش داده می‌شود
+    return c.translate(FA) if re.search(r"[۰-۹٠-٩]", sample) else c
 
 
 def replace_in(text: str, new: str) -> tuple[str, list[str]]:
