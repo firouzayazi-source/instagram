@@ -2584,7 +2584,9 @@ async def send_section(msg,key,title=None,uid=None,extra_rows=None):
     title=title or SECTION_NAMES.get(key,key)
     # ساعت کاری کنار آدرس می‌نشیند (منطقی‌تر و منو خلوت‌تر)
     if key=="5" and workhours.get("enabled",True):
-        extra_rows=list(extra_rows or [])+[[InlineKeyboardButton("🕐 ساعت کاری",callback_data="wh_today")]]
+        # دکمه‌ی پیشنهادیِ «ساعت کاری» (از نیت آدرس) جایش را به همین دکمه می‌دهد تا دوتا نشود
+        extra_rows=[[b for b in r if b.callback_data!="ai_i_hours"] for r in (extra_rows or [])]
+        extra_rows=[r for r in extra_rows if r]+[[InlineKeyboardButton("🕐 ساعت کاری",callback_data="wh_today")]]
     kb=merge_kb(user_sec_kb(key),extra_rows)
     # لوکیشن فعال → یک کارت واحد: نقشه + نام + آدرس + دکمه‌های بخش.
     # (تلگرام اجازه نمی‌دهد venue همراه عکس یا caption باشد، پس همین کارت
