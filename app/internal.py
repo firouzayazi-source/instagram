@@ -12,7 +12,7 @@ from pathlib import Path
 from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel
 
-from . import ai, config, db, orders
+from . import ai, config, db, learning, orders
 
 router = APIRouter(prefix="/internal")
 
@@ -62,8 +62,9 @@ async def think(body: ThinkIn, request: Request, x_internal_key: str | None = He
                             username=body.username or None, is_test=body.test, skip_brain=True)
         if d.log_id and d.action == "reply" and not body.test:
             ai.mark_log(c, d.log_id, "sent")
+        ask = ai.settings(c)["ask_feedback"]
     return {"action": d.action, "reply": d.reply, "intent": d.intent, "handoff_reason": d.handoff_reason,
-            "skip_reason": d.skip_reason}
+            "skip_reason": d.skip_reason, "log_id": d.log_id, "ask_feedback": bool(ask and d.action == "reply")}
 
 
 class OrderIn(BaseModel):
@@ -100,3 +101,20 @@ def order(body: OrderIn, request: Request, x_internal_key: str | None = Header(N
         rec = c.execute("SELECT id FROM orders WHERE channel=? AND user_id=? AND status='receipt' AND updated_at>?",
                         (ch, uid, time.time() - 5)).fetchone() if body.image and reply else None
     return {"reply": reply, "order_id": (new or rec or [None])[0], "receipt": bool(rec)}
+
+
+class FeedbackIn(BaseModel):
+    channel: str
+    user_id: str
+    log_id: int
+    vote: str            # up | down
+
+
+@router.post("/feedback")
+def feedback(body: FeedbackIn, request: Request, x_internal_key: str | None = Header(None)):
+    """رأی مشتری به جواب هوش مصنوعی؛ جواب پسندیده به دانش آفلاین می‌رود. هر کس فقط به جواب خودش."""
+    _check(request, x_internal_key)
+    if body.channel != "telegram":
+        raise HTTPException(422)
+    with db.connect() as c:
+        return learning.vote(c, body.log_id, body.vote, ai.settings(c), owner=f"tg:{body.user_id}")

@@ -410,3 +410,73 @@ async def test_auto_followup_once_for_silent_interested_customer(env):
         c.execute("DELETE FROM auto_followups"); c.execute("DELETE FROM orders")
         c.execute("UPDATE messages SET created_at=? WHERE direction='in'", (now - 25 * 3600,))
         assert await worker.auto_followups(ig, c) == 0
+
+
+GOOD = {"action": "reply", "reply": "برای سفرهای طولانی مدل‌های پرو مکس به‌خاطر باتری بزرگ‌تر انتخاب بهتری هستن 🙂",
+        "public_reply": "", "intent": "other", "confidence": 0.9, "handoff_reason": ""}
+
+
+def _queued(d):
+    return [json.loads(f.read_text(encoding="utf-8")) for f in sorted((d / "inbox").glob("*.json"))]
+
+
+@pytest.mark.asyncio
+async def test_customer_satisfaction_teaches_offline_brain(env):
+    from tests.test_ai import FakeClaude
+    from app import learning
+    ai.set_client(FakeClaude(GOOD))
+    ig = SalesIG()
+    q = "برای سفر زیاد کدوم آیفون باتریش بهتر جواب میده"
+    with db.connect() as c:
+        ai.save_settings(c, {"enabled": True})
+        await run(ig, c, "e1", "message", msg("m1", q))
+        assert ig.qr[GOOD["reply"]][:2] == ["👍 مفید بود", "👎 نه"]       # فقط زیر جواب هوش مصنوعی
+        await run(ig, c, "e2", "message", msg("m2", "👍 مفید بود"))
+        assert "ممنون از نظرت" in last_dm(ig)
+        assert c.execute("SELECT customer_vote FROM ai_log WHERE input=?", (q,)).fetchone()[0] == "up"
+        op = _queued(env)[-1]
+        assert op["op"] == "intent_upsert" and op["item"]["examples"] == [q] and op["item"]["answer"] == GOOD["reply"]
+        assert learning.stats(c)["learned"] == 1
+        # همان سؤال دوباره پسندیده شود: تکراری یاد گرفته نمی‌شود
+        await run(ig, c, "e3", "message", msg("m3", q))
+        await run(ig, c, "e4", "message", msg("m4", "👍 مفید بود"))
+        assert learning.stats(c)["learned"] == 1 and len(_queued(env)) == 1
+        # جواب قیمت‌دار (کهنه می‌شود) یاد گرفته نمی‌شود
+        ai.set_client(FakeClaude({**GOOD, "reply": "۱۳ پرو الان ۱۹۰ میلیون تومانه"}))
+        await run(ig, c, "e5", "message", msg("m5", "یه سؤال دیگه درباره‌ی گوشی دارم راستش"))
+        await run(ig, c, "e6", "message", msg("m6", "👍 مفید بود"))
+        assert learning.stats(c)["learned"] == 1
+        # ناپسند: به همکار
+        ai.set_client(FakeClaude(GOOD))
+        await run(ig, c, "e7", "message", msg("m7", q, sender="u5"))
+        await run(ig, c, "e8", "message", msg("m8", "👎 نه", sender="u5"))
+        assert "همکارم" in last_dm(ig) and db.human_until(c, "u5")
+        assert c.execute("SELECT reason FROM handoffs WHERE user_id='u5'").fetchone()[0].startswith("مشتری جواب")
+        # برگرداندن آموخته از پنل
+        lid = learning.items(c)[0]["id"]
+        c.execute("UPDATE events SET status='done'")      # کارگر پس‌زمینه‌ی برنامه‌ی پنل دوباره پردازششان نکند
+    with TestClient(create_app(SalesIG())) as cl:
+        cl.post("/api/login", json={"password": "pw"})
+        d = cl.get("/api/ai/learned").json()
+        assert d["stats"] == {"up": 3, "down": 1, "learned": 1} and d["items"][0]["question"] == q
+        assert cl.delete(f"/api/ai/learned/{lid}").status_code == 200
+        assert cl.delete(f"/api/ai/learned/{lid}").status_code == 404
+    ai.set_client(None)
+
+
+def test_telegram_feedback_through_core(env):
+    from tests.test_ai import FakeClaude
+    from app import internal
+    ai.set_client(FakeClaude(GOOD))
+    with TestClient(create_app(SalesIG())) as cl:
+        H = {"X-Internal-Key": internal.key_path().read_text().strip()}
+        with db.connect() as c:
+            ai.save_settings(c, {"enabled": True})
+        t = cl.post("/internal/think", headers=H, json={"channel": "telegram", "user_id": "77", "text": "سفر زیاد میرم چی بخرم"}).json()
+        assert t["ask_feedback"] and t["log_id"]
+        bad = cl.post("/internal/feedback", headers=H, json={"channel": "telegram", "user_id": "78", "log_id": t["log_id"], "vote": "up"})
+        assert bad.json() == {"ok": False, "learned": False}                    # جواب دیگری را نمی‌شود رأی داد
+        ok = cl.post("/internal/feedback", headers=H, json={"channel": "telegram", "user_id": "77", "log_id": t["log_id"], "vote": "up"})
+        assert ok.json() == {"ok": True, "learned": True}
+        assert _queued(env)[-1]["item"]["examples"] == ["سفر زیاد میرم چی بخرم"]
+    ai.set_client(None)

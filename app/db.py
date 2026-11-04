@@ -255,6 +255,18 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE INDEX IF NOT EXISTS orders_created ON orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS orders_user ON orders(user_id, created_at DESC);
 
+-- جواب‌هایی که مشتری پسندید و به دانش آفلاین (موتور فهم مشترک) رفت
+CREATE TABLE IF NOT EXISTS learned (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  log_id INTEGER NOT NULL,
+  channel TEXT NOT NULL,
+  question TEXT NOT NULL,
+  qnorm TEXT NOT NULL UNIQUE,
+  answer TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'learned',   -- learned | undone
+  created_at REAL NOT NULL
+);
+
 -- حافظه‌ی کوتاه گفتگو: آخرین مدل و بودجه‌ای که مشتری گفته (تا لازم نباشد دوباره بپرسیم)
 CREATE TABLE IF NOT EXISTS conv_memo (
   user_id TEXT PRIMARY KEY,
@@ -293,6 +305,7 @@ _COLUMNS = {
     "products": {"source": "TEXT NOT NULL DEFAULT ''", "url": "TEXT NOT NULL DEFAULT ''"},
     "comments": {"hidden": "INTEGER NOT NULL DEFAULT 0", "hidden_reason": "TEXT NOT NULL DEFAULT ''"},
     "messages": {"sender": "TEXT NOT NULL DEFAULT ''"},   # پیام بیرونی: bot | admin
+    "ai_log": {"customer_vote": "TEXT NOT NULL DEFAULT ''", "voted_at": "REAL"},   # رضایت مشتری: up | down
 }
 
 

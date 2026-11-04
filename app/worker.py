@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from . import ai, channels, config, crm, db, knowledge, memory, moderation, orders, push, tg_notify
+from . import ai, channels, config, crm, db, knowledge, learning, memory, moderation, orders, push, tg_notify
 from .rules import Incoming, find_rule, pick
 
 MAX_RETRIES = 3
@@ -56,6 +56,7 @@ def _shown_text(inc: Incoming) -> str:
     return inc.text
 
 
+FEEDBACK_QR = ["👍 مفید بود", "👎 نه"]     # زیر جواب‌های هوش مصنوعی؛ لمسش همین متن را برمی‌گرداند
 STORY_NOTE = ("این پیام جواب مشتری به یکی از استوری‌های پیج است. متن یا تصویر استوری را نمی‌بینی؛ اگر به آن "
               "اشاره کرد و از متن پیام معلوم نیست درباره‌ی کدام محصول است، کوتاه بپرس.")
 
@@ -110,6 +111,8 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
     if knowledge.is_blocked(c, inc.user_id):
         return "ignored"
     s = ai.settings(c)
+    if inc.channel == "dm" and inc.text.strip() in FEEDBACK_QR:
+        return await handle_feedback(ig, row, c, payload, inc, s)
     if inc.channel == "dm":
         # فروش در دایرکت: دکمه‌ی «سفارش»، گفتگوی سفارش در حال انجام، یا عکس رسید
         username = db.conversation_username(c, inc.user_id)
@@ -189,6 +192,30 @@ def _rule_handoff(c, rule: dict, inc: Incoming, payload: dict, s: dict) -> None:
                        f"\n\n🔗 https://ig.stland.ir/#/customers/ig:{inc.user_id}")
 
 
+async def handle_feedback(ig, row, c, payload, inc: Incoming, s: dict) -> str:
+    """«👍 مفید بود» / «👎 نه» زیر جواب هوش مصنوعی: رأی ثبت می‌شود؛ جواب پسندیده به دانش آفلاین می‌رود؛
+    ناپسند به همکار سپرده می‌شود."""
+    r = c.execute("SELECT id FROM ai_log WHERE user_id=? AND channel='dm' AND action='reply' AND customer_vote='' "
+                  "AND model<>'brain' AND created_at>? ORDER BY created_at DESC LIMIT 1",
+                  (inc.user_id, time.time() - 6 * 3600)).fetchone()
+    up = inc.text.strip() == FEEDBACK_QR[0]
+    if r:
+        learning.vote(c, r[0], learning.UP if up else learning.DOWN, s, owner=inc.user_id)
+    if up:
+        await _send(ig, c, row["id"], None, "dm", payload, inc, "ممنون از نظرت 🙏 اگه سؤال دیگه‌ای داری بپرس.")
+        return "done"
+    await _send(ig, c, row["id"], None, "dm", payload, inc, "ممنون که گفتی 🙏 سؤالت رو به همکارم دادم تا دقیق‌تر جواب بده.")
+    username = db.conversation_username(c, inc.user_id)
+    c.execute("INSERT INTO handoffs(created_at,channel,user_id,username,text,reason,ai_log_id) VALUES (?,?,?,?,?,?,?)",
+              (time.time(), "dm", inc.user_id, username, inc.text, "مشتری جواب هوش مصنوعی را نپسندید", r[0] if r else None))
+    db.set_human(c, inc.user_id, s["human_pause_minutes"])
+    asyncio.create_task(push.notify_all("👎 جواب ربات پسندیده نشد", f"{username or inc.user_id}", "/#/ai/handoffs"))
+    if s["notify_telegram"]:
+        tg_notify.send(f"👎 مشتری جواب هوش مصنوعی را نپسندید\n📸 اینستاگرام · {'@' + username if username else inc.user_id}"
+                       f"\n\n🔗 https://ig.stland.ir/#/customers/ig:{inc.user_id}")
+    return "done"
+
+
 async def hide_comment(ig, c, comment_id: str, reason: str) -> bool:
     try:
         await ig.hide_comment(comment_id, True)
@@ -249,10 +276,13 @@ async def handle_ai(ig, row, c, payload, inc: Incoming) -> str:
             await _send(ig, c, row["id"], None, "dm", payload, inc, d.reply)    # کارت نرفت: همان متن کامل
     elif d.reply:
         text = d.reply
+        model = (c.execute("SELECT model FROM ai_log WHERE id=?", (d.log_id,)).fetchone() or [""])[0] if d.log_id else ""
+        ask = s["ask_feedback"] and d.action == "reply" and model not in ("", "brain")   # فقط جواب هوش مصنوعی
         if s["order_enabled"] and d.intent == "price" and "💰" in text:      # نتیجه‌ی قیمت با کالای موجود
             text = f"{text}\n\n{orders.cta(len(inc.user_id) + int(time.time() // 3600))}"
         sent = await _send(ig, c, row["id"], None, "dm", payload, inc, text,
-                           quick_replies=s["dm_quick_replies"] if s["quick_replies_enabled"] else None)
+                           quick_replies=((FEEDBACK_QR if ask else []) +
+                                          (s["dm_quick_replies"] if s["quick_replies_enabled"] else []))[:13] or None)
     ai.mark_log(c, d.log_id, "sent" if sent else "failed")
     if d.action == "handoff":
         ai.create_handoff(c, d, channel=inc.channel, user_id=inc.user_id, username=username, text=inc.text,

@@ -110,7 +110,7 @@ async def test_welcome_quick_replies_typing(env):
         assert await run(ig, c, "e1", "message", msg("m1", "قیمت ۱۳ پرو؟")) == "done"
         texts = [t for _, _, t in ig.calls]
         assert texts[0] == "خوش اومدی به استوک لند 🌸" and texts[1] == env.out["reply"]
-        assert ig.qr[env.out["reply"]] == ai.DEFAULTS["dm_quick_replies"]
+        assert ig.qr[env.out["reply"]] == ["👍 مفید بود", "👎 نه"] + ai.DEFAULTS["dm_quick_replies"]   # رضایت + منو
         assert "typing_on" in ig.actions and "mark_seen" in ig.actions
         await run(ig, c, "e2", "message", msg("m2", "یه سؤال دیگه"))
         assert [t for _, _, t in ig.calls].count("خوش اومدی به استوک لند 🌸") == 1       # فقط اولین پیام

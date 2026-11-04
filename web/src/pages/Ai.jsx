@@ -2,19 +2,21 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { api, fa, money, timeAgo, usd } from '../api.js'
 import AiAdmin from './AiAdmin.jsx'
 import AiKeys from './AiKeys.jsx'
+import AiLearned from './AiLearned.jsx'
 
 const SUBS = [
   ['overview', 'نمای کلی'],
   ['handoffs', 'ارجاع به شما'],
   ['faq', 'دانش مرکزی'],
   ['admin', 'تنظیم با حرف'],
+  ['learned', 'رضایت و آموخته‌ها'],
   ['products', 'محصولات و قیمت'],
   ['docs', 'فایل‌ها'],
   ['settings', 'تنظیمات مغز'],
   ['log', 'لاگ پاسخ‌ها'],
 ]
 // تنظیم‌های مخصوص اینستاگرام که در «کانال‌ها ← اینستاگرام» ویرایش می‌شوند؛ صفحه‌ی مغز مرکزی آن‌ها را نمی‌فرستد
-const IG_KEYS = ['human_pause_minutes', 'batch_wait_seconds', 'notify_telegram', 'telegram_ai', 'welcome_text', 'quick_replies_enabled', 'dm_quick_replies', 'typing_indicator', 'ice_breakers', 'mention_reply_enabled', 'mention_replies', 'mod_profanity', 'mod_links', 'mod_words', 'dm_enabled', 'comment_enabled', 'comment_mode', 'public_ack', 'public_prices', 'prompt_dm', 'prompt_comment', 'showcase_cards', 'order_enabled', 'order_payment_text', 'auto_followup_enabled', 'auto_followup_hours', 'auto_followup_text']
+const IG_KEYS = ['human_pause_minutes', 'batch_wait_seconds', 'notify_telegram', 'telegram_ai', 'welcome_text', 'quick_replies_enabled', 'dm_quick_replies', 'typing_indicator', 'ice_breakers', 'mention_reply_enabled', 'mention_replies', 'mod_profanity', 'mod_links', 'mod_words', 'dm_enabled', 'comment_enabled', 'comment_mode', 'public_ack', 'public_prices', 'prompt_dm', 'prompt_comment', 'showcase_cards', 'order_enabled', 'order_payment_text', 'auto_followup_enabled', 'auto_followup_hours', 'auto_followup_text', 'ask_feedback', 'auto_learn']
 const ACTION_FA = { reply: 'پاسخ داد', handoff: 'ارجاع', ignore: 'نادیده', skip: 'رد شد', error: 'خطا' }
 const ACTION_CLS = { reply: 'good', handoff: 'warn', ignore: 'muted', skip: 'muted', error: 'bad' }
 const SKIP_FA = { emoji: 'فقط ایموجی', budget: 'سقف بودجه', disabled: 'خاموش', channel_disabled: 'کانال خاموش', no_api_key: 'کلید API ندارد' }
@@ -36,6 +38,7 @@ export default function Ai({ sub = 'overview', badges = {} }) {
       {cur === 'settings' && <><AiKeys /><Settings /></>}
       {cur === 'faq' && <Kb />}
       {cur === 'admin' && <AiAdmin />}
+      {cur === 'learned' && <AiLearned />}
       {cur === 'products' && <Products />}
       {cur === 'docs' && <Docs />}
       {cur === 'log' && <Log />}

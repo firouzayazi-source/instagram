@@ -4,7 +4,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
-from . import ai, auth, config, db, knowledge, secrets_env, shared_kb, site_sync
+from . import ai, auth, config, db, knowledge, learning, secrets_env, shared_kb, site_sync
 
 router = APIRouter(prefix="/api/ai", dependencies=[Depends(auth.require_session)])
 
@@ -365,3 +365,42 @@ def keys_put(name: str, body: dict):
     except ValueError as e:
         raise HTTPException(422, str(e))
     return {"items": items, "providers": ai.providers_info()}
+
+
+# ---------- رضایت مشتری و آموخته‌ها ----------
+
+@router.get("/learned")
+def learned_get():
+    with db.connect() as c:
+        st = ai.settings(c)
+        votes = [dict(r) for r in c.execute(
+            "SELECT id, channel, input, reply, customer_vote, voted_at FROM ai_log WHERE customer_vote<>'' "
+            "ORDER BY voted_at DESC LIMIT 50")]
+        return {"items": learning.items(c), "stats": learning.stats(c), "votes": votes,
+                "ask_feedback": st["ask_feedback"], "auto_learn": st["auto_learn"], "ready": shared_kb.ready()}
+
+
+@router.delete("/learned/{lid}")
+def learned_undo(lid: int):
+    with db.connect() as c:
+        try:
+            ok = learning.undo(c, lid)
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+    if not ok:
+        raise HTTPException(404, "پیدا نشد یا قبلاً برگردانده شده")
+    return {"ok": True}
+
+
+@router.post("/learned/from-log/{log_id}")
+def learned_from_log(log_id: int):
+    """یاد دادن دستی یک جواب خوب از لاگ (همان قواعد: قیمت و موجودی لحظه‌ای یاد گرفته نمی‌شود)."""
+    with db.connect() as c:
+        r = c.execute("SELECT * FROM ai_log WHERE id=?", (log_id,)).fetchone()
+        if not r:
+            raise HTTPException(404)
+        if not learning.learnable(r):
+            raise HTTPException(422, "این جواب یاد گرفته نمی‌شود (قیمت یا موجودی لحظه‌ای دارد، جواب موتور فهم است، یا ارجاع است)")
+        if not learning.learn(c, log_id):
+            raise HTTPException(422, "قبلاً یاد گرفته شده یا دانش مشترک در دسترس نیست")
+    return {"ok": True}

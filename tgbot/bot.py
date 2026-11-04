@@ -2900,6 +2900,7 @@ async def cmd_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
 async def user_cb(query,ctx):
     data=query.data
     if data.startswith("cat_"): return await cat_cb(query,ctx)
+    if data.startswith("fb_"): return await feedback_cb(query,ctx)
 
     if data=="wh_today":
         await record_stat("wh_page",query.from_user.id)
@@ -3032,7 +3033,7 @@ async def user_cb(query,ctx):
 #  MAIN CALLBACK DISPATCHER
 # ════════════════════════════════════════════════
 # پیشوندهایی که هم ادمین هم کاربر دسترسی دارد
-_USER_CB_PREFIXES = ("wh_today","wh_weekly","wh_back_today","sub_","ai_","dym_","adv_","wl_add","mem_","cat_")
+_USER_CB_PREFIXES = ("wh_today","wh_weekly","wh_back_today","sub_","ai_","dym_","adv_","wl_add","mem_","cat_","fb_")
 
 async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     global _bc_job,_bc_cancel
@@ -5135,6 +5136,36 @@ async def core_order(user,text="",image=False,product_id="",hint=""):
 CTA_LINES = ["🛒 کدومش رو براتون ثبت کنم؟ بنویسید «ثبت سفارش» یا شماره‌ی کالا رو بزنید و «رزرو می‌کنم».",
              "اگه یکی‌شون رو پسندیدید، «ثبت سفارش» رو بفرستید تا براتون ثبت کنم 🛒"]
 
+async def core_feedback(user,log_id,vote):
+    try:
+        with open(INTERNAL_KEY_FILE,encoding="utf-8") as f: key=f.read().strip()
+        import httpx
+        async with httpx.AsyncClient(timeout=15,trust_env=False) as cl:
+            r=await cl.post(CORE_URL+"/internal/feedback",headers={"X-Internal-Key":key},
+                            json={"channel":"telegram","user_id":str(user.id),"log_id":int(log_id),"vote":vote})
+        return r.json() if r.status_code==200 else None
+    except Exception as e:
+        logger.warning(f"core feedback: {type(e).__name__}: {e}"); return None
+
+async def feedback_cb(query,ctx):
+    """«👍 مفید بود» / «👎 نه» زیر جواب هوش مصنوعی."""
+    user=query.from_user; parts=query.data.split("_")
+    if len(parts)!=3 or parts[1] not in ("u","d") or not parts[2].isdigit():
+        return await query.answer()
+    vote="up" if parts[1]=="u" else "down"
+    await core_feedback(user,parts[2],vote)
+    try: await query.edit_message_reply_markup(reply_markup=None)   # یک بار رأی؛ دکمه‌ها برداشته می‌شوند
+    except Exception: pass
+    if vote=="up":
+        await query.answer("ممنون از نظرتون 🙏")
+    else:
+        await query.answer()
+        await query.message.reply_text("ممنون که گفتید 🙏 سؤالتون رو به همکارم دادم تا دقیق‌تر جواب بده.",
+                                       reply_markup=main_menu())
+        await notify_handoff(ctx.bot if ctx else query.get_bot(),user,
+                             why="مشتری جواب هوش مصنوعی رو نپسندید",icon="👎",extra=(query.message.text or "")[:800])
+        set_human(user.id,ctx.bot if ctx else None)
+
 async def order_done(bot,user,oid):
     """سفارش ثبت شد: همکار در گفتگوی همین مشتری خبردار می‌شود و برای پرداخت و ارسال هماهنگ می‌کند."""
     await notify_handoff(bot,user,why=f"سفارش #{oid} ثبت شد (جزئیات در تاپیک «🛒 سفارش‌ها»)",icon="🛒")
@@ -6375,7 +6406,11 @@ async def assistant_reply(update,ctx,text,user,dry=False):
         await _typing(ctx.bot,msg.chat_id)
         body=_join(lead,ai["reply"].strip())
         if ai["action"]=="reply":
-            await msg.reply_text(body,reply_markup=main_menu())
+            # رضایت مشتری: جوابی که پسندید به دانش آفلاین می‌رود و دفعه‌ی بعد بی‌هزینه جواب داده می‌شود
+            kb=(InlineKeyboardMarkup([[InlineKeyboardButton("👍 مفید بود",callback_data=f"fb_u_{ai['log_id']}"),
+                                       InlineKeyboardButton("👎 نه",callback_data=f"fb_d_{ai['log_id']}")]])
+                if ai.get("ask_feedback") and ai.get("log_id") and not dry else main_menu())
+            await msg.reply_text(body,reply_markup=kb)
             if not dry and get_setting("ai_cc_admin"):
                 _bg(forward_to_admin(update,ctx,auto={"id":"ai","button":"🤖 هوش مصنوعی: "+ai["reply"].strip()[:120]},
                                      count=False),"cc admin")
