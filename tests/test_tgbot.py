@@ -67,3 +67,14 @@ print('OK')
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-1500:] + r.stderr[-1500:]
+
+
+def test_installment_card_hides_fee_breakdown():
+    """اختلاف نقد به اقساط فقط گفته می‌شود؛ مبلغ و درصدش جدا نمی‌آید، ولی در قسط حساب می‌شود."""
+    sys.path.insert(0, str(TG))
+    import catalog
+    cfg = {"down": 100 / 3, "rate": 6, "max_months": 10, "fee_pct": 10, "fee_cap": 5_000_000}
+    html_ = catalog.installment_html({"name": "آیفون نمونه", "price": 100_000_000}, cfg)
+    assert "کمی فرق داره" in html_ and "هزینه‌ی نقد به اقساط" not in html_ and "۱۰٪" not in html_
+    rows = catalog.installments(100_000_000, cfg)
+    assert rows[0][3] > 0                                   # اختلاف همچنان در محاسبه هست

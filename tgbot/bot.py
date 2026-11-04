@@ -148,12 +148,12 @@ def new_page_key(): return "p_"+secrets.token_hex(4)
 responses=None; banners={}; workhours={}; buttons={}; settings={}; stats={}; places={}
 
 DEFAULT_WH = {"enabled":True,"schedule":{
-    "0":{"open":True,"shifts":[{"from":"11:00","to":"14:00"},{"from":"17:00","to":"23:00"}]},
-    "1":{"open":True,"shifts":[{"from":"11:00","to":"14:00"},{"from":"17:00","to":"23:00"}]},
-    "2":{"open":True,"shifts":[{"from":"11:00","to":"14:00"},{"from":"17:00","to":"23:00"}]},
-    "3":{"open":True,"shifts":[{"from":"11:00","to":"14:00"},{"from":"17:00","to":"23:00"}]},
-    "4":{"open":True,"shifts":[{"from":"11:00","to":"14:00"},{"from":"17:00","to":"23:00"}]},
-    "5":{"open":True,"shifts":[{"from":"11:00","to":"14:00"},{"from":"17:00","to":"23:00"}]},
+    "0":{"open":True,"shifts":[{"from":"11:00","to":"14:00"},{"from":"17:00","to":"22:00"}]},
+    "1":{"open":True,"shifts":[{"from":"11:00","to":"14:00"},{"from":"17:00","to":"22:00"}]},
+    "2":{"open":True,"shifts":[{"from":"11:00","to":"14:00"},{"from":"17:00","to":"22:00"}]},
+    "3":{"open":True,"shifts":[{"from":"11:00","to":"14:00"},{"from":"17:00","to":"22:00"}]},
+    "4":{"open":True,"shifts":[{"from":"11:00","to":"14:00"},{"from":"17:00","to":"22:00"}]},
+    "5":{"open":True,"shifts":[{"from":"11:00","to":"14:00"},{"from":"17:00","to":"22:00"}]},
     "6":{"open":True,"shifts":[{"from":"17:00","to":"23:00"}]}},
     "msg_open":"✅ هم‌اکنون باز است","msg_closed":"🔴 هم‌اکنون بسته است"}
 DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs":True,
@@ -4592,10 +4592,10 @@ DEFAULT_INTENTS = [
   {"id":"i_other","button":"🍏 سایر محصولات اپل","action":"",
    "keys":["ایپد","ای پد","تبلت","مکبوک","مک بوک","لپتاپ","لپ تاپ","اپل واچ","ساعت هوشمند","ایرپاد","ایرپادز"],
    "examples":["ایپد دارید","قیمت مکبوک چنده","ایرپاد پرو دارید"],
-   "answer":"فعلاً آیپد، مک‌بوک، اپل‌واچ و ایرپاد نداریم 🙏\n"
-            "الان تمرکزمون روی آیفون، لوازم جانبی، اپل‌آیدی و خدمات نرم‌افزاریه.",
+   "answer":"تمرکز فروش ما آیفونه 🍏\n"
+            "اپل‌واچ، ایرپاد و آیپد رو هر وقت موجود داشته باشیم اطلاع‌رسانی می‌کنیم.",
    "suggest":["i_products","i_price"],
-   "offer":"بخواید هر وقت اضافه شد خبرتون کنیم؟","offer_to":"i_notify"},
+   "offer":"بخواید هر وقت موجود شد خبرتون کنیم؟","offer_to":"i_notify"},
   {"id":"i_accessory","button":"🎧 لوازم جانبی","action":"",
    "keys":["لوازم جانبی","قاب","گلس","شارژر","کابل","هندزفری","محافظ صفحه","کلگی"],
    "answer":"لوازم جانبی اپل هم داریم 👌 شارژر، کابل، قاب، گلس و…\n"
@@ -4773,7 +4773,7 @@ QUICK_INTENTS = ["i_price","i_install","i_advisor","i_human"]   # زیر سلا�
 # می‌شود؛ هر فیلدی که خودش نوشته دست‌نخورده می‌ماند. در کلیدواژه‌ها و
 # جمله‌های نمونه، فقط موردهای تازه اضافه می‌شوند — چیزی که ادمین پاک کرده
 # برنمی‌گردد. نیتی که ادمین حذف کرده هم دوباره ساخته نمی‌شود.
-SEED_VERSION = 9
+SEED_VERSION = 10
 _SEED_SCALARS = ("button","answer","action","suggest","offer","offer_to","enabled")
 _SEED_LISTS = ("keys","examples")
 

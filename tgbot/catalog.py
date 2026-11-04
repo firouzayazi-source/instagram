@@ -691,9 +691,8 @@ def installment_html(x, cfg):
     lines = [f"<b>💳 اقساط {html.escape(x['name'])}</b>", f"قیمت نقدی: {fmt_price(x['price'])}",
              f"پیش‌پرداخت (حداقل {down_txt}): {fmt_price(rows[0][2])}"]
     if rows[0][3]:
-        lines.append(f"هزینه‌ی نقد به اقساط ({pct(cfg['fee_pct'])}٪ مانده"
-                     + (f"، حداکثر {short_price(cfg['fee_cap'])}" if cfg.get("fee_cap") else "")
-                     + f"): {fmt_price(rows[0][3])}")
+        # به دستور صاحب فروشگاه (۱۴ آبان): فقط گفته شود که اختلاف هست؛ مبلغ و درصدش جدا نمایش داده نشود
+        lines.append("قیمت اقساطی با قیمت نقدی کمی فرق داره که در قسط‌های زیر حساب شده.")
     lines += [f"سود {pct(cfg['rate'])}٪ ماهانه به روز · با چک یا طلا · تا {fa(cfg['max_months'])} ماه", ""]
     for m, days, _, _, monthly, total in rows:
         lines.append(f"🗓 {fa(m)} ماهه ({fa(days)} روز): ماهی <b>{fmt_price(monthly)}</b>  (جمع {short_price(total)})")
