@@ -41,3 +41,29 @@ print('OK')
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-1500:] + r.stderr[-1500:]
+
+
+def test_apple_id_intent_sends_bot_button(tmp_path):
+    """«اپل آیدی» در تلگرام: دکمه‌ی ربات اپل‌آیدی از همان دکمه‌ی منوی ربات (نشانی از پنل مدیر)."""
+    code = r"""
+import asyncio, os, sys
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+bot.menu_cfg[:] = [{'key':'p_apl','label':'🆔 خرید اپل آیدی','order':9,'enabled':True}]
+bot.buttons['p_apl'] = {'enabled':True,'items':[{'title':'ربات','url':'https://t.me/StlandAppleBot'}]}
+bot.responses = {}
+sent = []
+class M:
+    chat_id = 1
+    async def reply_text(self, text, **kw): sent.append((text, kw))
+class U: id = 99; first_name = 'x'; username = 'x'
+it = next(x for x in bot.DEFAULT_INTENTS if x['id'] == 'i_appleid')
+asyncio.run(bot.run_intent(M(), it, U(), None, dry=True))
+text, kw = sent[-1]
+urls = [b.url for r in kw['reply_markup'].inline_keyboard for b in r if getattr(b, 'url', None)]
+assert 'ربات اصلی استوک‌لند' in text and urls == ['https://t.me/StlandAppleBot'], (text, urls)
+print('OK')
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-1500:] + r.stderr[-1500:]

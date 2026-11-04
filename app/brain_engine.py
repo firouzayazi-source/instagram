@@ -21,6 +21,7 @@ TG_DIR = Path(__file__).resolve().parent.parent / "tgbot"
 if str(TG_DIR) not in sys.path:
     sys.path.insert(0, str(TG_DIR))
 
+import appleid  # noqa: E402  (tgbot/appleid.py)
 import brain  # noqa: E402  (tgbot/brain.py)
 import catalog  # noqa: E402  (tgbot/catalog.py)
 import specs  # noqa: E402  (tgbot/specs.py)
@@ -165,6 +166,11 @@ def product_by_id(pid: str) -> dict | None:
     return None
 
 
+def appleid_link():
+    """(عنوان، نشانی) ربات اپل‌آیدی استوک‌لند — همان دکمه‌ی منوی ربات تلگرام؛ None اگر تنظیم نشده."""
+    return appleid.find(_load_json("menu.json", []), _load_json("buttons.json", {}), _load_json("data.json", {}))
+
+
 def _section(key: str) -> str:
     d = _load_json("data.json", {})
     return _plain(d.get(key, "")) if isinstance(d, dict) else ""
@@ -232,6 +238,11 @@ def _render(item: dict, text: str, product: str, name: str):
         return _join(answer, _section(action[8:])), "reply"
     if action == "hours":
         return _join(answer, _hours_text()), "reply"
+    if action == "appleid":
+        link = appleid_link()
+        if link:
+            return _join(answer.replace("از لینک زیر", "از این لینک"), f"🤖 ربات اپل‌آیدی استوک‌لند: {link[1]}"), "reply"
+        return "برای خرید اپل‌آیدی همکارم همین‌جا راهنمایی‌تون می‌کنه 🙏", "handoff"
     if action == "human":
         return answer or "پیامتون رو به همکارم دادم، به‌زودی جواب می‌ده 🙏", "handoff"
     if action == "notify":

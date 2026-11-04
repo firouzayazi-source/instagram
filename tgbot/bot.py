@@ -1,6 +1,7 @@
 import os, re, json, time, random, asyncio, logging, aiosqlite, jdatetime, pytz, zipfile, io, html, secrets, traceback, hashlib
 from datetime import datetime, timedelta
 import aiofiles, types
+import appleid     # لینک ربات اپل‌آیدی از تنظیمات منو
 import brain       # موتور فهم پیام — بدون هیچ API بیرونی
 import specs       # مشخصات فنی آیفون‌ها (مقایسه)
 import profanity   # تشخیص فحش و توهین
@@ -4656,12 +4657,17 @@ DEFAULT_INTENTS = [
             "یا مدل و وضعیتش رو همین‌جا بنویسید تا همکارم راهنمایی‌تون کنه.",
    "suggest":["i_address","i_human"]},
   {"id":"i_software","button":"🛠 خدمات نرم‌افزاری","action":"section:4",
-   "keys":["اپل ایدی","اپلایدی","apple id","ایکلود","icloud","نصب برنامه","انتقال اطلاعات",
-           "نرم افزار","نصب"],
-   "examples":["اپل ایدی میسازید","برنامه نصب میکنید","اطلاعات گوشی قبلیمو منتقل میکنید"],
-   "answer":"خدمات نرم‌افزاری هم داریم 🛠\n\n• ساخت اپل‌آیدی\n• نصب برنامه\n"
-            "• انتقال اطلاعات از گوشی قبلی\n\nبرای هماهنگی 👇",
+   "keys":["ایکلود","icloud","نصب برنامه","انتقال اطلاعات","نرم افزار","نصب"],
+   "examples":["برنامه نصب میکنید","اطلاعات گوشی قبلیمو منتقل میکنید"],
+   "answer":"خدمات نرم‌افزاری هم داریم 🛠\n\n• نصب برنامه\n• انتقال اطلاعات از گوشی قبلی\n\n"
+            "🆔 اپل‌آیدی رو هم از ربات اصلی استوک‌لند می‌تونید بخرید (بنویسید «اپل آیدی»).\n\nبرای هماهنگی 👇",
    "suggest":["i_human"]},
+  {"id":"i_appleid","button":"🆔 خرید اپل‌آیدی","action":"appleid",
+   "keys":["اپل ایدی","اپلایدی","اپل اید","apple id","appleid","خرید اپل ایدی","ساخت اپل ایدی"],
+   "examples":["اپل ایدی دارید","اپل ایدی میخوام","اپل ایدی میسازید","چطوری اپل ایدی بخرم"],
+   "answer":"برای خرید اپل‌آیدی، ربات اصلی استوک‌لند در خدمتتونه 🆔\n"
+            "از لینک زیر وارد بشید؛ همون‌جا می‌تونید اپل‌آیدی بخرید 👇",
+   "suggest":["i_software"]},
   {"id":"i_address","button":"📍 آدرس و مسیر","action":"section:5",
    "keys":["ادرس","لوکیشن","کجا","مسیر","نقشه","حضوری","مغازه","فروشگاه کجاست",
            "چطوری بیام","چجوری بیام","کجا بیام"],
@@ -4760,7 +4766,7 @@ QUICK_INTENTS = ["i_price","i_install","i_advisor","i_human"]   # زیر سلا�
 # می‌شود؛ هر فیلدی که خودش نوشته دست‌نخورده می‌ماند. در کلیدواژه‌ها و
 # جمله‌های نمونه، فقط موردهای تازه اضافه می‌شوند — چیزی که ادمین پاک کرده
 # برنمی‌گردد. نیتی که ادمین حذف کرده هم دوباره ساخته نمی‌شود.
-SEED_VERSION = 7
+SEED_VERSION = 8
 _SEED_SCALARS = ("button","answer","action","suggest","offer","offer_to","enabled")
 _SEED_LISTS = ("keys","examples")
 
@@ -6058,6 +6064,17 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
         pre=_join(lead,answer)
         if pre: await msg.reply_text(pre,reply_markup=main_menu())
         await send_section(msg,action[8:],uid=None if dry else uid,extra_rows=rows)
+    elif action=="appleid":
+        # ربات اصلی استوک‌لند برای خرید اپل‌آیدی — همان دکمه‌ی منوی ربات (نشانی از پنل مدیر)
+        link=appleid.find(menu_cfg,buttons,responses)
+        if link:
+            body=_join(lead,answer)+("\n\n🤖 "+link[1] if chat_mode() else "")
+            await msg.reply_text(body,disable_web_page_preview=True,
+                                 reply_markup=InlineKeyboardMarkup([[link_button("🤖 ربات اپل‌آیدی استوک‌لند",link[1])]]+rows))
+        else:
+            await msg.reply_text(_join(lead,"برای خرید اپل‌آیدی همکارم همین‌جا راهنمایی‌تون می‌کنه 🙏"),
+                                 reply_markup=main_menu())
+            if not dry: await notify_handoff(bot,user,why="درخواست اپل‌آیدی (لینک ربات اپل‌آیدی در منو تنظیم نشده)",icon="🆔")
     elif action=="hours":
         body=_join(lead,answer,status_line() or "",wh_today_block() or "")
         rows=rows+[[InlineKeyboardButton("📆 برنامه‌ی هفتگی",callback_data="wh_weekly")]]

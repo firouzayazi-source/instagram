@@ -17,7 +17,7 @@ SECTIONS = {"5": "آدرس فروشگاه", "3": "شرایط اقساط", "4": "
             "welcome": "خوش‌آمدگویی تلگرام"}
 ACTIONS = {"": "فقط همین متن", "prices": "جستجو در فهرست کالای سایت", "hours": "ساعت کاری",
            "human": "سپردن به همکار", "notify": "خبر دادن وقتی کالا رسید", "specs": "مشخصات فنی آیفون",
-           "compare": "مقایسه‌ی آیفون‌ها", **{f"section:{k}": f"نمایش «{v}»" for k, v in SECTIONS.items() if k != "welcome"}}
+           "compare": "مقایسه‌ی آیفون‌ها", "appleid": "لینک ربات اپل‌آیدی", **{f"section:{k}": f"نمایش «{v}»" for k, v in SECTIONS.items() if k != "welcome"}}
 _ID = re.compile(r"^[A-Za-z0-9_]{1,40}$")
 STALE_SECONDS = 30
 
@@ -116,5 +116,7 @@ def prompt_text(limit: int = 60) -> str:
             continue
         first = brain_engine._plain(it["answer"].split("\n---\n")[0]).replace("{product}", "").replace("{name}", "")
         topic = "، ".join((it["keys"] or it["examples"])[:4])
+        if it["action"] == "appleid" and brain_engine.appleid_link():   # هوش مصنوعی هم لینک را بدهد
+            first = f"{first.strip()}\nلینک ربات اپل‌آیدی استوک‌لند: {brain_engine.appleid_link()[1]}"
         parts.append(f"[{topic}]\n{first.strip()}")
     return "\n\n".join(parts)
