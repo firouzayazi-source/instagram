@@ -49,9 +49,7 @@ def build(wh, shifts, days=None):
     for i in range(7):
         d = dict(sch.get(str(i)) or {"open": False, "shifts": []})
         if i in target:
-            d["open"], d["shifts"] = True, shifts
-        elif days is not None:
-            d["open"] = False
+            d["open"], d["shifts"] = True, shifts     # روزهای دیگر دست نمی‌خورند
         out["schedule"][str(i)] = d
     for k, v in wh.items():
         if k not in ("enabled", "schedule"):
@@ -62,7 +60,8 @@ def build(wh, shifts, days=None):
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("shifts", nargs="+")
-    ap.add_argument("--days", help="مثلاً 0,1,2,3,4,5 (۰=شنبه)")
+    ap.add_argument("--days", help="فقط همین روزها، مثلاً 6 برای جمعه (۰=شنبه)؛ بقیه دست نمی‌خورند")
+    ap.add_argument("--close", help="این روزها تعطیل شوند، مثلاً 6")
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--tg-dir", default=str(ROOT / "data" / "telegram"))
     ap.add_argument("--backup-dir", default="/var/backups/igbot")
@@ -76,6 +75,8 @@ def main(argv=None):
     p = Path(a.tg_dir) / "workhours.json"
     cur = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
     new = build(cur, shifts, days)
+    for x in (a.close.split(",") if a.close else []):
+        new["schedule"][str(int(x))] = {"open": False, "shifts": []}
     print("الان:\n" + (table(cur) if cur else "  (تنظیم نشده)") + "\n\nبعد:\n" + table(new))
     if not a.apply:
         print("\nفقط نمایش بود؛ برای اعمال: --apply")
