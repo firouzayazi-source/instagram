@@ -4,7 +4,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
-from . import ai, auth, config, db, knowledge, shared_kb, site_sync
+from . import ai, auth, config, db, knowledge, secrets_env, shared_kb, site_sync
 
 router = APIRouter(prefix="/api/ai", dependencies=[Depends(auth.require_session)])
 
@@ -349,3 +349,19 @@ def blocked_remove(user_id: str):
     with db.connect() as c:
         knowledge.unblock(c, user_id)
     return {"ok": True}
+
+
+# ---------- کلید سرویس‌های هوش مصنوعی (در ‎.env‎ سرور؛ هرگز برگردانده نمی‌شود) ----------
+
+@router.get("/keys")
+def keys_get():
+    return {"items": secrets_env.status()}
+
+
+@router.put("/keys/{name}")
+def keys_put(name: str, body: dict):
+    try:
+        items = secrets_env.set_value(name, str(body.get("value") or ""))
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    return {"items": items, "providers": ai.providers_info()}

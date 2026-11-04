@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { api, fa, money, timeAgo, usd } from '../api.js'
 import AiAdmin from './AiAdmin.jsx'
+import AiKeys from './AiKeys.jsx'
 
 const SUBS = [
   ['overview', 'نمای کلی'],
@@ -32,7 +33,7 @@ export default function Ai({ sub = 'overview', badges = {} }) {
       </div>
       {cur === 'overview' && <Overview />}
       {cur === 'handoffs' && <Handoffs />}
-      {cur === 'settings' && <Settings />}
+      {cur === 'settings' && <><AiKeys /><Settings /></>}
       {cur === 'faq' && <Kb />}
       {cur === 'admin' && <AiAdmin />}
       {cur === 'products' && <Products />}
@@ -91,7 +92,7 @@ function Overview() {
           <label className="switch"><input type="checkbox" checked={st.enabled} disabled={toggling} onChange={toggle} /><span /> {st.enabled ? 'روشن' : 'خاموش'}</label>
         </div>
         <p className="muted" style={{ margin: '6px 0 0' }}>موتور فهم (اینستاگرام): {st.brain_enabled ? 'روشن ✅' : 'خاموش'}{st.brain_ready ? '' : ' · دانش ربات تلگرام هنوز روی سرور پیدا نشد'} <a href="#/ai/settings">تغییر</a></p>
-        {st.enabled && !st.has_key && <p className="err">کلید API تنظیم نشده؛ تا وقتی {st.key_env} در ‎.env سرور نباشد ربات جواب نمی‌دهد (یا در تنظیمات سرویس دیگری انتخاب کنید).</p>}
+        {st.enabled && !st.has_key && <p className="err">کلید API ثبت نشده؛ در «تنظیمات مغز ← کلید سرویس‌های هوش مصنوعی» بگذارید (یا سرویس دیگری انتخاب کنید).</p>}
       </section>
 
       <section className="card">
@@ -244,6 +245,11 @@ function Settings() {
   const [msg, setMsg] = useState(null)
   const [busy, setBusy] = useState(false)
   useEffect(() => { api.get('/api/ai/settings').then((r) => { setS(r.settings); setProviders(r.providers) }) }, [])
+  useEffect(() => {   // کلید تازه از بخش «کلید سرویس‌ها» → وضعیت سرویس‌ها به‌روز شود
+    const on = () => api.get('/api/ai/settings').then((r) => setProviders(r.providers)).catch(() => {})
+    window.addEventListener('ai:keys', on)
+    return () => window.removeEventListener('ai:keys', on)
+  }, [])
   if (!s) return <div className="empty">در حال بارگذاری…</div>
   const set = (patch) => setS({ ...s, ...patch })
   const prov = providers.find((p) => p.id === s.provider)
@@ -343,7 +349,7 @@ function Settings() {
           }}>
             {providers.map((p) => <option key={p.id} value={p.id}>{p.label} {p.configured ? '✅' : '— کلید ندارد'}</option>)}
           </select>
-          {prov && !prov.configured && <p className="hint err">برای این سرویس، {prov.key_env} را در ‎/opt/igbot/.env بگذارید و سرویس igbot را ری‌استارت کنید.</p>}
+          {prov && !prov.configured && <p className="hint err">کلید این سرویس ثبت نشده؛ در بخش «کلید سرویس‌های هوش مصنوعی» بالای همین صفحه بگذارید.</p>}
         </div>
         <div className="field">
           <label>مدل</label>

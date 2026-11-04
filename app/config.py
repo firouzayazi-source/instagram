@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def _load_dotenv() -> None:
-    env = ROOT / ".env"
+    env = Path(os.environ.get("IGBOT_ENV_FILE") or (ROOT / ".env"))
     if not env.exists():
         return
     for line in env.read_text(encoding="utf-8").splitlines():

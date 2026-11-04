@@ -12,3 +12,4 @@ from app import config
 def _isolate_data(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "DB_PATH", str(tmp_path / "isolated.db"))
     monkeypatch.setattr(config, "TG_DATA_DIR", str(tmp_path / "no-telegram-data"))
+    monkeypatch.setenv("IGBOT_ENV_FILE", str(tmp_path / "isolated.env"))   # هیچ تستی در ‎.env‎ واقعی نمی‌نویسد
