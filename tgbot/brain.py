@@ -178,6 +178,9 @@ _YES = re.compile(r"^(اره|ارع|بله|بلی|اوکی|ok|okay|باشه|حت
                   r"بفرست(?:ید|ین)?|اره لطفا|بله لطفا|اره بفرست|اوکی بفرست)$")
 _NO = re.compile(r"^(نه|نخیر|خیر|نمیخوام|نه ممنون|نه مرسی|no|لازم نیست)$")
 _LAUGH = re.compile(r"^(خخ+|هه+|ههه+|lol|😂+)$")
+# «هستی؟»، «الان هستید؟»، «آلن هستی» (غلط تایپی «الان»): مشتری می‌پرسد کسی جواب می‌دهد؛ جوابش «در خدمتم» است
+_HERE = re.compile(r"^(?:(?:الان|الن|الا?ن)\s*)?(?:هستی|هستید|هستین|انلاینی|انلاین هستی(?:د|ن)?|"
+                   r"تشریف دارید|جواب میدی(?:د|ن)?)(?:\s*(?:الان|الن))?$")
 
 
 def smalltalk(text):
@@ -202,6 +205,8 @@ def smalltalk(text):
         return tags | {"no"}, ""
     if _LAUGH.match(t):
         return tags | {"laugh"}, ""
+    if _HERE.match(t):
+        return tags | {"greet"}, ""
     for rx, tag in ((_THANKS, "thanks"), (_BYE, "bye"), (_HOW, "how"), (_WHO, "who")):
         if rx.search(t):
             tags.add(tag)
