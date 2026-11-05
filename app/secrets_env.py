@@ -2,7 +2,7 @@
 
 کلید هیچ‌وقت به پنل برنمی‌گردد؛ فقط «تنظیم شده» و چهار نویسه‌ی آخرش. فایل درجا و با دسترسی ۶۰۰ نوشته
 می‌شود، خط‌های دیگرش دست نمی‌خورد، و کلید تازه بی‌ری‌استارت همان لحظه به کار می‌افتد.
-فقط نام‌های فهرست ALLOWED قابل تغییرند (نه توکن اینستاگرام و تلگرام و رمز پنل).
+فقط نام‌های فهرست allowed() قابل تغییرند: کلید سرویس‌های هوش مصنوعی و پل Composio (نه توکن اینستاگرام و تلگرام و رمز پنل).
 """
 import os
 import re
@@ -19,7 +19,15 @@ def allowed() -> dict:
     """نام متغیر ← برچسب. کلید هر سرویس، به‌علاوه‌ی آدرس و نام سرویس دلخواه."""
     out = {p["key"]: p["label"] for p in ai.PROVIDERS.values()}
     out.update({"CUSTOM_AI_BASE_URL": "آدرس سرویس دلخواه", "CUSTOM_AI_NAME": "نام سرویس دلخواه"})
+    out.update(COMPOSIO)
     return out
+
+
+# پل موقت Composio برای خواندن آمار اینستاگرام (تحلیل محتوا) تا اتصال اپ Meta خود پروژه
+COMPOSIO = {"COMPOSIO_API_KEY": "کلید Composio (آمار اینستاگرام)",
+            "COMPOSIO_ACCOUNT_ID": "شناسه‌ی اتصال اینستاگرام در Composio",
+            "COMPOSIO_USER_ID": "شناسه‌ی کاربر در Composio (اختیاری)"}
+_ID = re.compile(r"^[A-Za-z0-9_.:@-]{2,120}$")
 
 
 _SAFE = re.compile(r"^[\x21-\x7e]{8,300}$")          # کلید: نویسه‌های چاپی بی‌فاصله
@@ -49,6 +57,9 @@ def _validate(name: str, value: str) -> str:
     if name == "CUSTOM_AI_BASE_URL":
         if not _URL.match(value) or len(value) > 300:
             raise ValueError("آدرس باید با https:// شروع شود (یا http:// فقط برای همین سرور)")
+    elif name in ("COMPOSIO_ACCOUNT_ID", "COMPOSIO_USER_ID"):
+        if not _ID.match(value):
+            raise ValueError("شناسه فقط حرف لاتین، عدد و - _ . : @ دارد")
     elif name == "CUSTOM_AI_NAME":
         if "\n" in value or len(value) > 60:
             raise ValueError("نام کوتاه‌تر بنویسید")

@@ -472,6 +472,35 @@ async def run_forever(ig, stop: asyncio.Event) -> None:
                 asyncio.create_task(_notify(row, status))
 
 
+async def insights_loop(ig, stop: asyncio.Event) -> None:
+    """تحلیل محتوا: هر ۹۰ دقیقه عکس فوری از استوری‌های زنده (آمارشان بعد از ۲۴ ساعت از دست می‌رود)،
+    هر ۱۲ ساعت آمار پست‌ها و ریلزهای ۴۵ روز اخیر. اگر منبعی تنظیم نباشد، بی‌صدا منتظر می‌ماند."""
+    from . import insights
+    next_media = 0.0
+    while not stop.is_set():
+        for what in ("stories", "media"):
+            if what == "media" and time.time() < next_media:
+                continue
+            if insights.source(ig) is None:
+                break
+            try:
+                with db.connect() as c:
+                    r = await insights.run(c, ig, what)
+                    db.kv_set(c, f"insights_{what}", json.dumps({"at": time.time(), "ok": True, **r}, ensure_ascii=False))
+                if what == "media":
+                    next_media = time.time() + 12 * 3600
+            except Exception as e:  # noqa: BLE001
+                with db.connect() as c:
+                    db.kv_set(c, f"insights_{what}", json.dumps({"at": time.time(), "ok": False, "error": str(e)[:300]},
+                                                              ensure_ascii=False))
+                if what == "media":
+                    next_media = time.time() + 3600
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=90 * 60)
+        except asyncio.TimeoutError:
+            pass
+
+
 async def _notify(row, status: str) -> None:
     payload = json.loads(row["payload"])
     inc = parse_event(row["kind"], payload)

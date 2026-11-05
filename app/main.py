@@ -43,6 +43,7 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
         tasks = [
             asyncio.create_task(worker.run_forever(app.state.ig, stop)),
             asyncio.create_task(worker.refresh_token_loop(app.state.ig, stop)),
+            asyncio.create_task(worker.insights_loop(app.state.ig, stop)),
             asyncio.create_task(site_sync.sync_loop(stop)),
         ]
         yield

@@ -388,6 +388,35 @@ async def reports_get(request: Request, days: int = 30):
     return r
 
 
+# ---------- تحلیل محتوا (آمار استوری، ریلز و پست؛ فقط خواندن) ----------
+
+@protected.get("/insights")
+def insights_get(request: Request, days: int = 14):
+    from . import insights
+    with db.connect() as c:
+        d = insights.summary(c, min(90, max(1, days)))
+        d["status"] = {k: json.loads(db.kv_get(c, f"insights_{k}") or "null") for k in ("stories", "media")}
+    src = insights.source(ig(request))
+    d["source"] = src.name if src else ""
+    return d
+
+
+@protected.post("/insights/collect")
+async def insights_collect(request: Request):
+    """گرفتن همین الان (به‌جای منتظر ماندن برای نوبت بعدی)."""
+    from . import insights
+    out = {}
+    for what in ("stories", "media"):
+        try:
+            with db.connect() as c:
+                r = await insights.run(c, ig(request), what)
+                db.kv_set(c, f"insights_{what}", json.dumps({"at": time.time(), "ok": True, **r}, ensure_ascii=False))
+            out[what] = r
+        except Exception as e:  # noqa: BLE001
+            raise HTTPException(502, str(e)[:300])
+    return out
+
+
 # ---------- پست و استوری: یادداشت و محصول ----------
 
 @protected.get("/instagram/media-notes")

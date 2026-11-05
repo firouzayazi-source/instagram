@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { api, fa, timeAgo } from '../api.js'
 import Rules from './Rules.jsx'
 import Sales from './Sales.jsx'
+import Insights from './Insights.jsx'
 import { Blocked, Msg } from './Ai.jsx'
 
 // هر کانال قابلیت‌های خودش را دارد؛ هسته‌ی مرکزی (مغز، دانش، هوش مصنوعی) مشترک است
 const SUBS = {
-  instagram: [['connect', 'اتصال و وضعیت'], ['dm', 'دایرکت'], ['sales', 'فروش'], ['comment', 'کامنت'], ['story', 'استوری'], ['media', 'پست و استوری'], ['rules', 'دستورها'], ['blocked', 'مسدودها']],
+  instagram: [['connect', 'اتصال و وضعیت'], ['dm', 'دایرکت'], ['sales', 'فروش'], ['comment', 'کامنت'], ['story', 'استوری'], ['media', 'پست و استوری'], ['insights', 'تحلیل محتوا'], ['rules', 'دستورها'], ['blocked', 'مسدودها']],
   telegram: [['connect', 'اتصال و وضعیت']],
 }
 
@@ -337,6 +338,7 @@ export default function Channels({ id, sub }) {
       {cur === 'comment' && <IgPart part="comment" />}
       {cur === 'story' && <IgPart part="story" />}
       {cur === 'media' && <Media />}
+      {cur === 'insights' && <Insights />}
       {cur === 'rules' && <Rules embedded />}
       {cur === 'blocked' && <Blocked />}
     </>
