@@ -72,8 +72,8 @@ def main(argv=None):
         print("فقط توضیح بود؛ برای ساختن رمز تازه: --apply")
         return 0
     if a.ask:
-        pw = getpass.getpass("رمز تازه (حداقل ۱۲ نویسه): ")
-        if len(pw) < 12 or pw != getpass.getpass("تکرار رمز: ") or re.search(r"\s", pw):
+        pw = getpass.getpass("رمز تازه (حداقل ۴ نویسه): ")
+        if len(pw) < 4 or pw != getpass.getpass("تکرار رمز: ") or re.search(r"\s", pw):
             sys.exit("رمز کوتاه است، فاصله دارد یا دو بار یکی نبود؛ چیزی عوض نشد.")
     else:
         pw = new_password()

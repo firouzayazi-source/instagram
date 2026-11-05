@@ -45,6 +45,21 @@ def login(body: Login, request: Request, response: Response):
     return {"ok": True}
 
 
+@router.get("/login/google")
+def login_google_config():
+    """عمومی: فقط شناسه‌ی عمومی دکمه‌ی گوگل (ایمیل‌های مجاز برنمی‌گردد)."""
+    g = auth.google_config()
+    return {"enabled": g["enabled"], "client_id": g["client_id"] if g["enabled"] else ""}
+
+
+@router.post("/login/google")
+async def login_google(body: dict, request: Request, response: Response):
+    token = await auth.google_login(request, str(body.get("credential") or ""))
+    response.set_cookie(auth.COOKIE, token, max_age=config.SESSION_TTL, httponly=True,
+                        secure=config.COOKIE_SECURE, samesite="lax", path="/")
+    return {"ok": True}
+
+
 @protected.post("/logout")
 def logout(response: Response, session: str = Depends(auth.require_session)):
     with db.connect() as c:

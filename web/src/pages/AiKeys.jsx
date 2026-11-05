@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from 'react'
 import { api } from '../api.js'
 
+const HIDE = ['GOOGLE_CLIENT_ID', 'LOGIN_EMAILS']   // در «تنظیمات ← حساب»
+
 // کلید سرویس‌های هوش مصنوعی: در ‎.env سرور نوشته می‌شود و هیچ‌وقت به پنل برنمی‌گردد (فقط چهار نویسه‌ی آخر)
 export default function AiKeys() {
   const [items, setItems] = useState(null)
   const [draft, setDraft] = useState({})
   const [msg, setMsg] = useState({})
   const [open, setOpen] = useState(false)
-  useEffect(() => { api.get('/api/ai/keys').then((r) => setItems(r.items)).catch(() => {}) }, [])
+  useEffect(() => { api.get('/api/ai/keys').then((r) => setItems(r.items.filter((x) => !HIDE.includes(x.name)))).catch(() => {}) }, [])
   if (!items) return null
 
   async function save(name, value) {
     setMsg({ ...msg, [name]: null })
     try {
       const r = await api.put(`/api/ai/keys/${name}`, { value })
-      setItems(r.items); setDraft({ ...draft, [name]: '' })
+      setItems(r.items.filter((x) => !HIDE.includes(x.name))); setDraft({ ...draft, [name]: '' })
       setMsg({ ...msg, [name]: { ok: true, text: value ? 'ثبت شد ✅ همین الان فعال است' : 'حذف شد' } })
       window.dispatchEvent(new Event('ai:keys'))
     } catch (ex) { setMsg({ ...msg, [name]: { ok: false, text: ex.message } }) }

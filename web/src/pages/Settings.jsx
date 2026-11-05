@@ -74,6 +74,7 @@ export default function Settings({ onLogout }) {
       <section className="card">
         <h2>حساب</h2>
         <PasswordForm />
+        <GoogleLogin />
         <button className="btn danger" onClick={logout} style={{ marginTop: 12 }}>خروج از پنل</button>
       </section>
     </>
@@ -88,7 +89,7 @@ function PasswordForm() {
   const [msg, setMsg] = useState(null)
   const [busy, setBusy] = useState(false)
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
-  const problem = f.next && f.next.length < 12 ? 'دست‌کم ۱۲ نویسه' : /\s/.test(f.next) ? 'بدون فاصله' : f.again && f.again !== f.next ? 'تکرار یکی نیست' : ''
+  const problem = f.next && f.next.length < 4 ? 'دست‌کم ۴ نویسه' : /\s/.test(f.next) ? 'بدون فاصله' : f.again && f.again !== f.next ? 'تکرار یکی نیست' : ''
 
   async function save(e) {
     e.preventDefault(); setMsg(null); setBusy(true)
@@ -106,7 +107,7 @@ function PasswordForm() {
       <h3 style={{ marginTop: 0 }}>تغییر رمز پنل</h3>
       <div className="field"><label>رمز فعلی</label>
         <input type={type} dir="ltr" autoComplete="current-password" value={f.current} onChange={set('current')} /></div>
-      <div className="field"><label>رمز تازه (دست‌کم ۱۲ نویسه، بدون فاصله)</label>
+      <div className="field"><label>رمز تازه (دست‌کم ۴ نویسه، بدون فاصله)</label>
         <input type={type} dir="ltr" autoComplete="new-password" value={f.next} onChange={set('next')} /></div>
       <div className="field"><label>تکرار رمز تازه</label>
         <input type={type} dir="ltr" autoComplete="new-password" value={f.again} onChange={set('again')} /></div>
@@ -118,5 +119,44 @@ function PasswordForm() {
       <p className="muted">اگر رمز را فراموش کردید، روی سرور: <code dir="ltr">sudo python3 /opt/igbot/tools/reset_panel_password.py --apply</code></p>
       {msg && <p className={msg.ok ? 'ok' : 'err'}>{msg.text}</p>}
     </form>
+  )
+}
+
+
+// ورود با گوگل: شناسه‌ی عمومی دکمه (از Google Cloud) و ایمیل‌های مجاز؛ در ‎.env سرور ذخیره می‌شود
+const GKEYS = ['GOOGLE_CLIENT_ID', 'LOGIN_EMAILS']
+function GoogleLogin() {
+  const [items, setItems] = useState(null)
+  const [draft, setDraft] = useState({})
+  const [msg, setMsg] = useState(null)
+  useEffect(() => { api.get('/api/ai/keys').then((r) => setItems(r.items.filter((x) => GKEYS.includes(x.name)))).catch(() => {}) }, [])
+  if (!items) return null
+
+  async function save(name) {
+    setMsg(null)
+    try {
+      const r = await api.put(`/api/ai/keys/${name}`, { value: draft[name] || '' })
+      setItems(r.items.filter((x) => GKEYS.includes(x.name))); setDraft({ ...draft, [name]: '' })
+      setMsg({ ok: true, text: 'ذخیره شد ✅' })
+    } catch (ex) { setMsg({ ok: false, text: ex.message }) }
+  }
+
+  const on = items.every((x) => x.set)
+  return (
+    <div style={{ marginTop: 16 }}>
+      <h3>ورود با گوگل {on ? <span className="pill good">روشن</span> : <span className="pill muted">خاموش</span>}</h3>
+      <p className="muted">اگر گوشی یا مرورگر با یکی از این ایمیل‌ها به گوگل وصل باشد، پنل خودکار وارد می‌شود. ورود با رمز هم همیشه می‌ماند.</p>
+      {items.map((x) => (
+        <div key={x.name} className="field">
+          <label>{x.label} {x.set ? <span className="pill good" dir="ltr">{x.hint}</span> : <span className="pill muted">ندارد</span>}</label>
+          <div className="actions">
+            <input dir="ltr" style={{ flex: 1 }} value={draft[x.name] || ''} onChange={(e) => setDraft({ ...draft, [x.name]: e.target.value })}
+              placeholder={x.name === 'LOGIN_EMAILS' ? 'you@gmail.com' : '1234…apps.googleusercontent.com'} />
+            <button type="button" className="btn sm primary" disabled={!(draft[x.name] || '').trim()} onClick={() => save(x.name)}>ثبت</button>
+          </div>
+        </div>
+      ))}
+      {msg && <p className={msg.ok ? 'ok' : 'err'}>{msg.text}</p>}
+    </div>
   )
 }
