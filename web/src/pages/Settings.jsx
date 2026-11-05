@@ -73,8 +73,50 @@ export default function Settings({ onLogout }) {
       </section>
       <section className="card">
         <h2>حساب</h2>
-        <button className="btn danger" onClick={logout}>خروج از پنل</button>
+        <PasswordForm />
+        <button className="btn danger" onClick={logout} style={{ marginTop: 12 }}>خروج از پنل</button>
       </section>
     </>
+  )
+}
+
+
+// تغییر رمز پنل؛ رمز فقط در ‎.env سرور نوشته می‌شود و دستگاه‌های دیگر خارج می‌شوند
+function PasswordForm() {
+  const [f, setF] = useState({ current: '', next: '', again: '' })
+  const [show, setShow] = useState(false)
+  const [msg, setMsg] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
+  const problem = f.next && f.next.length < 12 ? 'دست‌کم ۱۲ نویسه' : /\s/.test(f.next) ? 'بدون فاصله' : f.again && f.again !== f.next ? 'تکرار یکی نیست' : ''
+
+  async function save(e) {
+    e.preventDefault(); setMsg(null); setBusy(true)
+    try {
+      await api.post('/api/password', { current: f.current, new: f.next })
+      setF({ current: '', next: '', again: '' })
+      setMsg({ ok: true, text: 'رمز عوض شد ✅ از این به بعد با رمز تازه وارد شوید؛ دستگاه‌های دیگر خارج شدند. رمز را جایی امن یادداشت کنید.' })
+    } catch (ex) { setMsg({ ok: false, text: ex.message }) }
+    setBusy(false)
+  }
+
+  const type = show ? 'text' : 'password'
+  return (
+    <form onSubmit={save}>
+      <h3 style={{ marginTop: 0 }}>تغییر رمز پنل</h3>
+      <div className="field"><label>رمز فعلی</label>
+        <input type={type} dir="ltr" autoComplete="current-password" value={f.current} onChange={set('current')} /></div>
+      <div className="field"><label>رمز تازه (دست‌کم ۱۲ نویسه، بدون فاصله)</label>
+        <input type={type} dir="ltr" autoComplete="new-password" value={f.next} onChange={set('next')} /></div>
+      <div className="field"><label>تکرار رمز تازه</label>
+        <input type={type} dir="ltr" autoComplete="new-password" value={f.again} onChange={set('again')} /></div>
+      <label className="check-row"><input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} /> نمایش رمزها</label>
+      {problem && <p className="err">{problem}</p>}
+      <div className="actions" style={{ marginTop: 8 }}>
+        <button className="btn primary" disabled={busy || !f.current || !f.next || f.next !== f.again || !!problem}>{busy ? 'در حال ذخیره…' : 'تغییر رمز'}</button>
+      </div>
+      <p className="muted">اگر رمز را فراموش کردید، روی سرور: <code dir="ltr">sudo python3 /opt/igbot/tools/reset_panel_password.py --apply</code></p>
+      {msg && <p className={msg.ok ? 'ok' : 'err'}>{msg.text}</p>}
+    </form>
   )
 }

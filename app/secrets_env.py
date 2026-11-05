@@ -71,6 +71,14 @@ def _validate(name: str, value: str) -> str:
 def set_value(name: str, value: str) -> list[dict]:
     """value خالی یعنی حذف. خطای نوشتن فایل با پیام فارسی و دستور رفعش برمی‌گردد."""
     value = _validate(name, value)
+    write_env(name, value)
+    ai._clients.clear()          # کلاینت‌ها با کلید تازه ساخته شوند
+    return status()
+
+
+def write_env(name: str, value: str) -> None:
+    """فقط خط همین نام در ‎.env‎ عوض می‌شود و همان لحظه در برنامه هم فعال می‌شود. بی‌اعتبارسنجی؛
+    صدازننده مسئول است (set_value برای کلیدها، auth.change_password برای رمز پنل)."""
     p = env_path()
     try:
         lines = p.read_text(encoding="utf-8").splitlines() if p.exists() else []
@@ -107,5 +115,3 @@ def set_value(name: str, value: str) -> list[dict]:
     else:
         os.environ.pop(name, None)
     setattr(config, name, value)
-    ai._clients.clear()          # کلاینت‌ها با کلید تازه ساخته شوند
-    return status()

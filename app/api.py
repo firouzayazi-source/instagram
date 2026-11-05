@@ -53,6 +53,12 @@ def logout(response: Response, session: str = Depends(auth.require_session)):
     return {"ok": True}
 
 
+@protected.post("/password")
+def password_change(request: Request, body: dict, session: str = Depends(auth.require_session)):
+    auth.change_password(request, session, str(body.get("current") or ""), str(body.get("new") or ""))
+    return {"ok": True}
+
+
 @protected.get("/me")
 def me():
     return {"ok": True, "ig_user_id": config.IG_USER_ID}

@@ -41,3 +41,28 @@ def require_session(session: str | None = Cookie(default=None, alias=COOKIE)) ->
         if not db.session_valid(c, session):
             raise HTTPException(401)
     return session
+
+
+def change_password(request: Request, session: str, current: str, new: str) -> None:
+    """تغییر رمز پنل از خود پنل: رمز فعلی با همان قفل تلاش ناموفق بررسی می‌شود، رمز تازه در ‎.env‎
+    (فقط همان خط، دسترسی ۶۰۰) نوشته و همان لحظه فعال می‌شود، و همه‌ی ورودهای دیگر باطل می‌شوند."""
+    from . import secrets_env
+    ip = _ip(request)
+    count, until = _fails.get(ip, [0, 0])
+    if until > time.time():
+        raise HTTPException(429, "تلاش زیاد؛ ۱۵ دقیقه بعد دوباره امتحان کنید")
+    if not config.PANEL_PASSWORD or not hmac.compare_digest(current.encode(), config.PANEL_PASSWORD.encode()):
+        count += 1
+        _fails[ip] = [count, time.time() + LOCK_SECONDS if count >= MAX_FAILS else 0]
+        raise HTTPException(401, "رمز فعلی اشتباه است")
+    _fails.pop(ip, None)
+    if len(new) < 12 or len(new) > 128 or any(ch.isspace() for ch in new):
+        raise HTTPException(422, "رمز تازه باید دست‌کم ۱۲ نویسه و بدون فاصله باشد")
+    if new == current:
+        raise HTTPException(422, "رمز تازه با رمز فعلی یکی است")
+    try:
+        secrets_env.write_env("PANEL_PASSWORD", new)
+    except ValueError as e:
+        raise HTTPException(500, str(e))
+    with db.connect() as c:
+        c.execute("DELETE FROM sessions WHERE token<>?", (session,))   # دستگاه‌های دیگر خارج شوند
