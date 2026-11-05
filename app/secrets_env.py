@@ -25,8 +25,8 @@ def allowed() -> dict:
 
 # پل موقت Composio برای خواندن آمار اینستاگرام (تحلیل محتوا) تا اتصال اپ Meta خود پروژه
 COMPOSIO = {"COMPOSIO_API_KEY": "کلید Composio (آمار اینستاگرام)",
-            "COMPOSIO_ACCOUNT_ID": "شناسه‌ی اتصال اینستاگرام در Composio",
-            "COMPOSIO_USER_ID": "شناسه‌ی کاربر در Composio (اختیاری)"}
+            "COMPOSIO_ACCOUNT_ID": "شناسه‌ی اتصال اینستاگرام در Composio (فقط برای کلید ak_)",
+            "COMPOSIO_USER_ID": "شناسه‌ی کاربر در Composio (اختیاری، فقط برای کلید ak_)"}
 _ID = re.compile(r"^[A-Za-z0-9_.:@-]{2,120}$")
 
 

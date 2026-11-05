@@ -5,7 +5,8 @@
 
 منبع داده (فقط خواندن؛ هیچ انتشار یا پاسخی از این ماژول نمی‌رود):
   ۱. اپ Meta خود پروژه، اگر IG_ACCESS_TOKEN تنظیم شده باشد؛
-  ۲. وگرنه Composio (پل موقت)، اگر COMPOSIO_API_KEY تنظیم شده باشد (کلید فقط در ‎.env‎).
+  ۲. وگرنه Composio (پل موقت)، اگر COMPOSIO_API_KEY تنظیم شده باشد (کلید فقط در ‎.env‎):
+     کلید حساب کاربری ‎ck_…‎ (dashboard.composio.dev) از راه سرور MCP همان حساب، یا کلید پروژه‌ی ‎ak_…‎ از راه API توسعه‌دهنده.
 """
 import json
 import os
@@ -119,7 +120,7 @@ class GraphSource:
 
 class ComposioSource:
     """پل موقت Composio؛ همان ابزارهای خواندنی که در نشست هم به کار رفت."""
-    name = "Composio"
+    name = "Composio (API پروژه)"
     URL = "https://backend.composio.dev/api/v3/tools/execute/"
 
     def __init__(self, transport=None):
@@ -156,10 +157,113 @@ class ComposioSource:
         return await self._run("INSTAGRAM_GET_IG_MEDIA_INSIGHTS", a)
 
 
+class ComposioConnectSource(ComposioSource):
+    """کلید حساب کاربری Composio (‎ck_…‎ از dashboard.composio.dev): از راه سرور MCP همان حساب
+    (connect.composio.dev) و ابزار COMPOSIO_MULTI_EXECUTE_TOOL؛ اتصال اینستاگرامِ پیش‌فرض همان حساب به کار می‌رود."""
+    name = "Composio"
+    URL = "https://connect.composio.dev/mcp"
+
+    def __init__(self, transport=None):
+        super().__init__(transport)
+        self.session = ""
+        self._id = 0
+
+    def _headers(self) -> dict:
+        h = {"x-consumer-api-key": _env("COMPOSIO_API_KEY"), "Accept": "application/json, text/event-stream",
+             "Content-Type": "application/json"}
+        if self.session:
+            h["Mcp-Session-Id"] = self.session
+        return h
+
+    @staticmethod
+    def _body(r: httpx.Response) -> dict:
+        """پاسخ MCP یا JSON است یا رویدادهای SSE (‎data: {...}‎)."""
+        if "text/event-stream" in r.headers.get("content-type", ""):
+            msg = {}
+            for ln in r.text.splitlines():
+                if ln.startswith("data:"):
+                    try:
+                        msg = json.loads(ln[5:].strip())
+                    except ValueError:
+                        continue
+            return msg
+        try:
+            return r.json()
+        except ValueError:
+            return {}
+
+    async def _rpc(self, method: str, params: dict, notify: bool = False) -> dict:
+        payload = {"jsonrpc": "2.0", "method": method, "params": params}
+        if not notify:
+            self._id += 1
+            payload["id"] = self._id
+        r = await self.http.post(self.URL, json=payload, headers=self._headers())
+        if r.headers.get("mcp-session-id"):
+            self.session = r.headers["mcp-session-id"]
+        if r.status_code >= 400:
+            raise RuntimeError(f"Composio {r.status_code}: {r.text[:200]}")
+        if notify:
+            return {}
+        d = self._body(r)
+        if d.get("error"):
+            raise RuntimeError(f"Composio: {str(d['error'])[:200]}")
+        return d.get("result") or {}
+
+    async def _start(self) -> None:
+        if self.session:
+            return
+        await self._rpc("initialize", {"protocolVersion": "2025-03-26", "capabilities": {},
+                                       "clientInfo": {"name": "igbot-insights", "version": "1"}})
+        await self._rpc("notifications/initialized", {}, notify=True)
+
+    @staticmethod
+    def _unwrap(result: dict, slug: str):
+        """content[0].text (JSON) ← خروجی همان ابزار، هر جا که در پاسخ چندابزاری باشد."""
+        text = "".join(x.get("text", "") for x in result.get("content") or [] if x.get("type") == "text")
+        try:
+            d = json.loads(text) if text else (result.get("structuredContent") or {})
+        except ValueError:
+            raise RuntimeError(f"Composio: پاسخ نامفهوم ({text[:120]})")
+        if d.get("successful") is False or d.get("error"):
+            raise RuntimeError(f"Composio: {str(d.get('error'))[:200]}")
+        data = d.get("data", d)
+        for item in (data.get("results") or []) if isinstance(data, dict) else []:
+            resp = item.get("response", item)
+            if resp.get("successful") is False or resp.get("error"):
+                raise RuntimeError(f"Composio {slug}: {str(resp.get('error'))[:200]}")
+            return resp.get("data", resp)
+        return data
+
+    async def _run(self, slug: str, arguments: dict):
+        await self._start()
+        try:
+            res = await self._rpc("tools/call", {"name": "COMPOSIO_MULTI_EXECUTE_TOOL", "arguments": {
+                "tools": [{"tool_slug": slug, "arguments": arguments}], "sync_response_to_workbench": False,
+                "thought": "read Instagram insights for the content report"}})
+        except RuntimeError as e:
+            if "404" in str(e) and self.session:            # نشست MCP منقضی شد: یک بار از نو
+                self.session = ""
+                await self._start()
+                res = await self._rpc("tools/call", {"name": "COMPOSIO_MULTI_EXECUTE_TOOL", "arguments": {
+                    "tools": [{"tool_slug": slug, "arguments": arguments}], "sync_response_to_workbench": False}})
+            else:
+                raise
+        if res.get("isError"):
+            raise RuntimeError(f"Composio: {self._unwrap_text(res)[:200]}")
+        return self._unwrap(res, slug)
+
+    @staticmethod
+    def _unwrap_text(res: dict) -> str:
+        return "".join(x.get("text", "") for x in res.get("content") or [])
+
+
 def source(ig=None):
     if _env("IG_ACCESS_TOKEN") and ig is not None:
         return GraphSource(ig)
-    if _env("COMPOSIO_API_KEY"):
+    key = _env("COMPOSIO_API_KEY")
+    if key.startswith("ck_"):
+        return ComposioConnectSource()
+    if key:
         return ComposioSource()
     return None
 

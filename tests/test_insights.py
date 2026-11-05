@@ -192,3 +192,51 @@ def test_api_insights(tmp_path, monkeypatch):
         assert d["source"] == "" and len(d["stories"]) == 2 and d["story_avg"]["views"] == 75
         r = cl.post("/api/insights/collect")
         assert r.status_code == 502 and "منبع آمار تنظیم نیست" in r.json()["detail"]
+
+
+def test_composio_connect_mcp(monkeypatch):
+    """کلید ck_ حساب کاربری: initialize ← initialized ← tools/call با COMPOSIO_MULTI_EXECUTE_TOOL (پاسخ SSE)."""
+    seen = []
+
+    def handler(req: httpx.Request):
+        body = json.loads(req.content)
+        seen.append((body["method"], req.headers.get("x-consumer-api-key"), req.headers.get("mcp-session-id")))
+        if body["method"] == "initialize":
+            return httpx.Response(200, headers={"mcp-session-id": "sess-1", "content-type": "text/event-stream"},
+                                  text='event: message\ndata: {"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-03-26"}}\n\n')
+        if body["method"] == "notifications/initialized":
+            return httpx.Response(202)
+        assert body["params"]["name"] == "COMPOSIO_MULTI_EXECUTE_TOOL"
+        call = body["params"]["arguments"]["tools"][0]
+        assert call["tool_slug"] == "INSTAGRAM_GET_IG_MEDIA_INSIGHTS" and call["arguments"]["ig_media_id"] == "m1"
+        inner = {"successful": True, "data": {"results": [{"tool_slug": call["tool_slug"], "response": {
+            "successful": True, "data": metrics(views=11, reach=9)}}]}}
+        msg = {"jsonrpc": "2.0", "id": body["id"], "result": {"content": [{"type": "text", "text": json.dumps(inner)}]}}
+        return httpx.Response(200, headers={"content-type": "text/event-stream"}, text="data: " + json.dumps(msg) + "\n\n")
+
+    monkeypatch.setenv("COMPOSIO_API_KEY", "ck_test_consumer_key")
+    monkeypatch.setattr(config, "IG_ACCESS_TOKEN", "")
+    src = insights.source(object())
+    assert isinstance(src, insights.ComposioConnectSource)
+    src.http = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    out = asyncio.run(src.insights("m1", ["views", "reach"]))
+    assert insights.parse_metrics(out) == {"views": 11, "reach": 9}
+    assert [m for m, _, _ in seen] == ["initialize", "notifications/initialized", "tools/call"]
+    assert all(k == "ck_test_consumer_key" for _, k, _ in seen)
+    assert seen[-1][2] == "sess-1"                       # نشست MCP در درخواست‌های بعدی
+
+
+def test_composio_connect_tool_error(monkeypatch):
+    def handler(req):
+        body = json.loads(req.content)
+        if body["method"] == "initialize":
+            return httpx.Response(200, json={"jsonrpc": "2.0", "id": 1, "result": {}})
+        if body["method"] == "notifications/initialized":
+            return httpx.Response(202)
+        inner = {"successful": True, "data": {"results": [{"response": {"successful": False, "error": "no connection"}}]}}
+        return httpx.Response(200, json={"jsonrpc": "2.0", "id": body["id"],
+                                         "result": {"content": [{"type": "text", "text": json.dumps(inner)}]}})
+    monkeypatch.setenv("COMPOSIO_API_KEY", "ck_test_consumer_key")
+    src = insights.ComposioConnectSource(transport=httpx.MockTransport(handler))
+    with pytest.raises(RuntimeError, match="no connection"):
+        asyncio.run(src.stories())

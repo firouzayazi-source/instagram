@@ -39,7 +39,7 @@ export default function Insights() {
           </span>
         </div>
         <p className="muted">
-          {d.source ? `منبع: ${d.source}. ` : 'منبع آمار تنظیم نیست: توکن اپ Meta یا کلید و شناسه‌ی اتصال Composio را در «مغز مرکزی ← تنظیمات مغز ← کلید سرویس‌ها» ثبت کنید. '}
+          {d.source ? `منبع: ${d.source}. ` : 'منبع آمار تنظیم نیست: کلید Composio (همان ck_… از dashboard.composio.dev) را در «مغز مرکزی ← تنظیمات مغز ← کلید سرویس‌ها» ثبت کنید. '}
           آمار هر استوری فقط تا ۲۴ ساعت در اینستاگرام هست؛ هر ۹۰ دقیقه خودکار ذخیره می‌شود.
           {d.last_capture ? ` آخرین ذخیره: ${timeAgo(d.last_capture)}.` : ''}
         </p>
