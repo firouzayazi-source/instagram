@@ -78,3 +78,16 @@ def test_installment_card_hides_fee_breakdown():
     assert "کمی فرق داره" in html_ and "هزینه‌ی نقد به اقساط" not in html_ and "۱۰٪" not in html_
     rows = catalog.installments(100_000_000, cfg)
     assert rows[0][3] > 0                                   # اختلاف همچنان در محاسبه هست
+
+
+def test_installment_caps():
+    """سقف مبلغ اقساط: چک معتبر ۱۰۰ میلیون، طلا ۲۰۰ میلیون؛ پیش‌پرداخت حداقل یک‌سوم."""
+    sys.path.insert(0, str(TG))
+    import catalog
+    cfg = {"down": 100 / 3, "rate": 6, "max_months": 10, "fee_pct": 10, "fee_cap": 5_000_000}
+    small = catalog.installment_html({"name": "الف", "price": 90_000_000}, cfg)     # مانده ۶۰ م
+    assert "حداقل یک‌سوم" in small and "سقف اقساط" in small and "⚠️" not in small
+    mid = catalog.installment_html({"name": "ب", "price": 210_000_000}, cfg)       # مانده ۱۴۰ م
+    assert "از سقف چک بیشتر" in mid and "طلا" in mid
+    big = catalog.installment_html({"name": "ج", "price": 330_000_000}, cfg)       # مانده ۲۲۰ م
+    assert "از سقف بیشتر است" in big and "پیش‌پرداخت بیشتر" in big

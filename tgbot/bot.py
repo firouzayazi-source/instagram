@@ -5968,7 +5968,8 @@ _rsv_seen: dict = {}       # (uid, id) → زمان آخرین رزرو — دو
 # شرایط اقساط فروشگاه (۹ آبان ۱۴۰۵، از کاربر): پیش‌پرداخت حداقل یک‌سوم، مانده با چک یا طلا تا ۱۰ ماه،
 # یک‌دهم مانده (حداکثر ۵ میلیون) هزینه‌ی نقد به اقساط روی مانده، سود ۶٪ ماهانه به روز (بدون راس):
 # مانده‌ی مؤثر × ۶ × روز ÷ ۳۰۰۰ — فرمول در catalog.installments.
-DEFAULT_INSTALLMENT = {"down":100/3,"rate":6,"max_months":10,"fee_pct":10,"fee_cap":5_000_000}
+DEFAULT_INSTALLMENT = {"down":100/3,"rate":6,"max_months":10,"fee_pct":10,"fee_cap":5_000_000,
+                       "cap_cheque":100_000_000,"cap_gold":200_000_000}   # سقف مبلغ اقساط
 
 def inst_cfg():
     v=settings.get("installment")

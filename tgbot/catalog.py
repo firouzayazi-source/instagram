@@ -693,7 +693,17 @@ def installment_html(x, cfg):
     if rows[0][3]:
         # به دستور صاحب فروشگاه (۱۴ آبان): فقط گفته شود که اختلاف هست؛ مبلغ و درصدش جدا نمایش داده نشود
         lines.append("قیمت اقساطی با قیمت نقدی کمی فرق داره که در قسط‌های زیر حساب شده.")
-    lines += [f"سود {pct(cfg['rate'])}٪ ماهانه به روز · با چک یا طلا · تا {fa(cfg['max_months'])} ماه", ""]
+    lines += [f"سود {pct(cfg['rate'])}٪ ماهانه به روز · با چک یا طلا · تا {fa(cfg['max_months'])} ماه"]
+    # سقف مبلغ اقساط (به دستور صاحب فروشگاه، ۱۵ آبان): چک معتبر پس از استعلام ۱۰۰ م، طلا ۲۰۰ م
+    cap_c, cap_g = cfg.get("cap_cheque", 100_000_000), cfg.get("cap_gold", 200_000_000)
+    rem = x["price"] - rows[0][2]
+    if cap_c and cap_g:
+        lines.append(f"سقف اقساط: با چک معتبر (پس از استعلام) تا {short_price(cap_c)}، با طلا تا {short_price(cap_g)}")
+        if rem > cap_g:
+            lines.append("⚠️ مبلغ اقساط این گوشی از سقف بیشتر است؛ با پیش‌پرداخت بیشتر ممکن است. همکارم راهنمایی می‌کند.")
+        elif rem > cap_c:
+            lines.append("⚠️ مبلغ اقساط این گوشی از سقف چک بیشتر است؛ با طلا یا پیش‌پرداخت بیشتر ممکن است.")
+    lines.append("")
     for m, days, _, _, monthly, total in rows:
         lines.append(f"🗓 {fa(m)} ماهه ({fa(days)} روز): ماهی <b>{fmt_price(monthly)}</b>  (جمع {short_price(total)})")
     lines += ["", "اقساط از امروز ماهانه است. پیش‌پرداخت بیشتر = قسط کمتر.",
