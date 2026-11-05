@@ -56,6 +56,14 @@
 - تست اعلان پوش روی آیفون و اندروید واقعی
 - مرحله‌ی ۴ و ۵: CRM سبک و پیشخوان پیشرفته
 
+## اسکیل‌های پروژه (`.claude/skills`)
+- پاسخ‌گویی ربات: `answer-quality`
+- محتوای اینستاگرام: `voice-builder` (لحن پیج، فایل‌ها در `docs/voice/`)، `humanizer` (حذف نوشتار ماشینی)، `instagram-marketing` (محدودیت‌ها و معیارهای به‌روز API و راهبرد)، `article-writing` (مقاله و متن بلند با آزمون خواننده)
+- پنل: `webapp-testing` (آزمون با Playwright)، `frontend-design`
+- کیفیت و امنیت: `ponytail`، `ponytail-review`، `ponytail-audit`، `security-and-hardening`، `debugging-and-error-recovery`، `observability-and-instrumentation`
+- در دسترس از طرف سامانه (نصب لازم نیست): `skill-creator`، `claude-api`، `docx`، `pdf`، `pptx`، `xlsx`
+- اسکیل‌های بیرونی فقط پس از خواندن کامل و بررسی امنیت و مجوز اضافه می‌شوند؛ قانون‌های CLAUDE.md بر همه مقدم‌اند
+
 ## نکته‌ها
 - رخداد ۱۱ آبان: یک تست روی سرور نیت ساختگی («۵۱ میلیون» برای «قیمت آیفون ۱۵؟») در صف `data/telegram/inbox` گذاشت؛ پیش از اعمال، صاحب پیج پاکش کرد. تست‌ها حالا از داده‌ی زنده جدا هستند (`tests/conftest.py` و مسیرهای موقت در `deploy.sh`).
 - وردست (vardast.chat)، میتو و نوین‌هاب به پیج وصل‌اند؛ جواب‌های فعلی دایرکت کار وردست است. هنگام روشن شدن ربات ما، پاسخ خودکار همه‌شان باید خاموش شود.
