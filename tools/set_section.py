@@ -3,9 +3,10 @@
 از همان مسیر پنل می‌رود: صف inbox که خود ربات تلگرام چند ثانیه بعد اعمال می‌کند (تنها نویسنده‌ی
 data.json)؛ ری‌استارت لازم نیست. نسخه‌ی فعلی پیش از اعمال در /var/backups/igbot بکاپ می‌شود.
 پیش‌فرض فقط نمایش (قبل و بعد)؛ با --apply اعمال.
+به کتابخانه‌های برنامه نیاز دارد، پس با پایتونِ ‎.venv‎ اجرا شود (نه python3 سیستم).
 
-    python3 tools/set_section.py 3 deploy/texts/installment.txt
-    python3 tools/set_section.py 3 deploy/texts/installment.txt --apply
+    .venv/bin/python tools/set_section.py 3 deploy/texts/installment.txt
+    .venv/bin/python tools/set_section.py 3 deploy/texts/installment.txt --apply
 """
 import argparse
 import json
