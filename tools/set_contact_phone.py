@@ -124,6 +124,40 @@ def plan(new: str, tg_dir: Path, db_path: Path, ensure_support: bool = True):
     return out
 
 
+def write_all(items, tg_dir: Path, db_path: Path, backup_dir: Path, tag: str, no_service: bool) -> None:
+    """بکاپ فایل‌های ربات و پایگاه داده، توقف کوتاه ربات تلگرام (تنها نویسنده‌ی فایل‌هایش)، نوشتن، روشن کردن."""
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    bdir = backup_dir / f"{tag}-{stamp}"
+    bdir.mkdir(parents=True, exist_ok=True)
+    for name in TG_FILES:
+        if (tg_dir / name).exists():
+            shutil.copy2(tg_dir / name, bdir / name)
+    if db_path.exists():
+        shutil.copy2(db_path, bdir / "bot.db")
+    print(f"بکاپ: {bdir}")
+    if not no_service:
+        subprocess.run(["systemctl", "stop", "igbot-telegram"], check=False)
+    try:
+        for target, nd, ch in items:
+            if not ch:
+                continue
+            if isinstance(target, Path):
+                tmp = target.with_suffix(target.suffix + ".tmp")
+                tmp.write_text(json.dumps(nd, ensure_ascii=False, indent=1), encoding="utf-8")
+                st = target.stat()
+                os.replace(tmp, target)
+                try:
+                    os.chown(target, st.st_uid, st.st_gid)
+                except OSError:
+                    pass
+            else:
+                with sqlite3.connect(db_path) as c:
+                    c.execute("UPDATE kv SET value=? WHERE key='ai_settings'", (json.dumps(nd, ensure_ascii=False),))
+    finally:
+        if not no_service:
+            subprocess.run(["systemctl", "start", "igbot-telegram"], check=False)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("phone")
@@ -155,36 +189,7 @@ def main(argv=None):
     if not a.apply or not total:
         print("فقط نمایش بود؛ برای اعمال: --apply" if total else "چیزی برای تغییر نیست.")
         return 0
-    stamp = time.strftime("%Y%m%d-%H%M%S")
-    bdir = Path(a.backup_dir) / f"contact-phone-{stamp}"
-    bdir.mkdir(parents=True, exist_ok=True)
-    for name in TG_FILES:
-        if (tg_dir / name).exists():
-            shutil.copy2(tg_dir / name, bdir / name)
-    if db_path.exists():
-        shutil.copy2(db_path, bdir / "bot.db")
-    print(f"بکاپ: {bdir}")
-    if not a.no_service:
-        subprocess.run(["systemctl", "stop", "igbot-telegram"], check=False)
-    try:
-        for target, nd, ch in items:
-            if not ch:
-                continue
-            if isinstance(target, Path):
-                tmp = target.with_suffix(target.suffix + ".tmp")
-                tmp.write_text(json.dumps(nd, ensure_ascii=False, indent=1), encoding="utf-8")
-                st = target.stat()
-                os.replace(tmp, target)
-                try:
-                    os.chown(target, st.st_uid, st.st_gid)
-                except OSError:
-                    pass
-            else:
-                with sqlite3.connect(db_path) as c:
-                    c.execute("UPDATE kv SET value=? WHERE key='ai_settings'", (json.dumps(nd, ensure_ascii=False),))
-    finally:
-        if not a.no_service:
-            subprocess.run(["systemctl", "start", "igbot-telegram"], check=False)
+    write_all(items, tg_dir, db_path, Path(a.backup_dir), "contact-phone", a.no_service)
     print("✅ اعمال شد")
     return 0
 

@@ -124,12 +124,12 @@ def test_apple_id_points_to_stockland_bot(env, tg_data):
         assert act == "handoff"
         menu.write_text(json.dumps([{"key": "p_apl", "label": "🆔 خرید اپل آیدی", "order": 9, "enabled": True}],
                                    ensure_ascii=False), encoding="utf-8")
-        btns.write_text(json.dumps({"p_apl": {"enabled": True, "items": [{"title": "ربات", "url": "https://t.me/StlandAppleBot"}]}}),
+        btns.write_text(json.dumps({"p_apl": {"enabled": True, "items": [{"title": "ربات", "url": "https://t.me/Stlandd_bot"}]}}),
                         encoding="utf-8")
         act, reply, intent, *_ = brain_engine.decide("اپل ایدی دارید؟")
-        assert act == "reply" and "https://t.me/StlandAppleBot" in reply and "ربات اصلی استوک‌لند" in reply
+        assert act == "reply" and "https://t.me/Stlandd_bot" in reply and "ربات اصلی استوک‌لند" in reply
         from app import shared_kb
-        assert "https://t.me/StlandAppleBot" in shared_kb.prompt_text()        # هوش مصنوعی هم لینک را دارد
+        assert "https://t.me/Stlandd_bot" in shared_kb.prompt_text()        # هوش مصنوعی هم لینک را دارد
     finally:
         for f in (menu, btns):
             f.unlink(missing_ok=True)

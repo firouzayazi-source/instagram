@@ -4188,7 +4188,7 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
                 # حالت را نگه می‌داریم تا ادمین دوباره وارد کند — لینک نامعتبر
                 # کل بخش را برای همه کاربران خراب می‌کند
                 await update.message.reply_text(
-                    "❌ لینک معتبر نیست.\nمثال: https://instagram.com/stockland یا t.me/stlandd",
+                    "❌ لینک معتبر نیست.\nمثال: https://instagram.com/stockland یا t.me/Stlandd_bot",
                     reply_markup=cancel_menu()); return
             key=ctx.user_data.pop("btn_key",None); title=ctx.user_data.pop("btn_title","دکمه"); ctx.user_data.pop("mode",None)
             sec=get_sec_btns(key); sec["items"].append({"id":new_btn_id(),"title":title,"url":url})
