@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { api } from '../api.js'
+import { api, fa, timeAgo } from '../api.js'
 
 const MATCH = { any: 'هر مقداری', exact: 'برابر دقیق', contains: 'شامل', starts_with: 'شروع با', regex: 'الگو' }
 
@@ -8,8 +8,9 @@ export default function Rules({ embedded = false }) {
   const [test, setTest] = useState({ channel: 'comment', text: '' })
   const [result, setResult] = useState(null)
 
+  const [poll, setPoll] = useState(null)
   const load = () => api.get('/api/rules').then(setRules).catch(() => {})
-  useEffect(() => { load() }, [])
+  useEffect(() => { load(); api.get('/api/comment-poll').then(setPoll).catch(() => {}) }, [])
 
   async function toggle(r) {
     await api.post(`/api/rules/${r.id}/enable`, { enabled: !r.enabled })
@@ -26,6 +27,17 @@ export default function Rules({ embedded = false }) {
       {embedded
         ? <div className="actions" style={{ marginBottom: 10 }}><a href="#/rules/new" className="btn primary">+ دستور جدید</a><span className="muted" style={{ alignSelf: 'center' }}>دستورها قبل از هوش مصنوعی بررسی می‌شوند؛ مثل «کامنت بگذار، دایرکت بگیر».</span></div>
         : <header className="topbar"><h1>دستورها</h1><a href="#/rules/new" className="btn primary sm">+ دستور جدید</a></header>}
+      {poll?.active && (
+        <div className="card">
+          <b>خوانش کامنت‌ها از راه Composio روشن است</b>
+          <p className="muted" style={{ margin: '6px 0 0' }}>
+            هر {fa(Math.round(poll.interval / 60))} دقیقه کامنت‌های تازه‌ی پست‌های اخیر خوانده می‌شود و فقط دستورهای کامنت جواب می‌دهند (هوش مصنوعی زیر پست‌ها خودسر جواب نمی‌دهد).
+            {poll.status && (poll.status.ok
+              ? ` آخرین بررسی: ${timeAgo(poll.status.at)}.`
+              : ` آخرین تلاش ناموفق بود: ${poll.status.error}`)}
+          </p>
+        </div>
+      )}
       <form className="card" onSubmit={runTest}>
         <h2>آزمایش</h2>
         <div className="trigger">

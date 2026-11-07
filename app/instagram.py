@@ -14,14 +14,45 @@ def verify_signature(app_secret: str, body: bytes, header: str | None) -> bool:
     return hmac.compare_digest(expected, header[7:])
 
 
+def _composio_key() -> str:
+    import os
+    return (getattr(config, "COMPOSIO_API_KEY", "") or os.environ.get("COMPOSIO_API_KEY", "") or "").strip()
+
+
 class Instagram:
+    """بدون توکن اپ Meta خود پروژه، اگر کلید حساب Composio (‎ck_…‎) ثبت باشد، همین درخواست‌ها از راه اتصال
+    اینستاگرامِ Composio می‌روند (همان مسیرها و همان بدنه‌ها؛ آزموده‌شده: جواب کامنت و دایرکت به کامنت‌گذار)."""
+
     def __init__(self, token: str | None = None, user_id: str | None = None):
         self.token = token or config.IG_ACCESS_TOKEN
-        self.user_id = user_id or config.IG_USER_ID
+        self._user_id = user_id or ""
         self.base = f"https://graph.instagram.com/{config.GRAPH_VERSION}"
         self.http = httpx.AsyncClient(timeout=20)
+        self._composio = None
+
+    @property
+    def user_id(self) -> str:
+        return self._user_id or config.IG_USER_ID or ("me" if self.via_composio() else "")
+
+    @user_id.setter
+    def user_id(self, v: str) -> None:
+        self._user_id = v
+
+    def via_composio(self) -> bool:
+        return not self.token and _composio_key().startswith("ck_")
+
+    async def _composio_call(self, method: str, path: str, body: dict | None = None, params: dict | None = None) -> dict:
+        if self._composio is None:
+            from .insights import ComposioConnectSource
+            self._composio = ComposioConnectSource()
+        status, data = await self._composio.graph(method, f"{self.base}/{path}", body=body, params=params)
+        if status >= 400 or "error" in data:
+            raise RuntimeError(f"IG {status}: {data.get('error', data)}")
+        return data
 
     async def _post(self, path: str, **kw) -> dict:
+        if self.via_composio():
+            return await self._composio_call("POST", path, body=kw.get("json") or kw.get("data") or {})
         r = await self.http.post(f"{self.base}/{path}", params={"access_token": self.token}, **kw)
         data = r.json()
         if r.status_code >= 400 or "error" in data:
@@ -29,6 +60,8 @@ class Instagram:
         return data
 
     async def _get(self, path: str, **params) -> dict:
+        if self.via_composio():
+            return await self._composio_call("GET", path, params=params)
         r = await self.http.get(f"{self.base}/{path}", params={"access_token": self.token, **params})
         data = r.json()
         if r.status_code >= 400 or "error" in data:

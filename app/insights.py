@@ -236,23 +236,47 @@ class ComposioConnectSource(ComposioSource):
             return resp.get("data", resp)
         return data
 
-    async def _run(self, slug: str, arguments: dict):
+    async def _call(self, name: str, arguments: dict) -> dict:
+        """یک ابزار MCP؛ اگر نشست منقضی شده بود (404) یک بار از نو."""
         await self._start()
         try:
-            res = await self._rpc("tools/call", {"name": "COMPOSIO_MULTI_EXECUTE_TOOL", "arguments": {
-                "tools": [{"tool_slug": slug, "arguments": arguments}], "sync_response_to_workbench": False,
-                "thought": "read Instagram insights for the content report"}})
+            res = await self._rpc("tools/call", {"name": name, "arguments": arguments})
         except RuntimeError as e:
-            if "404" in str(e) and self.session:            # نشست MCP منقضی شد: یک بار از نو
-                self.session = ""
-                await self._start()
-                res = await self._rpc("tools/call", {"name": "COMPOSIO_MULTI_EXECUTE_TOOL", "arguments": {
-                    "tools": [{"tool_slug": slug, "arguments": arguments}], "sync_response_to_workbench": False}})
-            else:
+            if "404" not in str(e) or not self.session:
                 raise
+            self.session = ""
+            await self._start()
+            res = await self._rpc("tools/call", {"name": name, "arguments": arguments})
         if res.get("isError"):
             raise RuntimeError(f"Composio: {self._unwrap_text(res)[:200]}")
+        return res
+
+    async def _run(self, slug: str, arguments: dict):
+        res = await self._call("COMPOSIO_MULTI_EXECUTE_TOOL", {
+            "tools": [{"tool_slug": slug, "arguments": arguments}], "sync_response_to_workbench": False,
+            "thought": "read Instagram insights for the content report"})
         return self._unwrap(res, slug)
+
+    async def graph(self, method: str, url: str, body: dict | None = None, params: dict | None = None) -> tuple[int, dict]:
+        """درخواست خام به API اینستاگرام با اتصال همان حساب (COMPOSIO_PROXY_EXECUTE). (کد HTTP، داده)
+        توکن را Composio می‌گذارد؛ این‌جا نه فرستاده و نه ذخیره می‌شود."""
+        args = {"toolkit_slug": "instagram", "endpoint": url, "method": method}
+        if body is not None:
+            args["body"] = body
+        if params:
+            args["parameters"] = [{"name": k, "value": str(v), "type": "query"} for k, v in params.items()]
+        res = await self._call("COMPOSIO_PROXY_EXECUTE", args)
+        text = self._unwrap_text(res)
+        try:
+            d = json.loads(text) if text else (res.get("structuredContent") or {})
+        except ValueError:
+            raise RuntimeError(f"Composio: پاسخ نامفهوم ({text[:120]})")
+        if d.get("successful") is False and not isinstance(d.get("data"), dict):
+            raise RuntimeError(f"Composio: {str(d.get('error'))[:200]}")
+        inner = d.get("data") if isinstance(d.get("data"), dict) else d
+        status = int(inner.get("status") or 200)
+        data = inner.get("data")
+        return status, data if isinstance(data, dict) else {"data": data}
 
     @staticmethod
     def _unwrap_text(res: dict) -> str:

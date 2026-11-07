@@ -143,6 +143,8 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
     rules = db.load_rules(c)
     rule = find_rule(rules, inc, lambda rid, uid: db.last_hit(c, rid, uid))
     if rule is None:
+        if payload.get("_via") == "poll":
+            return "ignored"    # کامنت خوانده‌شده با Composio فقط با دستورها جواب می‌گیرد، نه هوش مصنوعی خودسر
         if inc.source == "mention":
             return await handle_mention(ig, row, c, payload, inc, s)
         return await handle_ai(ig, row, c, payload, inc)

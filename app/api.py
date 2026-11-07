@@ -206,6 +206,15 @@ def rules():
         return db.all_rules(c)
 
 
+@protected.get("/comment-poll")
+def comment_poll_status(request: Request):
+    """وضعیت خوانش کامنت‌ها با Composio (وقتی وبهوک اپ Meta نیست)."""
+    from . import comment_poll
+    with db.connect() as c:
+        st = json.loads(db.kv_get(c, comment_poll.STATUS_KEY) or "null")
+    return {"active": comment_poll.active(ig(request)), "status": st, "interval": comment_poll.INTERVAL}
+
+
 @protected.post("/rules")
 def rule_create(body: RuleIn):
     return _save_rule(body.model_dump())
