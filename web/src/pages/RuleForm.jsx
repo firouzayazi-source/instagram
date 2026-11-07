@@ -98,8 +98,28 @@ export default function RuleForm({ id }) {
         </div>
       </section>
 
+      {hasC && (
+        <section className="card">
+          <h2>۱. کدام پست؟</h2>
+          <label className="check"><input type="radio" checked={r.post_scope === 'all'} onChange={() => set({ post_scope: 'all' })} /> همه‌ی پست‌ها</label>
+          <label className="check"><input type="radio" checked={r.post_scope !== 'all'} onChange={() => set({ post_scope: [] })} /> فقط پست‌های انتخاب‌شده</label>
+          {r.post_scope !== 'all' && (
+            <div className="media-pick">
+              {!media.length && <span className="muted">فهرست پست‌ها در دسترس نیست</span>}
+              {media.map((m) => (
+                <label key={m.id}>
+                  <input type="checkbox" checked={r.post_scope.includes(m.id)} onChange={(e) => set({ post_scope: e.target.checked ? [...r.post_scope, m.id] : r.post_scope.filter((x) => x !== m.id) })} />
+                  {(m.thumbnail_url || m.media_url) && <img src={m.thumbnail_url || m.media_url} alt="" />}
+                  <span>{(m.caption || m.id).slice(0, 60)}</span>
+                </label>
+              ))}
+            </div>
+          )}
+      </section>
+    )}
+
       <section className="card">
-        <h2>عبارت شروع پاسخ</h2>
+        <h2>{hasC ? '۲. چه کامنتی؟ (عبارت شروع پاسخ)' : 'عبارت شروع پاسخ'}</h2>
         <p className="hint muted">اگر یکی از شرط‌ها درست باشد، دستور اجرا می‌شود. «هر مقداری» یعنی هر متنی.</p>
         {r.triggers.map((t, i) => (
           <React.Fragment key={i}>
@@ -119,7 +139,7 @@ export default function RuleForm({ id }) {
       </section>
 
       <section className="card">
-        <h2>پیام‌های پاسخ</h2>
+        <h2>{hasC ? '۳. چه پیامی برود؟' : 'پیام‌های پاسخ'}</h2>
         <p className="hint muted">اگر چند متن بنویسید، به نوبت استفاده می‌شوند تا پاسخ‌ها تکراری نباشند.</p>
         {hasC && <ReplyList label="دایرکت خصوصی به کامنت‌گذار" list={r.actions.private_replies} saved={saved} onChange={(l) => setReplies('private_replies', l)} />}
         {hasC && <ReplyList label="پاسخ عمومی زیر کامنت" list={r.actions.public_replies} saved={saved} onChange={(l) => setReplies('public_replies', l)} />}
@@ -169,25 +189,6 @@ export default function RuleForm({ id }) {
               <textarea placeholder="متن پیگیری (دایرکت)" value={r.advanced.followup?.text || ''} onChange={(e) => setAdv({ followup: { ...(r.advanced.followup || { after_seconds: 3600 }), text: e.target.value } })} />
               <p className="hint muted">فقط اگر کاربر در دایرکت پیام داده باشد و پنجره‌ی ۲۴ ساعت باز باشد می‌رسد.</p>
             </div>
-            {hasC && (
-              <div className="field">
-                <label>محدود به پست</label>
-                <label className="check"><input type="radio" checked={r.post_scope === 'all'} onChange={() => set({ post_scope: 'all' })} /> همه‌ی پست‌ها</label>
-                <label className="check"><input type="radio" checked={r.post_scope !== 'all'} onChange={() => set({ post_scope: [] })} /> فقط پست‌های انتخاب‌شده</label>
-                {r.post_scope !== 'all' && (
-                  <div className="media-pick">
-                    {!media.length && <span className="muted">فهرست پست‌ها در دسترس نیست</span>}
-                    {media.map((m) => (
-                      <label key={m.id}>
-                        <input type="checkbox" checked={r.post_scope.includes(m.id)} onChange={(e) => set({ post_scope: e.target.checked ? [...r.post_scope, m.id] : r.post_scope.filter((x) => x !== m.id) })} />
-                        {(m.thumbnail_url || m.media_url) && <img src={m.thumbnail_url || m.media_url} alt="" />}
-                        <span>{(m.caption || m.id).slice(0, 60)}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
             {r.channels.includes('story_reply') && (
               <div className="field">
                 <label>محدود به استوری (فقط جواب‌های همین استوری‌ها)</label>
