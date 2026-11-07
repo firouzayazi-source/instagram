@@ -11,6 +11,14 @@ from app import config, db, insights, secrets_env
 NOW = time.time()
 
 
+def _tehran(days_ago, hour):
+    """ساعت مشخص به وقت تهران در روز مشخص؛ تا نتیجه‌ی تست به ساعت اجرا (مرز روز تهران) وابسته نباشد."""
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+    d = datetime.now(ZoneInfo("Asia/Tehran")) - timedelta(days=days_ago)
+    return d.replace(hour=hour, minute=0, second=0, microsecond=0).timestamp()
+
+
 def iso(ts):
     from datetime import datetime, timezone
     return datetime.fromtimestamp(ts, timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+0000")
@@ -31,8 +39,8 @@ class FakeSource:
 
     def __init__(self):
         self.stories_list = [
-            {"id": "s1", "media_type": "VIDEO", "permalink": "https://x/s1", "timestamp": iso(NOW - 22 * 3600)},
-            {"id": "s2", "media_type": "IMAGE", "permalink": "https://x/s2", "timestamp": iso(NOW - 21 * 3600)},
+            {"id": "s1", "media_type": "VIDEO", "permalink": "https://x/s1", "timestamp": iso(_tehran(2, 10))},
+            {"id": "s2", "media_type": "IMAGE", "permalink": "https://x/s2", "timestamp": iso(_tehran(2, 11))},
         ]
         self.calls = []
 
