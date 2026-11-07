@@ -19,8 +19,9 @@ export default function Insights() {
     setBusy(true); setMsg(null)
     try {
       const r = await api.post('/api/insights/collect')
-      setMsg({ ok: true, text: `گرفته شد ✅ ${fa(r.stories.count)} استوری زنده و ${fa(r.media.count)} پست (${r.stories.source})` })
+      setMsg({ ok: true, text: `گرفته شد ✅ ${fa(r.stories.count)} استوری زنده (${r.stories.source}). آمار ریلز و پست‌ها در پس‌زمینه گرفته می‌شود؛ یک دقیقه‌ی دیگر صفحه خودش تازه می‌شود.` })
       load()
+      setTimeout(load, 60000)
     } catch (ex) { setMsg({ ok: false, text: ex.message }) }
     setBusy(false)
   }

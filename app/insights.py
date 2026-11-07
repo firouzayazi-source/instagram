@@ -8,6 +8,7 @@
   ۲. وگرنه Composio (پل موقت)، اگر COMPOSIO_API_KEY تنظیم شده باشد (کلید فقط در ‎.env‎):
      کلید حساب کاربری ‎ck_…‎ (dashboard.composio.dev) از راه سرور MCP همان حساب، یا کلید پروژه‌ی ‎ak_…‎ از راه API توسعه‌دهنده.
 """
+import asyncio
 import json
 import os
 import statistics
@@ -24,6 +25,7 @@ STORY_METRICS = ["views", "reach", "replies", "shares", "follows", "profile_visi
 REEL_METRICS = ["views", "reach", "saved", "shares", "likes", "comments", "total_interactions",
                 "ig_reels_avg_watch_time", "reels_skip_rate"]
 POST_METRICS = ["views", "reach", "saved", "shares", "likes", "comments", "total_interactions"]
+MEDIA_PARALLEL = 4
 NAV_KEYS = ("tap_forward", "tap_back", "tap_exit", "swipe_forward")
 
 SCHEMA = """
@@ -288,13 +290,21 @@ async def collect_stories(c, src) -> int:
 
 
 async def collect_media(c, src, days: int = 45) -> int:
+    """آمار ریلز و پست‌ها؛ چند درخواست هم‌زمان (هر پست یک درخواست است و پشت‌سرهم چند دقیقه طول می‌کشید)."""
     ensure(c)
-    n = 0
-    for m in await src.media(time.time() - days * 86400):
+    items = await src.media(time.time() - days * 86400)
+    gate = asyncio.Semaphore(MEDIA_PARALLEL)
+
+    async def one(m):
         kind = "REEL" if m.get("media_product_type") == "REELS" else (m.get("media_type") or "")
-        try:
-            met = parse_metrics(await src.insights(m["id"], REEL_METRICS if kind == "REEL" else POST_METRICS))
-        except Exception:  # noqa: BLE001
+        async with gate:
+            try:
+                return m, kind, parse_metrics(await src.insights(m["id"], REEL_METRICS if kind == "REEL" else POST_METRICS))
+            except Exception:  # noqa: BLE001
+                return m, kind, None
+    n = 0
+    for m, kind, met in await asyncio.gather(*(one(m) for m in items)):
+        if met is None:
             continue
         cap = (m.get("caption") or "").strip().split("\n")[0][:120]
         c.execute("""INSERT INTO media_stats(media_id, posted_at, kind, caption, permalink, metrics, captured_at)
@@ -302,6 +312,8 @@ async def collect_media(c, src, days: int = 45) -> int:
                      caption=excluded.caption, metrics=excluded.metrics, captured_at=excluded.captured_at""",
                   (m["id"], _ts(m["timestamp"]), kind, cap, m.get("permalink", ""), json.dumps(met), time.time()))
         n += 1
+    if items and not n:
+        raise RuntimeError(f"آمار هیچ‌کدام از {len(items)} پست گرفته نشد")
     return n
 
 

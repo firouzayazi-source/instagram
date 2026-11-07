@@ -1,4 +1,6 @@
 """API پنل. همه‌ی مسیرها جز /api/login نشست می‌خواهند."""
+import asyncio
+import contextlib
 import json
 import time
 
@@ -424,18 +426,28 @@ def insights_get(request: Request, days: int = 14):
 
 @protected.post("/insights/collect")
 async def insights_collect(request: Request):
-    """گرفتن همین الان (به‌جای منتظر ماندن برای نوبت بعدی)."""
+    """گرفتن همین الان: استوری‌ها همین‌جا؛ ریلز و پست‌ها (ده‌ها درخواست) در پس‌زمینه تا درخواست پنل قطع نشود."""
     from . import insights
-    out = {}
-    for what in ("stories", "media"):
+
+    async def collect(what):
         try:
             with db.connect() as c:
                 r = await insights.run(c, ig(request), what)
                 db.kv_set(c, f"insights_{what}", json.dumps({"at": time.time(), "ok": True, **r}, ensure_ascii=False))
-            out[what] = r
+            return r
         except Exception as e:  # noqa: BLE001
+            with db.connect() as c:
+                db.kv_set(c, f"insights_{what}", json.dumps({"at": time.time(), "ok": False, "error": str(e)[:300]},
+                                                          ensure_ascii=False))
             raise HTTPException(502, str(e)[:300])
-    return out
+    stories = await collect("stories")
+    task = getattr(request.app.state, "insights_media", None)
+    if task is None or task.done():
+        async def media():
+            with contextlib.suppress(HTTPException):     # خطا در وضعیت ذخیره و در پنل نشان داده می‌شود
+                await collect("media")
+        request.app.state.insights_media = asyncio.create_task(media())
+    return {"stories": stories, "media": {"running": True}}
 
 
 # ---------- پست و استوری: یادداشت و محصول ----------

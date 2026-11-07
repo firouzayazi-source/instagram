@@ -240,3 +240,50 @@ def test_composio_connect_tool_error(monkeypatch):
     src = insights.ComposioConnectSource(transport=httpx.MockTransport(handler))
     with pytest.raises(RuntimeError, match="no connection"):
         asyncio.run(src.stories())
+
+
+def test_media_parallel_and_all_failed():
+    """آمار پست‌ها هم‌زمان (حداکثر MEDIA_PARALLEL) گرفته می‌شود؛ اگر هیچ‌کدام نیامد خطا دیده شود، نه «۰ پست» بی‌صدا."""
+    src, live, peak = FakeSource(), [0], [0]
+    orig = src.insights
+
+    async def slow(media_id, mets, breakdown=""):
+        live[0] += 1
+        peak[0] = max(peak[0], live[0])
+        await asyncio.sleep(0.01)
+        live[0] -= 1
+        return await orig(media_id, mets, breakdown)
+    src.insights = slow
+    db.init()
+    with db.connect() as c:
+        assert asyncio.run(insights.collect_media(c, src)) == 2
+    assert peak[0] == 2
+
+    async def bad(media_id, mets, breakdown=""):
+        raise RuntimeError("rate limit")
+    src.insights = bad
+    with db.connect() as c, pytest.raises(RuntimeError, match="هیچ‌کدام از ۲|هیچ‌کدام از 2"):
+        asyncio.run(insights.collect_media(c, src))
+
+
+def test_api_collect_media_in_background(tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+    from app import auth
+    from app.main import create_app
+    from tests.test_instagram_features import IG
+    monkeypatch.setattr(config, "PANEL_PASSWORD", "pw")
+    monkeypatch.setattr(config, "COOKIE_SECURE", False)
+    monkeypatch.setattr(config, "WEB_DIST", str(tmp_path / "nodist"))
+    monkeypatch.setattr(insights, "source", lambda ig=None: FakeSource())
+    auth._fails.clear()
+    db.init()
+    with TestClient(create_app(IG())) as cl:
+        cl.post("/api/login", json={"password": "pw"})
+        r = cl.post("/api/insights/collect").json()
+        assert r["stories"]["count"] == 2 and r["media"] == {"running": True}
+        for _ in range(50):
+            st = cl.get("/api/insights?days=7").json()
+            if st["status"]["media"]:
+                break
+            time.sleep(0.05)
+        assert st["status"]["media"]["ok"] and st["status"]["media"]["count"] == 2 and "REEL" in st["kinds"]
