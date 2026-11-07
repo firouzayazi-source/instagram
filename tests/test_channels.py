@@ -42,11 +42,11 @@ def test_describe_and_toggle(env):
     blob = json.dumps(chs, ensure_ascii=False)
     assert "secret-token-123" not in blob and "tg-secret" not in blob
 
-    (env / "telegram" / "status.json").write_text(json.dumps({"ts": time.time(), "username": "Stlandd_bot", "users": 42}))
+    (env / "telegram" / "status.json").write_text(json.dumps({"ts": time.time(), "username": "support_test_bot", "users": 42}))
     channels.set_enabled("telegram", False)
     with db.connect() as c:
         tg = next(x for x in channels.describe(c) if x["id"] == "telegram")
-    assert tg["online"] and tg["username"] == "Stlandd_bot" and tg["users"] == 42 and not tg["enabled"]
+    assert tg["online"] and tg["username"] == "support_test_bot" and tg["users"] == 42 and not tg["enabled"]
     assert json.loads((env / "channels.json").read_text())["telegram"]["enabled"] is False
     with pytest.raises(ValueError):
         channels.set_enabled("bale", True)
