@@ -48,6 +48,8 @@ export default function Insights() {
         <Msg m={msg} />
       </section>
 
+      <Funnel days={days} />
+
       <section className="card">
         <h3>استوری</h3>
         {!d.stories.length ? <div className="empty">هنوز آماری ذخیره نشده.</div> : (
@@ -112,6 +114,42 @@ export default function Insights() {
         )}
       </section>
     </>
+  )
+}
+
+// قیف فروش: کامنت ← دایرکت خودکار ← ورود به ربات ← سفارش
+function Funnel({ days }) {
+  const [f, setF] = useState(null)
+  const load = () => api.get(`/api/funnel?days=${days}`).then(setF).catch(() => {})
+  useEffect(() => { load() }, [days])
+  if (!f) return null
+  const steps = [['کامنت', f.comments], ['دایرکت خودکار', f.auto_dms], ['ورود به ربات', f.tg_entries], ['سفارش', f.orders]]
+  return (
+    <section className="card">
+      <h3>از کامنت تا سفارش ({fa(f.days)} روز)</h3>
+      <div className="tiles">
+        {steps.map(([k, v]) => <div key={k} className="tile"><b>{v === null ? '—' : fa(v)}</b><span>{k}</span></div>)}
+      </div>
+      <p className="muted">
+        دایرکت دریافتی {fa(f.dm_in)} · منتظر جواب {fa(f.waiting)}
+        {f.send_errors > 0 && <span className="err"> · ارسال ناموفق {fa(f.send_errors)}</span>}
+      </p>
+      {f.posts.length > 0 && (
+        <div className="list">
+          {f.posts.map((p) => (
+            <a key={p.media_id} className="item" href={p.permalink || undefined} target="_blank" rel="noreferrer">
+              <div className="row-between">
+                <span>{KIND[p.kind] || 'پست'} · {p.caption || p.media_id}</span>
+                <span className="muted">کامنت {fa(p.comments)} · دایرکت {fa(p.dms)}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+      <label className="check" style={{ marginTop: 8 }}>
+        <input type="checkbox" checked={!!f.digest} onChange={async (e) => { await api.post('/api/funnel/digest', { enabled: e.target.checked }); load() }} /> خلاصه‌ی هر شب (۲۲:۳۰) به تلگرام مدیر
+      </label>
+    </section>
   )
 }
 

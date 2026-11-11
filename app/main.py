@@ -7,7 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse
 
-from . import api, api_ai, comment_poll, config, db, internal, site_sync, worker
+from . import api, api_ai, comment_poll, config, db, internal, monitor, site_sync, worker
 from .instagram import Instagram, verify_signature
 
 
@@ -45,6 +45,7 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
             asyncio.create_task(worker.refresh_token_loop(app.state.ig, stop)),
             asyncio.create_task(worker.insights_loop(app.state.ig, stop)),
             asyncio.create_task(comment_poll.poll_loop(app.state.ig, stop)),
+            asyncio.create_task(monitor.monitor_loop(app.state.ig, stop)),
             asyncio.create_task(site_sync.sync_loop(stop)),
         ]
         yield

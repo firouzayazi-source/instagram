@@ -475,6 +475,28 @@ async def insights_collect(request: Request):
     return {"stories": stories, "media": {"running": True}}
 
 
+@protected.get("/funnel")
+def funnel_get(days: int = 7):
+    """قیف: کامنت ← دایرکت خودکار ← ورود به ربات ← سفارش؛ و وضعیت خلاصه‌ی روزانه."""
+    from . import monitor
+    with db.connect() as c:
+        d = monitor.funnel(c, min(90, max(1, days)))
+        d["digest"] = db.kv_get(c, monitor.DIGEST_KEY) != "0"
+    return d
+
+
+class DigestIn(BaseModel):
+    enabled: bool
+
+
+@protected.post("/funnel/digest")
+def funnel_digest(body: DigestIn):
+    from . import monitor
+    with db.connect() as c:
+        db.kv_set(c, monitor.DIGEST_KEY, "1" if body.enabled else "0")
+    return {"ok": True}
+
+
 # ---------- پست و استوری: یادداشت و محصول ----------
 
 @protected.get("/instagram/media-notes")
