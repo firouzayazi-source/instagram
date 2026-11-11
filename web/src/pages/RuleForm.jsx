@@ -19,6 +19,12 @@ export default function RuleForm({ id }) {
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
+    // پیش‌پرکردن از «ایده‌ی محتوا» یا «جواب خودکار برای این پست»
+    const pre = isNew && sessionStorage.getItem('rule_prefill')
+    if (pre) {
+      sessionStorage.removeItem('rule_prefill')
+      try { const p = JSON.parse(pre); setR({ ...EMPTY, ...p, actions: { ...EMPTY.actions, ...(p.actions || {}) } }) } catch { /* پیش‌پرکردن خراب: فرم خالی */ }
+    }
     api.get('/api/saved-replies').then(setSaved).catch(() => {})
     api.get('/api/media').then(setMedia).catch(() => {})
     api.get('/api/instagram/media-notes').then((d) => setStories(d.stories || [])).catch(() => {})

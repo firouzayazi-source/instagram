@@ -47,11 +47,53 @@ function Reports() {
   )
 }
 
+// امروز در یک نگاه: قیف ۲۴ ساعت و انتشار بعدی
+function Today() {
+  const [f, setF] = useState(null)
+  const [next, setNext] = useState(null)
+  useEffect(() => {
+    api.get('/api/funnel?days=1').then(setF).catch(() => {})
+    api.get('/api/schedule').then((xs) => setNext(xs.find((x) => x.status === 'scheduled') || null)).catch(() => {})
+  }, [])
+  if (!f) return null
+  return (
+    <section className="card">
+      <h2>۲۴ ساعت گذشته</h2>
+      <div className="tiles">
+        <div className="tile"><b>{fa(f.comments)}</b><span>کامنت تازه</span></div>
+        <div className="tile good"><b>{fa(f.auto_dms)}</b><span>دایرکت خودکار</span></div>
+        <div className="tile"><b>{f.tg_entries === null ? '—' : fa(f.tg_entries)}</b><span>ورود به ربات از اینستاگرام</span></div>
+        <a href="#/orders" className="tile"><b>{fa(f.orders)}</b><span>سفارش تازه</span></a>
+      </div>
+      <p className="muted" style={{ marginBottom: 0 }}>
+        {next
+          ? <>انتشار بعدی: {new Date(next.publish_at * 1000).toLocaleString('fa-IR', { weekday: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tehran' })} · </>
+          : 'انتشاری در نوبت نیست · '}
+        <a href="#/channels/instagram/schedule">زمان‌بندی انتشار</a> · <a href="#/channels/instagram/ideas">ایده‌ی محتوا</a>
+      </p>
+    </section>
+  )
+}
+
 export default function Dashboard({ stats: s }) {
   const days = s.token_expires_at ? Math.floor((s.token_expires_at - Date.now() / 1000) / 86400) : null
   return (
     <>
       <header className="topbar"><h1>پیشخوان</h1><span className="sub">stock_land.ir</span></header>
+      <section className="card">
+        <h2>امروز، نیاز به توجه</h2>
+        <div className="tiles">
+          <a href="#/comments" className={`tile ${s.comments_unanswered ? 'warn' : ''}`}><b>{fa(s.comments_unanswered)}</b><span>کامنت بی‌پاسخ</span></a>
+          <a href="#/messages" className={`tile ${s.conversations_unanswered ? 'warn' : ''}`}><b>{fa(s.conversations_unanswered)}</b><span>دایرکت بی‌پاسخ</span></a>
+          <a href="#/orders" className={`tile ${s.orders_receipt ? 'bad' : s.orders_open ? 'warn' : ''}`}><b>{fa(s.orders_open)}</b><span>سفارش باز{s.orders_receipt ? ` (${fa(s.orders_receipt)} رسید رسیده)` : ''}</span></a>
+          <a href="#/customers/lost" className={`tile ${s.lost_open ? 'warn' : ''}`}><b>{fa(s.lost_open)}</b><span>فرصت ازدست‌رفته‌ی قابل پیگیری</span></a>
+          <div className={`tile ${s.events_error ? 'bad' : ''}`}><b>{fa(s.events_error)}</b><span>رویداد با خطا</span></div>
+          {days !== null && <div className={`tile ${days < 10 ? 'bad' : ''}`}><b>{fa(days)}</b><span>روز تا انقضای توکن</span></div>}
+        </div>
+      </section>
+      <Today />
+      <details className="card">
+        <summary><b>جزئیات و گزارش‌ها</b></summary>
       <section className="card">
         <h2>۲۴ ساعت گذشته</h2>
         <div className="tiles">
@@ -72,17 +114,6 @@ export default function Dashboard({ stats: s }) {
       </section>
       <Reports />
       <section className="card">
-        <h2>نیاز به توجه</h2>
-        <div className="tiles">
-          <a href="#/comments" className={`tile ${s.comments_unanswered ? 'warn' : ''}`}><b>{fa(s.comments_unanswered)}</b><span>کامنت بی‌پاسخ</span></a>
-          <a href="#/messages" className={`tile ${s.conversations_unanswered ? 'warn' : ''}`}><b>{fa(s.conversations_unanswered)}</b><span>دایرکت بی‌پاسخ</span></a>
-          <a href="#/orders" className={`tile ${s.orders_receipt ? 'bad' : s.orders_open ? 'warn' : ''}`}><b>{fa(s.orders_open)}</b><span>سفارش باز{s.orders_receipt ? ` (${fa(s.orders_receipt)} رسید رسیده)` : ''}</span></a>
-          <a href="#/customers/lost" className={`tile ${s.lost_open ? 'warn' : ''}`}><b>{fa(s.lost_open)}</b><span>فرصت ازدست‌رفته‌ی قابل پیگیری</span></a>
-          <div className={`tile ${s.events_error ? 'bad' : ''}`}><b>{fa(s.events_error)}</b><span>رویداد با خطا</span></div>
-          <div className={`tile ${days !== null && days < 10 ? 'bad' : ''}`}><b>{days === null ? '—' : fa(days)}</b><span>روز تا انقضای توکن</span></div>
-        </div>
-      </section>
-      <section className="card">
         <h2>آخرین پاسخ‌ها</h2>
         {!s.recent?.length && <p className="muted">هنوز پاسخی ارسال نشده.</p>}
         <div className="list">
@@ -98,6 +129,7 @@ export default function Dashboard({ stats: s }) {
           ))}
         </div>
       </section>
+      </details>
     </>
   )
 }

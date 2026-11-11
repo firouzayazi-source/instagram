@@ -4,11 +4,13 @@ import Rules from './Rules.jsx'
 import Sales from './Sales.jsx'
 import Insights from './Insights.jsx'
 import Schedule from './Schedule.jsx'
+import Ideas from './Ideas.jsx'
 import { Blocked, Msg } from './Ai.jsx'
 
 // هر کانال قابلیت‌های خودش را دارد؛ هسته‌ی مرکزی (مغز، دانش، هوش مصنوعی) مشترک است
 const SUBS = {
-  instagram: [['connect', 'اتصال و وضعیت'], ['dm', 'دایرکت'], ['sales', 'فروش'], ['comment', 'کامنت'], ['story', 'استوری'], ['schedule', 'انتشار'], ['media', 'پست و استوری'], ['insights', 'تحلیل محتوا'], ['rules', 'دستورها'], ['blocked', 'مسدودها']],
+  // کارهای هرروزه اول؛ تنظیم‌های کم‌استفاده آخر
+  instagram: [['connect', 'وضعیت'], ['rules', 'دستورها'], ['schedule', 'انتشار'], ['ideas', 'ایده‌ی محتوا'], ['insights', 'تحلیل محتوا'], ['media', 'پست و استوری'], ['dm', 'دایرکت'], ['comment', 'کامنت'], ['story', 'استوری'], ['sales', 'فروش'], ['blocked', 'مسدودها']],
   telegram: [['connect', 'اتصال و وضعیت']],
 }
 
@@ -181,6 +183,10 @@ function Media() {
     try { await api.put(`/api/instagram/media-notes/${m.id}`, { ...v, kind }); m.note = v.note; m.product = v.product; setMsg({ ok: true, text: 'ذخیره شد ✅' }) }
     catch (ex) { setMsg({ ok: false, text: ex.message }) }
   }
+  function autoReply(m) {
+    sessionStorage.setItem('rule_prefill', JSON.stringify({ name: (m.caption || 'پست').split('\n')[0].slice(0, 40), channels: ['comment'], post_scope: [m.id] }))
+    location.hash = '#/rules/new'
+  }
   const card = (m, kind) => {
     const v = edit[m.id] || { note: m.note || '', product: m.product || '' }
     const set = (patch) => setEdit({ ...edit, [m.id]: { ...v, ...patch } })
@@ -193,6 +199,7 @@ function Media() {
             <input type="text" value={v.product} placeholder="محصول، مثلاً: آیفون ۱۲" onChange={(e) => set({ product: e.target.value })} style={{ marginTop: 4 }} />
             <input type="text" value={v.note} placeholder="یادداشت برای ربات: حافظه، قیمت، شرایط…" onChange={(e) => set({ note: e.target.value })} style={{ marginTop: 4 }} />
             {(v.note !== (m.note || '') || v.product !== (m.product || '')) && <button className="btn sm primary" style={{ marginTop: 4 }} onClick={() => save(m, kind)}>ذخیره</button>}
+            {kind === 'post' && <button className="btn sm" style={{ marginTop: 4 }} onClick={() => autoReply(m)}>جواب خودکار برای این پست</button>}
           </div>
         </div>
       </div>
@@ -374,6 +381,7 @@ export default function Channels({ id, sub }) {
       {cur === 'sales' && <Sales />}
       {cur === 'comment' && <IgPart part="comment" />}
       {cur === 'story' && <IgPart part="story" />}
+      {cur === 'ideas' && <Ideas />}
       {cur === 'schedule' && <Schedule />}
       {cur === 'media' && <Media />}
       {cur === 'insights' && <Insights />}

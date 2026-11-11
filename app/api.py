@@ -497,6 +497,23 @@ def funnel_digest(body: DigestIn):
     return {"ok": True}
 
 
+# ---------- دستیار محتوا ----------
+
+class IdeasIn(BaseModel):
+    topic: str = ""
+
+
+@protected.post("/content/ideas")
+async def content_ideas(body: IdeasIn):
+    """سه ایده‌ی ریلز از روی آمار پیج؛ فقط پیش‌نویس، چیزی منتشر نمی‌شود."""
+    from . import content_ai
+    try:
+        with db.connect() as c:
+            return await content_ai.ideas(c, body.topic)
+    except RuntimeError as e:
+        raise HTTPException(502, str(e)[:400])
+
+
 # ---------- زمان‌بندی انتشار ----------
 
 class ScheduleIn(BaseModel):
@@ -547,7 +564,8 @@ def schedule_cancel(pid: int):
 @protected.get("/instagram/media-notes")
 async def media_notes(request: Request):
     posts, stories, err = [], [], None
-    if config.IG_ACCESS_TOKEN:
+    connected = bool(config.IG_ACCESS_TOKEN) or bool(getattr(ig(request), "via_composio", lambda: False)())
+    if connected:
         try:
             posts = await media(request)
             stories = await ig(request).stories()
@@ -558,7 +576,7 @@ async def media_notes(request: Request):
     for m in posts + stories:
         n = notes.get(m["id"], {})
         m["note"], m["product"] = n.get("note", ""), n.get("product", "")
-    return {"posts": posts, "stories": stories, "error": err, "connected": bool(config.IG_ACCESS_TOKEN)}
+    return {"posts": posts, "stories": stories, "error": err, "connected": connected}
 
 
 @protected.put("/instagram/media-notes/{mid}")
