@@ -86,6 +86,10 @@ async def handle_echo(c, payload: dict) -> str:
     mid, user = msg.get("mid", ""), str(payload.get("recipient", {}).get("id", ""))
     if not mid or not user or c.execute("SELECT 1 FROM messages WHERE id=?", (mid,)).fetchone():
         return "skipped"           # پیام خود ربات (یا تکراری)
+    if payload.get("_via") == "poll" and c.execute(
+            "SELECT 1 FROM messages WHERE user_id=? AND direction='out' AND sender='bot' AND text=? AND created_at>?",
+            (user, msg.get("text") or "", time.time() - 600)).fetchone():
+        return "skipped"           # همان پیام ربات که با شناسه‌ی دیگری برگشته
     db.add_message(c, mid, user, "out", msg.get("text") or "📎 پیوست", sender="admin")
     db.set_human(c, user, ai.settings(c)["human_pause_minutes"])
     return "admin"
@@ -101,9 +105,19 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
     inc = parse_event(row["kind"], payload)
     if inc is None or not inc.user_id or inc.user_id == config.IG_USER_ID:
         return "skipped"
+    polled = payload.get("_via") == "poll"
+    if polled and row["kind"] == "message" and payload.get("sender", {}).get("username") \
+            and not db.conversation_username(c, inc.user_id):
+        db.add_message(c, _message_id(row["kind"], payload), inc.user_id, "in", _shown_text(inc),
+                       (payload.get("timestamp") or 0) / 1000 or None)
+        db.set_conversation_username(c, inc.user_id, payload["sender"]["username"])   # نام از خود پیام؛ درخواست جدا لازم نیست
     await store_incoming(ig, c, row["kind"], payload, inc)
     if store_only:
         return "merged"
+    if polled and row["kind"] != "comment":
+        from . import comment_poll
+        if not comment_poll.dm_reply_enabled(c):
+            return "skipped"   # دایرکت خوانده‌شده با Composio: فقط صندوق، تا صاحب پیج جواب خودکار را روشن کند
     if extra_texts and inc.text:
         inc.text = "\n".join([*extra_texts, inc.text])
     if not channels.enabled("instagram"):

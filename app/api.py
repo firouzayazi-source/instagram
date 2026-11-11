@@ -208,11 +208,27 @@ def rules():
 
 @protected.get("/comment-poll")
 def comment_poll_status(request: Request):
-    """وضعیت خوانش کامنت‌ها با Composio (وقتی وبهوک اپ Meta نیست)."""
+    """وضعیت خوانش کامنت‌ها و دایرکت‌ها با Composio (وقتی وبهوک اپ Meta نیست)."""
     from . import comment_poll
     with db.connect() as c:
         st = json.loads(db.kv_get(c, comment_poll.STATUS_KEY) or "null")
-    return {"active": comment_poll.active(ig(request)), "status": st, "interval": comment_poll.INTERVAL}
+        dm = json.loads(db.kv_get(c, comment_poll.DM_STATUS_KEY) or "null")
+        reply = comment_poll.dm_reply_enabled(c)
+    return {"active": comment_poll.active(ig(request)), "status": st, "dm_status": dm, "dm_reply": reply,
+            "interval": comment_poll.INTERVAL}
+
+
+class DmReplyIn(BaseModel):
+    dm_reply: bool
+
+
+@protected.post("/comment-poll")
+def comment_poll_set(body: DmReplyIn):
+    """جواب خودکار به دایرکت‌هایی که با Composio خوانده می‌شوند (پیش‌فرض خاموش: فقط در صندوق)."""
+    from . import comment_poll
+    with db.connect() as c:
+        db.kv_set(c, comment_poll.DM_REPLY_KEY, "1" if body.dm_reply else "0")
+    return {"ok": True, "dm_reply": body.dm_reply}
 
 
 @protected.post("/rules")

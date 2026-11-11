@@ -60,6 +60,40 @@ export function ChannelList() {
   )
 }
 
+// پل Composio: خوانش کامنت و دایرکت هر دقیقه، تا اپ Meta خود پروژه وصل شود
+function Bridge() {
+  const [b, setB] = useState(null)
+  const load = () => api.get('/api/comment-poll').then(setB).catch(() => {})
+  useEffect(() => { load() }, [])
+  if (!b?.active) return null
+  const line = (name, st) => (
+    <div className="row" style={{ padding: '6px 0' }}>
+      <span>{name}</span>
+      <span className={`pill ${st ? (st.ok ? 'good' : 'warn') : ''}`}>{st ? (st.ok ? `سالم · ${timeAgo(st.at)}` : 'خطا') : 'هنوز بررسی نشده'}</span>
+    </div>
+  )
+  const err = [b.status, b.dm_status].find((x) => x && !x.ok)
+  async function toggle(e) {
+    const on = e.target.checked
+    if (on && !window.confirm('از این لحظه ربات به دایرکت‌های تازه‌ی مشتری‌ها خودکار جواب می‌دهد (دستورها، موتور فهم و هوش مصنوعی طبق تنظیمات). اگر ابزار دیگری مثل وردست هم روشن است، ممکن است مشتری دو جواب بگیرد. روشن شود؟')) return
+    await api.post('/api/comment-poll', { dm_reply: on })
+    load()
+  }
+  return (
+    <section className="card">
+      <h2>اتصال موقت (Composio)</h2>
+      <p className="muted">تا اپ Meta وصل شود، کامنت‌ها و دایرکت‌های تازه هر دقیقه از این راه خوانده می‌شوند.</p>
+      <div className="list">
+        {line('خوانش کامنت‌ها', b.status)}
+        {line('خوانش دایرکت‌ها', b.dm_status)}
+      </div>
+      {err && <p className="err">{err.error}</p>}
+      <label className="check" style={{ marginTop: 8 }}><input type="checkbox" checked={!!b.dm_reply} onChange={toggle} /> جواب خودکار به دایرکت‌ها</label>
+      <p className="hint muted">خاموش: دایرکت‌ها فقط در «صندوق» دیده می‌شوند و خودتان جواب می‌دهید. دستورهای کامنت همیشه کار می‌کنند.</p>
+    </section>
+  )
+}
+
 function Connect({ id }) {
   const [c, setC] = useState(null)
   useEffect(() => { api.get('/api/channels').then((xs) => setC(xs.find((x) => x.id === id))).catch(() => {}) }, [id])
@@ -85,6 +119,8 @@ function Connect({ id }) {
           </div>
         )}
       </section>
+
+      {id === 'instagram' && <Bridge />}
 
       <section className="card">
         <h2>اطلاعات اتصال</h2>

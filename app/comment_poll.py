@@ -1,10 +1,14 @@
-"""خواندن دوره‌ای کامنت‌های تازه وقتی وبهوک اپ Meta خود پروژه نیست (پل Composio).
+"""خواندن دوره‌ای کامنت‌ها و دایرکت‌های تازه وقتی وبهوک اپ Meta خود پروژه نیست (پل Composio).
 
 هر دقیقه یک درخواست: فهرست پست‌های اخیر با تعداد کامنت. فقط پستی که تعداد کامنتش بالا رفته (یا پستی که
 دستور مخصوص دارد و در فهرست اخیر نیست) کامنت‌هایش خوانده می‌شود. کامنت تازه با همان شناسه‌ی وبهوک
 (c:<id>) در صف می‌رود، پس اگر بعداً وبهوک هم بیاید تکراری پردازش نمی‌شود. کامنت‌های قبل از روشن شدن
 خوانش هرگز جواب نمی‌گیرند (بار اول فقط نقطه‌ی شروع ثبت می‌شود). کامنتی که از این راه آمده فقط با دستورها
 جواب می‌گیرد؛ هوش مصنوعی خودسر زیر پست‌ها جواب عمومی نمی‌دهد (worker، `_via: poll`).
+
+دایرکت‌ها: هر دقیقه فهرست ۲۵ گفتگوی اخیر؛ فقط گفتگویی که تازه شده خوانده می‌شود. پیام مشتری و پیام خود پیج
+(echo، تا ربات وقتی همکار یا ابزار دیگری جواب داده ساکت بماند) با شناسه‌ی m:<id> در صف می‌روند. پیش‌فرض فقط در
+صندوق ثبت می‌شوند؛ جواب خودکار فقط وقتی صاحب پیج روشنش کند (`DM_REPLY_KEY`).
 """
 import asyncio
 import json
@@ -17,6 +21,10 @@ INTERVAL = 60
 RECENT = 25          # پست‌های اخیری که بررسی می‌شوند
 STATE_KEY = "comment_poll_state"
 STATUS_KEY = "comment_poll"
+DM_STATE_KEY = "dm_poll_state"
+DM_STATUS_KEY = "dm_poll"
+DM_REPLY_KEY = "dm_poll_reply"      # "1": دایرکت‌های خوانده‌شده جواب خودکار بگیرند؛ پیش‌فرض خاموش (فقط صندوق)
+DM_CONVS = 25
 
 
 def _ts(s: str) -> float:
@@ -89,17 +97,87 @@ async def poll_once(ig, c, now: float | None = None) -> dict:
     return {"queued": queued, "checked": checked}
 
 
+def dm_reply_enabled(c) -> bool:
+    return db.kv_get(c, DM_REPLY_KEY) == "1"
+
+
+def _dm_payload(x: dict, me: str) -> dict | None:
+    """پیام API گفتگوها ← همان شکل رویداد وبهوک (messaging)؛ پیام خود پیج به شکل echo."""
+    frm = x.get("from") or {}
+    mid, ts = x.get("id"), _ts(x.get("created_time", ""))
+    if not mid or not frm.get("id"):
+        return None
+    msg = {"mid": mid}
+    if x.get("message"):
+        msg["text"] = x["message"]
+    story = x.get("story") or {}
+    if (story.get("reply_to") or {}).get("id"):
+        msg["reply_to"] = {"story": {"id": str(story["reply_to"]["id"])}}
+    atts = []
+    if story.get("mention"):
+        atts.append({"type": "story_mention", "payload": {"url": (story["mention"] or {}).get("link", "")}})
+    for a in (x.get("attachments") or {}).get("data", []):
+        url = (a.get("image_data") or {}).get("url")
+        if url:
+            atts.append({"type": "image", "payload": {"url": url}})
+    if atts:
+        msg["attachments"] = atts
+    if frm.get("username") == me:
+        to = ((x.get("to") or {}).get("data") or [{}])[0]
+        if not to.get("id"):
+            return None
+        msg["is_echo"] = True
+        return {"sender": {"id": str(frm["id"])}, "recipient": {"id": str(to["id"])}, "timestamp": int(ts * 1000),
+                "message": msg, "_via": "poll"}
+    return {"sender": {"id": str(frm["id"]), "username": frm.get("username", "")}, "timestamp": int(ts * 1000),
+            "message": msg, "_via": "poll"}
+
+
+async def poll_dms_once(ig, c, now: float | None = None) -> dict:
+    """دایرکت‌های تازه. بار اول فقط نقطه‌ی شروع ثبت می‌شود؛ پیام‌های قبل از آن هرگز وارد صف نمی‌شوند."""
+    now = now or time.time()
+    state = json.loads(db.kv_get(c, DM_STATE_KEY) or "{}")
+    first = "since" not in state
+    since = state.setdefault("since", now)
+    seen = state.setdefault("conv", {})
+    convs = (await ig._get("me/conversations", platform="instagram", fields="id,updated_time", limit=DM_CONVS)).get("data", [])
+    me = await _own_username(ig, state)
+    queued = checked = 0
+    for cv in convs:
+        cid, upd = cv.get("id"), cv.get("updated_time", "")
+        if not cid or seen.get(cid) == upd:
+            continue
+        seen[cid] = upd
+        if first or _ts(upd) <= since or not me:
+            continue
+        checked += 1
+        rows = (await ig._get(f"{cid}/messages", limit=10,
+                              fields="id,created_time,from,to,message,story,attachments{id,image_data{url}}")).get("data", [])
+        for x in sorted(rows, key=lambda r: r.get("created_time", "")):
+            if _ts(x.get("created_time", "")) <= since:
+                continue
+            p = _dm_payload(x, me)
+            if p:
+                queued += db.add_event(c, f"m:{p['message']['mid']}", "message", p)
+    if len(seen) > 400:                                    # فقط گفتگوهای اخیر نگه داشته شوند
+        keep = {cv["id"] for cv in convs if cv.get("id")}
+        state["conv"] = {k: v for k, v in seen.items() if k in keep}
+    db.kv_set(c, DM_STATE_KEY, json.dumps(state, ensure_ascii=False))
+    return {"queued": queued, "checked": checked}
+
+
 async def poll_loop(ig, stop: asyncio.Event, interval: float = INTERVAL) -> None:
     while not stop.is_set():
         if active(ig):
-            try:
-                with db.connect() as c:
-                    r = await poll_once(ig, c)
-                    db.kv_set(c, STATUS_KEY, json.dumps({"at": time.time(), "ok": True, **r}, ensure_ascii=False))
-            except Exception as e:  # noqa: BLE001
-                with db.connect() as c:
-                    db.kv_set(c, STATUS_KEY, json.dumps({"at": time.time(), "ok": False, "error": str(e)[:300]},
-                                                        ensure_ascii=False))
+            for key, fn in ((STATUS_KEY, poll_once), (DM_STATUS_KEY, poll_dms_once)):
+                try:
+                    with db.connect() as c:
+                        r = await fn(ig, c)
+                        db.kv_set(c, key, json.dumps({"at": time.time(), "ok": True, **r}, ensure_ascii=False))
+                except Exception as e:  # noqa: BLE001
+                    with db.connect() as c:
+                        db.kv_set(c, key, json.dumps({"at": time.time(), "ok": False, "error": str(e)[:300]},
+                                                     ensure_ascii=False))
         try:
             await asyncio.wait_for(stop.wait(), timeout=interval)
         except asyncio.TimeoutError:
