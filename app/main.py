@@ -7,7 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse
 
-from . import api, api_ai, comment_poll, config, db, internal, monitor, site_sync, worker
+from . import api, api_ai, comment_poll, config, db, internal, monitor, scheduler, site_sync, worker
 from .instagram import Instagram, verify_signature
 
 
@@ -46,6 +46,7 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
             asyncio.create_task(worker.insights_loop(app.state.ig, stop)),
             asyncio.create_task(comment_poll.poll_loop(app.state.ig, stop)),
             asyncio.create_task(monitor.monitor_loop(app.state.ig, stop)),
+            asyncio.create_task(scheduler.loop(app.state.ig, stop)),
             asyncio.create_task(site_sync.sync_loop(stop)),
         ]
         yield
@@ -88,6 +89,14 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
             for event_id, kind, payload in extract_events(data):
                 added += db.add_event(c, event_id, kind, payload)
         return {"queued": added}
+
+    @app.get("/media/{name}", include_in_schema=False)
+    async def media_file(name: str):
+        """فایل انتشار زمان‌بندی‌شده؛ اینستاگرام از همین نشانی برمی‌دارد (نام تصادفی، بدون ورود)."""
+        p = scheduler.file_path(name)
+        if p is None:
+            raise HTTPException(404)
+        return FileResponse(p)
 
     app.include_router(api.router)
     app.include_router(api.protected)

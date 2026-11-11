@@ -54,6 +54,7 @@ TG_DATA_DIR = os.environ.get("TG_DATA_DIR", str(ROOT / "data" / "telegram"))
 PANEL_PASSWORD = os.environ.get("PANEL_PASSWORD", "")
 SESSION_TTL = int(os.environ.get("SESSION_TTL", str(30 * 86400)))
 COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "1") == "1"
+PUBLIC_URL = os.environ.get("PUBLIC_URL", "https://ig.stland.ir")   # نشانی عمومی پنل؛ اینستاگرام فایل انتشار را از آن برمی‌دارد
 WEB_DIST = os.environ.get("WEB_DIST", str(ROOT / "web" / "dist"))
 
 # اعلان پوش (با `python -m app.push --gen` بسازید)

@@ -497,6 +497,51 @@ def funnel_digest(body: DigestIn):
     return {"ok": True}
 
 
+# ---------- زمان‌بندی انتشار ----------
+
+class ScheduleIn(BaseModel):
+    kind: str
+    file: str
+    caption: str = ""
+    publish_at: float
+
+
+@protected.get("/schedule")
+def schedule_list():
+    from . import scheduler
+    with db.connect() as c:
+        return scheduler.listing(c)
+
+
+@protected.post("/schedule/upload")
+async def schedule_upload(request: Request, name: str):
+    """بدنه‌ی درخواست خود فایل است؛ تکه‌تکه روی دیسک نوشته می‌شود."""
+    from . import scheduler
+    try:
+        return await scheduler.save_upload(request.stream(), name)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+
+
+@protected.post("/schedule")
+def schedule_create(body: ScheduleIn):
+    from . import scheduler
+    try:
+        with db.connect() as c:
+            return {"ok": True, "id": scheduler.create(c, body.kind, body.file, body.caption, body.publish_at)}
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+
+
+@protected.post("/schedule/{pid}/cancel")
+def schedule_cancel(pid: int):
+    from . import scheduler
+    with db.connect() as c:
+        if not scheduler.cancel(c, pid):
+            raise HTTPException(409, "این مورد دیگر قابل لغو نیست")
+    return {"ok": True}
+
+
 # ---------- پست و استوری: یادداشت و محصول ----------
 
 @protected.get("/instagram/media-notes")
