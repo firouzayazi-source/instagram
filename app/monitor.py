@@ -130,7 +130,12 @@ def digest_due(c, now: float | None = None) -> bool:
     return due <= t < due + timedelta(hours=1) and db.kv_get(c, "digest_last") != t.strftime("%Y-%m-%d")
 
 
-async def monitor_loop(ig, stop: asyncio.Event, interval: float = 300) -> None:
+async def monitor_loop(ig, stop: asyncio.Event, interval: float = 300, grace: float = 180) -> None:
+    try:       # بعد از ری‌استارت، اول خوانش‌ها فرصت اجرا داشته باشند (هشدار بی‌خبری الکی نیاید)
+        await asyncio.wait_for(stop.wait(), timeout=grace)
+        return
+    except asyncio.TimeoutError:
+        pass
     while not stop.is_set():
         try:
             with db.connect() as c:

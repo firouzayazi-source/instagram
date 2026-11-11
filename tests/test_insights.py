@@ -295,3 +295,18 @@ def test_api_collect_media_in_background(tmp_path, monkeypatch):
                 break
             time.sleep(0.05)
         assert st["status"]["media"]["ok"] and st["status"]["media"]["count"] == 2 and "REEL" in st["kinds"]
+
+
+def test_composio_rpc_has_overall_timeout(monkeypatch):
+    """پاسخ جریانی که تمام نمی‌شود خوانش را برای همیشه نگه نمی‌دارد."""
+    monkeypatch.setattr(config, "COMPOSIO_API_KEY", "ck_test", raising=False)
+    monkeypatch.setattr(insights, "RPC_TIMEOUT", 0.05)
+
+    async def hang(req):
+        await asyncio.sleep(5)
+        return httpx.Response(200, json={})
+    src = insights.ComposioConnectSource(transport=httpx.MockTransport(hang))
+    src.session = "s1"
+    with pytest.raises(RuntimeError, match="جواب نداد"):
+        asyncio.run(src._rpc("tools/call", {}))
+    assert src.session == ""

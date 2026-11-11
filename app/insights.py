@@ -26,6 +26,7 @@ REEL_METRICS = ["views", "reach", "saved", "shares", "likes", "comments", "total
                 "ig_reels_avg_watch_time", "reels_skip_rate"]
 POST_METRICS = ["views", "reach", "saved", "shares", "likes", "comments", "total_interactions"]
 MEDIA_PARALLEL = 4
+RPC_TIMEOUT = 60
 NAV_KEYS = ("tap_forward", "tap_back", "tap_exit", "swipe_forward")
 
 SCHEMA = """
@@ -199,7 +200,11 @@ class ComposioConnectSource(ComposioSource):
         if not notify:
             self._id += 1
             payload["id"] = self._id
-        r = await self.http.post(self.URL, json=payload, headers=self._headers())
+        try:   # سقف کل؛ پاسخ جریانی (SSE) با اتصال باز ممکن است هیچ‌وقت تمام نشود
+            r = await asyncio.wait_for(self.http.post(self.URL, json=payload, headers=self._headers()), RPC_TIMEOUT)
+        except asyncio.TimeoutError:
+            self.session = ""        # نشست بعدی از نو
+            raise RuntimeError(f"Composio در {RPC_TIMEOUT} ثانیه جواب نداد")
         if r.headers.get("mcp-session-id"):
             self.session = r.headers["mcp-session-id"]
         if r.status_code >= 400:

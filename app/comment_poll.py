@@ -25,6 +25,7 @@ DM_STATE_KEY = "dm_poll_state"
 DM_STATUS_KEY = "dm_poll"
 DM_REPLY_KEY = "dm_poll_reply"      # "1": دایرکت‌های خوانده‌شده جواب خودکار بگیرند؛ پیش‌فرض خاموش (فقط صندوق)
 DM_CONVS = 25
+POLL_TIMEOUT = 240
 
 
 def _ts(s: str) -> float:
@@ -95,6 +96,7 @@ async def poll_once(ig, c, now: float | None = None) -> dict:
                        "parent_id": x.get("parent_id"), "_via": "poll"}
             queued += db.add_event(c, f"c:{x['id']}", "comment", payload)
         st.update(count=n, since=newest)
+        c.commit()
     db.kv_set(c, STATE_KEY, json.dumps(state, ensure_ascii=False))
     return {"queued": queued, "checked": checked}
 
@@ -161,6 +163,7 @@ async def poll_dms_once(ig, c, now: float | None = None) -> dict:
             p = _dm_payload(x, me)
             if p:
                 queued += db.add_event(c, f"m:{p['message']['mid']}", "message", p)
+        c.commit()
     if len(seen) > 400:                                    # فقط گفتگوهای اخیر نگه داشته شوند
         keep = {cv["id"] for cv in convs if cv.get("id")}
         state["conv"] = {k: v for k, v in seen.items() if k in keep}
@@ -174,7 +177,7 @@ async def poll_loop(ig, stop: asyncio.Event, interval: float = INTERVAL) -> None
             for key, fn in ((STATUS_KEY, poll_once), (DM_STATUS_KEY, poll_dms_once)):
                 try:
                     with db.connect() as c:
-                        r = await fn(ig, c)
+                        r = await asyncio.wait_for(fn(ig, c), POLL_TIMEOUT)   # یک دور گیرکرده کل خوانش را نگه ندارد
                         db.kv_set(c, key, json.dumps({"at": time.time(), "ok": True, **r}, ensure_ascii=False))
                 except Exception as e:  # noqa: BLE001
                     with db.connect() as c:
