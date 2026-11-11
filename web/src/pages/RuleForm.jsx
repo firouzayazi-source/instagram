@@ -1,11 +1,136 @@
 import React, { useEffect, useState } from 'react'
 import { api } from '../api.js'
+import Icon from '../icons.jsx'
 
 const EMPTY = {
   name: '', enabled: true, priority: 100, channels: ['comment'], post_scope: 'all',
-  triggers: [{ match: 'any', value: '' }],
-  actions: { public_replies: [''], private_replies: [''], dm_replies: [''] },
-  advanced: { require_follow: false, follow_prompt: '', once_per_user: false, cooldown_minutes: 0, active_hours: null, followup: null, pause_ai_minutes: 0, handoff: false },
+  triggers: [{ match: 'contains', value: '' }],
+  actions: { public_replies: [], private_replies: [''], dm_replies: [''], quick_replies: [] },
+  advanced: { require_follow: false, follow_prompt: '', once_per_user: false, cooldown_minutes: 0, active_hours: null, followup: null,
+    pause_ai_minutes: 0, handoff: false, max_uses: 0, over_limit_reply: '' },
+}
+const WHERE = [
+  ['comment', 'کامنت پست و ریلز', 'کامنت زیر پست‌ها و ریلزها', 'comment'],
+  ['dm', 'دایرکت', 'پیام‌های خصوصی کاربر', 'dm'],
+  ['story_reply', 'جواب به استوری', 'وقتی کسی روی استوری جواب می‌دهد', 'story'],
+  ['mention', 'منشن در استوری', 'وقتی کسی پیج را در استوری‌اش منشن می‌کند', 'at'],
+]
+const MATCH = [['contains', 'شامل باشد'], ['exact', 'برابر دقیق'], ['starts_with', 'با این شروع شود'], ['any', 'هر مقداری'], ['regex', 'الگو (پیشرفته)']]
+const faDate = (ts) => new Date(ts).toLocaleString('fa-IR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tehran' })
+
+function Sec({ icon, title, desc, badge, children, open = true, onToggle }) {
+  return (
+    <section className="sec">
+      <div className="sec-h" onClick={onToggle} style={onToggle ? { cursor: 'pointer' } : undefined}>
+        <span className="ico"><Icon n={icon} /></span>
+        <div className="grow"><h2>{title} {badge !== undefined && <span className="tag">{badge}</span>}</h2>{desc && <p>{desc}</p>}</div>
+        {onToggle && <span className="iconbtn" style={{ transform: open ? 'rotate(90deg)' : 'rotate(-90deg)' }}><Icon n="chevL" /></span>}
+      </div>
+      {open && <div className="sec-b top">{children}</div>}
+    </section>
+  )
+}
+
+function Opt({ on, icon, title, desc, onClick }) {
+  return (
+    <button type="button" className={`opt ${on ? 'on' : ''}`} onClick={onClick} aria-pressed={on}>
+      <span className="ico plain"><Icon n={icon} /></span>
+      <span className="grow"><b>{title}</b><small>{desc}</small></span>
+      <span className="tick">{on && <Icon n="check" />}</span>
+    </button>
+  )
+}
+
+function Adv({ on, icon, title, desc, onToggle, children, disabled }) {
+  return (
+    <div className={`adv ${on ? 'on' : ''}`} style={disabled ? { opacity: 0.5 } : undefined}>
+      <div className="adv-h" onClick={disabled ? undefined : onToggle} role="checkbox" aria-checked={on}>
+        <span className="ico plain"><Icon n={icon} /></span>
+        <div className="grow"><b><span className="box">{on && <Icon n="check" />}</span>{title}</b><p>{desc}</p></div>
+      </div>
+      {on && children && <div className="adv-b">{children}</div>}
+    </div>
+  )
+}
+
+// پیام‌های شماره‌دار با جابه‌جایی؛ چند پیام یعنی هر بار یکی به نوبت (تا تکراری نباشد)
+function Messages({ list, onChange, saved, placeholder, addLabel = 'پیام جدید' }) {
+  const [pick, setPick] = useState(false)
+  const move = (i, d) => { const l = [...list]; [l[i], l[i + d]] = [l[i + d], l[i]]; onChange(l) }
+  return (
+    <>
+      {list.map((t, i) => (
+        <div className="msg-row" key={i}>
+          <span className="num">{(i + 1).toLocaleString('fa-IR')}</span>
+          <textarea value={t} placeholder={placeholder} onChange={(e) => onChange(list.map((x, j) => (j === i ? e.target.value : x)))} />
+          <span className="tools">
+            {list.length > 1 && <button type="button" className="iconbtn" aria-label="بالا" disabled={i === 0} onClick={() => move(i, -1)}><Icon n="up" /></button>}
+            {list.length > 1 && <button type="button" className="iconbtn" aria-label="پایین" disabled={i === list.length - 1} onClick={() => move(i, 1)}><Icon n="down" /></button>}
+            <button type="button" className="iconbtn" aria-label="حذف" onClick={() => onChange(list.filter((_, j) => j !== i))}><Icon n="trash" /></button>
+          </span>
+        </div>
+      ))}
+      <button type="button" className="btn primary block big" onClick={() => onChange([...list, ''])}><Icon n="plus" /> {addLabel}</button>
+      {saved.length > 0 && <button type="button" className="btn block" onClick={() => setPick(!pick)}><Icon n="msg" /> انتخاب از پیام‌های قبلی</button>}
+      {pick && (
+        <div className="list">
+          {saved.map((s) => <button type="button" key={s} className="item" style={{ textAlign: 'right' }} onClick={() => { onChange([...list.filter((x) => x.trim()), s]); setPick(false) }}>{s.slice(0, 140)}</button>)}
+        </div>
+      )}
+    </>
+  )
+}
+
+function MediaGrid({ items, selected, onToggle }) {
+  const [n, setN] = useState(6)
+  if (!items.length) return <p className="muted">فهرست پست‌ها هنوز در دسترس نیست.</p>
+  return (
+    <>
+      <div className="media-grid">
+        {items.slice(0, n).map((m) => {
+          const on = selected.includes(m.id)
+          return (
+            <button type="button" key={m.id} className={`media-card ${on ? 'on' : ''}`} onClick={() => onToggle(m.id)}>
+              {on && <span className="sel">انتخاب‌شده</span>}
+              {(m.thumbnail_url || m.media_url) ? <img src={m.thumbnail_url || m.media_url} alt="" loading="lazy" /> : <img alt="" />}
+              <div className="cap">{(m.caption || m.product || m.note || '—').slice(0, 90)}</div>
+              {m.timestamp && <div className="dt">{faDate(m.timestamp)}</div>}
+            </button>
+          )
+        })}
+      </div>
+      {items.length > n && <button type="button" className="btn block" onClick={() => setN(n + 6)}>مشاهده‌ی بیشتر</button>}
+    </>
+  )
+}
+
+function Preview({ r, onClose }) {
+  const first = (k) => (r.actions[k] || []).find((t) => t && t.trim())
+  const ex = r.triggers.find((t) => t.value)?.value || 'سلام'
+  const c = r.channels.includes('comment')
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="row-between"><h2 style={{ margin: 0 }}>پیش‌نمایش</h2><button type="button" className="iconbtn" onClick={onClose} aria-label="بستن">✕</button></div>
+        {c && <>
+          <div className="bubble-label">زیر پست</div>
+          <div className="bubble them">{ex}</div>
+          {first('public_replies') && <div className="bubble us">{first('public_replies')}</div>}
+          <div className="bubble-label">در دایرکت کامنت‌گذار</div>
+          <div className="bubble us">{first('private_replies') || '— بدون پیام —'}</div>
+        </>}
+        {!c && <>
+          <div className="bubble-label">دایرکت</div>
+          <div className="bubble them">{ex}</div>
+          <div className="bubble us">{first('dm_replies') || '— بدون پیام —'}</div>
+          {(r.actions.quick_replies || []).filter(Boolean).length > 0 && (
+            <div className="actions" style={{ marginTop: 6 }}>{r.actions.quick_replies.filter(Boolean).map((q) => <span key={q} className="chip">{q}</span>)}</div>
+          )}
+        </>}
+        {r.advanced.followup?.text && <><div className="bubble-label">پیگیری بعد از {Math.round((r.advanced.followup.after_seconds || 0) / 60).toLocaleString('fa-IR')} دقیقه</div><div className="bubble us">{r.advanced.followup.text}</div></>}
+      </div>
+    </div>
+  )
 }
 
 export default function RuleForm({ id }) {
@@ -14,43 +139,52 @@ export default function RuleForm({ id }) {
   const [saved, setSaved] = useState([])
   const [media, setMedia] = useState([])
   const [stories, setStories] = useState([])
-  const [copyTo, setCopyTo] = useState('')
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
+  const [advOpen, setAdvOpen] = useState(false)
+  const [preview, setPreview] = useState(false)
 
   useEffect(() => {
-    // پیش‌پرکردن از «ایده‌ی محتوا» یا «جواب خودکار برای این پست»
     const pre = isNew && sessionStorage.getItem('rule_prefill')
     if (pre) {
       sessionStorage.removeItem('rule_prefill')
-      try { const p = JSON.parse(pre); setR({ ...EMPTY, ...p, actions: { ...EMPTY.actions, ...(p.actions || {}) } }) } catch { /* پیش‌پرکردن خراب: فرم خالی */ }
+      try { const p = JSON.parse(pre); setR({ ...EMPTY, ...p, actions: { ...EMPTY.actions, ...(p.actions || {}) }, advanced: { ...EMPTY.advanced, ...(p.advanced || {}) } }) } catch { /* فرم خالی */ }
     }
     api.get('/api/saved-replies').then(setSaved).catch(() => {})
     api.get('/api/media').then(setMedia).catch(() => {})
     api.get('/api/instagram/media-notes').then((d) => setStories(d.stories || [])).catch(() => {})
     if (!isNew) api.get('/api/rules').then((rs) => {
       const x = rs.find((y) => String(y.id) === id)
-      if (x) setR({
-        ...x,
-        actions: { public_replies: x.actions.public_replies || [''], private_replies: x.actions.private_replies || [''], dm_replies: x.actions.dm_replies || [''] },
-        advanced: { ...EMPTY.advanced, ...x.advanced, cooldown_minutes: Math.round((x.advanced.cooldown_seconds || 0) / 60) },
-      })
+      if (x) {
+        setR({
+          ...x,
+          actions: { public_replies: x.actions.public_replies || [], private_replies: x.actions.private_replies || [], dm_replies: x.actions.dm_replies || [], quick_replies: x.actions.quick_replies || [] },
+          advanced: { ...EMPTY.advanced, ...x.advanced, cooldown_minutes: Math.round((x.advanced.cooldown_seconds || 0) / 60) },
+        })
+        setAdvOpen(true)
+      }
     })
   }, [id])
 
   const set = (patch) => setR((x) => ({ ...x, ...patch }))
-  const setAdv = (patch) => set({ advanced: { ...r.advanced, ...patch } })
-  const setReplies = (k, list) => set({ actions: { ...r.actions, [k]: list } })
-  // جواب استوری و منشن هم در دایرکت فرستاده می‌شود
-  const hasC = r.channels.includes('comment'), hasD = ['dm', 'story_reply', 'mention'].some((c) => r.channels.includes(c))
-
-  function toggleChannel(c) {
-    set({ channels: r.channels.includes(c) ? r.channels.filter((x) => x !== c) : [...r.channels, c] })
-  }
+  const setAdv = (patch) => setR((x) => ({ ...x, advanced: { ...x.advanced, ...patch } }))
+  const setAct = (k, list) => setR((x) => ({ ...x, actions: { ...x.actions, [k]: list } }))
+  const hasC = r.channels.includes('comment')
+  const hasD = ['dm', 'story_reply', 'mention'].some((c) => r.channels.includes(c))
+  const scope = r.post_scope === 'all' ? null : r.post_scope
+  const isNext = scope && scope.includes('next')
+  const toggleChannel = (c) => set({ channels: r.channels.includes(c) ? r.channels.filter((x) => x !== c) : [...r.channels, c] })
+  const toggleScopeId = (mid) => set({ post_scope: scope.includes(mid) ? scope.filter((x) => x !== mid) : [...scope.filter((x) => x !== 'next'), mid] })
+  const a = r.advanced
+  const advCount = [a.require_follow, scope && hasC, a.followup?.text !== undefined && a.followup !== null, hasC && r.actions.public_replies.length > 0,
+    a.max_uses > 0, a.once_per_user, Number(a.cooldown_minutes) > 0, !!a.active_hours, a.handoff, Number(a.pause_ai_minutes) > 0].filter(Boolean).length
 
   async function save(e) {
-    e.preventDefault(); setBusy(true); setErr('')
-    const clean = (l) => l.map((t) => t.trim()).filter(Boolean)
+    e.preventDefault(); setErr('')
+    if (!r.name.trim()) return setErr('یک نام برای دستور بنویسید')
+    if (!r.channels.length) return setErr('محل دریافت پیام را انتخاب کنید')
+    setBusy(true)
+    const clean = (l) => (l || []).map((t) => t.trim()).filter(Boolean)
     const adv = { ...r.advanced }
     adv.cooldown_seconds = (Number(adv.cooldown_minutes) || 0) * 60
     delete adv.cooldown_minutes
@@ -60,236 +194,164 @@ export default function RuleForm({ id }) {
     adv.pause_ai_minutes = Number(adv.pause_ai_minutes) || 0
     if (!adv.pause_ai_minutes) delete adv.pause_ai_minutes
     if (!adv.handoff) delete adv.handoff
+    adv.max_uses = parseInt(adv.max_uses, 10) || 0
+    if (!adv.max_uses) { delete adv.max_uses; delete adv.over_limit_reply }
     const body = {
-      ...r, advanced: adv,
+      ...r, name: r.name.trim(), advanced: adv,
+      post_scope: scope && scope.length ? scope : 'all',
       triggers: r.triggers.filter((t) => t.match === 'any' || t.value.trim()),
-      actions: { public_replies: hasC ? clean(r.actions.public_replies) : [], private_replies: hasC ? clean(r.actions.private_replies) : [], dm_replies: hasD ? clean(r.actions.dm_replies) : [],
-                 quick_replies: hasD ? clean(r.actions.quick_replies || []).map((t) => t.slice(0, 20)).slice(0, 13) : [] },
+      actions: { public_replies: hasC ? clean(r.actions.public_replies) : [], private_replies: hasC ? clean(r.actions.private_replies) : [],
+        dm_replies: hasD ? clean(r.actions.dm_replies) : [], quick_replies: hasD ? clean(r.actions.quick_replies).map((t) => t.slice(0, 20)).slice(0, 13) : [] },
     }
+    if (!body.triggers.length) body.triggers = [{ match: 'any', value: '' }]
     delete body.id; delete body.use_count
     try {
       if (isNew) await api.post('/api/rules', body); else await api.put(`/api/rules/${id}`, body)
-      location.hash = '#/channels/instagram/rules'
+      location.hash = '#/rules'
     } catch (ex) { setErr(ex.message) }
     finally { setBusy(false) }
   }
 
-  async function copy() {
-    if (!copyTo) return
-    try {
-      const { id: nid } = await api.post(`/api/rules/${id}/copy`, { channels: [copyTo] })
-      location.hash = `#/rules/${nid}`
-    } catch (ex) { setErr(ex.message) }
-  }
-
   async function remove() {
     if (!confirm('این دستور حذف شود؟')) return
-    await api.del(`/api/rules/${id}`); location.hash = '#/channels/instagram/rules'
+    await api.del(`/api/rules/${id}`); location.hash = '#/rules'
   }
 
   return (
     <form onSubmit={save}>
-      <header className="topbar"><h1>{isNew ? 'دستور جدید' : 'ویرایش دستور'}</h1><a href="#/channels/instagram/rules" className="btn sm">انصراف</a></header>
+      <header className="topbar">
+        <div className="title"><h1>پاسخ هوشمند</h1><span className="sub">{isNew ? 'ساخت پاسخ هوشمند' : 'ویرایش پاسخ هوشمند'}</span></div>
+        <a href="#/rules" className="iconbtn" aria-label="بازگشت"><Icon n="back" /></a>
+      </header>
 
-      <Flow r={r} />
-
-      <section className="card">
-        <div className="field"><label htmlFor="name">نام دستور</label><input id="name" type="text" value={r.name} onChange={(e) => set({ name: e.target.value })} required /></div>
-        <div className="field">
-          <label>محل دریافت پیام</label>
-          <label className="check"><input type="checkbox" checked={hasC} onChange={() => toggleChannel('comment')} /> کامنت پست</label>
-          <label className="check"><input type="checkbox" checked={r.channels.includes('dm')} onChange={() => toggleChannel('dm')} /> دایرکت</label>
-          <label className="check"><input type="checkbox" checked={r.channels.includes('story_reply')} onChange={() => toggleChannel('story_reply')} /> جواب به استوری (بدون تیک «دایرکت»، فقط پیام‌هایی که جواب استوری‌اند)</label>
-          <label className="check"><input type="checkbox" checked={r.channels.includes('mention')} onChange={() => toggleChannel('mention')} /> منشن در استوری (متن ندارد؛ عبارت شروع را «هر مقداری» بگذارید)</label>
+      <Sec icon="target" title="شروع پاسخ هوشمند" desc="پاسخ هوشمند با یکی از شرط‌های زیر شروع می‌شود.">
+        <div className="field" style={{ margin: 0 }}><label htmlFor="name">نام دستور</label>
+          <input id="name" type="text" value={r.name} placeholder="مثلاً: قیمت ریلز اپ‌های ایرانی" onChange={(e) => set({ name: e.target.value })} /></div>
+        <div className="sub-card">
+          <b>محل دریافت پیام</b>
+          {WHERE.map(([k, t, d, ic]) => <Opt key={k} on={r.channels.includes(k)} icon={ic} title={t} desc={d} onClick={() => toggleChannel(k)} />)}
         </div>
-      </section>
+        <div className="sub-card">
+          <b>عبارت شروع پاسخ</b>
+          <small className="muted">متنی که با دریافت آن پاسخ هوشمند شروع می‌شود. اگر یکی از شرط‌ها درست باشد، اجرا می‌شود.</small>
+          {r.triggers.map((t, i) => (
+            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {i > 0 && <div className="or">یا</div>}
+              <select value={t.match} onChange={(e) => set({ triggers: r.triggers.map((x, j) => (j === i ? { ...x, match: e.target.value } : x)) })}>
+                {MATCH.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+              </select>
+              {t.match === 'any'
+                ? <div className="note info">هر پیامی این پاسخ هوشمند را فعال می‌کند.</div>
+                : <div style={{ display: 'flex', gap: 8 }}>
+                    <input type="text" value={t.value} placeholder="مثلاً قیمت" onChange={(e) => set({ triggers: r.triggers.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)) })} />
+                    {r.triggers.length > 1 && <button type="button" className="iconbtn" aria-label="حذف شرط" onClick={() => set({ triggers: r.triggers.filter((_, j) => j !== i) })}><Icon n="trash" /></button>}
+                  </div>}
+            </div>
+          ))}
+          <button type="button" className="btn block" onClick={() => set({ triggers: [...r.triggers, { match: 'contains', value: '' }] })}><Icon n="plus" /> افزودن شرط بیشتر</button>
+        </div>
+      </Sec>
 
       {hasC && (
-        <section className="card">
-          <h2>۱. کدام پست؟</h2>
-          <label className="check"><input type="radio" checked={r.post_scope === 'all'} onChange={() => set({ post_scope: 'all' })} /> همه‌ی پست‌ها</label>
-          <label className="check"><input type="radio" checked={r.post_scope !== 'all'} onChange={() => set({ post_scope: [] })} /> فقط پست‌های انتخاب‌شده</label>
-          {r.post_scope !== 'all' && (
-            <div className="media-pick">
-              {!media.length && <span className="muted">فهرست پست‌ها در دسترس نیست</span>}
-              {media.map((m) => (
-                <label key={m.id}>
-                  <input type="checkbox" checked={r.post_scope.includes(m.id)} onChange={(e) => set({ post_scope: e.target.checked ? [...r.post_scope, m.id] : r.post_scope.filter((x) => x !== m.id) })} />
-                  {(m.thumbnail_url || m.media_url) && <img src={m.thumbnail_url || m.media_url} alt="" />}
-                  <span>{(m.caption || m.id).slice(0, 60)}</span>
-                </label>
-              ))}
-            </div>
-          )}
-      </section>
-    )}
-
-      <section className="card">
-        <h2>{hasC ? '۲. چه کامنتی؟ (عبارت شروع پاسخ)' : 'عبارت شروع پاسخ'}</h2>
-        <p className="hint muted">اگر یکی از شرط‌ها درست باشد، دستور اجرا می‌شود. «هر مقداری» یعنی هر متنی.</p>
-        {r.triggers.map((t, i) => (
-          <React.Fragment key={i}>
-            {i > 0 && <div className="or">یا</div>}
-            <div className="trigger">
-              <select value={t.match} onChange={(e) => set({ triggers: r.triggers.map((x, j) => j === i ? { ...x, match: e.target.value } : x) })}>
-                <option value="any">هر مقداری</option><option value="exact">برابر دقیق</option><option value="contains">شامل باشد</option>
-                <option value="starts_with">با این شروع شود</option><option value="regex">الگو (regex)</option>
-              </select>
-              <input type="text" value={t.value} disabled={t.match === 'any'} placeholder="مثلاً قیمت"
-                onChange={(e) => set({ triggers: r.triggers.map((x, j) => j === i ? { ...x, value: e.target.value } : x) })} />
-              <button type="button" className="btn sm" disabled={r.triggers.length === 1} onClick={() => set({ triggers: r.triggers.filter((_, j) => j !== i) })}>✕</button>
-            </div>
-          </React.Fragment>
-        ))}
-        <button type="button" className="btn sm" onClick={() => set({ triggers: [...r.triggers, { match: 'exact', value: '' }] })}>+ افزودن شرط بیشتر</button>
-      </section>
-
-      <section className="card">
-        <h2>{hasC ? '۳. چه پیامی برود؟' : 'پیام‌های پاسخ'}</h2>
-        <p className="hint muted">اگر چند متن بنویسید، به نوبت استفاده می‌شوند تا پاسخ‌ها تکراری نباشند.</p>
-        {hasC && <ReplyList label="دایرکت خصوصی به کامنت‌گذار" list={r.actions.private_replies} saved={saved} onChange={(l) => setReplies('private_replies', l)} />}
-        {hasC && <ReplyList label="پاسخ عمومی زیر کامنت" list={r.actions.public_replies} saved={saved} onChange={(l) => setReplies('public_replies', l)} />}
-        {hasD && <ReplyList label="پاسخ دایرکت" list={r.actions.dm_replies} saved={saved} onChange={(l) => setReplies('dm_replies', l)} />}
-        {hasD && (
-          <div className="field">
-            <label>دکمه‌های پاسخ سریع زیر پاسخ دایرکت (اختیاری، هر خط یکی، تا ۱۳ دکمه و هر کدام ۲۰ نویسه)</label>
-            <textarea rows={3} value={(r.actions.quick_replies || []).join('\n')} placeholder={'📄 مدارک لازم\n🙋 صحبت با همکار'} onChange={(e) => setReplies('quick_replies', e.target.value.split('\n'))} />
-          </div>
-        )}
-      </section>
-
-      <section className="card">
-        <h2>بعد از اجرای دستور</h2>
-        <label className="check"><input type="checkbox" checked={!!r.advanced.handoff} onChange={(e) => setAdv({ handoff: e.target.checked })} /> 🙋 به همکار بسپار (در «ارجاع‌ها»، پوش و گروه تلگرام)</label>
-        {hasD && (
-          <div className="field">
-            <label>⏸ توقف هوش مصنوعی برای همین مشتری (دقیقه، ۰ = خاموش)</label>
-            <input type="number" min="0" max="10080" value={r.advanced.pause_ai_minutes || 0} onChange={(e) => setAdv({ pause_ai_minutes: e.target.value })} />
-            <p className="hint muted">مثل وردست: وقتی مشتری مثلاً «حضوری» یا «همکار» نوشت، ربات تا این مدت در دایرکت او ساکت می‌ماند تا همکار جواب بدهد. از گفتگو یا پرونده‌ی مشتری می‌شود زودتر به ربات برگرداند.</p>
-          </div>
-        )}
-        {!hasC && !hasD && <p className="muted">اول محل دریافت پیام را انتخاب کنید.</p>}
-        <p className="hint muted">با این گزینه‌ها دستور بدون پیام پاسخ هم ذخیره می‌شود.</p>
-      </section>
-
-      <section className="card">
-        <details>
-          <summary>تنظیمات پیشرفته (اختیاری)</summary>
-          <div style={{ marginTop: 10 }}>
-            <label className="check"><input type="checkbox" checked={!!r.advanced.require_follow} onChange={(e) => setAdv({ require_follow: e.target.checked })} /> شرط دنبال کردن صفحه</label>
-            {r.advanced.require_follow && <div className="field"><input type="text" value={r.advanced.follow_prompt || ''} placeholder="پیام راهنما برای کسی که فالو نکرده" onChange={(e) => setAdv({ follow_prompt: e.target.value })} /></div>}
-            <label className="check"><input type="checkbox" checked={!!r.advanced.once_per_user} onChange={(e) => setAdv({ once_per_user: e.target.checked })} /> هر کاربر فقط یک بار پاسخ بگیرد</label>
-            <div className="field"><label>فاصله‌ی حداقل بین دو پاسخ به یک نفر (دقیقه)</label><input type="number" min="0" value={r.advanced.cooldown_minutes || 0} onChange={(e) => setAdv({ cooldown_minutes: e.target.value })} /></div>
-            <div className="field">
-              <label>ساعت فعال (به وقت سرور)</label>
-              <div className="actions">
-                <input type="number" min="0" max="23" style={{ width: 90 }} placeholder="از" value={r.advanced.active_hours?.[0] ?? ''} onChange={(e) => setAdv({ active_hours: e.target.value === '' ? null : [Number(e.target.value), r.advanced.active_hours?.[1] ?? 23] })} />
-                <input type="number" min="0" max="24" style={{ width: 90 }} placeholder="تا" value={r.advanced.active_hours?.[1] ?? ''} onChange={(e) => setAdv({ active_hours: [r.advanced.active_hours?.[0] ?? 0, Number(e.target.value)] })} />
-              </div>
-            </div>
-            <div className="field">
-              <label>پیگیری خودکار</label>
-              <div className="actions">
-                <input type="number" min="0" style={{ width: 120 }} placeholder="بعد از (دقیقه)" value={r.advanced.followup ? Math.round(r.advanced.followup.after_seconds / 60) : ''} onChange={(e) => setAdv({ followup: { ...(r.advanced.followup || { text: '' }), after_seconds: Number(e.target.value) * 60 } })} />
-              </div>
-              <textarea placeholder="متن پیگیری (دایرکت)" value={r.advanced.followup?.text || ''} onChange={(e) => setAdv({ followup: { ...(r.advanced.followup || { after_seconds: 3600 }), text: e.target.value } })} />
-              <p className="hint muted">فقط اگر کاربر در دایرکت پیام داده باشد و پنجره‌ی ۲۴ ساعت باز باشد می‌رسد.</p>
-            </div>
-            {r.channels.includes('story_reply') && (
-              <div className="field">
-                <label>محدود به استوری (فقط جواب‌های همین استوری‌ها)</label>
-                <label className="check"><input type="radio" checked={r.post_scope === 'all'} onChange={() => set({ post_scope: 'all' })} /> همه‌ی استوری‌ها</label>
-                <label className="check"><input type="radio" checked={r.post_scope !== 'all'} onChange={() => set({ post_scope: [] })} /> فقط استوری‌های انتخاب‌شده</label>
-                {r.post_scope !== 'all' && (
-                  <div className="media-pick">
-                    {!stories.length && <span className="muted">استوری فعالی نیست (فقط استوری‌های ۲۴ ساعت اخیر دیده می‌شوند)</span>}
-                    {stories.map((m) => (
-                      <label key={m.id}>
-                        <input type="checkbox" checked={r.post_scope.includes(m.id)} onChange={(e) => set({ post_scope: e.target.checked ? [...r.post_scope, m.id] : r.post_scope.filter((x) => x !== m.id) })} />
-                        {(m.thumbnail_url || m.media_url) && <img src={m.thumbnail_url || m.media_url} alt="" />}
-                        <span>{m.product || m.note || new Date(m.timestamp).toLocaleString('fa-IR')}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            <div className="field"><label>اولویت (عدد کوچک‌تر زودتر بررسی می‌شود)</label><input type="number" value={r.priority} onChange={(e) => set({ priority: Number(e.target.value) })} /></div>
-          </div>
-        </details>
-      </section>
-
-      {err && <p className="err">{err}</p>}
-      <div className="actions">
-        <button className="btn primary" disabled={busy}>{isNew ? 'ایجاد و فعال‌سازی' : 'ذخیره'}</button>
-        {!isNew && <button type="button" className="btn danger" onClick={remove}>حذف</button>}
-      </div>
-      {!isNew && (
-        <section className="card" style={{ marginTop: 12 }}>
-          <h2>کپی برای کانال دیگر</h2>
-          <p className="hint muted">همین شرط‌ها و پاسخ‌ها برای جای دیگر؛ کپی خاموش ساخته می‌شود تا بازبینی‌اش کنید.</p>
-          <div className="actions">
-            <select value={copyTo} onChange={(e) => setCopyTo(e.target.value)} style={{ width: 'auto' }}>
-              <option value="">کجا؟</option><option value="comment">کامنت پست</option><option value="dm">دایرکت</option>
-              <option value="story_reply">جواب به استوری</option><option value="mention">منشن در استوری</option>
-            </select>
-            <button type="button" className="btn sm" disabled={!copyTo} onClick={copy}>کپی کن</button>
-          </div>
-        </section>
+        <Sec icon="msg" title="پیام دایرکت به کامنت‌گذار" badge={`${r.actions.private_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام`}
+          desc="به هر کامنت یک دایرکت می‌رود (اینستاگرام فقط یک بار و تا ۷ روز اجازه می‌دهد). چند پیام یعنی هر بار یکی به نوبت.">
+          {!r.actions.private_replies.some((t) => t.trim()) && <div className="note warn">حداقل یک پیام برای این دستور لازم است.</div>}
+          <Messages list={r.actions.private_replies} onChange={(l) => setAct('private_replies', l)} saved={saved} placeholder="مثلاً: سلام! قیمت لحظه‌ای و اقساط اینجاست: https://t.me/…" />
+        </Sec>
       )}
-    </form>
-  )
-}
+      {hasD && (
+        <Sec icon="dm" title="پیام‌های پاسخ در دایرکت" badge={`${r.actions.dm_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام`}
+          desc="جواب دایرکت، جواب استوری یا منشن. چند پیام یعنی هر بار یکی به نوبت.">
+          <Messages list={r.actions.dm_replies} onChange={(l) => setAct('dm_replies', l)} saved={saved} placeholder="متن پاسخ" />
+          <div className="sub-card">
+            <b>دکمه‌های پاسخ سریع (اختیاری)</b>
+            <small className="muted">زیر پیام نشان داده می‌شوند؛ هر خط یک دکمه، تا ۱۳ دکمه و هر کدام ۲۰ نویسه.</small>
+            <textarea rows={3} value={(r.actions.quick_replies || []).join('\n')} placeholder={'📄 شرایط اقساط\n🙋 صحبت با همکار'} onChange={(e) => setAct('quick_replies', e.target.value.split('\n'))} />
+          </div>
+        </Sec>
+      )}
 
-function ReplyList({ label, list, saved, onChange }) {
-  const [pick, setPick] = useState('')
-  return (
-    <div className="field">
-      <label>{label}</label>
-      {list.map((t, i) => (
-        <div className="replyline" key={i}>
-          <textarea value={t} onChange={(e) => onChange(list.map((x, j) => j === i ? e.target.value : x))} />
-          <button type="button" className="btn sm" disabled={list.length === 1} onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
-        </div>
-      ))}
-      <div className="actions">
-        <button type="button" className="btn sm" onClick={() => onChange([...list, ''])}>+ پیام جدید</button>
-        {saved.length > 0 && (
-          <select value={pick} onChange={(e) => { if (e.target.value) onChange([...list.filter(Boolean), e.target.value]); setPick('') }} style={{ width: 'auto' }}>
-            <option value="">انتخاب از پیام‌های قبلی…</option>
-            {saved.map((s) => <option key={s} value={s}>{s.slice(0, 50)}</option>)}
-          </select>
+      <Sec icon="gear" title="تنظیمات پیشرفته" desc="شرط فالو، محدود به پست، کامنت بعد از دایرکت، پیگیری و…" badge={advCount ? `${advCount.toLocaleString('fa-IR')} فعال` : 'اختیاری'}
+        open={advOpen} onToggle={() => setAdvOpen(!advOpen)}>
+        <Adv on={!!a.require_follow} icon="insta" title="شرط دنبال کردن صفحه" desc="اگر کاربر صفحه را دنبال نکرده باشد، اول پیام راهنما دریافت می‌کند."
+          onToggle={() => setAdv({ require_follow: !a.require_follow })}>
+          <input type="text" value={a.follow_prompt || ''} placeholder="اول پیج رو فالو کن، بعد دوباره کامنت بذار 🙏" onChange={(e) => setAdv({ follow_prompt: e.target.value })} />
+        </Adv>
+
+        <Adv on={!!scope && hasC} disabled={!hasC} icon="target" title="محدود به پست" desc="برای کامنت‌ها: فقط روی پست یا ریل بعدی، یا پست‌های مشخص اجرا می‌شود."
+          onToggle={() => set({ post_scope: scope ? 'all' : [] })}>
+          <b>نوع اجرا</b>
+          <Opt on={!!isNext} icon="sparkle" title="پست یا ریل بعدی" desc="اولین پستی که از این به بعد منتشر شود" onClick={() => set({ post_scope: ['next'] })} />
+          <Opt on={!!scope && !isNext} icon="grid" title="انتخاب از پست‌های قبلی" desc="یک یا چند پست مشخص" onClick={() => set({ post_scope: (scope || []).filter((x) => x !== 'next') })} />
+          {scope && !isNext && <><b>انتخاب پست</b><MediaGrid items={media} selected={scope} onToggle={toggleScopeId} /></>}
+          {isNext && <div className="note info">به محض انتشار پست یا ریل بعدی، این دستور خودکار به آن وصل می‌شود.</div>}
+        </Adv>
+
+        {r.channels.includes('story_reply') && (
+          <Adv on={!!scope && !hasC} disabled={hasC} icon="story" title="محدود به استوری" desc="فقط جواب‌های استوری‌های انتخاب‌شده (استوری‌های ۲۴ ساعت اخیر)."
+            onToggle={() => set({ post_scope: scope ? 'all' : [] })}>
+            <MediaGrid items={stories} selected={scope || []} onToggle={toggleScopeId} />
+          </Adv>
         )}
-      </div>
-    </div>
-  )
-}
 
-const WHERE = { comment: 'کامنت پست', dm: 'دایرکت', story_reply: 'جواب استوری', mention: 'منشن استوری' }
-const MATCH = { any: 'هر پیامی', exact: 'دقیقاً', contains: 'شامل', starts_with: 'شروع با', regex: 'الگو' }
+        <Adv on={a.followup !== null && a.followup !== undefined} icon="bell" title="پیگیری خودکار" desc="بعد از زمان مشخص‌شده، پیام پیگیری در دایرکت فرستاده می‌شود (فقط تا ۲۴ ساعت بعد از پیام کاربر)."
+          onToggle={() => setAdv({ followup: a.followup ? null : { after_seconds: 3600, text: '' } })}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><span>بعد از</span>
+            <input type="number" min="1" style={{ width: 110 }} value={a.followup ? Math.round(a.followup.after_seconds / 60) : ''} onChange={(e) => setAdv({ followup: { ...a.followup, after_seconds: Number(e.target.value) * 60 } })} /><span>دقیقه</span></div>
+          <textarea value={a.followup?.text || ''} placeholder="متن پیگیری، مثلاً: سؤالی بود در خدمتم 🙏" onChange={(e) => setAdv({ followup: { ...a.followup, text: e.target.value } })} />
+        </Adv>
 
-// نمای جریان دستور، مثل جریان‌ساز وردست: از کجا ← چه شرطی ← چه پاسخی ← بعدش چه
-function Flow({ r }) {
-  const where = r.channels.map((c) => WHERE[c]).join('، ') || '—'
-  const when = r.triggers.map((t) => t.match === 'any' ? MATCH.any : `${MATCH[t.match]} «${t.value || '…'}»`).join(' یا ')
-  const n = (k) => (r.actions[k] || []).filter((t) => t && t.trim()).length
-  const replies = [n('private_replies') && `${n('private_replies')} دایرکت به کامنت‌گذار`, n('public_replies') && `${n('public_replies')} جواب زیر کامنت`,
-    n('dm_replies') && `${n('dm_replies')} پاسخ دایرکت`, (r.actions.quick_replies || []).filter(Boolean).length && 'دکمه‌ی سریع'].filter(Boolean)
-  const adv = r.advanced
-  const conds = [adv.require_follow && 'فقط فالوورها', adv.once_per_user && 'یک بار برای هر نفر', Number(adv.cooldown_minutes) > 0 && `فاصله ${adv.cooldown_minutes} دقیقه`,
-    adv.active_hours && `ساعت ${adv.active_hours[0]} تا ${adv.active_hours[1]}`, r.post_scope !== 'all' && `${(r.post_scope || []).length} پست/استوری خاص`].filter(Boolean)
-  const after = [adv.handoff && '🙋 سپردن به همکار', Number(adv.pause_ai_minutes) > 0 && `⏸ توقف ربات ${adv.pause_ai_minutes} دقیقه`,
-    adv.followup?.text && `⏰ پیگیری بعد از ${Math.round((adv.followup.after_seconds || 0) / 60)} دقیقه`].filter(Boolean)
-  const steps = [['📥 از کجا', where], ['🔑 شرط', when + (conds.length ? ` · ${conds.join(' · ')}` : '')],
-    ['💬 پاسخ', replies.join(' · ') || 'بدون پیام'], ...(after.length ? [['➡️ بعدش', after.join(' · ')]] : [])]
-  return (
-    <section className="card flow">
-      {steps.map(([t, d], i) => (
-        <React.Fragment key={t}>
-          {i > 0 && <div className="flow-arrow">↓</div>}
-          <div className="flow-step"><b>{t}</b><span>{d}</span></div>
-        </React.Fragment>
-      ))}
-    </section>
+        <Adv on={hasC && r.actions.public_replies.length > 0} disabled={!hasC} icon="comment" title="کامنت بعد از دایرکت" desc="بعد از فرستادن دایرکت، یکی از این متن‌ها به نوبت زیر همان کامنت جواب داده می‌شود."
+          onToggle={() => setAct('public_replies', r.actions.public_replies.length ? [] : ['پیام در دایرکت ارسال شد ✅', 'لطفاً دایرکت رو چک کنید 🙏', 'فرستادم برات 📩'])}>
+          <Messages list={r.actions.public_replies} onChange={(l) => setAct('public_replies', l)} saved={[]} placeholder="متن جواب زیر کامنت" addLabel="متن جدید" />
+        </Adv>
+
+        <Adv on={a.max_uses > 0} icon="clock" title="محدودیت تعداد پاسخ" desc="بعد از رسیدن به سقف، پاسخ اصلی متوقف می‌شود و پیام جایگزین فرستاده می‌شود (اگر بنویسید)."
+          onToggle={() => setAdv({ max_uses: a.max_uses > 0 ? 0 : 100 })}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><span>سقف</span>
+            <input type="number" min="1" style={{ width: 120 }} value={a.max_uses || ''} onChange={(e) => setAdv({ max_uses: Number(e.target.value) })} /><span>پاسخ</span></div>
+          <small className="muted">تا الان {(r.use_count || 0).toLocaleString('fa-IR')} بار اجرا شده.</small>
+          <textarea value={a.over_limit_reply || ''} placeholder="پیام جایگزین (اختیاری)، مثلاً: ظرفیت این پیشنهاد تمام شد 🙏" onChange={(e) => setAdv({ over_limit_reply: e.target.value })} />
+        </Adv>
+
+        <Adv on={!!a.once_per_user} icon="user" title="هر کاربر فقط یک بار" desc="اگر کسی دوباره کامنت یا پیام بدهد، این دستور دوباره برایش اجرا نمی‌شود."
+          onToggle={() => setAdv({ once_per_user: !a.once_per_user })} />
+
+        <Adv on={Number(a.cooldown_minutes) > 0} icon="repeat" title="فاصله‌ی بین دو پاسخ به یک نفر" desc="پاسخ دوباره به همان نفر فقط بعد از این مدت."
+          onToggle={() => setAdv({ cooldown_minutes: Number(a.cooldown_minutes) > 0 ? 0 : 60 })}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="number" min="1" style={{ width: 110 }} value={a.cooldown_minutes || ''} onChange={(e) => setAdv({ cooldown_minutes: e.target.value })} /><span>دقیقه</span></div>
+        </Adv>
+
+        <Adv on={!!a.active_hours} icon="cal" title="ساعت فعال" desc="فقط در این بازه‌ی ساعت اجرا شود (به وقت سرور)."
+          onToggle={() => setAdv({ active_hours: a.active_hours ? null : [9, 23] })}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><span>از</span>
+            <input type="number" min="0" max="23" style={{ width: 80 }} value={a.active_hours?.[0] ?? ''} onChange={(e) => setAdv({ active_hours: [Number(e.target.value), a.active_hours?.[1] ?? 23] })} /><span>تا</span>
+            <input type="number" min="0" max="24" style={{ width: 80 }} value={a.active_hours?.[1] ?? ''} onChange={(e) => setAdv({ active_hours: [a.active_hours?.[0] ?? 0, Number(e.target.value)] })} /></div>
+        </Adv>
+
+        <Adv on={!!a.handoff} icon="hand" title="سپردن به همکار" desc="بعد از اجرا، در «ارجاع‌ها» و گروه تلگرام به همکار خبر داده می‌شود."
+          onToggle={() => setAdv({ handoff: !a.handoff })} />
+
+        {hasD && (
+          <Adv on={Number(a.pause_ai_minutes) > 0} icon="pause" title="توقف ربات برای همین مشتری" desc="تا این مدت ربات در دایرکت او ساکت می‌ماند تا همکار جواب بدهد."
+            onToggle={() => setAdv({ pause_ai_minutes: Number(a.pause_ai_minutes) > 0 ? 0 : 60 })}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="number" min="1" max="10080" style={{ width: 110 }} value={a.pause_ai_minutes || ''} onChange={(e) => setAdv({ pause_ai_minutes: e.target.value })} /><span>دقیقه</span></div>
+          </Adv>
+        )}
+
+        <div className="field" style={{ margin: 0 }}><label>اولویت (عدد کوچک‌تر زودتر بررسی می‌شود)</label>
+          <input type="number" value={r.priority} onChange={(e) => set({ priority: Number(e.target.value) })} /></div>
+      </Sec>
+
+      <Sec icon="save" title="ذخیره و فعال‌سازی" desc="بعد از ذخیره، پاسخ هوشمند با همین شرط‌ها و پیام‌ها فعال می‌شود.">
+        {err && <div className="note warn">{err}</div>}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn primary big" style={{ flex: 1 }} disabled={busy}><Icon n="save" /> {busy ? '…' : isNew ? 'ایجاد' : 'ذخیره'}</button>
+          <button type="button" className="btn big" style={{ flex: 1 }} onClick={() => setPreview(true)}><Icon n="eye" /> پیش‌نمایش</button>
+        </div>
+        {!isNew && <button type="button" className="btn danger block" onClick={remove}><Icon n="trash" /> حذف این دستور</button>}
+      </Sec>
+      {preview && <Preview r={r} onClose={() => setPreview(false)} />}
+    </form>
   )
 }

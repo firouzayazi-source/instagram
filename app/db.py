@@ -385,6 +385,21 @@ def upsert_rule(c: sqlite3.Connection, rule: dict) -> int:
     return cur.lastrowid
 
 
+def bind_next_post(c: sqlite3.Connection, media_id: str, posted_at: float) -> int:
+    """دستورهای «پست یا ریل بعدی» به این پست تازه وصل می‌شوند (اگر بعد از ذخیره‌ی دستور منتشر شده باشد)."""
+    n = 0
+    for r in c.execute("SELECT id, post_scope, advanced FROM rules WHERE post_scope LIKE '%\"next\"%'").fetchall():
+        scope, adv = json.loads(r["post_scope"]), json.loads(r["advanced"] or "{}")
+        if not isinstance(scope, list) or "next" not in scope or posted_at <= adv.get("next_after", 0):
+            continue
+        scope = [media_id if x == "next" else x for x in scope]
+        adv.pop("next_after", None)
+        c.execute("UPDATE rules SET post_scope=?, advanced=? WHERE id=?",
+                  (json.dumps(scope), json.dumps(adv, ensure_ascii=False), r["id"]))
+        n += 1
+    return n
+
+
 def bump_rule(c: sqlite3.Connection, rule_id: int) -> int:
     c.execute("UPDATE rules SET use_count=use_count+1 WHERE id=?", (rule_id,))
     return c.execute("SELECT use_count FROM rules WHERE id=?", (rule_id,)).fetchone()[0]

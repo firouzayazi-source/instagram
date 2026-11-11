@@ -147,3 +147,30 @@ def test_composio_graph_unwraps_proxy_response(monkeypatch):
     assert asyncio.run(src.graph("POST", "https://graph.instagram.com/v21.0/c1/replies", body={"message": "x"})) == (200, {"id": "r1"})
     call = calls[-1]["params"]
     assert call["name"] == "COMPOSIO_PROXY_EXECUTE" and call["arguments"]["toolkit_slug"] == "instagram"
+
+
+def test_next_post_rule_binds_to_first_new_post(wenv):
+    db.init()
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "بعدی", "channels": ["comment"], "post_scope": ["next"], "triggers": [{"match": "any"}],
+                           "actions": {"public_replies": ["x"]}, "advanced": {"next_after": T0 + 10}})
+        assert db.bind_next_post(c, "old", T0) == 0                       # پیش از ذخیره‌ی دستور منتشر شده
+        assert db.bind_next_post(c, "p9", T0 + 20) == 1
+        r = db.all_rules(c)[0]
+        assert r["post_scope"] == ["p9"] and "next_after" not in r["advanced"]
+        assert db.bind_next_post(c, "p10", T0 + 30) == 0                  # فقط یک بار
+
+
+@pytest.mark.asyncio
+async def test_max_uses_then_alternative_reply(wenv):
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "سقف", "channels": ["comment"], "triggers": [{"match": "any"}],
+                           "actions": {"private_replies": ["لینک"], "public_replies": ["دایرکت"]},
+                           "advanced": {"max_uses": 1, "over_limit_reply": "ظرفیت تمام شد"}})
+        base = {"from": {"id": "u3", "username": "c"}, "media": {"id": "p1"}, "_via": "poll"}
+        for i in (1, 2):
+            db.add_event(c, f"c:n{i}", "comment", {"id": f"n{i}", "text": "سلام", **base})
+        r1, r2 = db.pending_events(c)
+        assert await worker.handle_event(wenv, r1, c) == "done"
+        assert await worker.handle_event(wenv, r2, c) == "done"
+    assert wenv.calls == [("private", "n1", "لینک"), ("public", "n1", "دایرکت"), ("private", "n2", "ظرفیت تمام شد")]

@@ -174,6 +174,8 @@ async def run_due(ig, now: float | None = None, wait: float = 5) -> int:
             with db.connect() as c:
                 c.execute("UPDATE scheduled_posts SET status='done', ig_id=?, permalink=?, published_at=? WHERE id=?",
                           (mid, link, time.time(), r["id"]))
+                if r["kind"] != "story":
+                    db.bind_next_post(c, mid, time.time())
             tg_notify.send(f"✅ {KINDS[r['kind']]} زمان‌بندی‌شده منتشر شد.\n{link}".strip())
             done += 1
         except Exception as e:  # noqa: BLE001

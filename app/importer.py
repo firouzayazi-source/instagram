@@ -44,6 +44,9 @@ def validate(rule: dict) -> list[str]:
     pause = adv.get("pause_ai_minutes")
     if pause not in (None, "", 0) and (not isinstance(pause, (int, float)) or not 0 < pause <= 7 * 24 * 60):
         errs.append("توقف هوش مصنوعی باید بین ۱ دقیقه و ۷ روز باشد")
+    mx = adv.get("max_uses")
+    if mx not in (None, "", 0) and (not isinstance(mx, int) or not 0 < mx <= 1_000_000):
+        errs.append("محدودیت تعداد پاسخ باید عددی مثبت باشد")
     qr = acts.get("quick_replies", [])
     if not isinstance(qr, list) or len(qr) > 13 or any(not isinstance(x, str) or len(x) > 20 for x in qr):
         errs.append("quick_replies: حداکثر ۱۳ دکمه، هر کدام تا ۲۰ نویسه")

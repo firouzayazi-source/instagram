@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import Icon from '../icons.jsx'
 import { api, fa, pct, timeAgo, usd } from '../api.js'
 
 function Reports() {
@@ -69,7 +70,7 @@ function Today() {
         {next
           ? <>انتشار بعدی: {new Date(next.publish_at * 1000).toLocaleString('fa-IR', { weekday: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tehran' })} · </>
           : 'انتشاری در نوبت نیست · '}
-        <a href="#/channels/instagram/schedule">زمان‌بندی انتشار</a> · <a href="#/channels/instagram/ideas">ایده‌ی محتوا</a>
+        <a href="#/content/schedule">زمان‌بندی انتشار</a> · <a href="#/content/ideas">ایده‌ی محتوا</a>
       </p>
     </section>
   )
@@ -79,7 +80,7 @@ export default function Dashboard({ stats: s }) {
   const days = s.token_expires_at ? Math.floor((s.token_expires_at - Date.now() / 1000) / 86400) : null
   return (
     <>
-      <header className="topbar"><h1>پیشخوان</h1><span className="sub">stock_land.ir</span></header>
+      <header className="topbar"><div className="title"><h1>پیشخوان</h1><span className="sub">stock_land.ir</span></div><a href="#/more" className="iconbtn" aria-label="بیشتر"><Icon n="gear" /></a></header>
       <section className="card">
         <h2>امروز، نیاز به توجه</h2>
         <div className="tiles">

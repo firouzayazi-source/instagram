@@ -170,8 +170,12 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
             text = adv.get("follow_prompt") or "اول پیج رو فالو کن، بعد دوباره پیام بده 🙏"
             await _send(ig, c, row["id"], rule["id"], "public" if inc.channel == "comment" else "dm", payload, inc, text)
             return "done"
+    over = adv.get("max_uses") and rule.get("use_count", 0) >= adv["max_uses"]
     n = db.bump_rule(c, rule["id"])
     acts = rule["actions"]
+    if over:     # سقف پاسخ پر شده: فقط پیام جایگزین (در دایرکت به کامنت‌گذار یا در گفتگو)
+        alt = adv.get("over_limit_reply", "")
+        acts = {"private_replies": [alt], "public_replies": []} if inc.channel == "comment" else {"dm_replies": [alt]}
     sent = False
     if inc.channel == "comment":
         for kind in ("private", "public"):

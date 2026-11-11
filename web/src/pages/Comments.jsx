@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import Icon from '../icons.jsx'
 import InboxChips from './InboxChips.jsx'
 import { api, timeAgo } from '../api.js'
 
@@ -48,7 +49,7 @@ export default function Comments() {
 
   return (
     <>
-      <header className="topbar"><h1>صندوق</h1><button className="btn sm" onClick={load}>تازه‌سازی</button></header>
+      <header className="topbar"><div className="title"><h1>کامنت‌ها</h1><span className="sub">کامنت‌های پست‌ها و ریلزها</span></div><span className="actions"><button className="btn sm" onClick={load}>تازه‌سازی</button><a href="#/more" className="iconbtn" aria-label="بیشتر"><Icon n="gear" /></a></span></header>
       <InboxChips cur="comments" />
       <div className="chips">{FILTERS.map(([k, l]) => <button key={k} className={`chip ${filter === k ? 'active' : ''}`} onClick={() => setFilter(k)}>{l}</button>)}</div>
       {!items.length && <div className="empty">کامنتی در این فیلتر نیست</div>}

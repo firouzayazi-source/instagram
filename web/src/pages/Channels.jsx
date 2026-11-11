@@ -10,7 +10,7 @@ import { Blocked, Msg } from './Ai.jsx'
 // هر کانال قابلیت‌های خودش را دارد؛ هسته‌ی مرکزی (مغز، دانش، هوش مصنوعی) مشترک است
 const SUBS = {
   // کارهای هرروزه اول؛ تنظیم‌های کم‌استفاده آخر
-  instagram: [['connect', 'وضعیت'], ['rules', 'دستورها'], ['schedule', 'انتشار'], ['ideas', 'ایده‌ی محتوا'], ['insights', 'تحلیل محتوا'], ['media', 'پست و استوری'], ['dm', 'دایرکت'], ['comment', 'کامنت'], ['story', 'استوری'], ['sales', 'فروش'], ['blocked', 'مسدودها']],
+  instagram: [['connect', 'وضعیت'], ['dm', 'دایرکت'], ['comment', 'کامنت'], ['story', 'استوری'], ['sales', 'فروش'], ['blocked', 'مسدودها']],
   telegram: [['connect', 'اتصال و وضعیت']],
 }
 
@@ -171,7 +171,7 @@ function TgAi() {
   )
 }
 
-function Media() {
+export function Media() {
   const [d, setD] = useState(null)
   const [msg, setMsg] = useState(null)
   const [edit, setEdit] = useState({})

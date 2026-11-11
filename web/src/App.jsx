@@ -10,26 +10,17 @@ import Settings from './pages/Settings.jsx'
 import Channels from './pages/Channels.jsx'
 import Customers from './pages/Customers.jsx'
 import Orders from './pages/Orders.jsx'
-
-const ICONS = {
-  home: 'M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
-  comments: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z',
-  messages: 'M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 2l8 6 8-6',
-  ai: 'M12 3l1.8 4.7L18.5 9.5 13.8 11.3 12 16l-1.8-4.7L5.5 9.5l4.7-1.8zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9zM5 15l.6 1.4L7 17l-1.4.6L5 19l-.6-1.4L3 17l1.4-.6z',
-  channels: 'M5 12a7 7 0 0 1 14 0M8.5 12a3.5 3.5 0 0 1 7 0M12 12v8M3 20h18',
-  settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7.4-3a7.4 7.4 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-1.7-1L14.8 3H9.2l-.4 2.6a7.5 7.5 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.4 7.4 0 0 0 0 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.6h5.6l.4-2.6c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6c.1-.3.1-.7.1-1z',
-}
-
-function Icon({ d }) {
-  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
-}
+import Rules from './pages/Rules.jsx'
+import Content from './pages/Content.jsx'
+import More from './pages/More.jsx'
+import Icon from './icons.jsx'
 
 const TABS = [
-  ['/', 'پیشخوان', 'home'],
-  ['/comments', 'صندوق', 'messages'],
-  ['/ai', 'مغز مرکزی', 'ai'],
-  ['/channels', 'کانال‌ها', 'channels'],
-  ['/settings', 'تنظیمات', 'settings'],
+  ['/', 'پیشخوان', 'grid'],
+  ['/content', 'محتوا', 'folder'],
+  ['/rules', 'پاسخ هوشمند', 'bot'],
+  ['/messages', 'پیام‌ها', 'inbox'],
+  ['/comments', 'کامنت‌ها', 'comment'],
 ]
 
 function useHashRoute() {
@@ -70,7 +61,10 @@ export default function App() {
   if (route === '/') page = <Dashboard stats={stats} />
   else if (route === '/comments') page = <Comments />
   else if (route.startsWith('/messages')) page = <Messages userId={route.split('/')[2] || null} />
-  else if (route === '/rules' || route === '/ai/rules') page = <Channels id="instagram" sub="rules" />
+  else if (route === '/rules' || route === '/ai/rules' || route === '/channels/instagram/rules') page = <Rules />
+  else if (route.startsWith('/content')) page = <Content sub={route.split('/')[2]} />
+  else if (route === '/more') page = <More />
+  else if (route.startsWith('/channels/instagram/') && ['schedule', 'ideas', 'insights', 'media'].includes(route.split('/')[3])) page = <Content sub={{ media: 'posts' }[route.split('/')[3]] || route.split('/')[3]} />
   else if (route === '/ai/blocked') page = <Channels id="instagram" sub="blocked" />
   else if (route.startsWith('/ai')) page = <Ai sub={route.split('/')[2]} badges={{ handoffs: stats.ai?.handoffs_open }} />
   else if (route.startsWith('/rules/')) page = <RuleForm id={route.split('/')[2]} />
@@ -80,24 +74,24 @@ export default function App() {
   else if (route === '/settings') page = <Settings onLogout={() => setAuthed(false)} />
   else page = <div className="empty">صفحه پیدا نشد</div>
 
-  const badges = { '/comments': (stats.comments_unanswered || 0) + (stats.conversations_unread || 0), '/ai': stats.ai?.handoffs_open }
+  const badges = { '/comments': stats.comments_unanswered || 0, '/messages': stats.conversations_unread || 0 }
+  const isActive = (path) => path === '/' ? route === '/'
+    : path === '/content' ? route.startsWith('/content')
+    : path === '/rules' ? route.startsWith('/rules') || route === '/channels/instagram/rules'
+    : path === '/messages' ? route.startsWith('/messages')
+    : path === '/comments' ? route.startsWith('/comments')
+    : false
   return (
     <div className="app">
       <main>{page}</main>
       <nav className="nav" aria-label="منوی اصلی">
-        {TABS.map(([path, label, icon]) => {
-          const active = path === '/' ? route === '/'
-            : path === '/comments' ? route.startsWith('/comments') || route.startsWith('/messages') || route.startsWith('/customers') || route.startsWith('/orders')
-            : path === '/channels' ? route.startsWith('/channels') || route.startsWith('/rules')
-            : route.startsWith(path)
-          return (
-            <a key={path} href={`#${path}`} className={active ? 'active' : ''}>
-              <Icon d={ICONS[icon]} />
-              {label}
-              {badges[path] > 0 && <span className="badge">{badges[path] > 99 ? '+۹۹' : badges[path].toLocaleString('fa-IR')}</span>}
-            </a>
-          )
-        })}
+        {TABS.map(([path, label, icon]) => (
+          <a key={path} href={`#${path}`} className={isActive(path) ? 'active' : ''}>
+            <span className="navico"><Icon n={icon} /></span>
+            {label}
+            {badges[path] > 0 && <span className="badge">{badges[path] > 99 ? '+۹۹' : badges[path].toLocaleString('fa-IR')}</span>}
+          </a>
+        ))}
       </nav>
     </div>
   )

@@ -75,6 +75,8 @@ async def poll_once(ig, c, now: float | None = None) -> dict:
             # پستی که بعد از روشن شدن خوانش منتشر شده: همه‌ی کامنت‌هایش تازه‌اند. پست قدیمی: فقط نقطه‌ی شروع.
             fresh = posted.get(mid, 0) > started
             st = media[mid] = {"count": 0 if fresh else n, "since": posted[mid] if fresh else now}
+            if fresh:
+                db.bind_next_post(c, mid, posted[mid])       # دستورهای «پست یا ریل بعدی»
         if n <= st["count"]:
             st["count"] = n
             continue

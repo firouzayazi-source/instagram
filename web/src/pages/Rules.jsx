@@ -1,74 +1,96 @@
 import React, { useEffect, useState } from 'react'
 import { api, fa, timeAgo } from '../api.js'
+import Icon from '../icons.jsx'
 
-const MATCH = { any: 'هر مقداری', exact: 'برابر دقیق', contains: 'شامل', starts_with: 'شروع با', regex: 'الگو' }
+const WHERE = { comment: 'کامنت', dm: 'دایرکت', story_reply: 'جواب استوری', mention: 'منشن' }
+const MATCH = { any: 'هر مقداری', exact: 'برابر', contains: 'شامل', starts_with: 'شروع با', regex: 'الگو' }
 
-export default function Rules({ embedded = false }) {
-  const [rules, setRules] = useState([])
-  const [test, setTest] = useState({ channel: 'comment', text: '' })
-  const [result, setResult] = useState(null)
+export function Switch({ checked, onChange, label }) {
+  return <label className="switch" aria-label={label}><input type="checkbox" checked={!!checked} onChange={(e) => onChange(e.target.checked)} /><span /></label>
+}
 
+// پاسخ هوشمند: اکانت، وضعیت و فهرست دستورها
+export default function Rules() {
+  const [rules, setRules] = useState(null)
+  const [ig, setIg] = useState(null)
   const [poll, setPoll] = useState(null)
-  const load = () => api.get('/api/rules').then(setRules).catch(() => {})
-  useEffect(() => { load(); api.get('/api/comment-poll').then(setPoll).catch(() => {}) }, [])
-
-  async function toggle(r) {
-    await api.post(`/api/rules/${r.id}/enable`, { enabled: !r.enabled })
+  const [q, setQ] = useState('')
+  const [search, setSearch] = useState(false)
+  const load = () => api.get('/api/rules').then(setRules).catch(() => setRules([]))
+  useEffect(() => {
     load()
-  }
-  async function runTest(e) {
-    e.preventDefault()
-    const res = await api.post('/api/rules/test', test)
-    setResult(res.rule ? `به قانون «${res.rule.name}» می‌خورد` : 'به هیچ قانونی نمی‌خورد')
-  }
+    api.get('/api/channels').then((xs) => setIg(xs.find((x) => x.id === 'instagram'))).catch(() => {})
+    api.get('/api/comment-poll').then(setPoll).catch(() => {})
+  }, [])
 
+  async function toggle(r, on) { await api.post(`/api/rules/${r.id}/enable`, { enabled: on }); load() }
+  async function setChannel(on) {
+    if (!on && !confirm('همه‌ی پاسخ‌های خودکار اینستاگرام خاموش شود؟ پیام‌ها همچنان در صندوق ثبت می‌شوند.')) return
+    setIg(await api.put('/api/channels/instagram', { enabled: on }))
+  }
+  async function duplicate(r) { const { id } = await api.post(`/api/rules/${r.id}/copy`, { channels: r.channels }); location.hash = `#/rules/${id}` }
+  async function remove(r) { if (confirm(`دستور «${r.name}» حذف شود؟`)) { await api.del(`/api/rules/${r.id}`); load() } }
+
+  const shown = (rules || []).filter((r) => !q.trim() || (r.name + JSON.stringify(r.triggers) + JSON.stringify(r.actions)).includes(q.trim()))
+  const st = poll?.status
   return (
     <>
-      {embedded
-        ? <div className="actions" style={{ marginBottom: 10 }}><a href="#/rules/new" className="btn primary">+ دستور جدید</a><span className="muted" style={{ alignSelf: 'center' }}>دستورها قبل از هوش مصنوعی بررسی می‌شوند؛ مثل «کامنت بگذار، دایرکت بگیر».</span></div>
-        : <header className="topbar"><h1>دستورها</h1><a href="#/rules/new" className="btn primary sm">+ دستور جدید</a></header>}
-      {poll?.active && (
-        <div className="card">
-          <b>خوانش کامنت‌ها از راه Composio روشن است</b>
-          <p className="muted" style={{ margin: '6px 0 0' }}>
-            هر {fa(Math.round(poll.interval / 60))} دقیقه کامنت‌های تازه‌ی پست‌های اخیر خوانده می‌شود و فقط دستورهای کامنت جواب می‌دهند (هوش مصنوعی زیر پست‌ها خودسر جواب نمی‌دهد).
-            {poll.status && (poll.status.ok
-              ? ` آخرین بررسی: ${timeAgo(poll.status.at)}.`
-              : ` آخرین تلاش ناموفق بود: ${poll.status.error}`)}
-          </p>
-        </div>
-      )}
-      <form className="card" onSubmit={runTest}>
-        <h2>آزمایش</h2>
-        <div className="trigger">
-          <select value={test.channel} onChange={(e) => setTest({ ...test, channel: e.target.value })}>
-            <option value="comment">کامنت</option><option value="dm">دایرکت</option>
-          </select>
-          <input type="text" value={test.text} onChange={(e) => setTest({ ...test, text: e.target.value })} placeholder="مثلاً: تقویم رو میخوام" />
-          <button className="btn">بررسی</button>
-        </div>
-        {result && <p className="muted">{result}</p>}
-      </form>
-      {!rules.length && <div className="empty">هنوز دستوری ندارید</div>}
-      <div className="list">
-        {rules.map((r) => (
-          <div key={r.id} className="item" style={{ cursor: 'default' }}>
-            <div className="row">
-              <span className="who">{r.name}</span>
-              <label className="toggle"><input type="checkbox" checked={!!r.enabled} onChange={() => toggle(r)} /> فعال</label>
-            </div>
-            <div className="muted">
-              {r.channels.map((c) => c === 'comment' ? 'کامنت' : 'دایرکت').join('، ')}
-              {' · '}{r.triggers.map((t) => t.match === 'any' ? MATCH.any : `${MATCH[t.match]}: ${t.value}`).join(' یا ')}
-              {r.post_scope !== 'all' && ' · محدود به پست'}
-            </div>
-            <div className="actions" style={{ marginTop: 6 }}>
-              <a href={`#/rules/${r.id}`} className="btn sm">ویرایش</a>
-              <span className="muted" style={{ alignSelf: 'center' }}>{r.use_count.toLocaleString('fa-IR')} بار اجرا شده</span>
-            </div>
+      <header className="topbar">
+        <div className="title"><h1>پاسخ هوشمند</h1><span className="sub">دستورهای دایرکت و کامنت</span></div>
+        <a href="#/more" className="iconbtn" aria-label="بیشتر"><Icon n="gear" /></a>
+      </header>
+
+      <section className="sec">
+        <div className="sec-h" style={{ alignItems: 'center' }}>
+          <span className="ico"><Icon n="insta" /></span>
+          <div className="grow">
+            <h2>stock_land.ir</h2>
+            <p>{ig ? (ig.enabled ? 'پاسخ خودکار روشن است' : 'پاسخ خودکار خاموش است') : '…'}
+              {poll?.active && st && <> · {st.ok ? `بررسی کامنت‌ها ${timeAgo(st.at)}` : <span className="err">خطا در خواندن کامنت‌ها</span>}</>}</p>
           </div>
-        ))}
-      </div>
+          {ig && <Switch checked={ig.enabled} onChange={setChannel} label="روشن و خاموش اینستاگرام" />}
+        </div>
+      </section>
+
+      <section className="sec">
+        <div className="sec-h">
+          <div className="grow"><h2>دستورها</h2><p>شرط‌ها، پیام‌ها و وضعیت هر پاسخ هوشمند اینجا مدیریت می‌شود.</p></div>
+        </div>
+        <div className="sec-b">
+          <div style={{ display: 'flex', gap: 10 }}>
+            <a href="#/rules/new" className="btn primary big block" style={{ flex: 1 }}><Icon n="plus" /> دستور جدید</a>
+            <button type="button" className="iconbtn" style={{ width: 52, height: 'auto' }} aria-label="جستجو" onClick={() => setSearch(!search)}><Icon n="search" /></button>
+          </div>
+          {search && <input type="text" autoFocus value={q} placeholder="جستجو در نام، کلمه یا متن پیام" onChange={(e) => setQ(e.target.value)} />}
+        </div>
+        {rules === null && <div className="empty">در حال بارگذاری…</div>}
+        {rules && !rules.length && <div className="empty">هنوز دستوری ندارید. با «دستور جدید» شروع کنید؛ مثلاً هر کس زیر پست «قیمت» نوشت، لینک ربات را در دایرکت بگیرد.</div>}
+        <div style={{ borderTop: shown.length ? '1px solid var(--line)' : 0 }}>
+          {shown.map((r) => {
+            const msgs = [...(r.actions.private_replies || []), ...(r.actions.dm_replies || [])]
+            return (
+              <div key={r.id} className="rule" style={r.enabled ? undefined : { opacity: 0.6 }}>
+                <div className="rh">
+                  <b>{r.name}</b>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><small className="muted">{r.enabled ? 'فعال' : 'خاموش'}</small><Switch checked={r.enabled} onChange={(on) => toggle(r, on)} label="فعال" /></span>
+                </div>
+                <div>
+                  {r.channels.map((c) => <span key={c} className="tag">{WHERE[c]}</span>)}
+                  {r.post_scope !== 'all' && <span className="tag">{r.post_scope.includes('next') ? 'پست بعدی' : `${fa(r.post_scope.length)} پست خاص`}</span>}
+                </div>
+                <small className="muted">شرط: {r.triggers.map((t) => (t.match === 'any' ? MATCH.any : `${MATCH[t.match]} «${t.value}»`)).join(' یا ')}</small>
+                {msgs[0] && <small className="muted" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>پاسخ: {msgs[0]}</small>}
+                <div className="actions" style={{ marginTop: 4 }}>
+                  <a href={`#/rules/${r.id}`} className="btn sm"><Icon n="edit" /> ویرایش</a>
+                  <button type="button" className="btn sm" onClick={() => duplicate(r)}><Icon n="copy" /> کپی</button>
+                  <button type="button" className="iconbtn" style={{ width: 36, height: 36 }} aria-label="حذف" onClick={() => remove(r)}><Icon n="trash" /></button>
+                  <small className="muted" style={{ alignSelf: 'center', marginInlineStart: 'auto' }}>{fa(r.use_count)} بار اجرا</small>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
     </>
   )
 }

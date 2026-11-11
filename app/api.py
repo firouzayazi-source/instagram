@@ -242,6 +242,10 @@ def rule_update(rule_id: int, body: RuleIn):
 
 
 def _save_rule(rule: dict):
+    scope = rule.get("post_scope")
+    if isinstance(scope, list) and "next" in scope:
+        rule.setdefault("advanced", {})
+        rule["advanced"].setdefault("next_after", time.time())   # «پست بعدی» یعنی بعد از همین لحظه
     errs = validate(rule)
     if errs:
         raise HTTPException(422, "؛ ".join(errs))
