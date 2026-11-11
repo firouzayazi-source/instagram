@@ -319,7 +319,9 @@ def _migrate(c) -> None:
 
 @contextmanager
 def connect(path: str | None = None):
-    c = sqlite3.connect(path or config.DB_PATH, timeout=10)
+    """هر دستور همان لحظه ثبت می‌شود (autocommit). کارها در حلقه‌ی async بین نوشتن‌ها منتظر شبکه می‌مانند؛
+    با تراکنش باز، قفل نوشتن در تمام آن مدت نگه داشته می‌شد و بقیه‌ی کارها «database is locked» می‌گرفتند."""
+    c = sqlite3.connect(path or config.DB_PATH, timeout=10, isolation_level=None)
     c.row_factory = sqlite3.Row
     c.execute("PRAGMA journal_mode=WAL")
     c.execute("PRAGMA foreign_keys=ON")

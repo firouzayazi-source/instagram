@@ -465,29 +465,39 @@ def plan_batches(rows, wait: float, now: float | None = None) -> list[tuple]:
 async def run_forever(ig, stop: asyncio.Event) -> None:
     next_afu = 0.0
     while not stop.is_set():
-        with db.connect() as c:
-            rows = db.pending_events(c, limit=50)
-            await process_followups(ig, c)
-            if time.time() >= next_afu:
-                next_afu = time.time() + 600       # پیگیری خودکار: هر ۱۰ دقیقه یک بار بررسی
-                try:
-                    await auto_followups(ig, c)
-                except Exception as e:  # noqa: BLE001
-                    print("auto followup failed:", e)
-            wait = ai.settings(c)["batch_wait_seconds"]
+        try:
+            with db.connect() as c:
+                rows = db.pending_events(c, limit=50)
+                await process_followups(ig, c)
+                if time.time() >= next_afu:
+                    next_afu = time.time() + 600       # پیگیری خودکار: هر ۱۰ دقیقه یک بار بررسی
+                    try:
+                        await auto_followups(ig, c)
+                    except Exception as e:  # noqa: BLE001
+                        print("auto followup failed:", e)
+                wait = ai.settings(c)["batch_wait_seconds"]
+        except Exception as e:  # noqa: BLE001   # خطای لحظه‌ای پایگاه داده حلقه را نکشد
+            print("worker loop failed:", e)
+            await asyncio.sleep(2)
+            continue
         plan = plan_batches(rows, wait)
         if not plan:
             await asyncio.sleep(1)
             continue
         for row, store_only, extra in plan:
-            with db.connect() as c:
-                try:
-                    status = await handle_event(ig, row, c, extra_texts=extra, store_only=store_only)
-                    db.finish_event(c, row["id"], status)
-                except Exception as e:  # noqa: BLE001
-                    status = "error"
-                    db.finish_event(c, row["id"], "error", str(e))
-                mode = db.kv_get(c, "push_mode") or "unanswered"
+            try:
+                with db.connect() as c:
+                    try:
+                        status = await handle_event(ig, row, c, extra_texts=extra, store_only=store_only)
+                        db.finish_event(c, row["id"], status)
+                    except Exception as e:  # noqa: BLE001
+                        status = "error"
+                        db.finish_event(c, row["id"], "error", str(e))
+                    mode = db.kv_get(c, "push_mode") or "unanswered"
+            except Exception as e:  # noqa: BLE001   # حتی اگر ثبت نتیجه نشد، صف نمی‌میرد
+                print("worker event failed:", e)
+                await asyncio.sleep(2)
+                continue
             if status == "error" or mode == "all" or (mode == "unanswered" and status == "skipped"):
                 asyncio.create_task(_notify(row, status))
 
@@ -510,9 +520,12 @@ async def insights_loop(ig, stop: asyncio.Event) -> None:
                 if what == "media":
                     next_media = time.time() + 12 * 3600
             except Exception as e:  # noqa: BLE001
-                with db.connect() as c:
-                    db.kv_set(c, f"insights_{what}", json.dumps({"at": time.time(), "ok": False, "error": str(e)[:300]},
-                                                              ensure_ascii=False))
+                try:
+                    with db.connect() as c:
+                        db.kv_set(c, f"insights_{what}", json.dumps({"at": time.time(), "ok": False, "error": str(e)[:300]},
+                                                                  ensure_ascii=False))
+                except Exception as e2:  # noqa: BLE001
+                    print("insights status write failed:", e2)
                 if what == "media":
                     next_media = time.time() + 3600
         try:

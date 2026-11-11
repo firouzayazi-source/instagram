@@ -66,3 +66,13 @@ def test_funnel_and_digest(tmp_path, monkeypatch):
         assert not monitor.digest_due(c, now - 3600)                           # پیش از ۲۲:۳۰
         db.kv_set(c, monitor.DIGEST_KEY, "0")
         assert not monitor.digest_due(c, now)
+
+
+def test_db_writes_do_not_hold_lock_across_awaits(tmp_path):
+    """autocommit: نوشتن یک اتصال، اتصال دیگر را قفل نگه نمی‌دارد (علت «database is locked» روی سرور)."""
+    db.init()
+    with db.connect() as a, db.connect() as b:
+        db.kv_set(a, "x", "1")                  # قبلاً تراکنش باز می‌ماند تا پایان with
+        b.execute("PRAGMA busy_timeout=100")
+        db.kv_set(b, "y", "2")                  # بدون انتظار و بدون خطای قفل
+        assert db.kv_get(b, "x") == "1"

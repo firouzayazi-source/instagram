@@ -180,9 +180,12 @@ async def poll_loop(ig, stop: asyncio.Event, interval: float = INTERVAL) -> None
                         r = await asyncio.wait_for(fn(ig, c), POLL_TIMEOUT)   # یک دور گیرکرده کل خوانش را نگه ندارد
                         db.kv_set(c, key, json.dumps({"at": time.time(), "ok": True, **r}, ensure_ascii=False))
                 except Exception as e:  # noqa: BLE001
-                    with db.connect() as c:
-                        db.kv_set(c, key, json.dumps({"at": time.time(), "ok": False, "error": str(e)[:300]},
-                                                     ensure_ascii=False))
+                    try:
+                        with db.connect() as c:
+                            db.kv_set(c, key, json.dumps({"at": time.time(), "ok": False, "error": str(e)[:300]},
+                                                         ensure_ascii=False))
+                    except Exception as e2:  # noqa: BLE001
+                        print("poll status write failed:", e2)
         try:
             await asyncio.wait_for(stop.wait(), timeout=interval)
         except asyncio.TimeoutError:
