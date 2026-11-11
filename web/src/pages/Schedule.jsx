@@ -22,14 +22,60 @@ function toJpeg(file) {
   })
 }
 
-// ساعت دیواری تهران ← زمان واقعی، هر جا که مرورگر باشد
-function tehranToEpoch(value) {
-  return Date.parse(`${value}:00+03:30`) / 1000
+// تاریخ و ساعت تهران (ایران ساعت تابستانی ندارد: همیشه ‎+03:30‎)
+const ymdTehran = (ms) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tehran', year: 'numeric', month: '2-digit', day: '2-digit' }).format(ms)
+const hourTehran = (ms) => Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Tehran', hour: '2-digit', hourCycle: 'h23' }).format(ms))
+const toEpoch = ({ day, h, m }) => Date.parse(`${day}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00+03:30`) / 1000
+const pad = (n) => String(n).padStart(2, '0').replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d])
+
+function days() {
+  const out = []
+  for (let i = 0; i < 30; i++) {
+    const day = ymdTehran(Date.now() + i * 86400000)
+    const label = new Date(`${day}T12:00:00+03:30`).toLocaleDateString('fa-IR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Asia/Tehran' })
+    out.push([day, i === 0 ? `امروز، ${label}` : i === 1 ? `فردا، ${label}` : label])
+  }
+  return out
+}
+
+// پیش‌فرض: ساعت ۲۱ امروز (اوج آنلاین بودن فالوورها)، یا فردا اگر گذشته
+function defaultWhen() {
+  const late = hourTehran(Date.now()) >= 21
+  return { day: ymdTehran(Date.now() + (late ? 86400000 : 0)), h: 21, m: 0 }
+}
+
+// انتخاب‌گر شمسی: روز، ساعت، دقیقه
+function WhenPicker({ value, onChange }) {
+  const set = (patch) => onChange({ ...value, ...patch })
+  const now = Date.now()
+  return (
+    <>
+      <div className="actions" style={{ flexWrap: 'nowrap' }}>
+        <select value={value.day} onChange={(e) => set({ day: e.target.value })} style={{ flex: 2 }}>
+          {days().map(([d, l]) => <option key={d} value={d}>{l}</option>)}
+        </select>
+        <select value={value.h} onChange={(e) => set({ h: Number(e.target.value) })} style={{ flex: 1 }} aria-label="ساعت">
+          {Array.from({ length: 24 }, (_, i) => <option key={i} value={i}>{pad(i)}</option>)}
+        </select>
+        <select value={value.m} onChange={(e) => set({ m: Number(e.target.value) })} style={{ flex: 1 }} aria-label="دقیقه">
+          {Array.from({ length: 12 }, (_, i) => i * 5).map((i) => <option key={i} value={i}>{pad(i)}</option>)}
+        </select>
+      </div>
+      <div className="actions" style={{ marginTop: 6 }}>
+        <button type="button" className="chip" onClick={() => { const t = new Date(now + 10 * 60000); onChange({ day: ymdTehran(t), h: hourTehran(t), m: Math.ceil(Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Tehran', minute: '2-digit' }).format(t)) / 5) * 5 % 60 }) }}>۱۰ دقیقه‌ی دیگر</button>
+        <button type="button" className="chip" onClick={() => onChange({ day: ymdTehran(now + (hourTehran(now) >= 21 ? 86400000 : 0)), h: 21, m: 0 })}>ساعت ۲۱</button>
+      </div>
+      <p className="hint muted" style={{ marginTop: 4 }}>
+        {toEpoch(value) * 1000 <= now + 60000 ? <span className="err">این زمان گذشته است</span>
+          : <>انتشار: {new Date(toEpoch(value) * 1000).toLocaleString('fa-IR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tehran' })}</>}
+      </p>
+    </>
+  )
 }
 
 export default function Schedule() {
   const [items, setItems] = useState([])
-  const [f, setF] = useState({ kind: 'reel', caption: '', at: '' })
+  const [f, setF] = useState({ kind: 'reel', caption: '', at: defaultWhen() })
   const [file, setFile] = useState(null)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState(null)
@@ -41,15 +87,14 @@ export default function Schedule() {
   async function save(e) {
     e.preventDefault(); setMsg(null)
     if (!file) return setMsg({ ok: false, text: 'فایل را انتخاب کنید' })
-    if (!f.at) return setMsg({ ok: false, text: 'روز و ساعت انتشار را انتخاب کنید' })
     setBusy(true)
     try {
       const body = isVideo ? file : await toJpeg(file)
       const ext = isVideo ? (file.name.toLowerCase().endsWith('.mov') ? 'mov' : 'mp4') : 'jpg'
       const up = await api.upload(`/api/schedule/upload?name=file.${ext}`, body)
-      await api.post('/api/schedule', { kind: f.kind, file: up.file, caption: f.caption, publish_at: tehranToEpoch(f.at) })
+      await api.post('/api/schedule', { kind: f.kind, file: up.file, caption: f.caption, publish_at: toEpoch(f.at) })
       setMsg({ ok: true, text: 'در نوبت انتشار گذاشته شد ✅' })
-      setFile(null); setF({ ...f, caption: '', at: '' }); if (input.current) input.current.value = ''
+      setFile(null); setF({ ...f, caption: '', at: defaultWhen() }); if (input.current) input.current.value = ''
       load()
     } catch (ex) { setMsg({ ok: false, text: ex.message }) }
     setBusy(false)
@@ -82,7 +127,7 @@ export default function Schedule() {
         )}
         <div className="field">
           <label>روز و ساعت انتشار (به وقت تهران)</label>
-          <input type="datetime-local" value={f.at} onChange={(e) => setF({ ...f, at: e.target.value })} />
+          <WhenPicker value={f.at} onChange={(at) => setF({ ...f, at })} />
         </div>
         <button className="btn primary" disabled={busy}>{busy ? 'در حال فرستادن فایل…' : 'بگذار در نوبت'}</button>
         <Msg m={msg} />
