@@ -8,6 +8,8 @@ from pathlib import Path
 
 from . import ai, config, insights
 
+MAX_TOKENS = 8000          # سه ایده‌ی فارسی کامل با صحنه‌ها و کپشن؛ ۲۰۴۸ توکن وسطش می‌برید
+
 SCHEMA = {
     "type": "object",
     "properties": {"ideas": {"type": "array", "items": {
@@ -90,7 +92,10 @@ async def ideas(c, topic: str = "") -> dict:
             errors.append(f"{ai.PROVIDERS[prov]['label']}: کلید تنظیم نشده")
             continue
         try:
-            raw, usage, _ = await ai.get_client(prov).complete(mdl, system, messages, s["effort"], schema=SCHEMA, hint=HINT)
+            raw, usage, stop = await ai.get_client(prov).complete(mdl, system, messages, s["effort"], schema=SCHEMA, hint=HINT,
+                                                                   max_tokens=MAX_TOKENS)
+            if stop in ("max_tokens", "length"):
+                raise ValueError("جواب نیمه‌کاره ماند (بیش از حد طولانی شد)؛ دوباره امتحان کنید")
             out = ai.parse_output(raw)
             items = [x for x in out.get("ideas") or [] if isinstance(x, dict) and x.get("title")][:5]
             if not items:

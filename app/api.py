@@ -571,14 +571,16 @@ async def media_notes(request: Request):
     connected = bool(config.IG_ACCESS_TOKEN) or bool(getattr(ig(request), "via_composio", lambda: False)())
     if connected:
         try:
-            posts = await media(request)
-            stories = await ig(request).stories()
+            posts = list(await media(request) or [])
+            stories = list(await ig(request).stories() or [])
         except Exception as e:  # noqa: BLE001
             err = _friendly(str(e))
     with db.connect() as c:
         notes = {r["media_id"]: dict(r) for r in c.execute("SELECT * FROM media_notes")}
+    posts = [dict(m) for m in posts]          # کپی؛ حافظه‌ی موقت فهرست پست‌ها دست نخورد
+    stories = [dict(m) for m in stories]
     for m in posts + stories:
-        n = notes.get(m["id"], {})
+        n = notes.get(m.get("id"), {})
         m["note"], m["product"] = n.get("note", ""), n.get("product", "")
     return {"posts": posts, "stories": stories, "error": err, "connected": connected}
 

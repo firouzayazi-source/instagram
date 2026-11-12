@@ -230,13 +230,13 @@ class ClaudeClient:
         self._client = anthropic.AsyncAnthropic(api_key=config.ANTHROPIC_API_KEY or None, max_retries=2, timeout=60)
 
     async def complete(self, model: str, system: list, messages: list, effort: str,
-                       schema: dict | None = None, hint: str | None = None) -> tuple[str, dict, str]:
+                       schema: dict | None = None, hint: str | None = None, max_tokens: int = 2048) -> tuple[str, dict, str]:
         kwargs = {}
         if model in ("claude-opus-5-5", "claude-sonnet-5-5"):
             kwargs = {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}
         resp = await self._client.beta.messages.create(
             model=model,
-            max_tokens=2048,
+            max_tokens=max_tokens,
             system=system,
             messages=messages,
             output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema or SCHEMA}},
@@ -264,10 +264,10 @@ class OpenAICompatClient:
         return await self._http.post("chat/completions", json=body)
 
     async def complete(self, model: str, system: list, messages: list, effort: str,
-                       schema: dict | None = None, hint: str | None = None) -> tuple[str, dict, str]:
+                       schema: dict | None = None, hint: str | None = None, max_tokens: int = 2048) -> tuple[str, dict, str]:
         sys_text = "\n\n".join(b["text"] for b in system)
         msgs = [{"role": m["role"], "content": m["content"]} for m in messages]
-        body = {"model": model, self._max_key: 2048}
+        body = {"model": model, self._max_key: max_tokens}
         r = None
         if self._schema_ok:
             body["messages"] = [{"role": "system", "content": sys_text}] + msgs

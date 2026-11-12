@@ -174,3 +174,38 @@ async def test_max_uses_then_alternative_reply(wenv):
         assert await worker.handle_event(wenv, r1, c) == "done"
         assert await worker.handle_event(wenv, r2, c) == "done"
     assert wenv.calls == [("private", "n1", "لینک"), ("public", "n1", "دایرکت"), ("private", "n2", "ظرفیت تمام شد")]
+
+
+def test_large_composio_response_is_detected_and_media_is_paged(monkeypatch):
+    """Composio پاسخ بزرگ را فقط «پیش‌نمایش» می‌دهد: باید خطای روشن بدهد، و فهرست پست‌ها صفحه‌به‌صفحه خوانده شود."""
+    import httpx
+    from app import insights
+    monkeypatch.setattr(config, "COMPOSIO_API_KEY", "ck_test", raising=False)
+
+    def handler(req):
+        body = json.loads(req.content)
+        if body["method"] == "initialize":
+            return httpx.Response(200, json={"jsonrpc": "2.0", "id": body["id"], "result": {}})
+        if body["method"] == "notifications/initialized":
+            return httpx.Response(202)
+        big = {"successful": True, "data": {"results": [{"response": {"successful": True, "data_preview": {"x": 1}}}],
+                                            "remote_file_info": {"file_path": "/mnt/files/x.json"}}}
+        return httpx.Response(200, json={"jsonrpc": "2.0", "id": body["id"], "result": {"content": [{"type": "text", "text": json.dumps(big)}]}})
+    src = insights.ComposioConnectSource(transport=httpx.MockTransport(handler))
+    with pytest.raises(insights.TooLarge):
+        asyncio.run(src.graph("GET", "https://graph.instagram.com/v21.0/me/media"))
+
+    pages = {None: (["a", "b"], "c1"), "c1": (["c"], None)}
+    seen = []
+
+    class Fake:
+        async def graph(self, method, url, body=None, params=None):
+            seen.append(dict(params))
+            ids, nxt = pages[params.get("after")]
+            paging = {"cursors": {"after": nxt}, **({"next": "x"} if nxt else {})}
+            return 200, {"data": [{"id": i} for i in ids], "paging": paging}
+    monkeypatch.setattr(config, "IG_ACCESS_TOKEN", "")
+    ig = Instagram()
+    ig._composio = Fake()
+    assert [m["id"] for m in asyncio.run(ig.media(limit=50))] == ["a", "b", "c"]
+    assert all(int(p["limit"]) <= 8 for p in seen) and seen[1]["after"] == "c1"

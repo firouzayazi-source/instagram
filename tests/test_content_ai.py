@@ -12,7 +12,7 @@ class Fake:
     def __init__(self, out):
         self.out, self.seen = out, None
 
-    async def complete(self, model, system, messages, effort, schema=None, hint=None):
+    async def complete(self, model, system, messages, effort, schema=None, hint=None, max_tokens=2048):
         self.seen = (system, messages, schema)
         return json.dumps(self.out, ensure_ascii=False), {"input_tokens": 100, "output_tokens": 50}, "end_turn"
 

@@ -156,12 +156,20 @@ class Instagram:
         return d.get("data", [])
 
     async def media(self, limit: int = 50) -> list[dict]:
-        d = await self._get(
-            f"{self.user_id}/media",
-            fields="id,caption,media_type,media_product_type,permalink,thumbnail_url,media_url,timestamp",
-            limit=limit,
-        )
-        return d.get("data", [])
+        fields = "id,caption,media_type,media_product_type,permalink,thumbnail_url,media_url,timestamp"
+        if not self.via_composio():
+            return (await self._get(f"{self.user_id}/media", fields=fields, limit=limit)).get("data") or []
+        out, after = [], None          # Composio پاسخ بزرگ را برنمی‌گرداند: صفحه‌های کوچک
+        while len(out) < limit:
+            q = {"fields": fields, "limit": min(8, limit - len(out))}
+            if after:
+                q["after"] = after
+            d = await self._get(f"{self.user_id}/media", **q)
+            out += d.get("data") or []
+            after = ((d.get("paging") or {}).get("cursors") or {}).get("after")
+            if not (d.get("paging") or {}).get("next") or not after:
+                break
+        return out
 
     async def refresh_token(self) -> tuple[str, int]:
         """توکن بلندمدت ۶۰ روزه را تمدید می‌کند. (token, expires_in_seconds)"""

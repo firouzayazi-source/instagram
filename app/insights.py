@@ -26,6 +26,8 @@ REEL_METRICS = ["views", "reach", "saved", "shares", "likes", "comments", "total
                 "ig_reels_avg_watch_time", "reels_skip_rate"]
 POST_METRICS = ["views", "reach", "saved", "shares", "likes", "comments", "total_interactions"]
 MEDIA_PARALLEL = 4
+PAGE = 10
+MEDIA_PAGES = 10
 RPC_TIMEOUT = 60
 NAV_KEYS = ("tap_forward", "tap_back", "tap_exit", "swipe_forward")
 
@@ -91,6 +93,24 @@ def parse_breakdown(payload) -> dict:
                 if isinstance(r.get("value"), (int, float)):
                     out[key] = r["value"]
     return out
+
+
+class TooLarge(RuntimeError):
+    """Composio پاسخ بزرگ را برنمی‌گرداند و فقط «پیش‌نمایش» و نشانی فایل در سندباکس خودش می‌دهد."""
+
+
+def _check_size(d) -> None:
+    if not isinstance(d, dict):
+        return
+    if d.get("remote_file_info") or d.get("data_preview"):
+        raise TooLarge("پاسخ برای Composio بزرگ بود؛ باید صفحه‌به‌صفحه خوانده شود")
+    data = d.get("data")
+    if isinstance(data, dict):
+        if data.get("remote_file_info"):
+            raise TooLarge("پاسخ برای Composio بزرگ بود؛ باید صفحه‌به‌صفحه خوانده شود")
+        for item in data.get("results") or []:
+            if isinstance(item, dict) and ((item.get("response") or {}).get("data_preview") or item.get("data_preview")):
+                raise TooLarge("پاسخ برای Composio بزرگ بود؛ باید صفحه‌به‌صفحه خوانده شود")
 
 
 def _list(payload) -> list:
@@ -231,6 +251,7 @@ class ComposioConnectSource(ComposioSource):
             d = json.loads(text) if text else (result.get("structuredContent") or {})
         except ValueError:
             raise RuntimeError(f"Composio: پاسخ نامفهوم ({text[:120]})")
+        _check_size(d)
         if d.get("successful") is False or d.get("error"):
             raise RuntimeError(f"Composio: {str(d.get('error'))[:200]}")
         data = d.get("data", d)
@@ -240,6 +261,22 @@ class ComposioConnectSource(ComposioSource):
                 raise RuntimeError(f"Composio {slug}: {str(resp.get('error'))[:200]}")
             return resp.get("data", resp)
         return data
+
+    async def media(self, since: float) -> list[dict]:
+        """صفحه‌های ۱۰تایی؛ فهرست ۱۰۰تایی با کپشن برای Composio بیش از حد بزرگ است."""
+        out, after = [], None
+        for _ in range(MEDIA_PAGES):
+            q = {"fields": "id,caption,media_type,media_product_type,permalink,timestamp", "limit": PAGE, "since": int(since)}
+            if after:
+                q["after"] = after
+            status, d = await self.graph("GET", f"https://graph.instagram.com/{config.GRAPH_VERSION}/me/media", params=q)
+            if status >= 400 or "error" in d:
+                raise RuntimeError(f"IG {status}: {str(d.get('error', d))[:200]}")
+            out += d.get("data") or []
+            after = ((d.get("paging") or {}).get("cursors") or {}).get("after")
+            if not (d.get("paging") or {}).get("next") or not after:
+                break
+        return out
 
     async def _call(self, name: str, arguments: dict) -> dict:
         """یک ابزار MCP؛ اگر نشست منقضی شده بود (404) یک بار از نو."""
@@ -276,6 +313,7 @@ class ComposioConnectSource(ComposioSource):
             d = json.loads(text) if text else (res.get("structuredContent") or {})
         except ValueError:
             raise RuntimeError(f"Composio: پاسخ نامفهوم ({text[:120]})")
+        _check_size(d)
         if d.get("successful") is False and not isinstance(d.get("data"), dict):
             raise RuntimeError(f"Composio: {str(d.get('error'))[:200]}")
         inner = d.get("data") if isinstance(d.get("data"), dict) else d
