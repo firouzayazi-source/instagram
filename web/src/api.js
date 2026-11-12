@@ -3,16 +3,29 @@ export class ApiError extends Error {
   constructor(status, message) { super(message); this.status = status }
 }
 
+// خطای بی‌توضیح سرور یا شبکه، به زبان ساده و با کد، تا علت معلوم باشد
+function plainError(status) {
+  if (status === 502 || status === 503) return `سرور در دسترس نیست (کد ${status})؛ احتمالاً در حال ری‌استارت است. یک دقیقه‌ی دیگر دوباره امتحان کنید.`
+  if (status === 504) return 'جواب سرور بیش از حد طول کشید (کد ۵۰۴). دوباره امتحان کنید.'
+  if (status === 413) return 'حجم فایل زیاد است'
+  return `خطای سرور (کد ${status})`
+}
+
 async function call(method, path, body) {
-  const res = await fetch(path, {
-    method,
-    headers: body ? { 'Content-Type': 'application/json' } : {},
-    body: body ? JSON.stringify(body) : undefined,
-    credentials: 'same-origin',
-  })
+  let res
+  try {
+    res = await fetch(path, {
+      method,
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined,
+      credentials: 'same-origin',
+    })
+  } catch {
+    throw new ApiError(0, 'اتصال به سرور قطع شد؛ اینترنت را بررسی کنید یا چند ثانیه‌ی دیگر دوباره امتحان کنید.')
+  }
   if (res.status === 401) window.dispatchEvent(new Event('auth:lost'))
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new ApiError(res.status, data.detail || 'خطا')
+  if (!res.ok) throw new ApiError(res.status, data.detail || plainError(res.status))
   return data
 }
 
@@ -26,7 +39,7 @@ export const api = {
     const res = await fetch(p, { method: 'POST', body: file, credentials: 'same-origin' })
     if (res.status === 401) window.dispatchEvent(new Event('auth:lost'))
     const data = await res.json().catch(() => ({}))
-    if (!res.ok) throw new ApiError(res.status, data.detail || (res.status === 413 ? 'حجم فایل زیاد است' : 'خطا'))
+    if (!res.ok) throw new ApiError(res.status, data.detail || plainError(res.status))
     return data
   },
 }
