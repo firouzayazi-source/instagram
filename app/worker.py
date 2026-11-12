@@ -178,6 +178,9 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         acts = {"private_replies": [alt], "public_replies": []} if inc.channel == "comment" else {"dm_replies": [alt]}
     sent = False
     if inc.channel == "comment":
+        # دستوری که هم کامنت دارد هم دایرکت و فقط متن دایرکت نوشته شده: همان متن به کامنت‌گذار دایرکت می‌شود
+        if not acts.get("private_replies") and acts.get("dm_replies"):
+            acts = {**acts, "private_replies": acts["dm_replies"]}
         for kind in ("private", "public"):
             text = pick(acts.get(f"{kind}_replies", []), n - 1)
             if text:

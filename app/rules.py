@@ -55,7 +55,9 @@ def rule_matches(rule: dict, inc: Incoming, last_hit_at: float | None, now: floa
     scope = rule["post_scope"]
     # پست یا استوری مشخص: کامنت روی همان پست، یا جواب به همان استوری.
     # «next» یعنی پست یا ریل بعدی که هنوز منتشر نشده؛ تا وقتی به پستی وصل نشده، هیچ کامنتی را نمی‌گیرد.
-    if scope != "all" and (inc.channel == "comment" or inc.source == "story_reply") and inc.media_id not in scope:
+    # محدودیت پست مال کامنت‌هاست؛ برای جواب استوری فقط وقتی دستور کامنت ندارد (محدود به استوری)
+    limited = inc.channel == "comment" or (inc.source == "story_reply" and "comment" not in chs)
+    if scope != "all" and limited and inc.media_id not in scope:
         return False
     adv = rule.get("advanced", {})
     # سقف تعداد پاسخ: بعد از سقف، اگر پیام جایگزین نداشته باشد دیگر نمی‌خورد

@@ -209,3 +209,17 @@ def test_large_composio_response_is_detected_and_media_is_paged(monkeypatch):
     ig._composio = Fake()
     assert [m["id"] for m in asyncio.run(ig.media(limit=50))] == ["a", "b", "c"]
     assert all(int(p["limit"]) <= 8 for p in seen) and seen[1]["after"] == "c1"
+
+
+@pytest.mark.asyncio
+async def test_mixed_rule_comment_uses_dm_text_and_story_not_blocked_by_post_scope(wenv):
+    """دستور کامنت+دایرکت+جواب استوری، محدود به یک پست، فقط با متن دایرکت (همان دستوری که صاحب پیج ساخت)."""
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "۲۴ مدل", "channels": ["comment", "dm", "story_reply", "mention"], "post_scope": ["p1"],
+                           "triggers": [{"match": "exact", "value": "عجب"}], "actions": {"dm_replies": ["به زودی بهت پیام میدم"]}})
+        db.add_event(c, "c:n1", "comment", {"id": "n1", "text": "عجب", "from": {"id": "u3", "username": "c"}, "media": {"id": "p1"}, "_via": "poll"})
+        assert await worker.handle_event(wenv, db.pending_events(c)[0], c) == "done"
+        from app.rules import Incoming, rule_matches
+        r = db.load_rules(c)[0]
+        assert rule_matches(r, Incoming(channel="dm", user_id="u4", text="عجب", source="story_reply", media_id="story9"), None)
+    assert wenv.calls == [("private", "n1", "به زودی بهت پیام میدم")]
