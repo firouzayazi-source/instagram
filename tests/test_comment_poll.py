@@ -223,3 +223,30 @@ async def test_mixed_rule_comment_uses_dm_text_and_story_not_blocked_by_post_sco
         r = db.load_rules(c)[0]
         assert rule_matches(r, Incoming(channel="dm", user_id="u4", text="عجب", source="story_reply", media_id="story9"), None)
     assert wenv.calls == [("private", "n1", "به زودی بهت پیام میدم")]
+
+
+def test_deleted_and_new_comment_same_count_is_still_caught():
+    """کامنتی پاک و کامنت تازه گذاشته شد (تعداد ثابت): پستی که دستور دارد باز خوانده می‌شود."""
+    ig = PollIG()
+    db.init()
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "پست", "channels": ["comment"], "post_scope": ["p1"], "triggers": [{"match": "any"}],
+                           "actions": {"private_replies": ["x"]}})
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0))
+        ig.comments["p1"] = [{"id": "n9", "text": "عجب", "timestamp": iso(T0 + 30), "from": {"id": "u9", "username": "z"}},
+                             ig.comments["p1"][1]]                      # یکی پاک شد، یکی آمد: باز ۲ کامنت
+        assert ig.posts[0]["comments_count"] == 2
+        assert asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 60))["queued"] == 1
+        assert "c:n9" in events(c)
+
+
+def test_all_posts_rule_forces_recent_posts_every_few_minutes():
+    ig = PollIG()
+    db.init()
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "همه", "channels": ["comment"], "triggers": [{"match": "any"}], "actions": {"private_replies": ["x"]}})
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0))                       # بار اول خوانده می‌شود (forced)
+        ig.comments["p1"].insert(0, {"id": "n8", "text": "سلام", "timestamp": iso(T0 + 30), "from": {"id": "u8", "username": "y"}})
+        ig.comments["p1"].pop()                                                    # تعداد ثابت
+        assert asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 60))["checked"] == 0   # هنوز ۳ دقیقه نشده
+        assert asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 200))["queued"] == 1

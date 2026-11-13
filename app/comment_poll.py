@@ -19,6 +19,8 @@ from . import channels, db
 
 INTERVAL = 60
 RECENT = 25          # پست‌های اخیری که بررسی می‌شوند
+FORCE_RECENT = 3
+FORCE_EVERY = 180
 STATE_KEY = "comment_poll_state"
 STATUS_KEY = "comment_poll"
 DM_STATE_KEY = "dm_poll_state"
@@ -45,6 +47,10 @@ def watched_media(c) -> set[str]:
     return out
 
 
+def has_all_posts_rule(c) -> bool:
+    return any("comment" in r["channels"] and r["post_scope"] == "all" for r in db.load_rules(c))
+
+
 async def _own_username(ig, state: dict) -> str:
     if not state.get("_me"):
         try:
@@ -69,6 +75,10 @@ async def poll_once(ig, c, now: float | None = None) -> dict:
         except Exception:  # noqa: BLE001
             continue
     me = await _own_username(ig, state)
+    # تعداد کامنت همیشه عوض نمی‌شود (کامنتی پاک و کامنت تازه گذاشته شود): پست‌هایی که دستور دارند بی‌توجه به
+    # تعداد هم خوانده می‌شوند؛ پست‌های مشخص هر دور، و برای دستور «همه‌ی پست‌ها» سه پست آخر هر ۳ دقیقه.
+    watched = watched_media(c)
+    latest = [str(m["id"]) for m in recent[:FORCE_RECENT]] if has_all_posts_rule(c) else []
     queued = checked = 0
     for mid, n in counts.items():
         st = media.get(mid)
@@ -78,9 +88,12 @@ async def poll_once(ig, c, now: float | None = None) -> dict:
             st = media[mid] = {"count": 0 if fresh else n, "since": posted[mid] if fresh else now}
             if fresh:
                 db.bind_next_post(c, mid, posted[mid])       # دستورهای «پست یا ریل بعدی»
-        if n <= st["count"]:
+        force = mid in watched or (mid in latest and now - st.get("forced_at", 0) >= FORCE_EVERY)
+        if n <= st["count"] and not force:
             st["count"] = n
             continue
+        if force:
+            st["forced_at"] = now
         checked += 1
         rows = (await ig._get(f"{mid}/comments", fields="id,text,timestamp,from,parent_id", limit=50)).get("data", [])
         newest = st["since"]
