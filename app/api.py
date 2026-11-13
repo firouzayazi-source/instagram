@@ -7,7 +7,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 
-from . import ai, ai_admin, auth, channels, config, crm, db, orders, reports, webhook
+from . import ai, ai_admin, auth, channels, config, crm, db, dm_menu, forms, orders, reports, webhook
 from .importer import validate
 from .rules import Incoming, find_rule
 
@@ -383,13 +383,103 @@ async def ice_breakers_apply(request: Request, body: dict):
     """ذخیره و ثبت در اینستاگرام. فهرست خالی یعنی برداشتن."""
     with db.connect() as c:
         s = ai.save_settings(c, {"ice_breakers": body.get("questions") or []})
-    if not (config.IG_ACCESS_TOKEN and config.IG_USER_ID):
+    if not _ig_connected(request):
         raise HTTPException(409, "ذخیره شد، ولی اینستاگرام هنوز وصل نیست؛ بعد از اتصال دوباره «ثبت در اینستاگرام» را بزنید")
     try:
         await ig(request).set_ice_breakers(s["ice_breakers"])
     except Exception as e:  # noqa: BLE001
         raise HTTPException(502, f"اینستاگرام قبول نکرد: {str(e)[:200]}")
     return {"ok": True, "questions": s["ice_breakers"]}
+
+
+def _ig_connected(request: Request) -> bool:
+    """توکن اپ Meta خود پروژه، یا پل Composio."""
+    return bool(config.IG_ACCESS_TOKEN and config.IG_USER_ID) or bool(getattr(ig(request), "via_composio", lambda: False)())
+
+
+# ---------- منوی ثابت دایرکت ----------
+
+@protected.get("/dm-menu")
+def dm_menu_get():
+    with db.connect() as c:
+        return {"items": dm_menu.load(c), "max": dm_menu.MAX_ITEMS}
+
+
+@protected.post("/dm-menu")
+async def dm_menu_apply(request: Request, body: dict):
+    """ذخیره و ثبت در اینستاگرام. فهرست خالی یعنی برداشتن منو."""
+    try:
+        with db.connect() as c:
+            items = dm_menu.save(c, body.get("items") or [])
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    if not _ig_connected(request):
+        raise HTTPException(409, "ذخیره شد، ولی اینستاگرام هنوز وصل نیست")
+    try:
+        await ig(request).set_persistent_menu(items)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(502, f"ذخیره شد، ولی اینستاگرام قبول نکرد: {str(e)[:200]}")
+    return {"ok": True, "items": items}
+
+
+# ---------- فرم‌ساز ----------
+
+@protected.get("/forms")
+def forms_list():
+    with db.connect() as c:
+        return forms.listing(c)
+
+
+@protected.post("/forms")
+def form_create(body: dict):
+    return _form_save(body, None)
+
+
+@protected.put("/forms/{form_id}")
+def form_update(form_id: int, body: dict):
+    return _form_save(body, form_id)
+
+
+def _form_save(body: dict, form_id: int | None):
+    try:
+        with db.connect() as c:
+            return {"ok": True, "id": forms.save(c, body, form_id)}
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    except LookupError as e:
+        raise HTTPException(404, str(e))
+
+
+@protected.delete("/forms/{form_id}")
+def form_delete(form_id: int):
+    with db.connect() as c:
+        used = [r["name"] for r in db.all_rules(c) if str(r["actions"].get("form_id", "")) == str(form_id)]
+        if used:
+            raise HTTPException(409, "این فرم در دستور «" + "، ".join(used) + "» استفاده شده؛ اول آن را عوض کنید")
+        forms.delete(c, form_id)
+    return {"ok": True}
+
+
+@protected.get("/forms/{form_id}/entries")
+def form_entries(form_id: int, since: float = 0, until: float = 0):
+    with db.connect() as c:
+        f = forms.get(c, form_id)
+        if not f:
+            raise HTTPException(404)
+        return {"form": f, "items": forms.entries(c, form_id, since, until)}
+
+
+# ---------- خروجی شماره‌ها ----------
+
+@protected.get("/phones")
+def phones(q: str = "", since: float = 0, until: float = 0):
+    """مشتری‌هایی که شماره دارند (از پیام، فرم یا پنل). بازه بر اساس آخرین تماس مشتری."""
+    with db.connect() as c:
+        rows = crm.search(c, q, phone="yes", limit=5000)
+    until = until or time.time() + 60
+    return [{"key": r["id"], "channel": r["channel"], "username": r["username"] or "", "name": r["name"],
+             "phone": r["phone"], "tags": r["tags"], "first_seen": r["first_seen"], "last_seen": r["last_seen"]}
+            for r in rows if since <= r["last_seen"] < until]
 
 
 # ---------- پرونده‌ی مشتری ----------

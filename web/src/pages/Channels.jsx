@@ -233,12 +233,6 @@ function IgPart({ part }) {
   const lines = (v) => (v || []).join('\n')
   const split = (v) => v.split('\n')
 
-  async function applyIce() {
-    setMsg(null)
-    try { await api.post('/api/instagram/ice-breakers', { questions: (s.ice_breakers || []).filter((x) => x.trim()) }); setMsg({ ok: true, text: 'در اینستاگرام ثبت شد ✅' }) }
-    catch (ex) { setMsg({ ok: ex.status === 409, text: ex.message }) }
-  }
-
   async function save(e) {
     e.preventDefault(); setMsg(null)
     try {
@@ -297,10 +291,8 @@ function IgPart({ part }) {
       )}
       {part === 'dm' && (
         <section className="card">
-          <h2>سؤال‌های شروع گفتگو</h2>
-          <p className="muted">وقتی کسی برای اولین بار دایرکت پیج را باز می‌کند، این سؤال‌ها (حداکثر ۴) را می‌بیند و با یک لمس می‌پرسد.</p>
-          <textarea rows={4} value={lines(s.ice_breakers)} onChange={(e) => set({ ice_breakers: split(e.target.value) })} />
-          <button type="button" className="btn" style={{ marginTop: 6 }} onClick={applyIce}>ذخیره و ثبت در اینستاگرام</button>
+          <h2>سؤال‌های متداول، منوی ثابت و فرم‌ها</h2>
+          <p className="muted">به «پاسخ هوشمند» منتقل شدند: <a href="#/smart/faq">سؤال‌های متداول</a> · <a href="#/smart/menu">منوی ثابت</a> · <a href="#/smart/forms">فرم‌ساز</a></p>
         </section>
       )}
       {part === 'comment' && (

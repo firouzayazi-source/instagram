@@ -13,6 +13,7 @@ import Orders from './pages/Orders.jsx'
 import Rules from './pages/Rules.jsx'
 import Content from './pages/Content.jsx'
 import More from './pages/More.jsx'
+import Smart from './pages/Smart.jsx'
 import Icon from './icons.jsx'
 
 const TABS = [
@@ -64,6 +65,8 @@ export default function App() {
   else if (route === '/rules' || route === '/ai/rules' || route === '/channels/instagram/rules') page = <Rules />
   else if (route.startsWith('/content')) page = <Content sub={route.split('/')[2]} />
   else if (route === '/more') page = <More />
+  else if (route.startsWith('/smart')) page = <Smart sub={route.split('/')[2]} id={route.split('/')[3]} />
+  else if (route === '/ai/products') page = <Smart sub="products" />
   else if (route.startsWith('/channels/instagram/') && ['schedule', 'ideas', 'insights', 'media'].includes(route.split('/')[3])) page = <Content sub={{ media: 'posts' }[route.split('/')[3]] || route.split('/')[3]} />
   else if (route === '/ai/blocked') page = <Channels id="instagram" sub="blocked" />
   else if (route.startsWith('/ai')) page = <Ai sub={route.split('/')[2]} badges={{ handoffs: stats.ai?.handoffs_open }} />
@@ -77,7 +80,7 @@ export default function App() {
   const badges = { '/comments': stats.comments_unanswered || 0, '/messages': stats.conversations_unread || 0 }
   const isActive = (path) => path === '/' ? route === '/'
     : path === '/content' ? route.startsWith('/content')
-    : path === '/rules' ? route.startsWith('/rules') || route === '/channels/instagram/rules'
+    : path === '/rules' ? route.startsWith('/rules') || route.startsWith('/smart') || route === '/ai/products' || route === '/channels/instagram/rules'
     : path === '/messages' ? route.startsWith('/messages')
     : path === '/comments' ? route.startsWith('/comments')
     : false

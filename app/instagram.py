@@ -118,18 +118,33 @@ class Instagram:
         """مخفی کردن کامنت روی پست خود پیج (فقط برای کامنت‌گذار و دوستانش دیده می‌شود؛ برگشت‌پذیر)."""
         await self._post(comment_id, data={"hide": "true" if hide else "false"})
 
+    async def _delete_profile(self, field: str) -> None:
+        if self.via_composio():
+            await self._composio_call("DELETE", f"{self.user_id}/messenger_profile", body={"fields": [field]})
+            return
+        r = await self.http.request("DELETE", f"{self.base}/{self.user_id}/messenger_profile",
+                                    params={"access_token": self.token}, json={"fields": [field]})
+        if r.status_code >= 400:
+            raise RuntimeError(f"IG {r.status_code}: {r.text[:300]}")
+
     async def set_ice_breakers(self, questions: list[str]) -> None:
         """سؤال‌های آماده‌ی شروع گفتگو (حداکثر ۴). فهرست خالی یعنی حذف."""
         if not questions:
-            r = await self.http.request("DELETE", f"{self.base}/{self.user_id}/messenger_profile",
-                                        params={"access_token": self.token}, json={"fields": ["ice_breakers"]})
-            if r.status_code >= 400:
-                raise RuntimeError(f"IG {r.status_code}: {r.text[:300]}")
-            return
+            return await self._delete_profile("ice_breakers")
         await self._post(f"{self.user_id}/messenger_profile", json={
             "platform": "instagram",
             "ice_breakers": [{"locale": "default",
                               "call_to_actions": [{"question": q[:80], "payload": q[:80]} for q in questions[:4]]}]})
+
+    async def set_persistent_menu(self, items: list[dict]) -> None:
+        """منوی ثابت دایرکت. هر مورد: {"type": "url"|"text", "title", "value"}؛ فهرست خالی یعنی حذف."""
+        if not items:
+            return await self._delete_profile("persistent_menu")
+        acts = [{"type": "web_url", "title": x["title"], "url": x["value"]} if x["type"] == "url"
+                else {"type": "postback", "title": x["title"], "payload": f"MENU:{i}"} for i, x in enumerate(items)]
+        await self._post(f"{self.user_id}/messenger_profile", json={
+            "platform": "instagram",
+            "persistent_menu": [{"locale": "default", "composer_input_disabled": False, "call_to_actions": acts}]})
 
     async def is_follower(self, igsid: str) -> bool | None:
         try:

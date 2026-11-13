@@ -10,7 +10,6 @@ const SUBS = [
   ['faq', 'دانش مرکزی'],
   ['admin', 'تنظیم با حرف'],
   ['learned', 'رضایت و آموخته‌ها'],
-  ['products', 'محصولات و قیمت'],
   ['docs', 'فایل‌ها'],
   ['settings', 'تنظیمات مغز'],
   ['log', 'لاگ پاسخ‌ها'],
@@ -39,7 +38,6 @@ export default function Ai({ sub = 'overview', badges = {} }) {
       {cur === 'faq' && <Kb />}
       {cur === 'admin' && <AiAdmin />}
       {cur === 'learned' && <AiLearned />}
-      {cur === 'products' && <Products />}
       {cur === 'docs' && <Docs />}
       {cur === 'log' && <Log />}
     </>
@@ -77,7 +75,7 @@ function Overview() {
   const steps = [
     [st.has_key, `کلید سرویس «${st.provider_label}» روی سرور تنظیم شده (${st.key_env})`, '#/ai/settings'],
     [counts.info, 'اطلاعات کسب‌وکار نوشته شده (آدرس، ساعت کاری، اقساط، گارانتی…)', '#/ai/settings'],
-    [counts.products > 0, `فهرست محصول و قیمت وارد شده (${fa(counts.products)} مورد)`, '#/ai/products'],
+    [counts.products > 0, `فهرست محصول و قیمت وارد شده (${fa(counts.products)} مورد)`, '#/smart/products'],
     [counts.faq > 0, `پرسش‌های رایج ثبت شده (${fa(counts.faq)} مورد)`, '#/ai/faq'],
     [counts.docs > 0, `فایل کاتالوگ یا پاسخنامه بارگذاری شده (${fa(counts.docs)} فایل)`, '#/ai/docs'],
   ]
@@ -686,7 +684,7 @@ function SiteSync({ onSynced }) {
   )
 }
 
-function Products() {
+export function Products() {
   const [items, setItems] = useState([])
   const [edit, setEdit] = useState(null)
   const [q, setQ] = useState('')

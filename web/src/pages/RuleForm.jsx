@@ -143,6 +143,7 @@ export default function RuleForm({ id }) {
   const [busy, setBusy] = useState(false)
   const [advOpen, setAdvOpen] = useState(false)
   const [preview, setPreview] = useState(false)
+  const [formsList, setFormsList] = useState([])
 
   useEffect(() => {
     const pre = isNew && sessionStorage.getItem('rule_prefill')
@@ -151,6 +152,7 @@ export default function RuleForm({ id }) {
       try { const p = JSON.parse(pre); setR({ ...EMPTY, ...p, actions: { ...EMPTY.actions, ...(p.actions || {}) }, advanced: { ...EMPTY.advanced, ...(p.advanced || {}) } }) } catch { /* فرم خالی */ }
     }
     api.get('/api/saved-replies').then(setSaved).catch(() => {})
+    api.get('/api/forms').then(setFormsList).catch(() => {})
     api.get('/api/media').then(setMedia).catch(() => {})
     api.get('/api/instagram/media-notes').then((d) => setStories(d.stories || [])).catch(() => {})
     if (!isNew) api.get('/api/rules').then((rs) => {
@@ -158,7 +160,7 @@ export default function RuleForm({ id }) {
       if (x) {
         setR({
           ...x,
-          actions: { public_replies: x.actions.public_replies || [], private_replies: x.actions.private_replies || [], dm_replies: x.actions.dm_replies || [], quick_replies: x.actions.quick_replies || [] },
+          actions: { public_replies: x.actions.public_replies || [], private_replies: x.actions.private_replies || [], dm_replies: x.actions.dm_replies || [], quick_replies: x.actions.quick_replies || [], form_id: x.actions.form_id || 0 },
           advanced: { ...EMPTY.advanced, ...x.advanced, cooldown_minutes: Math.round((x.advanced.cooldown_seconds || 0) / 60) },
         })
         setAdvOpen(true)
@@ -177,7 +179,7 @@ export default function RuleForm({ id }) {
   const toggleScopeId = (mid) => set({ post_scope: scope.includes(mid) ? scope.filter((x) => x !== mid) : [...scope.filter((x) => x !== 'next'), mid] })
   const a = r.advanced
   const advCount = [a.require_follow, scope && hasC, a.followup?.text !== undefined && a.followup !== null, hasC && r.actions.public_replies.length > 0,
-    a.max_uses > 0, a.once_per_user, Number(a.cooldown_minutes) > 0, !!a.active_hours, a.handoff, Number(a.pause_ai_minutes) > 0].filter(Boolean).length
+    a.max_uses > 0, !!r.actions.form_id, a.once_per_user, Number(a.cooldown_minutes) > 0, !!a.active_hours, a.handoff, Number(a.pause_ai_minutes) > 0].filter(Boolean).length
 
   async function save(e) {
     e.preventDefault(); setErr('')
@@ -201,7 +203,8 @@ export default function RuleForm({ id }) {
       post_scope: scope && scope.length ? scope : 'all',
       triggers: r.triggers.filter((t) => t.match === 'any' || t.value.trim()),
       actions: { public_replies: hasC ? clean(r.actions.public_replies) : [], private_replies: hasC ? clean(r.actions.private_replies) : [],
-        dm_replies: hasD ? clean(r.actions.dm_replies) : [], quick_replies: hasD ? clean(r.actions.quick_replies).map((t) => t.slice(0, 20)).slice(0, 13) : [] },
+        dm_replies: hasD ? clean(r.actions.dm_replies) : [], quick_replies: hasD ? clean(r.actions.quick_replies).map((t) => t.slice(0, 20)).slice(0, 13) : [],
+        ...(r.actions.form_id > 0 ? { form_id: Number(r.actions.form_id) } : {}) },
     }
     if (!body.triggers.length) body.triggers = [{ match: 'any', value: '' }]
     delete body.id; delete body.use_count
@@ -304,6 +307,17 @@ export default function RuleForm({ id }) {
         <Adv on={hasC && r.actions.public_replies.length > 0} disabled={!hasC} icon="comment" title="کامنت بعد از دایرکت" desc="بعد از فرستادن دایرکت، یکی از این متن‌ها به نوبت زیر همان کامنت جواب داده می‌شود."
           onToggle={() => setAct('public_replies', r.actions.public_replies.length ? [] : ['پیام در دایرکت ارسال شد ✅', 'لطفاً دایرکت رو چک کنید 🙏', 'فرستادم برات 📩'])}>
           <Messages list={r.actions.public_replies} onChange={(l) => setAct('public_replies', l)} saved={[]} placeholder="متن جواب زیر کامنت" addLabel="متن جدید" />
+        </Adv>
+
+        <Adv on={!!r.actions.form_id} icon="edit" title="شروع فرم" desc="بعد از پیام این دستور، سؤال‌های فرم یکی‌یکی در دایرکت پرسیده و جواب‌ها ذخیره می‌شود (حتی وقتی جواب خودکار دایرکت خاموش است)."
+          onToggle={() => setR((x) => ({ ...x, actions: { ...x.actions, form_id: x.actions.form_id ? 0 : (formsList[0]?.id || -1) } }))}>
+          {formsList.length ? (
+            <select value={r.actions.form_id > 0 ? r.actions.form_id : ''} onChange={(e) => setR((x) => ({ ...x, actions: { ...x.actions, form_id: Number(e.target.value) } }))}>
+              <option value="" disabled>یک فرم انتخاب کنید</option>
+              {formsList.map((f) => <option key={f.id} value={f.id}>{f.name}{f.enabled ? '' : ' (خاموش)'}</option>)}
+            </select>
+          ) : <div className="note warn">هنوز فرمی نساخته‌اید. <a href="#/smart/forms/new">ساخت فرم</a></div>}
+          {hasC && <div className="note info">برای کامنت، سؤال اول همراه همان دایرکت به کامنت‌گذار می‌رود و جواب‌ها در دایرکت ادامه پیدا می‌کند.</div>}
         </Adv>
 
         <Adv on={a.max_uses > 0} icon="clock" title="محدودیت تعداد پاسخ" desc="بعد از رسیدن به سقف، پاسخ اصلی متوقف می‌شود و پیام جایگزین فرستاده می‌شود (اگر بنویسید)."

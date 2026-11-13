@@ -38,9 +38,11 @@ def validate(rule: dict) -> list[str]:
             errs.append(f"match نامعتبر: {t.get('match')}")
     acts = rule.get("actions", {})
     adv = rule.get("advanced", {}) or {}
-    if not any(acts.get(k) for k in ("public_replies", "private_replies", "dm_replies")) \
+    if not any(acts.get(k) for k in ("public_replies", "private_replies", "dm_replies", "form_id")) \
             and not (adv.get("handoff") or adv.get("pause_ai_minutes")):
-        errs.append("حداقل یک پیام پاسخ، یا «سپردن به همکار» یا «توقف هوش مصنوعی» لازم است")
+        errs.append("حداقل یک پیام پاسخ، یک فرم، یا «سپردن به همکار» یا «توقف هوش مصنوعی» لازم است")
+    if acts.get("form_id") not in (None, "", 0) and not isinstance(acts.get("form_id"), int):
+        errs.append("فرم نامعتبر است")
     pause = adv.get("pause_ai_minutes")
     if pause not in (None, "", 0) and (not isinstance(pause, (int, float)) or not 0 < pause <= 7 * 24 * 60):
         errs.append("توقف هوش مصنوعی باید بین ۱ دقیقه و ۷ روز باشد")

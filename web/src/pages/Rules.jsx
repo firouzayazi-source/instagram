@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { api, fa, timeAgo } from '../api.js'
 import Icon from '../icons.jsx'
+import { SmartTabs } from './Smart.jsx'
 
 const WHERE = { comment: 'کامنت', dm: 'دایرکت', story_reply: 'جواب استوری', mention: 'منشن' }
 const MATCH = { any: 'هر مقداری', exact: 'برابر', contains: 'شامل', starts_with: 'شروع با', regex: 'الگو' }
@@ -39,6 +40,7 @@ export default function Rules() {
         <div className="title"><h1>پاسخ هوشمند</h1><span className="sub">دستورهای دایرکت و کامنت</span></div>
         <a href="#/more" className="iconbtn" aria-label="بیشتر"><Icon n="gear" /></a>
       </header>
+      <SmartTabs cur="rules" />
 
       <section className="sec">
         <div className="sec-h" style={{ alignItems: 'center' }}>

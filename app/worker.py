@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from . import ai, channels, config, crm, db, knowledge, learning, memory, moderation, orders, push, tg_notify
+from . import ai, channels, config, crm, db, dm_menu, forms, knowledge, learning, memory, moderation, orders, push, tg_notify
 from .rules import Incoming, find_rule, pick
 
 MAX_RETRIES = 3
@@ -114,6 +114,12 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
     await store_incoming(ig, c, row["kind"], payload, inc)
     if store_only:
         return "merged"
+    if inc.channel == "dm" and channels.enabled("instagram") and not knowledge.is_blocked(c, inc.user_id) \
+            and not db.human_until(c, inc.user_id):
+        # منوی ثابت و فرم در جریان: صاحب پیج خودش متن‌ها را تعیین کرده، پس حتی با جواب خودکار خاموش هم می‌روند
+        handled = await handle_menu_or_form(ig, row, c, payload, inc)
+        if handled:
+            return handled
     if polled and row["kind"] != "comment":
         from . import comment_poll
         if not comment_poll.dm_reply_enabled(c):
@@ -177,19 +183,27 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         alt = adv.get("over_limit_reply", "")
         acts = {"private_replies": [alt], "public_replies": []} if inc.channel == "comment" else {"dm_replies": [alt]}
     sent = False
+    form_q = forms.start(c, acts["form_id"], inc.user_id) if acts.get("form_id") and not over else None
     if inc.channel == "comment":
         # دستوری که هم کامنت دارد هم دایرکت و فقط متن دایرکت نوشته شده: همان متن به کامنت‌گذار دایرکت می‌شود
         if not acts.get("private_replies") and acts.get("dm_replies"):
             acts = {**acts, "private_replies": acts["dm_replies"]}
         for kind in ("private", "public"):
             text = pick(acts.get(f"{kind}_replies", []), n - 1)
+            if kind == "private" and form_q:     # به هر کامنت فقط یک دایرکت می‌شود فرستاد: سؤال اول همراه همان پیام
+                text = "\n\n".join(x for x in (text, form_question_text(*form_q)) if x)
             if text:
-                sent |= await _send(ig, c, row["id"], rule["id"], kind, payload, inc, text)
+                ok = await _send(ig, c, row["id"], rule["id"], kind, payload, inc, text)
+                sent |= ok
+                if kind == "private" and form_q and not ok:
+                    forms.cancel(c, inc.user_id)
     else:
         text = pick(acts.get("dm_replies", []), n - 1)
         if text:
             sent |= await _send(ig, c, row["id"], rule["id"], "dm", payload, inc, text,
-                                quick_replies=acts.get("quick_replies") or None)
+                                quick_replies=None if form_q else acts.get("quick_replies") or None)
+        if form_q and not await _send(ig, c, row["id"], rule["id"], "dm", payload, inc, form_q[0], quick_replies=form_q[1]):
+            forms.cancel(c, inc.user_id)
     if adv.get("pause_ai_minutes") and inc.channel == "dm":
         db.set_human(c, inc.user_id, float(adv["pause_ai_minutes"]))   # «توقف هوش مصنوعی» بعد از این دستور
     if adv.get("handoff"):
@@ -199,6 +213,30 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         fu = adv.get("followup")  # {"after_seconds": 3600, "text": "..."}
         if fu and fu.get("text") and fu.get("after_seconds"):
             db.add_followup(c, rule["id"], inc.user_id, fu["text"], float(fu["after_seconds"]))
+    return "done"
+
+
+def form_question_text(text: str, options: list[str] | None) -> str:
+    """سؤال فرم وقتی دکمه نمی‌شود فرستاد (دایرکت به کامنت‌گذار): گزینه‌ها در متن."""
+    return text + (("\n" + " / ".join(options)) if options else "")
+
+
+async def handle_menu_or_form(ig, row, c, payload, inc: Incoming) -> str | None:
+    """لمس دکمه‌ی منوی ثابت یا جواب سؤال فرم. None یعنی این پیام مال هیچ‌کدام نیست."""
+    text = dm_menu.reply_for(c, inc.payload, inc.text)
+    if text:
+        await _send(ig, c, row["id"], None, "dm", payload, inc, text)
+        return "done"
+    if not inc.text.strip() or not forms.active(c, inc.user_id):
+        return None
+    res = forms.answer(c, inc.user_id, db.conversation_username(c, inc.user_id) or "", inc.text)
+    if res is None:
+        return None
+    await _send(ig, c, row["id"], None, "dm", payload, inc, res["text"], quick_replies=res["quick_replies"])
+    if res["done"]:
+        if res["phone"]:
+            c.execute("UPDATE customers SET phone=? WHERE id=? AND phone=''", (res["phone"], crm.cid("ig", inc.user_id)))
+        tg_notify.send(f"📝 فرم «{res['form']}» تازه پر شد.\nپنل ← پاسخ هوشمند ← فرم‌ساز")   # بدون اطلاعات مشتری
     return "done"
 
 
