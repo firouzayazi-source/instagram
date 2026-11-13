@@ -253,15 +253,15 @@ export default function RuleForm({ id }) {
       </Sec>
 
       {hasC && (
-        <Sec icon="msg" title="پیام دایرکت به کامنت‌گذار" badge={`${r.actions.private_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام`}
-          desc="به هر کامنت یک دایرکت می‌رود (اینستاگرام فقط یک بار و تا ۷ روز اجازه می‌دهد). چند پیام یعنی هر بار یکی به نوبت.">
+        <Sec icon="comment" title="جواب به کامنت: دایرکت به کامنت‌گذار" badge={`${r.actions.private_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام`}
+          desc="وقتی کسی کامنت می‌گذارد، این متن به دایرکت او می‌رود (اینستاگرام فقط یک بار و تا ۷ روز اجازه می‌دهد). برای جواب زیر خود کامنت: تنظیمات پیشرفته ← «کامنت بعد از دایرکت».">
           {!r.actions.private_replies.some((t) => t.trim()) && <div className="note warn">حداقل یک پیام برای این دستور لازم است.</div>}
           <Messages list={r.actions.private_replies} onChange={(l) => setAct('private_replies', l)} saved={saved} placeholder="مثلاً: سلام! قیمت لحظه‌ای و اقساط اینجاست: https://t.me/…" />
         </Sec>
       )}
       {hasD && (
-        <Sec icon="dm" title="پیام‌های پاسخ در دایرکت" badge={`${r.actions.dm_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام`}
-          desc="جواب دایرکت، جواب استوری یا منشن. چند پیام یعنی هر بار یکی به نوبت.">
+        <Sec icon="dm" title={`جواب به ${r.channels.filter((c) => c !== 'comment').map((c) => ({ dm: 'دایرکت', story_reply: 'جواب استوری', mention: 'منشن' })[c]).join('، ')}`} badge={`${r.actions.dm_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام`}
+          desc={hasC ? 'این متن فقط برای پیام‌هایی است که مستقیم در دایرکت می‌آیند، نه برای کامنت‌ها. چند پیام یعنی هر بار یکی به نوبت.' : 'چند پیام یعنی هر بار یکی به نوبت.'}>
           <Messages list={r.actions.dm_replies} onChange={(l) => setAct('dm_replies', l)} saved={saved} placeholder="متن پاسخ" />
           <div className="sub-card">
             <b>دکمه‌های پاسخ سریع (اختیاری)</b>
