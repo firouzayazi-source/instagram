@@ -23,6 +23,9 @@ main() {
   [ -d "$OLD" ] && echo "پوشه‌ی قدیمی: $OLD ($(du -sh "$OLD" | cut -f1))" || echo "پوشه‌ی قدیمی از قبل نیست"
   [ -f "$UNIT" ] && echo "فایل سرویس قدیمی: $UNIT" || echo "فایل سرویس قدیمی از قبل نیست"
 
+  if [ ! -d "$OLD" ] && [ ! -f "$UNIT" ]; then
+    echo; echo "✅ چیزی برای بازنشستگی نمانده؛ ربات قدیمی از قبل برداشته شده است."; return
+  fi
   if [ "$APPLY" != "--apply" ]; then
     echo; echo "فقط وارسی بود. برای اجرا: sudo bash $0 --apply"; return
   fi
