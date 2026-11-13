@@ -5,7 +5,10 @@
 رویش اجرا می‌کند و تعداد ردیف‌های جدول‌های اصلی را با پایگاه داده‌ی زنده مقایسه می‌کند. نتیجه در
 پایگاه داده‌ی زنده (kv: backup_check) نوشته می‌شود و اگر خراب بود، نظارت پنل به تلگرام مدیر هشدار می‌دهد.
 
-    sudo -u igbot /opt/igbot/.venv/bin/python /opt/igbot/tools/backup_check.py /var/backups/igbot
+    cd /opt/igbot && sudo .venv/bin/python tools/backup_check.py /var/backups/igbot
+
+با root اجرا می‌شود (پوشه‌ی /var/backups فقط برای root باز است). پایگاه داده‌ی زنده هرگز مستقیم باز نمی‌شود
+(فقط کپی‌اش)، و نتیجه با کاربر igbot (‎--record‎) نوشته می‌شود تا هیچ فایلی با مالک root کنارش ساخته نشود.
 """
 import json
 import shutil
@@ -38,7 +41,8 @@ def check_db(path: Path, live: Path | None = None, app_schema: bool = False) -> 
             if app_schema:
                 from app import db
                 db.init(str(tmp))                     # همان راه‌اندازی برنامه، روی کپی
-                with sqlite3.connect(tmp) as c, (sqlite3.connect(f"file:{live}?mode=ro", uri=True) if live and live.exists() else _Null()) as lv:
+                lv_copy = _live_copy(live, Path(t))
+                with sqlite3.connect(tmp) as c, (sqlite3.connect(lv_copy) if lv_copy else _Null()) as lv:
                     for tb in TABLES:
                         n = c.execute(f"SELECT COUNT(*) FROM {tb}").fetchone()[0]
                         if lv is not None:
@@ -48,6 +52,19 @@ def check_db(path: Path, live: Path | None = None, app_schema: bool = False) -> 
         except sqlite3.Error as e:
             return False, f"{path.name}: باز نشد ({e})"
     return True, f"{path.name}: سالم"
+
+
+def _live_copy(live: Path | None, d: Path) -> Path | None:
+    """کپی پایگاه داده‌ی زنده (با فایل WAL) برای شمارش؛ خود فایل زنده هرگز باز نمی‌شود تا با اجرای root
+    هیچ فایلی با مالک root کنارش ساخته نشود."""
+    if not live or not live.exists():
+        return None
+    dst = d / "live-copy.db"
+    shutil.copy2(live, dst)
+    wal = live.with_name(live.name + "-wal")
+    if wal.exists():
+        shutil.copy2(wal, d / "live-copy.db-wal")
+    return dst
 
 
 class _Null:
@@ -87,15 +104,34 @@ def run(backup_dir: Path, live_db: Path, max_age_h: float = 30) -> dict:
     return {"at": time.time(), "ok": ok, "error": "" if ok else "؛ ".join(n for n in notes if "سالم" not in n), "notes": notes}
 
 
+def record(res: dict) -> None:
+    from app import db
+    with db.connect() as c:
+        db.kv_set(c, "backup_check", json.dumps(res, ensure_ascii=False))
+
+
+def save(res: dict) -> None:
+    """root نباید در پایگاه داده‌ی igbot بنویسد (فایل‌های WAL با مالک root سرویس را از کار می‌اندازد)."""
+    import os
+    import subprocess
+    try:
+        if os.geteuid() == 0:
+            subprocess.run(["sudo", "-u", "igbot", sys.executable, str(Path(__file__).resolve()), "--record"],
+                           input=json.dumps(res, ensure_ascii=False), text=True, check=True, timeout=60, cwd=str(ROOT))
+        else:
+            record(res)
+    except (sqlite3.Error, OSError, subprocess.SubprocessError) as e:
+        print("ثبت نتیجه نشد:", e)
+
+
 def main() -> int:
-    from app import config, db
+    from app import config
+    if sys.argv[1:] == ["--record"]:
+        record(json.loads(sys.stdin.read()))
+        return 0
     backup_dir = Path(sys.argv[1] if len(sys.argv) > 1 else "/var/backups/igbot")
     res = run(backup_dir, Path(config.DB_PATH))
-    try:
-        with db.connect() as c:
-            db.kv_set(c, "backup_check", json.dumps(res, ensure_ascii=False))
-    except sqlite3.Error as e:
-        print("ثبت نتیجه نشد:", e)
+    save(res)
     print(("✅ " if res["ok"] else "❌ ") + " | ".join(res["notes"]))
     return 0 if res["ok"] else 1
 

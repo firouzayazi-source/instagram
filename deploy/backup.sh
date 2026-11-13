@@ -19,7 +19,8 @@ find "$DST" \( -name 'bot-*.db' -o -name 'tg-users-*.db' -o -name 'tg-json-*.tar
 
 # آزمون بازگردانی: آخرین بکاپ‌ها باز می‌شوند و داده دارند؟ نتیجه در پنل و هشدار تلگرام (tools/backup_check.py)
 if [ -x /opt/igbot/.venv/bin/python ]; then
-  (cd /opt/igbot && sudo -u igbot /opt/igbot/.venv/bin/python tools/backup_check.py "$DST") || echo "❌ آزمون بکاپ ناموفق؛ پنل و تلگرام را ببینید"
+  # با root (پوشه‌ی /var/backups فقط برای root باز است)؛ خود اسکریپت نتیجه را با کاربر igbot ثبت می‌کند
+  (cd /opt/igbot && /opt/igbot/.venv/bin/python tools/backup_check.py "$DST") || echo "❌ آزمون بکاپ ناموفق؛ پنل و تلگرام را ببینید"
 fi
 
 # نسخه‌ی بیرون از سرور (اختیاری): اگر BACKUP_COPY_DIR در .env باشد (مثلاً دیسک یا فضای ذخیره‌ی جدا که روی سرور
