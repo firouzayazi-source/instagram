@@ -260,12 +260,14 @@ export default function RuleForm({ id }) {
           desc="وقتی کسی کامنت می‌گذارد، این متن به دایرکت او می‌رود (اینستاگرام فقط یک بار و تا ۷ روز اجازه می‌دهد). برای جواب زیر خود کامنت: تنظیمات پیشرفته ← «کامنت بعد از دایرکت».">
           {!r.actions.private_replies.some((t) => t.trim()) && <div className="note warn">حداقل یک پیام برای این دستور لازم است.</div>}
           <Messages list={r.actions.private_replies} onChange={(l) => setAct('private_replies', l)} saved={saved} placeholder="مثلاً: سلام! قیمت لحظه‌ای و اقساط اینجاست: https://t.me/…" />
+          <small className="muted">لینک ربات پشتیبان در متن خودکار نشانه‌ی همین دستور را می‌گیرد تا معلوم شود چند نفر از این دستور وارد ربات شدند؛ به‌جای لینک می‌توانید بنویسید <code dir="ltr">{'{bot}'}</code>.</small>
         </Sec>
       )}
       {hasD && (
         <Sec icon="dm" title={`جواب به ${r.channels.filter((c) => c !== 'comment').map((c) => ({ dm: 'دایرکت', story_reply: 'جواب استوری', mention: 'منشن' })[c]).join('، ')}`} badge={`${r.actions.dm_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام`}
           desc={hasC ? 'این متن فقط برای پیام‌هایی است که مستقیم در دایرکت می‌آیند، نه برای کامنت‌ها. چند پیام یعنی هر بار یکی به نوبت.' : 'چند پیام یعنی هر بار یکی به نوبت.'}>
           <Messages list={r.actions.dm_replies} onChange={(l) => setAct('dm_replies', l)} saved={saved} placeholder="متن پاسخ" />
+          <small className="muted">لینک ربات پشتیبان خودکار نشانه‌ی همین دستور را می‌گیرد (یا بنویسید <code dir="ltr">{'{bot}'}</code>).</small>
           <div className="sub-card">
             <b>دکمه‌های پاسخ سریع (اختیاری)</b>
             <small className="muted">زیر پیام نشان داده می‌شوند؛ هر خط یک دکمه، تا ۱۳ دکمه و هر کدام ۲۰ نویسه.</small>

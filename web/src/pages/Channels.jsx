@@ -10,7 +10,7 @@ import { Blocked, Msg } from './Ai.jsx'
 // هر کانال قابلیت‌های خودش را دارد؛ هسته‌ی مرکزی (مغز، دانش، هوش مصنوعی) مشترک است
 const SUBS = {
   // کارهای هرروزه اول؛ تنظیم‌های کم‌استفاده آخر
-  instagram: [['connect', 'وضعیت'], ['dm', 'دایرکت'], ['comment', 'کامنت'], ['story', 'استوری'], ['sales', 'فروش'], ['blocked', 'مسدودها']],
+  instagram: [['connect', 'وضعیت و اتصال'], ['settings', 'تنظیمات پاسخ']],
   telegram: [['connect', 'اتصال و وضعیت']],
 }
 
@@ -219,17 +219,18 @@ export function Media() {
   )
 }
 
-function IgPart({ part }) {
+function IgPart({ parts }) {
+  const has = (p) => parts.includes(p)
   const [s, setS] = useState(null)
   const [msg, setMsg] = useState(null)
   useEffect(() => { api.get('/api/ai/settings').then((r) => setS(r.settings)).catch(() => {}) }, [])
   if (!s) return <div className="empty">در حال بارگذاری…</div>
   const set = (patch) => setS({ ...s, ...patch })
-  const KEYS = {
+  const KEYS = parts.flatMap((p) => ({
     dm: ['dm_enabled', 'prompt_dm', 'welcome_text', 'quick_replies_enabled', 'dm_quick_replies', 'typing_indicator', 'human_pause_minutes', 'batch_wait_seconds', 'notify_telegram'],
     comment: ['comment_enabled', 'comment_mode', 'public_ack', 'public_prices', 'prompt_comment', 'mod_profanity', 'mod_links', 'mod_words'],
     story: ['mention_reply_enabled', 'mention_replies'],
-  }[part]
+  }[p]))
   const lines = (v) => (v || []).join('\n')
   const split = (v) => v.split('\n')
 
@@ -243,7 +244,7 @@ function IgPart({ part }) {
 
   return (
     <form onSubmit={save}>
-      {part === 'dm' && (
+      {has('dm') && (
         <section className="card">
           <h2>پاسخ خودکار دایرکت</h2>
           <label className="check"><input type="checkbox" checked={s.dm_enabled} onChange={(e) => set({ dm_enabled: e.target.checked })} /> مغز مرکزی به دایرکت‌های اینستاگرام جواب بدهد</label>
@@ -255,7 +256,7 @@ function IgPart({ part }) {
           <label className="check"><input type="checkbox" checked={s.typing_indicator} onChange={(e) => set({ typing_indicator: e.target.checked })} /> پیش از جواب «دیده شد» و «در حال نوشتن…» نشان بدهد</label>
         </section>
       )}
-      {part === 'dm' && (
+      {has('dm') && (
         <section className="card">
           <h2>همکار و ربات</h2>
           <div className="field">
@@ -271,14 +272,14 @@ function IgPart({ part }) {
           <label className="check"><input type="checkbox" checked={s.notify_telegram} onChange={(e) => set({ notify_telegram: e.target.checked })} /> ارجاع‌ها به گروه پشتیبانی تلگرام هم برود (تاپیک «📸 اینستاگرام»)</label>
         </section>
       )}
-      {part === 'dm' && (
+      {has('dm') && (
         <section className="card">
           <h2>پیام خوش‌آمد</h2>
           <p className="muted">فقط برای اولین دایرکت هر مشتری، پیش از جواب اصلی. خالی یعنی خاموش.</p>
           <textarea rows={3} value={s.welcome_text} placeholder="سلام، به استوک لند خوش اومدید 🌸 هر سؤالی دارید بپرسید؛ قیمت، اقساط، گارانتی…" onChange={(e) => set({ welcome_text: e.target.value })} />
         </section>
       )}
-      {part === 'dm' && (
+      {has('dm') && (
         <section className="card">
           <h2>دکمه‌های پاسخ سریع</h2>
           <label className="check"><input type="checkbox" checked={s.quick_replies_enabled} onChange={(e) => set({ quick_replies_enabled: e.target.checked })} /> زیر جواب‌های ربات دکمه نشان بدهد</label>
@@ -289,13 +290,13 @@ function IgPart({ part }) {
           </div>
         </section>
       )}
-      {part === 'dm' && (
+      {has('dm') && (
         <section className="card">
           <h2>سؤال‌های متداول، منوی ثابت و فرم‌ها</h2>
           <p className="muted">به «پاسخ هوشمند» منتقل شدند: <a href="#/smart/faq">سؤال‌های متداول</a> · <a href="#/smart/menu">منوی ثابت</a> · <a href="#/smart/forms">فرم‌ساز</a></p>
         </section>
       )}
-      {part === 'comment' && (
+      {has('comment') && (
         <section className="card">
           <h2>پاسخ خودکار کامنت</h2>
           <label className="check"><input type="checkbox" checked={s.comment_enabled} onChange={(e) => set({ comment_enabled: e.target.checked })} /> مغز مرکزی به کامنت‌ها جواب بدهد</label>
@@ -312,7 +313,7 @@ function IgPart({ part }) {
           </div>
         </section>
       )}
-      {part === 'comment' && (
+      {has('comment') && (
         <section className="card">
           <h2>نظارت خودکار کامنت</h2>
           <p className="muted">کامنت مشکل‌دار مخفی می‌شود (فقط نویسنده و دوستانش می‌بینند) و جواب نمی‌گیرد. در «صندوق ← کامنت‌ها» با یک لمس برمی‌گردد.</p>
@@ -324,7 +325,7 @@ function IgPart({ part }) {
           </div>
         </section>
       )}
-      {part === 'story' && (
+      {has('story') && (
         <section className="card">
           <h2>منشن در استوری</h2>
           <p className="muted">وقتی کسی پیج را در استوری‌اش منشن کند.</p>
@@ -336,7 +337,7 @@ function IgPart({ part }) {
           <p className="hint muted">برای جواب متفاوت، در «دستورها» دستوری با محل دریافت «منشن در استوری» بسازید؛ دستور اولویت دارد.</p>
         </section>
       )}
-      {part === 'story' && (
+      {has('story') && (
         <section className="card">
           <h2>جواب به استوری</h2>
           <p className="muted">وقتی مشتری روی یکی از استوری‌ها جواب می‌دهد، مثل دایرکت جواب داده می‌شود؛ مغز مرکزی می‌داند پیام درباره‌ی استوری است و اگر معلوم نباشد کدام محصول، می‌پرسد. دستور مخصوص هم با محل دریافت «جواب به استوری» ساخته می‌شود.</p>
@@ -359,7 +360,9 @@ export default function Channels({ id, sub }) {
     )
   }
   const subs = SUBS[id]
-  const cur = subs.find(([k]) => k === sub) ? sub : 'connect'
+  // نشانی‌های قدیمی زیربخش‌ها (دایرکت، کامنت، استوری، فروش، مسدودها) همه در «تنظیمات پاسخ» یک‌جا هستند
+  const old = id === 'instagram' && ['dm', 'comment', 'story', 'sales', 'blocked'].includes(sub)
+  const cur = old ? 'settings' : subs.find(([k]) => k === sub) ? sub : 'connect'
   return (
     <>
       <header className="topbar"><h1>{id === 'instagram' ? 'اینستاگرام' : 'تلگرام'}</h1><a href="#/channels" className="btn sm">همه‌ی کانال‌ها</a></header>
@@ -369,10 +372,13 @@ export default function Channels({ id, sub }) {
         </div>
       )}
       {cur === 'connect' && <Connect id={id} />}
-      {cur === 'dm' && <IgPart part="dm" />}
-      {cur === 'sales' && <Sales />}
-      {cur === 'comment' && <IgPart part="comment" />}
-      {cur === 'story' && <IgPart part="story" />}
+      {cur === 'settings' && (
+        <>
+          <IgPart parts={['dm', 'comment', 'story']} />
+          <details className="card" open={sub === 'sales'}><summary><b>فروش در دایرکت</b> <small className="muted">کارت محصول و ثبت سفارش</small></summary><Sales /></details>
+          <details className="card" open={sub === 'blocked'}><summary><b>مسدودها</b> <small className="muted">کاربرانی که جواب خودکار نمی‌گیرند</small></summary><Blocked /></details>
+        </>
+      )}
       {cur === 'ideas' && <Ideas />}
       {cur === 'schedule' && <Schedule />}
       {cur === 'media' && <Media />}

@@ -4,15 +4,17 @@ import AiAdmin from './AiAdmin.jsx'
 import AiKeys from './AiKeys.jsx'
 import AiLearned from './AiLearned.jsx'
 
+// چهار بخش هرروزه؛ بقیه زیر «پیشرفته»
 const SUBS = [
-  ['overview', 'نمای کلی'],
+  ['faq', 'دانش'],
   ['handoffs', 'ارجاع به شما'],
-  ['faq', 'دانش مرکزی'],
+  ['settings', 'تنظیمات'],
+  ['log', 'لاگ پاسخ‌ها'],
+]
+const ADVANCED = [
+  ['overview', 'نمای کلی'],
   ['admin', 'تنظیم با حرف'],
   ['learned', 'رضایت و آموخته‌ها'],
-  ['docs', 'فایل‌ها'],
-  ['settings', 'تنظیمات مغز'],
-  ['log', 'لاگ پاسخ‌ها'],
 ]
 // تنظیم‌های مخصوص اینستاگرام که در «کانال‌ها ← اینستاگرام» ویرایش می‌شوند؛ صفحه‌ی مغز مرکزی آن‌ها را نمی‌فرستد
 const IG_KEYS = ['human_pause_minutes', 'batch_wait_seconds', 'notify_telegram', 'telegram_ai', 'welcome_text', 'quick_replies_enabled', 'dm_quick_replies', 'typing_indicator', 'ice_breakers', 'mention_reply_enabled', 'mention_replies', 'mod_profanity', 'mod_links', 'mod_words', 'dm_enabled', 'comment_enabled', 'comment_mode', 'public_ack', 'public_prices', 'prompt_dm', 'prompt_comment', 'showcase_cards', 'order_enabled', 'order_payment_text', 'auto_followup_enabled', 'auto_followup_hours', 'auto_followup_text', 'ask_feedback', 'auto_learn']
@@ -20,8 +22,11 @@ const ACTION_FA = { reply: 'پاسخ داد', handoff: 'ارجاع', ignore: 'ن
 const ACTION_CLS = { reply: 'good', handoff: 'warn', ignore: 'muted', skip: 'muted', error: 'bad' }
 const SKIP_FA = { emoji: 'فقط ایموجی', budget: 'سقف بودجه', disabled: 'خاموش', channel_disabled: 'کانال خاموش', no_api_key: 'کلید API ندارد' }
 
-export default function Ai({ sub = 'overview', badges = {} }) {
-  const cur = SUBS.find(([k]) => k === sub) ? sub : 'overview'
+export default function Ai({ sub = 'faq', badges = {} }) {
+  const all = [...SUBS, ...ADVANCED]
+  const cur = sub === 'docs' ? 'faq' : all.find(([k]) => k === sub) ? sub : 'faq'
+  const isAdv = ADVANCED.some(([k]) => k === cur)
+  const [adv, setAdv] = useState(isAdv)
   return (
     <>
       <header className="topbar"><h1>مغز مرکزی</h1><span className="sub">یک مغز و یک دانش برای همه‌ی کانال‌ها</span></header>
@@ -31,14 +36,19 @@ export default function Ai({ sub = 'overview', badges = {} }) {
             {l}{k === 'handoffs' && badges.handoffs > 0 && <span className="count">{fa(badges.handoffs)}</span>}
           </a>
         ))}
+        <button type="button" className={`chip ${isAdv ? 'active' : ''}`} onClick={() => setAdv(!adv)}>پیشرفته {adv || isAdv ? '▴' : '▾'}</button>
       </div>
+      {(adv || isAdv) && (
+        <div className="chips">
+          {ADVANCED.map(([k, l]) => <a key={k} href={`#/ai/${k}`} className={`chip ${cur === k ? 'active' : ''}`}>{l}</a>)}
+        </div>
+      )}
       {cur === 'overview' && <Overview />}
       {cur === 'handoffs' && <Handoffs />}
       {cur === 'settings' && <><AiKeys /><Settings /></>}
-      {cur === 'faq' && <Kb />}
+      {cur === 'faq' && <><Kb /><Docs /></>}
       {cur === 'admin' && <AiAdmin />}
       {cur === 'learned' && <AiLearned />}
-      {cur === 'docs' && <Docs />}
       {cur === 'log' && <Log />}
     </>
   )

@@ -20,15 +20,9 @@ def allowed() -> dict:
     out = {p["key"]: p["label"] for p in ai.PROVIDERS.values()}
     out.update({"CUSTOM_AI_BASE_URL": "آدرس سرویس دلخواه", "CUSTOM_AI_NAME": "نام سرویس دلخواه"})
     out.update(COMPOSIO)
-    out.update(GOOGLE_LOGIN)
     return out
 
 
-# ورود به پنل با گوگل: شناسه‌ی عمومی دکمه و فهرست ایمیل‌های مجاز (هیچ‌کدام راز نیست)
-GOOGLE_LOGIN = {"GOOGLE_CLIENT_ID": "شناسه‌ی ورود با گوگل (Client ID)",
-                "LOGIN_EMAILS": "ایمیل‌های مجاز برای ورود با گوگل (با ویرگول جدا)"}
-_GCID = re.compile(r"^[0-9]{5,30}-[a-z0-9]{10,64}\.apps\.googleusercontent\.com$")
-_EMAIL = re.compile(r"^[^@\s,]+@[^@\s,]+\.[a-z]{2,}$", re.I)
 
 
 # پل موقت Composio برای خواندن آمار اینستاگرام (تحلیل محتوا) تا اتصال اپ Meta خود پروژه
@@ -68,14 +62,6 @@ def _validate(name: str, value: str) -> str:
     elif name in ("COMPOSIO_ACCOUNT_ID", "COMPOSIO_USER_ID"):
         if not _ID.match(value):
             raise ValueError("شناسه فقط حرف لاتین، عدد و - _ . : @ دارد")
-    elif name == "GOOGLE_CLIENT_ID":
-        if not _GCID.match(value):
-            raise ValueError("شناسه باید شبیه 1234-abc….apps.googleusercontent.com باشد")
-    elif name == "LOGIN_EMAILS":
-        emails = [e.strip().lower() for e in value.split(",") if e.strip()]
-        if not emails or len(emails) > 10 or not all(_EMAIL.match(e) for e in emails):
-            raise ValueError("ایمیل‌ها را درست و با ویرگول جدا بنویسید (حداکثر ۱۰)")
-        value = ",".join(emails)
     elif name == "CUSTOM_AI_NAME":
         if "\n" in value or len(value) > 60:
             raise ValueError("نام کوتاه‌تر بنویسید")

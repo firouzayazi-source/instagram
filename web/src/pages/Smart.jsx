@@ -285,21 +285,31 @@ function Faq() {
 const RANGES = [[0, 'همه'], [1, 'امروز'], [7, '۷ روز'], [30, '۳۰ روز'], [90, '۹۰ روز']]
 const intl = (p) => '98' + String(p).replace(/^0/, '')
 
+const LEAD = [['', 'همه'], ['new', 'منتظر تماس'], ['called', 'تماس گرفته شد'], ['bought', 'خرید کرد'], ['lost', 'بی‌نتیجه']]
+const LEAD_CLS = { new: 'warn', called: 'muted', bought: 'good', lost: 'muted' }
+
 function Phones() {
   const [items, setItems] = useState(null)
   const [q, setQ] = useState('')
   const [days, setDays] = useState(0)
+  const [status, setStatus] = useState('new')
   const [copied, setCopied] = useState(false)
   useEffect(() => {
     const t = setTimeout(() => {
       const since = days ? Math.floor(Date.now() / 1000) - days * 86400 : 0
-      api.get(`/api/phones?q=${encodeURIComponent(q.trim())}&since=${since}`).then(setItems).catch(() => setItems([]))
+      api.get(`/api/phones?q=${encodeURIComponent(q.trim())}&since=${since}&status=${status}`).then(setItems).catch(() => setItems([]))
     }, 300)
     return () => clearTimeout(t)
-  }, [q, days])
+  }, [q, days, status])
+  async function mark(r, st) {
+    try {
+      await api.post(`/api/phones/${encodeURIComponent(r.key)}/status`, { status: st })
+      setItems((xs) => (status && status !== st ? xs.filter((x) => x.key !== r.key) : xs.map((x) => (x.key === r.key ? { ...x, lead_status: st } : x))))
+    } catch (ex) { alert(ex.message) }
+  }
   function csv() {
-    downloadCsv('phones.csv', [['شماره', 'نام', 'نام کاربری', 'کانال', 'برچسب‌ها', 'اولین تماس', 'آخرین تماس'],
-      ...items.map((r) => [r.phone, r.name, r.username ? `@${r.username}` : '', r.channel === 'ig' ? 'اینستاگرام' : r.channel, r.tags.join('، '), faDay(r.first_seen), faDay(r.last_seen)])])
+    downloadCsv('phones.csv', [['شماره', 'نام', 'نام کاربری', 'کانال', 'وضعیت', 'برچسب‌ها', 'اولین تماس', 'آخرین تماس'],
+      ...items.map((r) => [r.phone, r.name, r.username ? `@${r.username}` : '', r.channel === 'ig' ? 'اینستاگرام' : r.channel, (LEAD.find(([k]) => k === r.lead_status) || [])[1] || '', r.tags.join('، '), faDay(r.first_seen), faDay(r.last_seen)])])
   }
   async function copyAll() {
     try { await navigator.clipboard.writeText(items.map((r) => r.phone).join('\n')); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* مرورگر اجازه نداد */ }
@@ -311,6 +321,9 @@ function Phones() {
       <div className="sec-b">
         <input type="text" value={q} placeholder="جستجو در نام، نام کاربری یا شماره" onChange={(e) => setQ(e.target.value)} />
         <div className="chips" style={{ margin: 0 }}>
+          {LEAD.map(([k, l]) => <button key={k || 'all'} type="button" className={`chip ${status === k ? 'active' : ''}`} onClick={() => setStatus(k)}>{l}</button>)}
+        </div>
+        <div className="chips" style={{ margin: 0 }}>
           {RANGES.map(([d, l]) => <button key={d} type="button" className={`chip ${days === d ? 'active' : ''}`} onClick={() => setDays(d)}>{l}</button>)}
         </div>
         {items && items.length > 0 && (
@@ -321,7 +334,7 @@ function Phones() {
         )}
       </div>
       {items === null && <div className="empty">در حال بارگذاری…</div>}
-      {items && !items.length && <div className="empty">شماره‌ای در این بازه پیدا نشد.</div>}
+      {items && !items.length && <div className="empty">{status === 'new' ? 'سرنخی منتظر تماس نیست 👌' : 'شماره‌ای در این بازه پیدا نشد.'}</div>}
       <div style={{ borderTop: items?.length ? '1px solid var(--line)' : 0 }}>
         {(items || []).map((r) => (
           <div key={r.key} className="rule">
@@ -329,12 +342,15 @@ function Phones() {
               <b>{r.name || (r.username ? `@${r.username}` : 'بدون نام')}</b>
               <a href={`tel:${r.phone}`} dir="ltr" style={{ fontVariantNumeric: 'tabular-nums' }}>{r.phone}</a>
             </div>
-            <small className="muted">{r.username && r.name ? `@${r.username} · ` : ''}آخرین تماس {faDay(r.last_seen)}{r.tags.length ? ` · ${r.tags.join('، ')}` : ''}</small>
+            <small className="muted"><span className={`pill ${LEAD_CLS[r.lead_status] || 'warn'}`}>{(LEAD.find(([k]) => k === r.lead_status) || [])[1]}</span> {r.username && r.name ? `@${r.username} · ` : ''}آخرین پیام {faDay(r.last_seen)}{r.tags.length ? ` · ${r.tags.join('، ')}` : ''}</small>
             <div className="actions">
               <a href={`tel:${r.phone}`} className="btn sm">تماس</a>
               <a href={`https://wa.me/${intl(r.phone)}`} target="_blank" rel="noreferrer" className="btn sm">واتساپ</a>
               <a href={`https://t.me/+${intl(r.phone)}`} target="_blank" rel="noreferrer" className="btn sm">تلگرام</a>
               <a href={`#/customers/${r.key}`} className="btn sm"><Icon n="user" /> پرونده</a>
+            </div>
+            <div className="chips" style={{ margin: 0 }}>
+              {LEAD.slice(1).filter(([k]) => k !== r.lead_status).map(([k, l]) => <button key={k} type="button" className="chip" onClick={() => mark(r, k)}>{k === 'new' ? 'برگرداندن به منتظر' : l}</button>)}
             </div>
           </div>
         ))}

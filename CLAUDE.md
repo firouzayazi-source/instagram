@@ -4,8 +4,8 @@
 
 ## سرور
 - این پروژه روی سرور فقط در `/opt/igbot` است: سرویس `igbot` (اینستاگرام و پنل، پورت داخلی ۸۰۱۱، دامنه‌ی `ig.stland.ir`) و سرویس `igbot-telegram` (ربات تلگرام، بدون پورت؛ داده در `/opt/igbot/data/telegram`).
-- انتشار: `/opt/igbot/deploy/deploy.sh` (هر دو سرویس). انتقال یک‌باره‌ی ربات تلگرام از `/opt/telegram-bot`: `deploy/migrate-telegram.sh`؛ پوشه و سرویس قدیمی `telegram-bot` فقط برای برگشت نگه داشته می‌شوند تا کاربر بازنشستگی‌شان را تأیید کند.
-- فایل nginx دامنه: `/etc/nginx/sites-available/igbot`. بکاپ: `/var/backups/igbot` (cron ساعت ۴).
+- انتشار: `/opt/igbot/deploy/deploy.sh` (هر دو سرویس). انتقال یک‌باره‌ی ربات تلگرام از `/opt/telegram-bot`: `deploy/migrate-telegram.sh`؛ بازنشستگی پوشه و سرویس قدیمی `telegram-bot` را کاربر ۲۲ آبان ۱۴۰۵ تأیید کرد: `deploy/retire-old-telegram.sh` (بی `--apply` فقط وارسی؛ با `--apply` اول بایگانی در `/var/backups/igbot`).
+- فایل nginx دامنه: `/etc/nginx/sites-available/igbot`. بکاپ: `/var/backups/igbot` (cron ساعت ۴)، بعد از هر بکاپ آزمون بازگردانی (`tools/backup_check.py`، خرابی ← هشدار تلگرام)؛ کپی بیرون از سرور با `BACKUP_COPY_DIR` در ‎.env‎ وقتی صاحب سرور مقصدش را تعیین کند.
 - سرویس‌های دیگر روی همین سرور (`hesab`، `stockland`، `novo` و بقیه) به این پروژه ربطی ندارند. هیچ فایل، سرویس، سایت nginx یا پورتی از آن‌ها تغییر داده نمی‌شود. ربات پشتیبان تلگرام به دستور کاربر (۱۱ آبان ۱۴۰۵) بخشی از همین پروژه شد.
 - رازها فقط در `/opt/igbot/.env` هستند و هرگز در ریپو یا چت نمی‌آیند. کلید سرویس‌های هوش مصنوعی را صاحب پیج از پنل ثبت می‌کند (`app/secrets_env.py` در همین فایل می‌نویسد و هرگز برنمی‌گرداند).
 

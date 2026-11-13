@@ -48,6 +48,14 @@ function Reports() {
   )
 }
 
+// گزارش هفتگی (همان متنی که شنبه‌ها به تلگرام می‌رود)
+function Weekly() {
+  const [t, setT] = useState(null)
+  useEffect(() => { api.get('/api/report/weekly').then((d) => setT(d.text)).catch(() => {}) }, [])
+  if (!t) return null
+  return <section className="card"><h2>گزارش هفته</h2><p style={{ whiteSpace: 'pre-line', margin: 0 }}>{t}</p></section>
+}
+
 // امروز در یک نگاه: قیف ۲۴ ساعت و انتشار بعدی
 function Today() {
   const [f, setF] = useState(null)
@@ -76,25 +84,51 @@ function Today() {
   )
 }
 
+// سلامت سیستم: خوانش کامنت و دایرکت، آمار، بکاپ شبانه؛ فقط وقتی مشکلی هست جزئیات می‌آید
+function Health({ items, errors, tokenDays }) {
+  const bad = items.filter((x) => !x.ok)
+  const issues = [...bad.map((x) => `${x.label}: ${x.error || 'خطا'}`),
+    ...(errors ? [`${fa(errors)} رویداد با خطا`] : []),
+    ...(tokenDays !== null && tokenDays < 10 ? [`${fa(tokenDays)} روز تا انقضای توکن`] : [])]
+  return (
+    <section className="card">
+      <div className="row-between">
+        <h2 style={{ margin: 0 }}>سلامت سیستم</h2>
+        <span className={`pill ${issues.length ? 'warn' : 'good'}`}>{issues.length ? `${fa(issues.length)} مشکل` : 'همه‌چیز درست است'}</span>
+      </div>
+      {issues.length > 0
+        ? <ul style={{ margin: '8px 0 0', paddingInlineStart: 18 }}>{issues.map((t) => <li key={t} className="err">{t}</li>)}</ul>
+        : <p className="muted" style={{ margin: '6px 0 0' }}>{items.map((x) => `${x.label} ${x.at ? timeAgo(x.at) : ''}`).join(' · ') || 'هنوز بررسی‌ای اجرا نشده'}</p>}
+    </section>
+  )
+}
+
 export default function Dashboard({ stats: s }) {
   const days = s.token_expires_at ? Math.floor((s.token_expires_at - Date.now() / 1000) / 86400) : null
   return (
     <>
       <header className="topbar"><div className="title"><h1>پیشخوان</h1><span className="sub">stock_land.ir</span></div><a href="#/more" className="iconbtn" aria-label="بیشتر"><Icon n="gear" /></a></header>
       <section className="card">
-        <h2>امروز، نیاز به توجه</h2>
+        <h2>منتظر جواب</h2>
         <div className="tiles">
-          <a href="#/comments" className={`tile ${s.comments_unanswered ? 'warn' : ''}`}><b>{fa(s.comments_unanswered)}</b><span>کامنت بی‌پاسخ</span></a>
-          <a href="#/messages" className={`tile ${s.conversations_unanswered ? 'warn' : ''}`}><b>{fa(s.conversations_unanswered)}</b><span>دایرکت بی‌پاسخ</span></a>
-          <a href="#/orders" className={`tile ${s.orders_receipt ? 'bad' : s.orders_open ? 'warn' : ''}`}><b>{fa(s.orders_open)}</b><span>سفارش باز{s.orders_receipt ? ` (${fa(s.orders_receipt)} رسید رسیده)` : ''}</span></a>
-          <a href="#/customers/lost" className={`tile ${s.lost_open ? 'warn' : ''}`}><b>{fa(s.lost_open)}</b><span>فرصت ازدست‌رفته‌ی قابل پیگیری</span></a>
-          <div className={`tile ${s.events_error ? 'bad' : ''}`}><b>{fa(s.events_error)}</b><span>رویداد با خطا</span></div>
-          {days !== null && <div className={`tile ${days < 10 ? 'bad' : ''}`}><b>{fa(days)}</b><span>روز تا انقضای توکن</span></div>}
+          <a href="#/messages" className={`tile ${s.conversations_unanswered ? 'warn' : 'good'}`}><b>{fa(s.conversations_unanswered)}</b><span>دایرکت بی‌پاسخ</span></a>
+          <a href="#/comments" className={`tile ${s.comments_unanswered ? 'warn' : 'good'}`}><b>{fa(s.comments_unanswered)}</b><span>کامنت بی‌پاسخ</span></a>
+          {s.orders_open > 0 && <a href="#/orders" className={`tile ${s.orders_receipt ? 'bad' : 'warn'}`}><b>{fa(s.orders_open)}</b><span>سفارش باز{s.orders_receipt ? ` (${fa(s.orders_receipt)} رسید رسیده)` : ''}</span></a>}
+          {s.ai?.handoffs_open > 0 && <a href="#/ai/handoffs" className="tile warn"><b>{fa(s.ai.handoffs_open)}</b><span>ارجاع ربات به شما</span></a>}
         </div>
       </section>
-      <Today />
+      <section className="card">
+        <h2>سرنخ‌ها</h2>
+        <div className="tiles">
+          <a href="#/smart/phones" className={`tile ${s.leads_waiting ? 'warn' : 'good'}`}><b>{fa(s.leads_waiting)}</b><span>منتظر تماس</span></a>
+          <a href="#/smart/phones" className="tile"><b>{fa(s.leads_today)}</b><span>شماره‌ی تازه‌ی ۲۴ ساعت</span></a>
+        </div>
+      </section>
+      <Health items={s.health || []} errors={s.events_error} tokenDays={days} />
       <details className="card">
         <summary><b>جزئیات و گزارش‌ها</b></summary>
+      <Today />
+      <Weekly />
       <section className="card">
         <h2>۲۴ ساعت گذشته</h2>
         <div className="tiles">
@@ -110,7 +144,7 @@ export default function Dashboard({ stats: s }) {
           <div className="tile good"><b>{pct(s.auto_answered_24h, s.incoming_24h)}</b><span>نرخ پاسخ خودکار ({fa(s.auto_answered_24h)} از {fa(s.incoming_24h)})</span></div>
           <div className="tile"><b>{fa(s.ai?.replies_24h)}</b><span>پاسخ هوشمند ۲۴ ساعت</span></div>
           <a href="#/ai/handoffs" className={`tile ${s.ai?.handoffs_open ? 'warn' : ''}`}><b>{fa(s.ai?.handoffs_open)}</b><span>ارجاع باز به شما</span></a>
-          <a href="#/ai" className="tile"><b>{usd(s.ai?.cost_month)}</b><span>هزینه‌ی هوش مصنوعی این ماه {s.ai && !s.ai.enabled ? '(خاموش)' : ''}</span></a>
+          <a href="#/ai/overview" className="tile"><b>{usd(s.ai?.cost_month)}</b><span>هزینه‌ی هوش مصنوعی این ماه {s.ai && !s.ai.enabled ? '(خاموش)' : ''}</span></a>
         </div>
       </section>
       <Reports />

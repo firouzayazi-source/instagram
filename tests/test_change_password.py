@@ -75,88 +75,11 @@ def test_four_char_password_allowed(env):
 
 
 # ---------- ورود با گوگل ----------
-import asyncio  # noqa: E402
-import time  # noqa: E402
 
-import httpx  # noqa: E402
-from fastapi import HTTPException  # noqa: E402
-
-CID = "123456789-abcdefghijkl.apps.googleusercontent.com"
-
-
-class Req:
-    headers = {}
-    client = type("C", (), {"host": "1.2.3.4"})()
-
-
-def google(info, status=200):
-    seen = {}
-
-    def h(r):
-        seen["token"] = r.url.params.get("id_token")
-        return httpx.Response(status, json=info)
-    return httpx.MockTransport(h), seen
-
-
-def good(**kw):
-    return {"aud": CID, "iss": "https://accounts.google.com", "email": "Owner@Gmail.com",
-            "email_verified": "true", "exp": str(int(time.time()) + 600), **kw}
-
-
-def setup_google(monkeypatch):
-    monkeypatch.setattr(config, "GOOGLE_CLIENT_ID", CID, raising=False)
-    monkeypatch.setattr(config, "LOGIN_EMAILS", "owner@gmail.com", raising=False)
-    auth._fails.clear()
-    db.init()
-
-
-def test_google_login_ok(monkeypatch):
-    setup_google(monkeypatch)
-    t, seen = google(good())
-    token = asyncio.run(auth.google_login(Req(), "jwt-abc", transport=t))
-    assert seen["token"] == "jwt-abc" and len(token) > 20
-    with db.connect() as c:
-        assert db.session_valid(c, token)
-
-
-@pytest.mark.parametrize("info,msg", [
-    (good(email="stranger@gmail.com"), "اجازه"),         # ایمیل غیرمجاز
-    (good(aud="other.apps.googleusercontent.com"), "ناموفق"),   # توکن برای اپ دیگری
-    (good(email_verified="false"), "ناموفق"),
-    (good(exp=str(int(time.time()) - 5)), "ناموفق"),     # منقضی
-    (good(iss="https://evil.example"), "ناموفق"),
-])
-def test_google_login_rejected(monkeypatch, info, msg):
-    setup_google(monkeypatch)
-    t, _ = google(info)
-    with pytest.raises(HTTPException) as e:
-        asyncio.run(auth.google_login(Req(), "jwt", transport=t))
-    assert e.value.status_code == 401 and msg in e.value.detail
-
-
-def test_google_disabled_without_config(monkeypatch):
-    monkeypatch.setattr(config, "GOOGLE_CLIENT_ID", "", raising=False)
-    monkeypatch.setattr(config, "LOGIN_EMAILS", "", raising=False)
-    with pytest.raises(HTTPException) as e:
-        asyncio.run(auth.google_login(Req(), "jwt"))
-    assert e.value.status_code == 409
-
-
-def test_google_public_config_hides_emails(env, monkeypatch):
-    setup_google(monkeypatch)
-    with TestClient(create_app(IG())) as c:
-        d = c.get("/api/login/google").json()
-        assert d == {"enabled": True, "client_id": CID}
-        assert "gmail" not in c.get("/api/login/google").text
-
-
-def test_google_settings_validated(env):
+def test_google_login_removed(env):
+    """ورود با گوگل به تصمیم صاحب پیج حذف شد (۲۲ آبان ۱۴۰۵)؛ مسیرهایش دیگر نیست و از پنل هم ثبت نمی‌شود."""
     from app import secrets_env
+    with TestClient(create_app(IG())) as c:
+        assert "client_id" not in c.get("/api/login/google").text
     with pytest.raises(ValueError):
-        secrets_env.set_value("GOOGLE_CLIENT_ID", "not-a-client-id")
-    with pytest.raises(ValueError):
-        secrets_env.set_value("LOGIN_EMAILS", "bad email")
-    secrets_env.set_value("LOGIN_EMAILS", " A@Gmail.com , b@x.ir ")
-    assert "LOGIN_EMAILS=a@gmail.com,b@x.ir" in env.read_text(encoding="utf-8")
-    secrets_env.set_value("LOGIN_EMAILS", "")
-    config.LOGIN_EMAILS = ""
+        secrets_env.set_value("GOOGLE_CLIENT_ID", "123-abc.apps.googleusercontent.com")

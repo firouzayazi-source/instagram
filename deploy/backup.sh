@@ -16,3 +16,16 @@ if [ -d "$TG" ]; then
 fi
 
 find "$DST" \( -name 'bot-*.db' -o -name 'tg-users-*.db' -o -name 'tg-json-*.tar.gz' \) -mtime +14 -delete
+
+# آزمون بازگردانی: آخرین بکاپ‌ها باز می‌شوند و داده دارند؟ نتیجه در پنل و هشدار تلگرام (tools/backup_check.py)
+if [ -x /opt/igbot/.venv/bin/python ]; then
+  (cd /opt/igbot && sudo -u igbot /opt/igbot/.venv/bin/python tools/backup_check.py "$DST") || echo "❌ آزمون بکاپ ناموفق؛ پنل و تلگرام را ببینید"
+fi
+
+# نسخه‌ی بیرون از سرور (اختیاری): اگر BACKUP_COPY_DIR در .env باشد (مثلاً دیسک یا فضای ذخیره‌ی جدا که روی سرور
+# mount شده)، بکاپ امشب آنجا هم کپی می‌شود. مقصد را صاحب سرور تعیین می‌کند؛ این اسکریپت کلید یا اتصال تازه نمی‌سازد.
+COPY_DIR=$(grep -E '^BACKUP_COPY_DIR=' /opt/igbot/.env 2>/dev/null | tail -1 | cut -d= -f2- || true)
+if [ -n "${COPY_DIR:-}" ] && [ -d "$COPY_DIR" ]; then
+  cp -p "$DST"/bot-"$D".db "$DST"/tg-users-"$D".db "$DST"/tg-json-"$D".tar.gz "$COPY_DIR"/ 2>/dev/null || echo "❌ کپی بیرونی بکاپ ناموفق"
+  find "$COPY_DIR" \( -name 'bot-*.db' -o -name 'tg-users-*.db' -o -name 'tg-json-*.tar.gz' \) -mtime +30 -delete 2>/dev/null || true
+fi

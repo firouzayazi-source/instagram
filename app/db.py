@@ -305,6 +305,7 @@ _COLUMNS = {
     "products": {"source": "TEXT NOT NULL DEFAULT ''", "url": "TEXT NOT NULL DEFAULT ''"},
     "comments": {"hidden": "INTEGER NOT NULL DEFAULT 0", "hidden_reason": "TEXT NOT NULL DEFAULT ''"},
     "messages": {"sender": "TEXT NOT NULL DEFAULT ''"},   # پیام بیرونی: bot | admin
+    "customers": {"lead_status": "TEXT NOT NULL DEFAULT ''", "lead_at": "REAL"},   # سرنخ: new | called | bought | lost
     "ai_log": {"customer_vote": "TEXT NOT NULL DEFAULT ''", "voted_at": "REAL"},   # رضایت مشتری: up | down
 }
 

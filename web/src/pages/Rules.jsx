@@ -17,11 +17,13 @@ export default function Rules() {
   const [poll, setPoll] = useState(null)
   const [q, setQ] = useState('')
   const [search, setSearch] = useState(false)
+  const [entries, setEntries] = useState(null)
   const load = () => api.get('/api/rules').then(setRules).catch(() => setRules([]))
   useEffect(() => {
     load()
     api.get('/api/channels').then((xs) => setIg(xs.find((x) => x.id === 'instagram'))).catch(() => {})
     api.get('/api/comment-poll').then(setPoll).catch(() => {})
+    api.get('/api/rules-entries?days=30').then((d) => d.available && setEntries(d.entries)).catch(() => {})
   }, [])
 
   async function toggle(r, on) { await api.post(`/api/rules/${r.id}/enable`, { enabled: on }); load() }
@@ -87,7 +89,7 @@ export default function Rules() {
                   <a href={`#/rules/${r.id}`} className="btn sm"><Icon n="edit" /> ویرایش</a>
                   <button type="button" className="btn sm" onClick={() => duplicate(r)}><Icon n="copy" /> کپی</button>
                   <button type="button" className="iconbtn" style={{ width: 36, height: 36 }} aria-label="حذف" onClick={() => remove(r)}><Icon n="trash" /></button>
-                  <small className="muted" style={{ alignSelf: 'center', marginInlineStart: 'auto' }}>{fa(r.use_count)} بار اجرا</small>
+                  <small className="muted" style={{ alignSelf: 'center', marginInlineStart: 'auto' }}>{fa(r.use_count)} بار اجرا{entries && <> · <span title="کاربر تازه‌ی ربات تلگرام از لینک همین دستور، ۳۰ روز اخیر">🤖 {fa(entries[r.id] || 0)} ورود به ربات</span></>}</small>
                 </div>
               </div>
             )

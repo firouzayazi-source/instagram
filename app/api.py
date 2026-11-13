@@ -7,7 +7,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 
-from . import ai, ai_admin, auth, channels, config, crm, db, dm_menu, forms, orders, reports, webhook
+from . import ai, ai_admin, auth, channels, config, crm, db, dm_menu, forms, leads, orders, reports, webhook
 from .importer import validate
 from .rules import Incoming, find_rule
 
@@ -47,21 +47,6 @@ def login(body: Login, request: Request, response: Response):
     return {"ok": True}
 
 
-@router.get("/login/google")
-def login_google_config():
-    """عمومی: فقط شناسه‌ی عمومی دکمه‌ی گوگل (ایمیل‌های مجاز برنمی‌گردد)."""
-    g = auth.google_config()
-    return {"enabled": g["enabled"], "client_id": g["client_id"] if g["enabled"] else ""}
-
-
-@router.post("/login/google")
-async def login_google(body: dict, request: Request, response: Response):
-    token = await auth.google_login(request, str(body.get("credential") or ""))
-    response.set_cookie(auth.COOKIE, token, max_age=config.SESSION_TTL, httponly=True,
-                        secure=config.COOKIE_SECURE, samesite="lax", path="/")
-    return {"ok": True}
-
-
 @protected.post("/logout")
 def logout(response: Response, session: str = Depends(auth.require_session)):
     with db.connect() as c:
@@ -82,7 +67,8 @@ def me():
 
 
 @protected.get("/stats")
-def stats():
+def stats(request: Request):
+    from . import monitor
     with db.connect() as c:
         st = db.stats(c)
         day = time.time() - 86400
@@ -94,6 +80,9 @@ def stats():
         st["orders_open"] = c.execute("SELECT COUNT(*) FROM orders WHERE status IN ('new','awaiting_payment','receipt')").fetchone()[0]
         st["orders_receipt"] = c.execute("SELECT COUNT(*) FROM orders WHERE status='receipt'").fetchone()[0]
         st["lost_open"] = sum(1 for x in reports.lost(c, 7, 3) if x["window_left"] > 0)
+        st["leads_waiting"] = leads.waiting(c)
+        st["leads_today"] = c.execute("SELECT COUNT(*) FROM customers WHERE phone<>'' AND first_seen>?", (day,)).fetchone()[0]
+        st["health"] = monitor.health_summary(c, bool(getattr(ig(request), "via_composio", lambda: False)()))
         return {**st, "incoming_24h": incoming, "auto_answered_24h": auto, "ai": ai.stats(c),
                 "recent": db.recent_replies(c, 20)}
 
@@ -472,14 +461,44 @@ def form_entries(form_id: int, since: float = 0, until: float = 0):
 # ---------- خروجی شماره‌ها ----------
 
 @protected.get("/phones")
-def phones(q: str = "", since: float = 0, until: float = 0):
-    """مشتری‌هایی که شماره دارند (از پیام، فرم یا پنل). بازه بر اساس آخرین تماس مشتری."""
+def phones(q: str = "", since: float = 0, until: float = 0, status: str = ""):
+    """مشتری‌هایی که شماره دارند (از پیام، فرم یا پنل) با وضعیت پیگیری. بازه بر اساس آخرین تماس مشتری.
+    status: new (تازه، شامل بی‌وضعیت) | called | bought | lost"""
     with db.connect() as c:
         rows = crm.search(c, q, phone="yes", limit=5000)
     until = until or time.time() + 60
-    return [{"key": r["id"], "channel": r["channel"], "username": r["username"] or "", "name": r["name"],
-             "phone": r["phone"], "tags": r["tags"], "first_seen": r["first_seen"], "last_seen": r["last_seen"]}
-            for r in rows if since <= r["last_seen"] < until]
+    out = []
+    for r in rows:
+        st = r.get("lead_status") or "new"
+        if since <= r["last_seen"] < until and (not status or st == status):
+            out.append({"key": r["id"], "channel": r["channel"], "username": r["username"] or "", "name": r["name"],
+                        "phone": r["phone"], "tags": r["tags"], "first_seen": r["first_seen"], "last_seen": r["last_seen"],
+                        "lead_status": st, "lead_at": r.get("lead_at")})
+    return out
+
+
+@protected.post("/phones/{key}/status")
+def phone_status(key: str, body: dict):
+    try:
+        with db.connect() as c:
+            return leads.set_status(c, key, str(body.get("status", "")))
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    except LookupError as e:
+        raise HTTPException(404, str(e))
+
+
+@protected.get("/rules-entries")
+def rules_entries(days: int = 30):
+    """هر دستور چند نفر را از لینک خودش به ربات تلگرام آورد (ورود تازه)."""
+    e = leads.rule_entries(time.time() - max(1, min(365, days)) * 86400)
+    return {"available": e is not None, "entries": {str(k): v for k, v in (e or {}).items()}, "bot": leads.bot_username()}
+
+
+@protected.get("/report/weekly")
+def report_weekly():
+    with db.connect() as c:
+        return {"text": leads.weekly_text(c)}
 
 
 # ---------- پرونده‌ی مشتری ----------

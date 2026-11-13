@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from . import ai, channels, config, crm, db, dm_menu, forms, knowledge, learning, memory, moderation, orders, push, tg_notify
+from . import ai, channels, config, crm, db, dm_menu, forms, knowledge, leads, learning, memory, moderation, orders, push, tg_notify
 from .rules import Incoming, find_rule, pick
 
 MAX_RETRIES = 3
@@ -189,7 +189,7 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         if not acts.get("private_replies") and acts.get("dm_replies"):
             acts = {**acts, "private_replies": acts["dm_replies"]}
         for kind in ("private", "public"):
-            text = pick(acts.get(f"{kind}_replies", []), n - 1)
+            text = leads.track_links(pick(acts.get(f"{kind}_replies", []), n - 1), rule["id"])
             if kind == "private" and form_q:     # به هر کامنت فقط یک دایرکت می‌شود فرستاد: سؤال اول همراه همان پیام
                 text = "\n\n".join(x for x in (text, form_question_text(*form_q)) if x)
             if text:
@@ -198,7 +198,7 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
                 if kind == "private" and form_q and not ok:
                     forms.cancel(c, inc.user_id)
     else:
-        text = pick(acts.get("dm_replies", []), n - 1)
+        text = leads.track_links(pick(acts.get("dm_replies", []), n - 1), rule["id"])
         if text:
             sent |= await _send(ig, c, row["id"], rule["id"], "dm", payload, inc, text,
                                 quick_replies=None if form_q else acts.get("quick_replies") or None)

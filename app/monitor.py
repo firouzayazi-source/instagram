@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from . import comment_poll, config, db, tg_notify
+from . import comment_poll, config, db, leads, tg_notify
 
 TEHRAN = ZoneInfo("Asia/Tehran")
 STATE_KEY = "monitor_state"
@@ -21,8 +21,11 @@ DIGEST_KEY = "digest_enabled"       # "0" یعنی خاموش؛ پیش‌فرض 
 DIGEST_AT = (22, 30)
 FAIL_AFTER = 600                    # ثانیه خطای پیوسته پیش از هشدار
 STALE_AFTER = 900                   # ثانیه بی‌خبری از خوانشی که باید هر دقیقه اجرا شود
-CHECKS = {comment_poll.STATUS_KEY: ("خوانش کامنت‌ها", True), comment_poll.DM_STATUS_KEY: ("خوانش دایرکت‌ها", True),
-          "insights_stories": ("ذخیره‌ی آمار استوری", False)}
+# نام ← (برچسب، بی‌خبری مجاز به ثانیه یا None، فقط با پل Composio؟)
+CHECKS = {comment_poll.STATUS_KEY: ("خوانش کامنت‌ها", STALE_AFTER, True),
+          comment_poll.DM_STATUS_KEY: ("خوانش دایرکت‌ها", STALE_AFTER, True),
+          "insights_stories": ("ذخیره‌ی آمار استوری", None, True),
+          "backup_check": ("بکاپ شبانه", 30 * 3600, False)}      # tools/backup_check.py بعد از هر بکاپ
 fa = lambda n: f"{int(n or 0):,}".translate(str.maketrans("0123456789,", "۰۱۲۳۴۵۶۷۸۹٬"))  # noqa: E731
 
 
@@ -31,25 +34,40 @@ def check_health(c, bridge_active: bool, now: float | None = None) -> list[str]:
     now = now or time.time()
     state = json.loads(db.kv_get(c, STATE_KEY) or "{}")
     out = []
-    for key, (label, frequent) in CHECKS.items():
+    for key, (label, stale_after, bridge_only) in CHECKS.items():
         st = json.loads(db.kv_get(c, key) or "null")
         s = state.setdefault(key, {})
-        if not bridge_active or st is None:
+        if (bridge_only and not bridge_active) or st is None:
             s.clear()
             continue
-        stale = frequent and now - st.get("at", now) > STALE_AFTER
+        stale = bool(stale_after) and now - st.get("at", now) > stale_after
         bad = stale or not st.get("ok")
         if bad:
             s.setdefault("since", now)
             if not s.get("alerted") and now - s["since"] >= (0 if stale else FAIL_AFTER):
                 s["alerted"] = True
                 why = "چند دقیقه است اجرا نشده" if stale else str(st.get("error", ""))[:200]
-                out.append(f"⚠️ {label} کار نمی‌کند\n{why}\n\nپنل ← کانال‌ها ← اینستاگرام ← اتصال و وضعیت")
+                where = "روی سرور: tools/backup_check.py" if key == "backup_check" else "پنل ← پیشخوان ← سلامت سیستم"
+                out.append(f"⚠️ {label} کار نمی‌کند\n{why}\n\n{where}")
         else:
             if s.get("alerted"):
                 out.append(f"✅ {label} دوباره کار می‌کند")
             s.clear()
     db.kv_set(c, STATE_KEY, json.dumps(state, ensure_ascii=False))
+    return out
+
+
+def health_summary(c, bridge_active: bool, now: float | None = None) -> list[dict]:
+    """وضعیت هر بررسی برای پیشخوان: {"label", "ok", "at", "error"}؛ بررسی‌ای که هنوز اجرا نشده نمی‌آید."""
+    now = now or time.time()
+    out = []
+    for key, (label, stale_after, bridge_only) in CHECKS.items():
+        st = json.loads(db.kv_get(c, key) or "null")
+        if st is None or (bridge_only and not bridge_active):
+            continue
+        stale = bool(stale_after) and now - st.get("at", now) > stale_after
+        out.append({"label": label, "ok": bool(st.get("ok")) and not stale, "at": st.get("at"),
+                    "error": "مدتی است اجرا نشده" if stale else str(st.get("error", ""))[:200]})
     return out
 
 
@@ -141,9 +159,17 @@ async def monitor_loop(ig, stop: asyncio.Event, interval: float = 300, grace: fl
             with db.connect() as c:
                 for msg in check_health(c, comment_poll.active(ig)):
                     tg_notify.send(msg)
+                today = datetime.now(TEHRAN).strftime("%Y-%m-%d")
                 if digest_due(c):
                     if tg_notify.send(digest_text(c)):
-                        db.kv_set(c, "digest_last", datetime.now(TEHRAN).strftime("%Y-%m-%d"))
+                        db.kv_set(c, "digest_last", today)
+                if leads.remind_due(c):
+                    msg = leads.remind_text(c)
+                    if msg is None or tg_notify.send(msg):
+                        db.kv_set(c, "lead_remind_last", today)
+                if leads.weekly_due(c):
+                    if tg_notify.send(leads.weekly_text(c)):
+                        db.kv_set(c, "weekly_last", today)
         except Exception as e:  # noqa: BLE001
             print("monitor failed:", e)
         try:

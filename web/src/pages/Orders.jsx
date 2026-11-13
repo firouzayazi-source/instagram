@@ -18,7 +18,7 @@ function List() {
           <button key={k} className={`chip ${status === k ? 'active' : ''}`} onClick={() => setStatus(k)}>{l}{d.stats[k] ? ` (${fa(d.stats[k].count)})` : ''}</button>
         ))}
       </div>
-      {!d.items.length && <div className="empty">سفارشی نیست. سفارش‌هایی که مشتری‌ها در دایرکت ثبت می‌کنند اینجا می‌آید (تنظیم در «کانال‌ها ← اینستاگرام ← فروش»).</div>}
+      {!d.items.length && <div className="empty">سفارشی نیست. سفارش‌هایی که مشتری‌ها در دایرکت ثبت می‌کنند اینجا می‌آید (تنظیم در «بیشتر ← تنظیمات پاسخ اینستاگرام ← فروش در دایرکت»).</div>}
       <div className="list">
         {d.items.map((o) => (
           <a key={o.id} href={`#/orders/${o.id}`} className="item">
