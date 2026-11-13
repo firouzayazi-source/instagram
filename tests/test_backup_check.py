@@ -52,3 +52,10 @@ def test_monitor_alerts_on_backup_problem():
         assert len(out) == 1 and "بکاپ شبانه" in out[0]
         db.kv_set(c, "backup_check", json.dumps({"at": now + 900, "ok": True}))
         assert any("دوباره کار" in m for m in monitor.check_health(c, False, now + 1000))
+
+
+def test_missing_dir_and_empty_dir(tmp_path):
+    r = backup_check.run(tmp_path / "nope", tmp_path / "live.db")
+    assert not r["ok"] and "نیست" in r["error"]
+    (tmp_path / "empty").mkdir()
+    assert "خالی" in backup_check.run(tmp_path / "empty", tmp_path / "live.db")["error"]

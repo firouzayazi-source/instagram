@@ -60,10 +60,18 @@ class _Null:
 
 def run(backup_dir: Path, live_db: Path, max_age_h: float = 30) -> dict:
     notes, ok = [], True
+    import os
+    if not backup_dir.is_dir():
+        return {"at": time.time(), "ok": False, "error": f"پوشه‌ی بکاپ {backup_dir} نیست (cron بکاپ نصب است؟)",
+                "notes": [f"پوشه‌ی بکاپ {backup_dir} نیست"]}
+    if not os.access(backup_dir, os.R_OK | os.X_OK):
+        return {"at": time.time(), "ok": False, "error": f"کاربر اجراکننده اجازه‌ی خواندن {backup_dir} را ندارد",
+                "notes": [f"اجازه‌ی خواندن {backup_dir} نیست"]}
     b = latest(backup_dir, "bot-*.db")
     if not b:
         ok = False
-        notes.append("بکاپ پایگاه داده‌ی پنل پیدا نشد")
+        others = sorted(p.name for p in backup_dir.iterdir())[:5]
+        notes.append("بکاپ پایگاه داده‌ی پنل (bot-*.db) پیدا نشد" + (f"؛ در پوشه: {', '.join(others)}" if others else "؛ پوشه خالی است"))
     else:
         if time.time() - b.stat().st_mtime > max_age_h * 3600:
             ok = False
