@@ -3,6 +3,7 @@ import { api, fa } from '../api.js'
 import Icon from '../icons.jsx'
 import { Products } from './Ai.jsx'
 import { Switch } from './Rules.jsx'
+import Sortable, { AutoText } from '../sortable.jsx'
 
 // زیربخش‌های پاسخ هوشمند؛ «دستورها» همان صفحه‌ی ‎#/rules‎ است
 export const SMART_TABS = [
@@ -106,12 +107,7 @@ function FormEdit({ id }) {
   }, [id])
   if (!f) return <div className="empty">در حال بارگذاری…</div>
   const setQ = (i, patch) => setF({ ...f, questions: f.questions.map((q, j) => (j === i ? { ...q, ...patch } : q)) })
-  const move = (i, d) => {
-    const qs = [...f.questions]; const j = i + d
-    if (j < 0 || j >= qs.length) return
-    ;[qs[i], qs[j]] = [qs[j], qs[i]]
-    setF({ ...f, questions: qs })
-  }
+
 
   async function save(e) {
     e.preventDefault(); setErr(''); setBusy(true)
@@ -135,15 +131,14 @@ function FormEdit({ id }) {
       <section className="sec">
         <div className="sec-h"><span className="ico"><Icon n="msg" /></span><div className="grow"><h2>سؤال‌ها</h2><p>به همین ترتیب یکی‌یکی پرسیده می‌شوند. مشتری با نوشتن «لغو» فرم را می‌بندد.</p></div></div>
         <div className="sec-b top">
-          {f.questions.map((q, i) => (
-            <div key={i} className="sub-card">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <b className="grow">سؤال {fa(i + 1)}</b>
-                <button type="button" className="iconbtn" style={{ width: 32, height: 32 }} aria-label="بالا" onClick={() => move(i, -1)}><Icon n="up" /></button>
-                <button type="button" className="iconbtn" style={{ width: 32, height: 32 }} aria-label="پایین" onClick={() => move(i, 1)}><Icon n="down" /></button>
-                <button type="button" className="iconbtn" style={{ width: 32, height: 32 }} aria-label="حذف" onClick={() => setF({ ...f, questions: f.questions.filter((_, j) => j !== i) })}><Icon n="trash" /></button>
+          <Sortable items={f.questions} onChange={(qs) => setF({ ...f, questions: qs })} renderItem={(q, i, handle) => (
+            <div className="sub-card q-card">
+              <div className="msg-row" style={{ background: 'var(--surface)' }}>
+                {handle}
+                <span className="num">{fa(i + 1)}</span>
+                <AutoText value={q.label} placeholder="متن سؤال، مثلاً: شماره‌ی موبایلتون رو بنویسید" onChange={(e) => setQ(i, { label: e.target.value })} />
+                {f.questions.length > 1 && <button type="button" className="x" aria-label="حذف" onClick={() => setF({ ...f, questions: f.questions.filter((_, j) => j !== i) })}>✕</button>}
               </div>
-              <textarea rows={2} value={q.label} placeholder="مثلاً: لطفاً شماره‌ی موبایلتون رو بنویسید" onChange={(e) => setQ(i, { label: e.target.value })} />
               <select value={q.kind} onChange={(e) => setQ(i, { kind: e.target.value })}>
                 {KINDS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
               </select>
@@ -153,8 +148,8 @@ function FormEdit({ id }) {
                   <textarea rows={3} value={(q.options || []).join('\n')} placeholder={'نقدی\nاقساطی'} onChange={(e) => setQ(i, { options: e.target.value.split('\n') })} /></div>
               )}
             </div>
-          ))}
-          {f.questions.length < 10 && <button type="button" className="btn block" onClick={() => setF({ ...f, questions: [...f.questions, { label: '', kind: 'text' }] })}><Icon n="plus" /> سؤال جدید</button>}
+          )} />
+          {f.questions.length < 10 && <button type="button" className="btn sm" onClick={() => setF({ ...f, questions: [...f.questions, { label: '', kind: 'text' }] })}><Icon n="plus" /> سؤال جدید</button>}
         </div>
       </section>
 

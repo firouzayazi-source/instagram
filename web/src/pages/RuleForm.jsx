@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { api } from '../api.js'
 import Icon from '../icons.jsx'
+import Sortable, { AutoText } from '../sortable.jsx'
 
 const EMPTY = {
   name: '', enabled: true, priority: 100, channels: ['comment'], post_scope: 'all',
@@ -65,22 +66,20 @@ function Adv({ on, icon, title, desc, onToggle, children, disabled }) {
 // پیام‌های شماره‌دار با جابه‌جایی؛ چند پیام یعنی هر بار یکی به نوبت (تا تکراری نباشد)
 function Messages({ list, onChange, saved, placeholder, addLabel = 'پیام جدید' }) {
   const [pick, setPick] = useState(false)
-  const move = (i, d) => { const l = [...list]; [l[i], l[i + d]] = [l[i + d], l[i]]; onChange(l) }
   return (
     <>
-      {list.map((t, i) => (
-        <div className="msg-row" key={i}>
+      <Sortable items={list} onChange={onChange} renderItem={(t, i, handle) => (
+        <div className="msg-row">
+          {handle}
           <span className="num">{(i + 1).toLocaleString('fa-IR')}</span>
-          <textarea value={t} placeholder={placeholder} onChange={(e) => onChange(list.map((x, j) => (j === i ? e.target.value : x)))} />
-          <span className="tools">
-            {list.length > 1 && <button type="button" className="iconbtn" aria-label="بالا" disabled={i === 0} onClick={() => move(i, -1)}><Icon n="up" /></button>}
-            {list.length > 1 && <button type="button" className="iconbtn" aria-label="پایین" disabled={i === list.length - 1} onClick={() => move(i, 1)}><Icon n="down" /></button>}
-            <button type="button" className="iconbtn" aria-label="حذف" onClick={() => onChange(list.filter((_, j) => j !== i))}><Icon n="trash" /></button>
-          </span>
+          <AutoText value={t} placeholder={placeholder} onChange={(e) => onChange(list.map((x, j) => (j === i ? e.target.value : x)))} />
+          {list.length > 1 && <button type="button" className="x" aria-label="حذف" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>}
         </div>
-      ))}
-      <button type="button" className="btn primary block big" onClick={() => onChange([...list, ''])}><Icon n="plus" /> {addLabel}</button>
-      {saved.length > 0 && <button type="button" className="btn block" onClick={() => setPick(!pick)}><Icon n="msg" /> انتخاب از پیام‌های قبلی</button>}
+      )} />
+      <div className="msg-add">
+        <button type="button" className="btn sm" onClick={() => onChange([...list, ''])}><Icon n="plus" /> {addLabel}</button>
+        {saved.length > 0 && <button type="button" className="btn sm" onClick={() => setPick(!pick)}><Icon n="msg" /> از پیام‌های قبلی</button>}
+      </div>
       {pick && (
         <div className="list">
           {saved.map((s) => <button type="button" key={s} className="item" style={{ textAlign: 'right' }} onClick={() => { onChange([...list.filter((x) => x.trim()), s]); setPick(false) }}>{s.slice(0, 140)}</button>)}
