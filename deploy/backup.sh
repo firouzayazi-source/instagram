@@ -15,7 +15,13 @@ if [ -d "$TG" ]; then
   tar -czf "$DST/tg-json-$D.tar.gz" -C "$TG" --wildcards '*.json' 2>/dev/null || true
 fi
 
-find "$DST" \( -name 'bot-*.db' -o -name 'tg-users-*.db' -o -name 'tg-json-*.tar.gz' \) -mtime +14 -delete
+# رازها و کلیدها (.env، کلید داخلی، کانال‌ها): بی این‌ها بعد از از دست رفتن سرور همه‌ی اتصال‌ها از صفر ساخته می‌شوند.
+# فقط root می‌خواند (۶۰۰).
+( umask 077; tar -czf "$DST/secrets-$D.tar.gz" -C /opt/igbot .env data/internal.key data/channels.json 2>/dev/null || \
+  tar -czf "$DST/secrets-$D.tar.gz" -C /opt/igbot .env )
+chmod 600 "$DST/secrets-$D.tar.gz"
+
+find "$DST" \( -name 'bot-*.db' -o -name 'tg-users-*.db' -o -name 'tg-json-*.tar.gz' -o -name 'secrets-*.tar.gz' \) -mtime +14 -delete
 
 # آزمون بازگردانی: آخرین بکاپ‌ها باز می‌شوند و داده دارند؟ نتیجه در پنل و هشدار تلگرام (tools/backup_check.py)
 if [ -x /opt/igbot/.venv/bin/python ]; then
@@ -28,5 +34,9 @@ fi
 COPY_DIR=$(grep -E '^BACKUP_COPY_DIR=' /opt/igbot/.env 2>/dev/null | tail -1 | cut -d= -f2- || true)
 if [ -n "${COPY_DIR:-}" ] && [ -d "$COPY_DIR" ]; then
   cp -p "$DST"/bot-"$D".db "$DST"/tg-users-"$D".db "$DST"/tg-json-"$D".tar.gz "$COPY_DIR"/ 2>/dev/null || echo "❌ کپی بیرونی بکاپ ناموفق"
-  find "$COPY_DIR" \( -name 'bot-*.db' -o -name 'tg-users-*.db' -o -name 'tg-json-*.tar.gz' \) -mtime +30 -delete 2>/dev/null || true
+  # رازها فقط اگر صاحب سرور صریح خواسته باشد (BACKUP_COPY_SECRETS=1)؛ مقصد بیرونی باید امن باشد
+  if grep -qE '^BACKUP_COPY_SECRETS=1' /opt/igbot/.env 2>/dev/null; then
+    cp -p "$DST"/secrets-"$D".tar.gz "$COPY_DIR"/ || echo "❌ کپی بیرونی رازها ناموفق"
+  fi
+  find "$COPY_DIR" \( -name 'bot-*.db' -o -name 'tg-users-*.db' -o -name 'tg-json-*.tar.gz' -o -name 'secrets-*.tar.gz' \) -mtime +30 -delete 2>/dev/null || true
 fi

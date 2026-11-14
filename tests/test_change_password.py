@@ -18,7 +18,6 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "PANEL_PASSWORD", "old-password-1")
     monkeypatch.setattr(config, "COOKIE_SECURE", False)
     monkeypatch.setattr(config, "WEB_DIST", str(tmp_path / "nodist"))
-    auth._fails.clear()
     db.init()
     return e
 
@@ -31,6 +30,8 @@ def login(pw):
 
 
 def test_change_password(env):
+    with db.connect() as c:
+        db.kv_set(c, auth.LOCK_KEY, "0")                          # دستگاه دوم بی‌تأیید (آزمون قفل دستگاه در test_devices)
     a, b = login("old-password-1"), login("old-password-1")       # دو دستگاه
     try:
         assert a.post("/api/password", json={"current": "wrong", "new": "new-password-22"}).status_code == 401
@@ -65,11 +66,12 @@ def test_requires_login(env):
         assert c.post("/api/password", json={"current": "old-password-1", "new": "new-password-22"}).status_code == 401
 
 
-def test_four_char_password_allowed(env):
+def test_password_needs_eight_chars(env):
     a = login("old-password-1")
     try:
-        assert a.post("/api/password", json={"current": "old-password-1", "new": "a1b2"}).status_code == 200
-        assert "PANEL_PASSWORD=a1b2" in env.read_text(encoding="utf-8")
+        assert a.post("/api/password", json={"current": "old-password-1", "new": "a1b2c3d"}).status_code == 422
+        assert a.post("/api/password", json={"current": "old-password-1", "new": "a1b2c3d4"}).status_code == 200
+        assert "PANEL_PASSWORD=a1b2c3d4" in env.read_text(encoding="utf-8")
     finally:
         a.__exit__(None, None, None)
 

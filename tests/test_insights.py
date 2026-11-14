@@ -189,7 +189,6 @@ def test_api_insights(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "COOKIE_SECURE", False)
     monkeypatch.setattr(config, "WEB_DIST", str(tmp_path / "nodist"))
     monkeypatch.setattr(config, "IG_ACCESS_TOKEN", "")
-    auth._fails.clear()
     db.init()
     with db.connect() as c:
         asyncio.run(insights.collect_stories(c, FakeSource()))
@@ -283,7 +282,6 @@ def test_api_collect_media_in_background(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "COOKIE_SECURE", False)
     monkeypatch.setattr(config, "WEB_DIST", str(tmp_path / "nodist"))
     monkeypatch.setattr(insights, "source", lambda ig=None: FakeSource())
-    auth._fails.clear()
     db.init()
     with TestClient(create_app(IG())) as cl:
         cl.post("/api/login", json={"password": "pw"})

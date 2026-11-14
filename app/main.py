@@ -41,7 +41,8 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
             app.state.ig.token = saved
         stop = asyncio.Event()
         tasks = [
-            asyncio.create_task(worker.run_forever(app.state.ig, stop)),
+            asyncio.create_task(worker.run_forever(app.state.ig, stop, comments=False)),   # دایرکت و دکمه‌ها
+            asyncio.create_task(worker.run_forever(app.state.ig, stop, comments=True)),    # کامنت‌ها با سقف ساعتی
             asyncio.create_task(worker.refresh_token_loop(app.state.ig, stop)),
             asyncio.create_task(worker.insights_loop(app.state.ig, stop)),
             asyncio.create_task(comment_poll.poll_loop(app.state.ig, stop)),
@@ -110,7 +111,12 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
             """فایل‌های پنل؛ هر مسیر ناشناخته به index.html می‌رود (SPA)."""
             target = (dist / path).resolve()
             if path and target.is_file() and dist.resolve() in target.parents:
-                headers = {"Cache-Control": "no-cache"} if path in ("sw.js", "index.html", "manifest.webmanifest") else {}
+                if path in ("sw.js", "index.html", "manifest.webmanifest"):
+                    headers = {"Cache-Control": "no-cache"}
+                elif path.startswith("assets/"):          # نام هش‌دار؛ با هر انتشار نام تازه می‌گیرد
+                    headers = {"Cache-Control": "public, max-age=31536000, immutable"}
+                else:
+                    headers = {}
                 return FileResponse(target, headers=headers)
             return FileResponse(dist / "index.html", headers={"Cache-Control": "no-cache"})
 

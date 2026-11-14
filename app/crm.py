@@ -34,7 +34,7 @@ def touch(c, channel: str, user_id: str, username: str | None, kind: str, text: 
               f"ON CONFLICT(id) DO UPDATE SET last_seen=excluded.last_seen, {col}={col}+1, "
               f"username=COALESCE(excluded.username, username)", (key, channel, user_id, username, now, now))
     phone = find_phone(text)
-    if phone and c.execute("UPDATE customers SET phone=? WHERE id=? AND phone=''", (phone, key)).rowcount:
+    if phone and c.execute("UPDATE customers SET phone=?, phone_at=? WHERE id=? AND phone=''", (phone, now, key)).rowcount:
         from . import webhook
         webhook.fire(c, "lead", {"channel": channel, "user_id": user_id, "username": username or "", "phone": phone,
                                  "text": (text or "")[:500]})
@@ -167,7 +167,11 @@ def update(c, key: str, patch: dict) -> dict:
         p = str(patch["phone"] or "").strip()
         if p and not find_phone(p):
             raise ValueError("شماره‌ی موبایل نامعتبر")
-        sets.append("phone=?"); args.append(find_phone(p) if p else "")
+        new = find_phone(p) if p else ""
+        old = c.execute("SELECT phone FROM customers WHERE id=?", (key,)).fetchone()[0]
+        sets.append("phone=?"); args.append(new)
+        if new and new != old:
+            sets.append("phone_at=?"); args.append(time.time())
     if "tags" in patch:
         tags = [str(t).strip()[:30] for t in patch["tags"] or [] if str(t).strip()][:20]
         sets.append("tags=?"); args.append(json.dumps(list(dict.fromkeys(tags)), ensure_ascii=False))

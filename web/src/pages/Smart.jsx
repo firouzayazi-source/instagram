@@ -32,7 +32,8 @@ const faTime = (ts) => new Date(ts * 1000).toLocaleString('fa-IR', { day: 'numer
 
 // فایل CSV با BOM تا اکسل فارسی را درست نشان دهد
 function downloadCsv(name, rows) {
-  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  // متنی که با = + - @ شروع شود در اکسل فرمول حساب می‌شود (جواب فرم را مشتری می‌نویسد)
+  const esc = (v) => { let t = String(v ?? ''); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"` }
   const blob = new Blob(['﻿' + rows.map((r) => r.map(esc).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)

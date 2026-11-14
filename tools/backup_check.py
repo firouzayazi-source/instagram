@@ -54,6 +54,19 @@ def check_db(path: Path, live: Path | None = None, app_schema: bool = False) -> 
     return True, f"{path.name}: سالم"
 
 
+def check_secrets(path: Path) -> tuple[bool, str]:
+    """بایگانی رازها باز می‌شود و ‎.env‎ (غیرخالی) در آن هست؟ محتوا خوانده یا چاپ نمی‌شود."""
+    import tarfile
+    try:
+        with tarfile.open(path, "r:gz") as t:
+            env = next((m for m in t.getmembers() if m.name.removeprefix("./") == ".env"), None)
+            if not env or env.size == 0:
+                return False, f"{path.name}: ‎.env‎ در بایگانی نیست"
+    except (tarfile.TarError, OSError) as e:
+        return False, f"{path.name}: باز نشد ({e})"
+    return True, f"{path.name}: سالم"
+
+
 def _live_copy(live: Path | None, d: Path) -> Path | None:
     """کپی پایگاه داده‌ی زنده (با فایل WAL) برای شمارش؛ خود فایل زنده هرگز باز نمی‌شود تا با اجرای root
     هیچ فایلی با مالک root کنارش ساخته نشود."""
@@ -96,6 +109,14 @@ def run(backup_dir: Path, live_db: Path, max_age_h: float = 30) -> dict:
         r, msg = check_db(b, live_db, app_schema=True)
         ok &= r
         notes.append(msg)
+    sec = latest(backup_dir, "secrets-*.tar.gz")
+    if sec:
+        r, msg = check_secrets(sec)
+        ok &= r
+        notes.append(msg)
+    else:
+        ok = False
+        notes.append("بکاپ رازها (secrets-*.tar.gz) پیدا نشد")
     t = latest(backup_dir, "tg-users-*.db")
     if t:
         r, msg = check_db(t)

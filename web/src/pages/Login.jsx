@@ -6,12 +6,13 @@ export default function Login({ onLogin }) {
   const [pw, setPw] = useState('')
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
+  const [pending, setPending] = useState('')
 
   async function submit(e) {
     e.preventDefault()
-    setBusy(true); setErr('')
+    setBusy(true); setErr(''); setPending('')
     try { await api.post('/api/login', { password: pw }); onLogin() }
-    catch (ex) { setErr(ex.message) }
+    catch (ex) { if (ex.status === 403 && ex.message.includes('شناخته‌شده نیست')) setPending(ex.message); else setErr(ex.message) }
     finally { setBusy(false) }
   }
 
@@ -24,6 +25,7 @@ export default function Login({ onLogin }) {
           <input id="pw" type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus autoComplete="current-password" />
         </div>
         {err && <p className="err">{err}</p>}
+        {pending && <div className="note warn" style={{ marginBottom: 10 }}>🔐 {pending}</div>}
         <button className="btn primary" disabled={busy || !pw}>ورود</button>
       </form>
     </main>

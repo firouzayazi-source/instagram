@@ -67,13 +67,14 @@ def main(argv=None):
     ap.add_argument("--no-service", action="store_true", help="برای تست: سرویس را ری‌استارت نکن")
     a = ap.parse_args(argv)
     env = Path(a.env)
-    print(f"فایل رمز: {env}\nکار: رمز تازه برای پنل، بکاپ از .env، خروج همه‌ی ورودهای قبلی، ری‌استارت igbot.")
+    print(f"فایل رمز: {env}\nکار: رمز تازه برای پنل، بکاپ از .env، خروج همه‌ی ورودهای قبلی، پاک شدن فهرست دستگاه‌ها "
+          "(اولین دستگاهی که با رمز تازه وارد شود شناخته‌شده می‌شود)، ری‌استارت igbot.")
     if not a.apply:
         print("فقط توضیح بود؛ برای ساختن رمز تازه: --apply")
         return 0
     if a.ask:
-        pw = getpass.getpass("رمز تازه (حداقل ۴ نویسه): ")
-        if len(pw) < 4 or pw != getpass.getpass("تکرار رمز: ") or re.search(r"\s", pw):
+        pw = getpass.getpass("رمز تازه (حداقل ۸ نویسه): ")
+        if len(pw) < 8 or pw != getpass.getpass("تکرار رمز: ") or re.search(r"\s", pw):
             sys.exit("رمز کوتاه است، فاصله دارد یا دو بار یکی نبود؛ چیزی عوض نشد.")
     else:
         pw = new_password()
@@ -88,6 +89,9 @@ def main(argv=None):
     if Path(a.db).exists():
         with sqlite3.connect(a.db) as c:
             c.execute("DELETE FROM sessions")       # ورودهای قبلی (شاید روی دستگاه گم‌شده) باطل شوند
+            for t in ("devices", "login_fails"):    # فهرست دستگاه‌ها از نو: اولین ورود با رمز تازه، دستگاه شناخته‌شده می‌شود
+                if c.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (t,)).fetchone():
+                    c.execute(f"DELETE FROM {t}")
     if not a.no_service:
         subprocess.run(["systemctl", "restart", "igbot"], check=False)
     print("\n✅ رمز پنل عوض شد. همین الان جایی امن یادداشت کنید (این رمز دیگر نمایش داده نمی‌شود):\n")

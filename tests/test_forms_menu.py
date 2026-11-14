@@ -118,3 +118,21 @@ def test_menu_validation():
             dm_menu.save(c, [{"title": "", "type": "text", "value": "متن"}])
         assert dm_menu.save(c, [{"title": "", "value": ""}]) == []
         assert json.loads(db.kv_get(c, dm_menu.KEY)) == []
+
+
+@pytest.mark.asyncio
+async def test_form_step_kept_when_send_fails(wenv, monkeypatch):
+    """اگر سؤال بعدی فرستاده نشد، فرم جلو نمی‌رود و رویداد خطا می‌خورد (نه «انجام شد»)."""
+    monkeypatch.setattr(worker, "MAX_RETRIES", 1)
+    with db.connect() as c:
+        fid = forms.save(c, FORM)
+        forms.start(c, fid, "u1")
+
+        async def broken(uid, text, quick_replies=None):
+            raise RuntimeError("IG 500")
+        wenv.send_dm = broken
+        db.add_event(c, "m:f1", "message", _dm("f1", "علی"))
+        row = [r for r in db.pending_events(c) if r["id"] == "m:f1"][0]
+        with pytest.raises(RuntimeError):
+            await worker.handle_event(wenv, row, c)
+        assert forms.snapshot(c, "u1")["step"] == 0                 # هنوز سؤال اول

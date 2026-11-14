@@ -27,7 +27,6 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "WEB_DIST", str(tmp_path / "nodist"))
     monkeypatch.setattr(config, "IG_ACCESS_TOKEN", "secret-token-123")
     monkeypatch.setenv("BOT_TOKEN", "123:tg-secret")
-    auth._fails.clear()
     db.init()
     return data
 

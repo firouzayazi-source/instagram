@@ -101,7 +101,7 @@ def remind_text(c, now: float | None = None) -> str | None:
     n = waiting(c)
     if not n:
         return None
-    fresh = c.execute("SELECT COUNT(*) FROM customers WHERE phone<>'' AND lead_status IN ('','new') AND first_seen>?",
+    fresh = c.execute("SELECT COUNT(*) FROM customers WHERE phone<>'' AND lead_status IN ('','new') AND phone_at>?",
                       (now - 86400,)).fetchone()[0]
     return (f"📞 {fa(n)} سرنخ منتظر تماس" + (f" ({fa(fresh)} تازه از دیروز)" if fresh else "") +
             "\nپنل ← پاسخ هوشمند ← خروجی شماره‌ها؛ بعد از تماس وضعیتش را بزنید.")
@@ -137,7 +137,7 @@ def weekly(c, now: float | None = None) -> dict:
     top_rules = sorted(((names.get(k, f"دستور {k}"), v) for k, v in (entries or {}).items()), key=lambda x: -x[1])[:3]
     return {
         "funnel": f, "posts": posts, "stories": len(stories), "story_avg": (sum(sv) / len(sv)) if sv else 0,
-        "new_leads": q("SELECT COUNT(*) FROM customers WHERE phone<>'' AND first_seen>?", since),
+        "new_leads": q("SELECT COUNT(*) FROM customers WHERE phone<>'' AND phone_at>?", since),
         "called": q("SELECT COUNT(*) FROM customers WHERE lead_status='called' AND lead_at>?", since),
         "bought": q("SELECT COUNT(*) FROM customers WHERE lead_status='bought' AND lead_at>?", since),
         "waiting": waiting(c), "rule_entries": top_rules, "tracked": entries is not None,

@@ -87,11 +87,13 @@ function Today({ s }) {
 }
 
 // سلامت سیستم: خوانش کامنت و دایرکت، آمار، بکاپ شبانه؛ فقط وقتی مشکلی هست جزئیات می‌آید
-function Health({ items, errors, tokenDays }) {
+function Health({ items, errors, tokenDays, weak, pending }) {
   const bad = items.filter((x) => !x.ok)
   const issues = [...bad.map((x) => `${x.label}: ${x.error || 'خطا'}`),
     ...(errors ? [`${fa(errors)} رویداد با خطا`] : []),
-    ...(tokenDays !== null && tokenDays < 10 ? [`${fa(tokenDays)} روز تا انقضای توکن`] : [])]
+    ...(tokenDays !== null && tokenDays < 10 ? [`${fa(tokenDays)} روز تا انقضای توکن`] : []),
+    ...(pending ? [`${fa(pending)} دستگاه تازه منتظر تأیید ورود (بیشتر ← حساب و رمز)`] : []),
+    ...(weak ? ['رمز پنل کوتاه‌تر از ۸ نویسه است؛ در «بیشتر ← حساب و رمز» عوضش کنید'] : [])]
   return (
     <section className="card">
       <div className="row-between">
@@ -126,7 +128,7 @@ export default function Dashboard({ stats: s }) {
           <a href="#/smart/phones" className="tile"><b>{fa(s.leads_today)}</b><span>شماره‌ی تازه‌ی ۲۴ ساعت</span></a>
         </div>
       </section>
-      <Health items={s.health || []} errors={s.events_error} tokenDays={days} />
+      <Health items={s.health || []} errors={s.events_error} tokenDays={days} weak={s.weak_password} pending={s.devices_pending} />
       <details className="card">
         <summary><b>جزئیات و گزارش‌ها</b></summary>
       <Today s={s} />

@@ -167,6 +167,9 @@ async def monitor_loop(ig, stop: asyncio.Event, interval: float = 300, grace: fl
                     msg = leads.remind_text(c)
                     if msg is None or tg_notify.send(msg):
                         db.kv_set(c, "lead_remind_last", today)
+                if db.kv_get(c, "prune_last") != today:
+                    db.kv_set(c, "prune_last", today)
+                    db.prune(c)
                 if leads.weekly_due(c):
                     if tg_notify.send(leads.weekly_text(c)):
                         db.kv_set(c, "weekly_last", today)

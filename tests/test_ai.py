@@ -35,7 +35,6 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "PANEL_PASSWORD", "pw")
     monkeypatch.setattr(config, "COOKIE_SECURE", False)
     monkeypatch.setattr(config, "WEB_DIST", str(tmp_path / "nodist"))
-    auth._fails.clear()
     db.init()
     fake = FakeClaude()
     ai.set_client(fake)

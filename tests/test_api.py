@@ -14,7 +14,6 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "IG_USER_ID", "me")
     monkeypatch.setattr(config, "WEB_DIST", str(tmp_path / "nodist"))
     from app import auth
-    auth._fails.clear()
     db.init()
     fake = FakeIG()
     with TestClient(create_app(fake)) as c:

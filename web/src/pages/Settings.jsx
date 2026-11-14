@@ -74,6 +74,7 @@ export default function Settings({ onLogout }) {
       <section className="card">
         <h2>حساب</h2>
         <PasswordForm />
+        <Devices />
         <button className="btn danger" onClick={logout} style={{ marginTop: 12 }}>خروج از پنل</button>
       </section>
     </>
@@ -88,7 +89,7 @@ function PasswordForm() {
   const [msg, setMsg] = useState(null)
   const [busy, setBusy] = useState(false)
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
-  const problem = f.next && f.next.length < 4 ? 'دست‌کم ۴ نویسه' : /\s/.test(f.next) ? 'بدون فاصله' : f.again && f.again !== f.next ? 'تکرار یکی نیست' : ''
+  const problem = f.next && f.next.length < 8 ? 'دست‌کم ۸ نویسه' : /\s/.test(f.next) ? 'بدون فاصله' : f.again && f.again !== f.next ? 'تکرار یکی نیست' : ''
 
   async function save(e) {
     e.preventDefault(); setMsg(null); setBusy(true)
@@ -106,7 +107,7 @@ function PasswordForm() {
       <h3 style={{ marginTop: 0 }}>تغییر رمز پنل</h3>
       <div className="field"><label>رمز فعلی</label>
         <input type={type} dir="ltr" autoComplete="current-password" value={f.current} onChange={set('current')} /></div>
-      <div className="field"><label>رمز تازه (دست‌کم ۴ نویسه، بدون فاصله)</label>
+      <div className="field"><label>رمز تازه (دست‌کم ۸ نویسه، بدون فاصله)</label>
         <input type={type} dir="ltr" autoComplete="new-password" value={f.next} onChange={set('next')} /></div>
       <div className="field"><label>تکرار رمز تازه</label>
         <input type={type} dir="ltr" autoComplete="new-password" value={f.again} onChange={set('again')} /></div>
@@ -118,5 +119,51 @@ function PasswordForm() {
       <p className="muted">اگر رمز را فراموش کردید، روی سرور: <code dir="ltr">sudo python3 /opt/igbot/tools/reset_panel_password.py --apply</code></p>
       {msg && <p className={msg.ok ? 'ok' : 'err'}>{msg.text}</p>}
     </form>
+  )
+}
+
+
+// دستگاه‌های شناخته‌شده: فقط همین‌ها با رمز وارد می‌شوند؛ دستگاه تازه منتظر تأیید از یکی از این‌ها می‌ماند
+function Devices() {
+  const [d, setD] = useState(null)
+  const [msg, setMsg] = useState(null)
+  const load = () => api.get('/api/devices').then(setD).catch(() => {})
+  useEffect(() => { load() }, [])
+  if (!d) return null
+  const when = (t) => new Date(t * 1000).toLocaleString('fa-IR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tehran' })
+  async function act(x, action) {
+    if (action === 'revoke' && !confirm(`«${x.name}» از فهرست برداشته شود؟ همان لحظه از پنل خارج می‌شود و دیگر با رمز هم وارد نمی‌شود.`)) return
+    setMsg(null)
+    try { setD(await api.post(`/api/devices/${x.id}/${action}`)); setMsg({ ok: true, text: action === 'approve' ? 'تأیید شد ✅ حالا روی آن دستگاه دوباره وارد شوید.' : 'برداشته شد' }) }
+    catch (ex) { setMsg({ ok: false, text: ex.message }) }
+  }
+  async function lock(on) {
+    if (!on && !confirm('با خاموش شدن قفل، هر دستگاهی که رمز را بداند وارد می‌شود. خاموش شود؟')) return
+    setD(await api.put('/api/devices/lock', { on }))
+  }
+  return (
+    <div style={{ marginTop: 16 }}>
+      <h3>دستگاه‌ها {d.lock ? <span className="pill good">فقط دستگاه‌های شناخته‌شده</span> : <span className="pill warn">هر دستگاه با رمز</span>}</h3>
+      <p className="muted">دستگاه تازه حتی با رمز درست وارد نمی‌شود تا از همین‌جا تأییدش کنید؛ برای هر درخواست به تلگرام هم خبر می‌آید. اگر همه‌ی دستگاه‌ها از دست رفت، روی سرور: <code dir="ltr">sudo python3 /opt/igbot/tools/reset_panel_password.py --apply</code></p>
+      <div className="list">
+        {d.items.map((x) => (
+          <div key={x.id} className="item" style={{ cursor: 'default' }}>
+            <div className="row">
+              <b>{x.name || 'دستگاه'} {x.current && <span className="pill good">همین دستگاه</span>} {x.status === 'pending' && <span className="pill warn">منتظر تأیید</span>}</b>
+              <span className="when">{when(x.last_seen)}</span>
+            </div>
+            <small className="muted" dir="ltr">{x.last_ip}</small>
+            {!x.current && (
+              <div className="actions" style={{ marginTop: 6 }}>
+                {x.status === 'pending' && <button className="btn sm primary" onClick={() => act(x, 'approve')}>تأیید، خودم هستم</button>}
+                <button className="btn sm danger" onClick={() => act(x, 'revoke')}>{x.status === 'pending' ? 'رد' : 'برداشتن'}</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <label className="check" style={{ marginTop: 8 }}><input type="checkbox" checked={d.lock} onChange={(e) => lock(e.target.checked)} /> فقط دستگاه‌های شناخته‌شده وارد شوند (پیشنهادی)</label>
+      {msg && <p className={msg.ok ? 'ok' : 'err'}>{msg.text}</p>}
+    </div>
   )
 }

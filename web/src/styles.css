@@ -1,3 +1,7 @@
+/* Vazirmatn از خود برنامه (npm vazirmatn، مجوز OFL)؛ نه از گوگل */
+@font-face { font-family: Vazirmatn; src: url('../node_modules/vazirmatn/fonts/webfonts/Vazirmatn-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: Vazirmatn; src: url('../node_modules/vazirmatn/fonts/webfonts/Vazirmatn-Medium.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: Vazirmatn; src: url('../node_modules/vazirmatn/fonts/webfonts/Vazirmatn-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
 :root {
   --bg: #f6f7f9; --surface: #fff; --ink: #16181d; --muted: #5f6673; --line: #e2e5ea;
   --accent: #2257d6; --accent-soft: #e6edfc; --good: #1f8a4c; --warn: #b56a00; --bad: #c0392b;

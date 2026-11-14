@@ -9,6 +9,8 @@ User=igbot
 WorkingDirectory=/opt/igbot/data/telegram
 EnvironmentFile=/opt/igbot/.env
 Environment=PYTHONUNBUFFERED=1
+# زمان‌ها با وقت تهران ذخیره و در SQL با 'localtime' مقایسه می‌شوند؛ ساعت سرور UTC است (آمار امروز ۳.۵ ساعت جابه‌جا بود)
+Environment=TZ=Asia/Tehran
 ExecStart=/opt/igbot/.venv/bin/python /opt/igbot/tgbot/bot.py
 Restart=on-failure
 RestartSec=5

@@ -22,6 +22,8 @@ def test_apply_resets_password(tmp_path, capsys):
     with sqlite3.connect(db) as c:
         c.execute("CREATE TABLE sessions(token TEXT, created_at REAL, expires_at REAL)")
         c.execute("INSERT INTO sessions VALUES('t', 0, 9e12)")
+        c.execute("CREATE TABLE devices(id TEXT, status TEXT)")
+        c.execute("INSERT INTO devices VALUES('d', 'trusted')")
     r.main(["--apply", "--env", str(env), "--db", str(db), "--no-service", "--backup-dir", str(tmp_path / "b")])
     text = env.read_text(encoding="utf-8")
     pw = re.search(r"^PANEL_PASSWORD=(.+)$", text, re.M).group(1)
@@ -32,6 +34,7 @@ def test_apply_resets_password(tmp_path, capsys):
     assert "PANEL_PASSWORD=old" in backup.read_text(encoding="utf-8") and oct(os.stat(backup).st_mode & 0o777) == "0o600"
     with sqlite3.connect(db) as c:
         assert c.execute("SELECT COUNT(*) FROM sessions").fetchone()[0] == 0
+        assert c.execute("SELECT COUNT(*) FROM devices").fetchone()[0] == 0     # دستگاه گم‌شده دیگر شناخته‌شده نیست
     assert pw in capsys.readouterr().out                 # فقط روی ترمینال خود صاحب سرور
 
 

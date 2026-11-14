@@ -183,6 +183,8 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         alt = adv.get("over_limit_reply", "")
         acts = {"private_replies": [alt], "public_replies": []} if inc.channel == "comment" else {"dm_replies": [alt]}
     sent = False
+    # شماره‌ی متن: به نوبت (پیش‌فرض) یا تصادفی؛ در «دایرکت و جواب زیر کامنت» هر دو متن هم‌شماره‌اند
+    idx = random.randrange(1_000_000) if adv.get("random_pick") else n - 1
     public_only = inc.channel == "comment" and acts.get("comment_mode") == "public"    # فقط جواب زیر کامنت، بی دایرکت
     form_q = forms.start(c, acts["form_id"], inc.user_id) if acts.get("form_id") and not over and not public_only else None
     if inc.channel == "comment":
@@ -192,7 +194,7 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         elif not acts.get("private_replies") and acts.get("dm_replies"):
             acts = {**acts, "private_replies": acts["dm_replies"]}
         for kind in ("private", "public"):
-            text = leads.track_links(pick(acts.get(f"{kind}_replies", []), n - 1), rule["id"])
+            text = leads.track_links(pick(acts.get(f"{kind}_replies", []), idx), rule["id"])
             if kind == "private" and form_q:     # به هر کامنت فقط یک دایرکت می‌شود فرستاد: سؤال اول همراه همان پیام
                 text = "\n\n".join(x for x in (text, form_question_text(*form_q)) if x)
             if text:
@@ -201,7 +203,7 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
                 if kind == "private" and form_q and not ok:
                     forms.cancel(c, inc.user_id)
     else:
-        text = leads.track_links(pick(acts.get("dm_replies", []), n - 1), rule["id"])
+        text = leads.track_links(pick(acts.get("dm_replies", []), idx), rule["id"])
         if text:
             sent |= await _send(ig, c, row["id"], rule["id"], "dm", payload, inc, text,
                                 quick_replies=None if form_q else acts.get("quick_replies") or None)
@@ -228,17 +230,23 @@ async def handle_menu_or_form(ig, row, c, payload, inc: Incoming) -> str | None:
     """لمس دکمه‌ی منوی ثابت یا جواب سؤال فرم. None یعنی این پیام مال هیچ‌کدام نیست."""
     text = dm_menu.reply_for(c, inc.payload, inc.text)
     if text:
-        await _send(ig, c, row["id"], None, "dm", payload, inc, text)
+        if not await _send(ig, c, row["id"], None, "dm", payload, inc, text):
+            raise RuntimeError("جواب دکمه‌ی منو فرستاده نشد")       # در «رویداد با خطا» دیده شود، نه «انجام شد»
         return "done"
     if not inc.text.strip() or not forms.active(c, inc.user_id):
         return None
+    snap = forms.snapshot(c, inc.user_id)
     res = forms.answer(c, inc.user_id, db.conversation_username(c, inc.user_id) or "", inc.text)
     if res is None:
         return None
-    await _send(ig, c, row["id"], None, "dm", payload, inc, res["text"], quick_replies=res["quick_replies"])
+    if not await _send(ig, c, row["id"], None, "dm", payload, inc, res["text"], quick_replies=res["quick_replies"]):
+        if not res["done"]:
+            forms.restore(c, snap)          # مشتری سؤال بعدی را ندید: فرم همان‌جا بماند تا جوابش دوباره پذیرفته شود
+            raise RuntimeError("سؤال بعدی فرم فرستاده نشد")
     if res["done"]:
         if res["phone"]:
-            c.execute("UPDATE customers SET phone=? WHERE id=? AND phone=''", (res["phone"], crm.cid("ig", inc.user_id)))
+            c.execute("UPDATE customers SET phone=?, phone_at=? WHERE id=? AND phone=''",
+                      (res["phone"], time.time(), crm.cid("ig", inc.user_id)))
         tg_notify.send(f"📝 فرم «{res['form']}» تازه پر شد.\nپنل ← پاسخ هوشمند ← فرم‌ساز")   # بدون اطلاعات مشتری
     return "done"
 
@@ -390,7 +398,8 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replie
     for attempt in range(MAX_RETRIES):
         try:
             if kind == "public":
-                ig_id = await ig.reply_comment(target, text)
+                # اینستاگرام فقط به کامنت سطح اول جواب می‌دهد؛ جواب به یک ریپلای زیر همان رشته (کامنت اصلی) می‌رود
+                ig_id = await ig.reply_comment(payload.get("parent_id") or target, text)
             elif kind == "private":
                 ig_id = await ig.private_reply(target, text)
             elif quick_replies:
@@ -506,14 +515,49 @@ def plan_batches(rows, wait: float, now: float | None = None) -> list[tuple]:
     return out
 
 
-async def run_forever(ig, stop: asyncio.Event) -> None:
+COMMENT_LIMIT_KEY = "comment_hourly_limit"   # سقف جواب خودکار به کامنت در ساعت؛ پیش‌فرض ۱۰۰ (مثل نوین‌هاب)
+COMMENT_LIMIT_DEFAULT = 100
+
+
+def comment_limit(c) -> int:
+    try:
+        return max(1, min(1000, int(db.kv_get(c, COMMENT_LIMIT_KEY) or COMMENT_LIMIT_DEFAULT)))
+    except ValueError:
+        return COMMENT_LIMIT_DEFAULT
+
+
+def comment_replies_last_hour(c, now: float | None = None) -> int:
+    """کامنت‌هایی که در ساعت گذشته جواب خودکار گرفتند (عمومی یا دایرکت به کامنت‌گذار؛ هر کامنت یک بار)."""
+    return c.execute("SELECT COUNT(DISTINCT event_id) FROM replies WHERE ok=1 AND kind IN ('public','private') "
+                     "AND event_id LIKE 'c:%' AND created_at>?", ((now or time.time()) - 3600,)).fetchone()[0]
+
+
+def _limit_alert(c) -> None:
+    hour = time.strftime("%Y-%m-%d %H")
+    if db.kv_get(c, "comment_limit_alert") != hour:
+        db.kv_set(c, "comment_limit_alert", hour)
+        tg_notify.send(f"⏸ سقف {leads.fa(comment_limit(c))} جواب کامنت در ساعت پر شد؛ بقیه‌ی کامنت‌ها در صف می‌مانند و ساعت بعد به ترتیب "
+                       "جواب می‌گیرند (تا پیج به‌خاطر جواب‌های پشت‌سرهم محدود نشود). سقف: پنل ← پاسخ هوشمند.")
+
+
+async def run_forever(ig, stop: asyncio.Event, comments: bool | None = None) -> None:
+    """دو صف جدا (main.py دو بار اجرا می‌کند): دایرکت‌ها (comments=False) هیچ‌وقت پشت موج کامنت نمی‌مانند؛
+    کامنت‌ها (comments=True) با سقف ساعتی. comments=None یعنی یک صف برای همه (تست‌ها)."""
     next_afu = 0.0
     while not stop.is_set():
         try:
             with db.connect() as c:
-                rows = db.pending_events(c, limit=50)
-                await process_followups(ig, c)
-                if time.time() >= next_afu:
+                rows = db.pending_events(c, limit=50, comments=comments)
+                if comments:
+                    room = comment_limit(c) - comment_replies_last_hour(c)
+                    if room <= 0 and rows:
+                        _limit_alert(c)
+                        rows = []
+                        await asyncio.sleep(30)
+                    rows = rows[:max(room, 0)]
+                if comments is not True:
+                    await process_followups(ig, c)
+                if comments is not True and time.time() >= next_afu:
                     next_afu = time.time() + 600       # پیگیری خودکار: هر ۱۰ دقیقه یک بار بررسی
                     try:
                         await auto_followups(ig, c)

@@ -95,7 +95,7 @@ async def poll_once(ig, c, now: float | None = None) -> dict:
         if force:
             st["forced_at"] = now
         checked += 1
-        rows = (await ig._get(f"{mid}/comments", fields="id,text,timestamp,from,parent_id", limit=50)).get("data", [])
+        rows = await _comments(ig, mid, st["since"])
         newest = st["since"]
         for x in rows:
             t = _ts(x.get("timestamp", ""))
@@ -112,6 +112,30 @@ async def poll_once(ig, c, now: float | None = None) -> dict:
         c.commit()
     db.kv_set(c, STATE_KEY, json.dumps(state, ensure_ascii=False))
     return {"queued": queued, "checked": checked}
+
+
+COMMENT_PAGE = 50
+COMMENT_PAGES = 4
+
+
+async def _comments(ig, mid: str, since: float) -> list[dict]:
+    """کامنت‌های پست به‌همراه جواب‌هایشان (ریپلای زیر کامنت دیگر)، صفحه‌به‌صفحه تا به کامنت‌های قبل از since برسد
+    (حداکثر ۴ صفحه‌ی ۵۰تایی در هر دور؛ موج بزرگ‌تر دور بعد خوانده می‌شود)."""
+    out, after = [], None
+    for _ in range(COMMENT_PAGES):
+        params = {"fields": "id,text,timestamp,from,parent_id,replies{id,text,timestamp,from}", "limit": COMMENT_PAGE}
+        if after:
+            params["after"] = after
+        d = await ig._get(f"{mid}/comments", **params)
+        page = d.get("data", []) or []
+        for x in page:
+            out.append(x)
+            for r in ((x.get("replies") or {}).get("data") or []):
+                out.append({**r, "parent_id": x.get("id")})
+        after = ((d.get("paging") or {}).get("cursors") or {}).get("after")
+        if len(page) < COMMENT_PAGE or not after or all(_ts(x.get("timestamp", "")) <= since for x in page):
+            break
+    return out
 
 
 def dm_reply_enabled(c) -> bool:

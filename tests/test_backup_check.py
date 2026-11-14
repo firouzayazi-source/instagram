@@ -22,6 +22,7 @@ def _backup(tmp_path, name="bot-2026-11-13.db"):
 
 def test_good_backup(tmp_path):
     d, live = _backup(tmp_path)
+    _secrets(d)
     r = backup_check.run(d, live)
     assert r["ok"], r
 
@@ -59,3 +60,32 @@ def test_missing_dir_and_empty_dir(tmp_path):
     assert not r["ok"] and "نیست" in r["error"]
     (tmp_path / "empty").mkdir()
     assert "خالی" in backup_check.run(tmp_path / "empty", tmp_path / "live.db")["error"]
+
+
+def _secrets(d, ok=True):
+    import tarfile
+    env = d / ".env"
+    env.write_text("PANEL_PASSWORD=x\n" if ok else "")
+    with tarfile.open(d / "secrets-2026-11-13.tar.gz", "w:gz") as t:
+        t.add(env, arcname=".env")
+    env.unlink()
+
+
+def test_secrets_archive_checked(tmp_path):
+    d, live = _backup(tmp_path)
+    assert "رازها" in backup_check.run(d, live)["error"]
+    _secrets(d)
+    assert backup_check.run(d, live)["ok"]
+    _secrets(d, ok=False)
+    assert ".env" in backup_check.run(d, live)["error"]
+
+
+def test_prune_keeps_pending_and_recent():
+    db.init()
+    now = time.time()
+    with db.connect() as c:
+        for eid, age, st in (("old-done", 70, "done"), ("old-pending", 70, "pending"), ("new-done", 5, "done")):
+            db.add_event(c, eid, "comment", {})
+            c.execute("UPDATE events SET created_at=?, status=? WHERE id=?", (now - age * 86400, st, eid))
+        assert db.prune(c, now) == 1
+        assert {r[0] for r in c.execute("SELECT id FROM events")} == {"old-pending", "new-done"}

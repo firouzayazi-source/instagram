@@ -23,7 +23,6 @@ def cl(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "CUSTOM_AI_BASE_URL", "")
     for k in ("OPENAI_API_KEY", "CUSTOM_AI_BASE_URL"):
         monkeypatch.delenv(k, raising=False)
-    auth._fails.clear()
     db.init()
     ai.set_client(None)
     with TestClient(create_app(IG())) as c:

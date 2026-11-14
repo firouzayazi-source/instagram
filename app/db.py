@@ -298,6 +298,10 @@ def init(path: str | None = None) -> None:
     with connect(str(p)) as c:
         c.executescript(SCHEMA)
         _migrate(c)
+        # شماره‌هایی که پیش از ستون phone_at گرفته شده‌اند: زمان دقیقشان معلوم نیست؛ «تازه» شمرده نشوند
+        c.execute("UPDATE customers SET phone_at=first_seen WHERE phone<>'' AND phone_at IS NULL")
+        from . import auth
+        auth.ensure(c)              # دستگاه‌ها و قفل تلاش ناموفق
 
 
 # ستون‌هایی که بعد از ساخت جدول اضافه شده‌اند؛ پایگاه داده‌ی قدیمی بی‌خطر ارتقا می‌یابد
@@ -305,7 +309,8 @@ _COLUMNS = {
     "products": {"source": "TEXT NOT NULL DEFAULT ''", "url": "TEXT NOT NULL DEFAULT ''"},
     "comments": {"hidden": "INTEGER NOT NULL DEFAULT 0", "hidden_reason": "TEXT NOT NULL DEFAULT ''"},
     "messages": {"sender": "TEXT NOT NULL DEFAULT ''"},   # پیام بیرونی: bot | admin
-    "customers": {"lead_status": "TEXT NOT NULL DEFAULT ''", "lead_at": "REAL"},   # سرنخ: new | called | bought | lost
+    "sessions": {"device_id": "TEXT NOT NULL DEFAULT ''"},       # app/auth.py: دستگاه شناخته‌شده‌ی این ورود
+    "customers": {"lead_status": "TEXT NOT NULL DEFAULT ''", "lead_at": "REAL", "phone_at": "REAL"},   # phone_at: زمان گرفتن شماره   # سرنخ: new | called | bought | lost
     "ai_log": {"customer_vote": "TEXT NOT NULL DEFAULT ''", "voted_at": "REAL"},   # رضایت مشتری: up | down
 }
 
@@ -345,10 +350,23 @@ def add_event(c: sqlite3.Connection, event_id: str, kind: str, payload: dict) ->
         return False
 
 
-def pending_events(c: sqlite3.Connection, limit: int = 20) -> list[sqlite3.Row]:
+def pending_events(c: sqlite3.Connection, limit: int = 20, comments: bool | None = None) -> list[sqlite3.Row]:
+    """comments: True فقط کامنت‌ها، False همه جز کامنت (دایرکت و دکمه‌ها)، None همه."""
+    cond = {True: " AND kind='comment'", False: " AND kind<>'comment'", None: ""}[comments]
     return c.execute(
-        "SELECT * FROM events WHERE status='pending' ORDER BY created_at LIMIT ?", (limit,)
+        f"SELECT * FROM events WHERE status='pending'{cond} ORDER BY created_at LIMIT ?", (limit,)
     ).fetchall()
+
+
+EVENT_KEEP_DAYS = 60
+
+
+def prune(c, now: float | None = None) -> int:
+    """رویدادهای خام پردازش‌شده‌ی قدیمی‌تر از ۶۰ روز (متن کامنت و پیام در جدول‌های صندوق و پرونده‌ی مشتری
+    می‌ماند؛ این فقط نسخه‌ی خام وبهوک و خوانش است). صف در انتظار هرگز پاک نمی‌شود."""
+    now = now or time.time()
+    return c.execute("DELETE FROM events WHERE status<>'pending' AND created_at<?",
+                     (now - EVENT_KEEP_DAYS * 86400,)).rowcount
 
 
 def finish_event(c: sqlite3.Connection, event_id: str, status: str, error: str | None = None) -> None:

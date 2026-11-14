@@ -67,7 +67,6 @@ def env(tg_dir, tmp_path, monkeypatch):
     monkeypatch.setattr(config, "COOKIE_SECURE", False)
     monkeypatch.setattr(config, "WEB_DIST", str(tmp_path / "nodist"))
     monkeypatch.setattr(config, "ANTHROPIC_API_KEY", "")
-    auth._fails.clear()
     db.init()
     ai.set_client(None)
     with db.connect() as c:
@@ -297,6 +296,8 @@ def test_admin_chat_proposes_and_applies(env):
         bad = cl.post("/api/ai/admin-apply", json={"ops": [{"op": "intent_delete", "id": "i_price"}]}).json()["results"]
         assert bad[0].startswith("❌")
     ai.set_client(None)
+    with db.connect() as c:
+        db.kv_set(c, "device_lock", "0")        # کلاینت دوم = دستگاه تازه؛ قفل دستگاه در test_devices آزموده می‌شود
     with TestClient(create_app(SalesIG())) as cl:
         cl.post("/api/login", json={"password": "pw"})
         r = cl.post("/api/ai/admin-chat", json={"text": "سلام"})

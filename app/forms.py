@@ -133,6 +133,17 @@ def start(c, form_id, user_id: str, now: float | None = None) -> tuple[str, list
     return _ask(f["questions"][0])
 
 
+def snapshot(c, user_id: str) -> dict | None:
+    r = c.execute("SELECT * FROM form_sessions WHERE user_id=?", (user_id,)).fetchone()
+    return dict(r) if r else None
+
+
+def restore(c, snap: dict | None) -> None:
+    if snap:
+        c.execute("INSERT OR REPLACE INTO form_sessions(user_id,form_id,step,answers,updated_at) VALUES (?,?,?,?,?)",
+                  (snap["user_id"], snap["form_id"], snap["step"], snap["answers"], snap["updated_at"]))
+
+
 def cancel(c, user_id: str) -> None:
     ensure(c)
     c.execute("DELETE FROM form_sessions WHERE user_id=?", (user_id,))

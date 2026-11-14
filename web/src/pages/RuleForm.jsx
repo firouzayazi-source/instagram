@@ -7,7 +7,7 @@ const EMPTY = {
   name: '', enabled: true, priority: 100, channels: ['comment'], post_scope: 'all',
   triggers: [{ match: 'contains', value: '' }],
   actions: { comment_mode: 'dm', public_replies: [''], private_replies: [''], dm_replies: [''], quick_replies: [] },
-  advanced: { require_follow: false, follow_prompt: '', once_per_user: false, cooldown_minutes: 0, active_hours: null, followup: null,
+  advanced: { require_follow: false, follow_prompt: '', once_per_user: true, cooldown_minutes: 0, active_hours: null, followup: null,
     pause_ai_minutes: 0, handoff: false, max_uses: 0, over_limit_reply: '' },
 }
 const WHERE = [
@@ -191,7 +191,7 @@ export default function RuleForm({ id }) {
   const cmode = r.actions.comment_mode || 'dm'
   const formOk = cmode !== 'public' || hasD     // فرم در دایرکت ادامه پیدا می‌کند
   const advCount = [a.require_follow, scope && hasC, a.followup?.text !== undefined && a.followup !== null,
-    a.max_uses > 0, !!r.actions.form_id, a.once_per_user, Number(a.cooldown_minutes) > 0, !!a.active_hours, a.handoff, Number(a.pause_ai_minutes) > 0].filter(Boolean).length
+    a.max_uses > 0, !!a.random_pick, !!r.actions.form_id, a.once_per_user, Number(a.cooldown_minutes) > 0, !!a.active_hours, a.handoff, Number(a.pause_ai_minutes) > 0].filter(Boolean).length
 
   async function save(e) {
     e.preventDefault(); setErr('')
@@ -211,6 +211,7 @@ export default function RuleForm({ id }) {
     adv.pause_ai_minutes = Number(adv.pause_ai_minutes) || 0
     if (!adv.pause_ai_minutes) delete adv.pause_ai_minutes
     if (!adv.handoff) delete adv.handoff
+    if (!adv.random_pick) delete adv.random_pick
     adv.max_uses = parseInt(adv.max_uses, 10) || 0
     if (!adv.max_uses) { delete adv.max_uses; delete adv.over_limit_reply }
     const body = {
@@ -345,6 +346,9 @@ export default function RuleForm({ id }) {
           ) : <div className="note warn">هنوز فرمی نساخته‌اید. <a href="#/smart/forms/new">ساخت فرم</a></div>}
           {hasC && <div className="note info">برای کامنت، سؤال اول همراه همان دایرکت به کامنت‌گذار می‌رود و جواب‌ها در دایرکت ادامه پیدا می‌کند.</div>}
         </Adv>
+
+        <Adv on={!!a.random_pick} icon="repeat" title="انتخاب تصادفی متن" desc="به‌جای به نوبت (۱، ۲، ۳…)، هر بار یکی از متن‌ها تصادفی فرستاده می‌شود؛ طبیعی‌تر دیده می‌شود."
+          onToggle={() => setAdv({ random_pick: !a.random_pick })} />
 
         <Adv on={a.max_uses > 0} icon="clock" title="محدودیت تعداد پاسخ" desc="بعد از رسیدن به سقف، پاسخ اصلی متوقف می‌شود و پیام جایگزین فرستاده می‌شود (اگر بنویسید)."
           onToggle={() => setAdv({ max_uses: a.max_uses > 0 ? 0 : 100 })}>

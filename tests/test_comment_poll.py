@@ -250,3 +250,17 @@ def test_all_posts_rule_forces_recent_posts_every_few_minutes():
         ig.comments["p1"].pop()                                                    # تعداد ثابت
         assert asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 60))["checked"] == 0   # هنوز ۳ دقیقه نشده
         assert asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 200))["queued"] == 1
+
+
+def test_replies_under_comments_are_read():
+    ig = PollIG()
+    db.init()
+    with db.connect() as c:
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0))
+        ig.comments["p1"].insert(0, {"id": "top", "text": "سلام", "timestamp": iso(T0 + 20), "from": {"id": "u7", "username": "q"},
+                                     "replies": {"data": [{"id": "rep1", "text": "قیمت؟", "timestamp": iso(T0 + 30),
+                                                           "from": {"id": "u8", "username": "w"}}]}})
+        ig.posts[0]["comments_count"] = 4
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 60))
+        ev = events(c)
+        assert "c:rep1" in ev and ev["c:rep1"]["parent_id"] == "top" and ev["c:rep1"]["text"] == "قیمت؟"

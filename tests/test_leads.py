@@ -54,8 +54,8 @@ def test_lead_status_reminder_and_weekly(tmp_path, monkeypatch):
     with db.connect() as c:
         rid = db.upsert_rule(c, {"name": "قیمت ریلز", "channels": ["comment"], "actions": {"private_replies": ["x"]}})
         for i, ph in enumerate(["09120000001", "09120000002", ""]):
-            c.execute("INSERT INTO customers(id,channel,user_id,username,phone,first_seen,last_seen) VALUES (?,?,?,?,?,?,?)",
-                      (f"ig:u{i}", "ig", f"u{i}", f"n{i}", ph, now - 3600, now - 3600))
+            c.execute("INSERT INTO customers(id,channel,user_id,username,phone,first_seen,last_seen,phone_at) VALUES (?,?,?,?,?,?,?,?)",
+                      (f"ig:u{i}", "ig", f"u{i}", f"n{i}", ph, now - 3600, now - 3600, now - 3600 if ph else None))
         assert leads.waiting(c) == 2
         assert leads.remind_due(c, now)
         assert "۲ سرنخ" in leads.remind_text(c, now)
@@ -130,3 +130,67 @@ def test_validate_comment_mode():
     assert validate({**base, "actions": {"comment_mode": "public", "private_replies": ["x"]}})
     assert validate({**base, "actions": {"comment_mode": "both", "private_replies": ["x"]}})
     assert validate({**base, "actions": {"comment_mode": "zzz", "public_replies": ["x"]}})
+
+
+@pytest.mark.asyncio
+async def test_comment_queue_hourly_limit_and_dm_queue_separate(tmp_path, monkeypatch):
+    import asyncio
+    from app import tg_notify, worker
+    from tests.test_instagram_features import IG
+    monkeypatch.setattr(config, "SEND_DELAY_MIN", 0)
+    monkeypatch.setattr(config, "SEND_DELAY_MAX", 0)
+    sent = []
+    monkeypatch.setattr(tg_notify, "send", lambda t, *a, **k: sent.append(t) or True)
+    db.init()
+    ig = IG()
+    with db.connect() as c:
+        db.kv_set(c, worker.COMMENT_LIMIT_KEY, "2")
+        db.upsert_rule(c, {"name": "x", "channels": ["comment"], "triggers": [{"match": "any"}],
+                           "actions": {"comment_mode": "public", "public_replies": ["ممنون"]}})
+        for i in range(4):
+            db.add_event(c, f"c:k{i}", "comment", {"id": f"k{i}", "text": "سلام", "from": {"id": f"u{i}"}, "media": {"id": "p"}})
+        db.add_event(c, "m:d1", "message", {"sender": {"id": "z"}, "timestamp": 1, "message": {"mid": "d1", "text": "سلام"}})
+        assert [r["id"] for r in db.pending_events(c, comments=False)] == ["m:d1"]
+    stop = asyncio.Event()
+    task = asyncio.create_task(worker.run_forever(ig, stop, comments=True))
+    await asyncio.sleep(1.5)
+    stop.set()
+    task.cancel()
+    with db.connect() as c:
+        assert worker.comment_replies_last_hour(c) == 2                 # فقط تا سقف
+        assert len(db.pending_events(c, comments=True)) == 2            # بقیه در صف، پاک نشدند
+        assert db.pending_events(c, comments=False)[0]["id"] == "m:d1"  # صف کامنت به دایرکت دست نزد
+    assert sent and "سقف ۲" in sent[0]
+
+
+def test_new_lead_counted_by_when_phone_was_given():
+    """مشتری قدیمی (یک ماه پیش) که امروز شماره داد، «شماره‌ی تازه» است (قبلاً از تاریخ اولین پیام حساب می‌شد)."""
+    import time as _t
+    from app import crm
+    db.init()
+    with db.connect() as c:
+        crm.touch(c, "ig", "old1", "old", "message", "سلام")
+        c.execute("UPDATE customers SET first_seen=? WHERE id='ig:old1'", (_t.time() - 30 * 86400,))
+        crm.touch(c, "ig", "old1", "old", "message", "شماره‌ام ۰۹۱۲۳۴۵۶۷۸۹")
+        assert leads.weekly(c)["new_leads"] == 1
+        assert "تازه از دیروز" in leads.remind_text(c)
+
+
+@pytest.mark.asyncio
+async def test_random_pick_uses_all_texts(tmp_path, monkeypatch):
+    from app import worker
+    from tests.test_instagram_features import IG
+    monkeypatch.setattr(config, "SEND_DELAY_MIN", 0)
+    monkeypatch.setattr(config, "SEND_DELAY_MAX", 0)
+    db.init()
+    ig = IG()
+    texts = ["الف", "ب", "ج"]
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "x", "channels": ["comment"], "triggers": [{"match": "any"}],
+                           "actions": {"comment_mode": "public", "public_replies": texts}, "advanced": {"random_pick": True}})
+        for i in range(40):
+            db.add_event(c, f"c:r{i}", "comment", {"id": f"r{i}", "text": "x", "from": {"id": f"u{i}"}, "media": {"id": "p"}})
+        for row in db.pending_events(c, limit=100):
+            await worker.handle_event(ig, row, c)
+    got = [t for k, _, t in ig.calls if k == "public"]
+    assert len(got) == 40 and set(got) == set(texts)

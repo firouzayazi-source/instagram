@@ -31,6 +31,12 @@ export default function Rules() {
     if (!on && !confirm('همه‌ی پاسخ‌های خودکار اینستاگرام خاموش شود؟ پیام‌ها همچنان در صندوق ثبت می‌شوند.')) return
     setIg(await api.put('/api/channels/instagram', { enabled: on }))
   }
+  async function setLimit() {
+    const v = prompt('حداکثر چند کامنت در ساعت جواب خودکار بگیرند؟ (اینستاگرام جواب‌های پشت‌سرهم زیاد را شبیه اسپم می‌بیند؛ ۱۰۰ پیشنهادی است)', poll.comment_hour.limit)
+    if (v === null) return
+    try { await api.put('/api/comment-limit', { limit: Number(String(v).replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) }); setPoll(await api.get('/api/comment-poll')) }
+    catch (ex) { alert(ex.message) }
+  }
   async function duplicate(r) { const { id } = await api.post(`/api/rules/${r.id}/copy`, { channels: r.channels }); location.hash = `#/rules/${id}` }
   async function remove(r) { if (confirm(`دستور «${r.name}» حذف شود؟`)) { await api.del(`/api/rules/${r.id}`); load() } }
 
@@ -51,6 +57,11 @@ export default function Rules() {
             <h2>stock_land.ir</h2>
             <p>{ig ? (ig.enabled ? 'پاسخ خودکار روشن است' : 'پاسخ خودکار خاموش است') : '…'}
               {poll?.active && st && <> · {st.ok ? `بررسی کامنت‌ها ${timeAgo(st.at)}` : <span className="err">خطا در خواندن کامنت‌ها</span>}</>}</p>
+            {poll?.comment_hour && <p>
+              جواب کامنت در ساعت گذشته: <b className={poll.comment_hour.count >= poll.comment_hour.limit ? 'err' : ''}>{fa(poll.comment_hour.count)}</b> از سقف{' '}
+              <button type="button" className="pill as-btn muted" onClick={setLimit}>{fa(poll.comment_hour.limit)} ✎</button>
+              {poll.comment_hour.queued > 0 && <> · {fa(poll.comment_hour.queued)} کامنت در صف</>}
+            </p>}
           </div>
           {ig && <Switch checked={ig.enabled} onChange={setChannel} label="روشن و خاموش اینستاگرام" />}
         </div>

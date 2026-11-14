@@ -102,7 +102,6 @@ def test_api_and_public_file(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "PANEL_PASSWORD", "pw")
     monkeypatch.setattr(config, "COOKIE_SECURE", False)
     monkeypatch.setattr(config, "WEB_DIST", str(tmp_path / "nodist"))
-    auth._fails.clear()
     db.init()
     with TestClient(create_app(IG())) as cl:
         assert cl.post("/api/schedule/upload?name=a.jpg", content=b"img").status_code == 401

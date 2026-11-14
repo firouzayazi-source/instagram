@@ -40,8 +40,13 @@ class RuleIn(BaseModel):
 
 @router.post("/login")
 def login(body: Login, request: Request, response: Response):
-    token = auth.check_password(request, body.password)
-    response.set_cookie(auth.COOKIE, token, max_age=config.SESSION_TTL, httponly=True,
+    r = auth.login(request, body.password, request.cookies.get(auth.DEVICE_COOKIE))
+    auth.set_device_cookie(response, r["device"])
+    if r["status"] == "pending":
+        response.status_code = 403
+        return {"ok": False, "pending": True,
+                "detail": "این دستگاه هنوز شناخته‌شده نیست. از گوشی یا دستگاهی که همیشه با آن وارد می‌شوید، در «بیشتر ← حساب و رمز ← دستگاه‌ها» تأییدش کنید و دوباره وارد شوید."}
+    response.set_cookie(auth.COOKIE, r["session"], max_age=config.SESSION_TTL, httponly=True,
                         secure=config.COOKIE_SECURE, samesite="lax", path="/")
     return {"ok": True}
 
@@ -61,8 +66,30 @@ def password_change(request: Request, body: dict, session: str = Depends(auth.re
 
 
 @protected.get("/me")
-def me():
-    return {"ok": True, "ig_user_id": config.IG_USER_ID}
+def me(request: Request, session: str = Depends(auth.require_session)):
+    with db.connect() as c:
+        auth.touch_device(c, session, auth._ip(request))
+    return {"ok": True, "ig_user_id": config.IG_USER_ID, "weak_password": auth.weak_password()}
+
+
+@protected.get("/devices")
+def devices_list(session: str = Depends(auth.require_session)):
+    with db.connect() as c:
+        return auth.devices(c, session)
+
+
+@protected.post("/devices/{did}/{action}")
+def device_action(did: str, action: str, session: str = Depends(auth.require_session)):
+    with db.connect() as c:
+        auth.set_device(c, session, did, action)
+        return auth.devices(c, session)
+
+
+@protected.put("/devices/lock")
+def devices_lock(body: dict, session: str = Depends(auth.require_session)):
+    with db.connect() as c:
+        db.kv_set(c, auth.LOCK_KEY, "1" if body.get("on") else "0")
+        return auth.devices(c, session)
 
 
 @protected.get("/stats")
@@ -79,8 +106,10 @@ def stats(request: Request):
         st["orders_open"] = c.execute("SELECT COUNT(*) FROM orders WHERE status IN ('new','awaiting_payment','receipt')").fetchone()[0]
         st["orders_receipt"] = c.execute("SELECT COUNT(*) FROM orders WHERE status='receipt'").fetchone()[0]
         st["lost_open"] = sum(1 for x in reports.lost(c, 7, 3) if x["window_left"] > 0)
+        st["weak_password"] = auth.weak_password()
+        st["devices_pending"] = c.execute("SELECT COUNT(*) FROM devices WHERE status='pending'").fetchone()[0]
         st["leads_waiting"] = leads.waiting(c)
-        st["leads_today"] = c.execute("SELECT COUNT(*) FROM customers WHERE phone<>'' AND first_seen>?", (day,)).fetchone()[0]
+        st["leads_today"] = c.execute("SELECT COUNT(*) FROM customers WHERE phone<>'' AND phone_at>?", (day,)).fetchone()[0]
         st["health"] = monitor.health_summary(c, bool(getattr(ig(request), "via_composio", lambda: False)()))
         return {**st, "incoming_24h": incoming, "auto_answered_24h": auto, "ai": ai.stats(c),
                 "recent": db.recent_replies(c, 20)}
@@ -202,8 +231,26 @@ def comment_poll_status(request: Request):
         st = json.loads(db.kv_get(c, comment_poll.STATUS_KEY) or "null")
         dm = json.loads(db.kv_get(c, comment_poll.DM_STATUS_KEY) or "null")
         reply = comment_poll.dm_reply_enabled(c)
+        from . import worker
+        hour = {"count": worker.comment_replies_last_hour(c), "limit": worker.comment_limit(c),
+                "queued": len(db.pending_events(c, limit=1000, comments=True))}
     return {"active": comment_poll.active(ig(request)), "status": st, "dm_status": dm, "dm_reply": reply,
-            "interval": comment_poll.INTERVAL}
+            "interval": comment_poll.INTERVAL, "comment_hour": hour}
+
+
+@protected.put("/comment-limit")
+def comment_limit_set(body: dict):
+    """سقف جواب خودکار به کامنت در ساعت (۱ تا ۱۰۰۰)."""
+    from . import worker
+    try:
+        n = int(body.get("limit"))
+    except (TypeError, ValueError):
+        raise HTTPException(422, "عدد بنویسید")
+    if not 1 <= n <= 1000:
+        raise HTTPException(422, "سقف باید بین ۱ تا ۱۰۰۰ باشد")
+    with db.connect() as c:
+        db.kv_set(c, worker.COMMENT_LIMIT_KEY, str(n))
+    return {"ok": True, "limit": n}
 
 
 class DmReplyIn(BaseModel):
@@ -458,6 +505,7 @@ def phones(q: str = "", since: float = 0, until: float = 0, status: str = ""):
         if since <= r["last_seen"] < until and (not status or st == status):
             out.append({"key": r["id"], "channel": r["channel"], "username": r["username"] or "", "name": r["name"],
                         "phone": r["phone"], "tags": r["tags"], "first_seen": r["first_seen"], "last_seen": r["last_seen"],
+                        "phone_at": r.get("phone_at") or r["first_seen"],
                         "lead_status": st, "lead_at": r.get("lead_at")})
     return out
 

@@ -6,6 +6,13 @@ set -euo pipefail
 
 main() {
   cd /opt/igbot
+  # بکاپ پیش از انتشار: اگر نسخه‌ی تازه ستون یا جدولی به پایگاه داده اضافه کند و مشکلی پیش بیاید، راه برگشت هست
+  BK=/var/backups/igbot; mkdir -p "$BK"; STAMP=$(date +%Y%m%d-%H%M%S)
+  if [ -f data/bot.db ]; then
+    sqlite3 data/bot.db ".backup '$BK/pre-deploy-$STAMP.db'" && chmod 600 "$BK/pre-deploy-$STAMP.db"
+    echo "بکاپ پیش از انتشار: $BK/pre-deploy-$STAMP.db (commit قبلی: $(git -c safe.directory=/opt/igbot rev-parse --short HEAD))"
+    ls -1t "$BK"/pre-deploy-*.db 2>/dev/null | tail -n +6 | xargs -r rm -f      # فقط ۵ تای آخر
+  fi
   # مخزن مال کاربر igbot است و اسکریپت با root اجرا می‌شود
   git -c safe.directory=/opt/igbot pull --ff-only
   .venv/bin/pip install -q -r requirements.txt
