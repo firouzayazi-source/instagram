@@ -9,7 +9,6 @@ from pydantic import BaseModel
 
 from . import ai, ai_admin, auth, channels, config, crm, db, dm_menu, forms, leads, orders, reports, webhook
 from .importer import validate
-from .rules import Incoming, find_rule
 
 router = APIRouter(prefix="/api")
 protected = APIRouter(prefix="/api", dependencies=[Depends(auth.require_session)])
@@ -255,20 +254,6 @@ def rule_enable(rule_id: int, body: dict):
     with db.connect() as c:
         db.set_rule_enabled(c, rule_id, bool(body.get("enabled")))
     return {"ok": True}
-
-
-class RuleTest(BaseModel):
-    channel: str = "comment"
-    text: str
-    media_id: str | None = None
-
-
-@protected.post("/rules/test")
-def rule_test(body: RuleTest):
-    """کدام قانون ذخیره‌شده به این متن می‌خورد؟ (بدون در نظر گرفتن سابقه‌ی کاربر)"""
-    with db.connect() as c:
-        rule = find_rule(db.load_rules(c), Incoming(body.channel, "test", body.text, body.media_id), lambda *_: None)
-    return {"rule": {"id": rule["id"], "name": rule["name"]} if rule else None}
 
 
 @protected.get("/saved-replies")

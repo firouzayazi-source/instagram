@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { api, fa, timeAgo } from '../api.js'
-import Rules from './Rules.jsx'
 import Sales from './Sales.jsx'
-import Insights from './Insights.jsx'
-import Schedule from './Schedule.jsx'
-import Ideas from './Ideas.jsx'
 import { Blocked, Msg } from './Ai.jsx'
 
 // هر کانال قابلیت‌های خودش را دارد؛ هسته‌ی مرکزی (مغز، دانش، هوش مصنوعی) مشترک است
@@ -76,12 +72,6 @@ function Bridge() {
     </div>
   )
   const err = [b.status, b.dm_status].find((x) => x && !x.ok)
-  async function toggle(e) {
-    const on = e.target.checked
-    if (on && !window.confirm('از این لحظه ربات به دایرکت‌های تازه‌ی مشتری‌ها خودکار جواب می‌دهد (دستورها، موتور فهم و هوش مصنوعی طبق تنظیمات). اگر ابزار دیگری مثل وردست هم روشن است، ممکن است مشتری دو جواب بگیرد. روشن شود؟')) return
-    await api.post('/api/comment-poll', { dm_reply: on })
-    load()
-  }
   return (
     <section className="card">
       <h2>اتصال موقت (Composio)</h2>
@@ -91,8 +81,7 @@ function Bridge() {
         {line('خوانش دایرکت‌ها', b.dm_status)}
       </div>
       {err && <p className="err">{err.error}</p>}
-      <label className="check" style={{ marginTop: 8 }}><input type="checkbox" checked={!!b.dm_reply} onChange={toggle} /> جواب خودکار به دایرکت‌ها</label>
-      <p className="hint muted">خاموش: دایرکت‌ها فقط در «صندوق» دیده می‌شوند و خودتان جواب می‌دهید. دستورهای کامنت همیشه کار می‌کنند.</p>
+      <p className="hint muted">جواب خودکار دایرکت: <a href="#/channels/instagram/settings">تنظیمات پاسخ</a> (پیش‌فرض خاموش).</p>
     </section>
   )
 }
@@ -223,8 +212,16 @@ function IgPart({ parts }) {
   const has = (p) => parts.includes(p)
   const [s, setS] = useState(null)
   const [msg, setMsg] = useState(null)
-  useEffect(() => { api.get('/api/ai/settings').then((r) => setS(r.settings)).catch(() => {}) }, [])
+  const [poll, setPoll] = useState(null)
+  const loadPoll = () => api.get('/api/comment-poll').then(setPoll).catch(() => {})
+  useEffect(() => { api.get('/api/ai/settings').then((r) => setS(r.settings)).catch(() => {}); loadPoll() }, [])
   if (!s) return <div className="empty">در حال بارگذاری…</div>
+  const bridge = !!poll?.active     // تا اپ Meta وصل نیست، کامنت و دایرکت با خوانش هر دقیقه می‌آیند
+  async function toggleDmReply(on) {
+    if (on && !window.confirm('از این لحظه ربات به دایرکت‌های تازه‌ی مشتری‌ها خودکار جواب می‌دهد (دستورها و مغز مرکزی طبق تنظیمات). اگر ابزار دیگری مثل وردست هم روشن است، ممکن است مشتری دو جواب بگیرد. روشن شود؟')) return
+    await api.post('/api/comment-poll', { dm_reply: on })
+    loadPoll()
+  }
   const set = (patch) => setS({ ...s, ...patch })
   const KEYS = parts.flatMap((p) => ({
     dm: ['dm_enabled', 'prompt_dm', 'welcome_text', 'quick_replies_enabled', 'dm_quick_replies', 'typing_indicator', 'human_pause_minutes', 'batch_wait_seconds', 'notify_telegram'],
@@ -247,8 +244,12 @@ function IgPart({ parts }) {
       {has('dm') && (
         <section className="card">
           <h2>پاسخ خودکار دایرکت</h2>
-          <label className="check"><input type="checkbox" checked={s.dm_enabled} onChange={(e) => set({ dm_enabled: e.target.checked })} /> مغز مرکزی به دایرکت‌های اینستاگرام جواب بدهد</label>
-          <p className="hint muted">دستورهای کلمه‌ای (تب «دستورها») همیشه اول بررسی می‌شوند؛ اگر هیچ‌کدام نخورد، نوبت مغز مرکزی است.</p>
+          {bridge && <>
+            <label className="check"><input type="checkbox" checked={!!poll.dm_reply} onChange={(e) => toggleDmReply(e.target.checked)} /> <b>جواب خودکار به دایرکت‌ها روشن باشد</b></label>
+            <p className="hint muted">خاموش: دایرکت‌ها فقط در «پیام‌ها» دیده می‌شوند و خودتان جواب می‌دهید (فرم در جریان و منوی ثابت همیشه کار می‌کنند). این کلید همان لحظه اعمال می‌شود.</p>
+          </>}
+          <label className="check"><input type="checkbox" checked={s.dm_enabled} onChange={(e) => set({ dm_enabled: e.target.checked })} /> {bridge ? 'وقتی هیچ دستوری نخورد، مغز مرکزی جواب بدهد' : 'مغز مرکزی به دایرکت‌های اینستاگرام جواب بدهد'}</label>
+          <p className="hint muted">دستورهای پاسخ هوشمند همیشه اول بررسی می‌شوند؛ اگر هیچ‌کدام نخورد، نوبت مغز مرکزی است.</p>
           <div className="field">
             <label>دستورالعمل اختصاصی دایرکت (اختیاری، برای هوش مصنوعی)</label>
             <textarea value={s.prompt_dm} placeholder="مثلاً: همیشه آخر پیام بپرس مدل گوشی فعلی‌اش چیست." onChange={(e) => set({ prompt_dm: e.target.value })} />
@@ -298,7 +299,8 @@ function IgPart({ parts }) {
       )}
       {has('comment') && (
         <section className="card">
-          <h2>پاسخ خودکار کامنت</h2>
+          <h2>پاسخ هوش مصنوعی به کامنت</h2>
+          {bridge && <div className="note info">تا اپ Meta وصل نیست، کامنت‌ها فقط با «دستورها» جواب می‌گیرند تا هوش مصنوعی خودسر زیر پست‌ها چیزی ننویسد. تنظیمات زیر بعد از اتصال کار می‌کند.</div>}
           <label className="check"><input type="checkbox" checked={s.comment_enabled} onChange={(e) => set({ comment_enabled: e.target.checked })} /> مغز مرکزی به کامنت‌ها جواب بدهد</label>
           <label className="check"><input type="radio" checked={s.comment_mode === 'dm_and_public'} onChange={() => set({ comment_mode: 'dm_and_public' })} /> جواب کامل در دایرکت خصوصی، و یک متن کوتاه عمومی زیر کامنت (پیشنهادی)</label>
           <label className="check"><input type="radio" checked={s.comment_mode === 'public_only'} onChange={() => set({ comment_mode: 'public_only' })} /> فقط جواب عمومی زیر کامنت</label>
@@ -379,12 +381,6 @@ export default function Channels({ id, sub }) {
           <details className="card" open={sub === 'blocked'}><summary><b>مسدودها</b> <small className="muted">کاربرانی که جواب خودکار نمی‌گیرند</small></summary><Blocked /></details>
         </>
       )}
-      {cur === 'ideas' && <Ideas />}
-      {cur === 'schedule' && <Schedule />}
-      {cur === 'media' && <Media />}
-      {cur === 'insights' && <Insights />}
-      {cur === 'rules' && <Rules embedded />}
-      {cur === 'blocked' && <Blocked />}
     </>
   )
 }

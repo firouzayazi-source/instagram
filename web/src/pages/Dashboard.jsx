@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Icon from '../icons.jsx'
-import { api, fa, pct, timeAgo, usd } from '../api.js'
+import { api, fa, pct, timeAgo } from '../api.js'
 
 function Reports() {
   const [r, setR] = useState(null)
@@ -57,7 +57,7 @@ function Weekly() {
 }
 
 // امروز در یک نگاه: قیف ۲۴ ساعت و انتشار بعدی
-function Today() {
+function Today({ s }) {
   const [f, setF] = useState(null)
   const [next, setNext] = useState(null)
   useEffect(() => {
@@ -73,6 +73,8 @@ function Today() {
         <div className="tile good"><b>{fa(f.auto_dms)}</b><span>دایرکت خودکار</span></div>
         <div className="tile"><b>{f.tg_entries === null ? '—' : fa(f.tg_entries)}</b><span>ورود به ربات از اینستاگرام</span></div>
         <a href="#/orders" className="tile"><b>{fa(f.orders)}</b><span>سفارش تازه</span></a>
+        <div className="tile good"><b>{pct(s.auto_answered_24h, s.incoming_24h)}</b><span>نرخ پاسخ خودکار ({fa(s.auto_answered_24h)} از {fa(s.incoming_24h)})</span></div>
+        <div className={`tile ${s.replies_failed_24h ? 'bad' : ''}`}><b>{fa(s.replies_failed_24h)}</b><span>ارسال ناموفق</span></div>
       </div>
       <p className="muted" style={{ marginBottom: 0 }}>
         {next
@@ -127,26 +129,8 @@ export default function Dashboard({ stats: s }) {
       <Health items={s.health || []} errors={s.events_error} tokenDays={days} />
       <details className="card">
         <summary><b>جزئیات و گزارش‌ها</b></summary>
-      <Today />
+      <Today s={s} />
       <Weekly />
-      <section className="card">
-        <h2>۲۴ ساعت گذشته</h2>
-        <div className="tiles">
-          <div className="tile good"><b>{fa(s.replies_ok_24h)}</b><span>پاسخ خودکار ارسال‌شده</span></div>
-          <div className={`tile ${s.replies_failed_24h ? 'bad' : ''}`}><b>{fa(s.replies_failed_24h)}</b><span>ارسال ناموفق</span></div>
-          <div className="tile"><b>{fa(s.comments_24h)}</b><span>کامنت دریافتی</span></div>
-          <div className="tile"><b>{fa(s.rules_enabled)}</b><span>قانون فعال</span></div>
-        </div>
-      </section>
-      <section className="card">
-        <h2>پاسخ خودکار</h2>
-        <div className="tiles">
-          <div className="tile good"><b>{pct(s.auto_answered_24h, s.incoming_24h)}</b><span>نرخ پاسخ خودکار ({fa(s.auto_answered_24h)} از {fa(s.incoming_24h)})</span></div>
-          <div className="tile"><b>{fa(s.ai?.replies_24h)}</b><span>پاسخ هوشمند ۲۴ ساعت</span></div>
-          <a href="#/ai/handoffs" className={`tile ${s.ai?.handoffs_open ? 'warn' : ''}`}><b>{fa(s.ai?.handoffs_open)}</b><span>ارجاع باز به شما</span></a>
-          <a href="#/ai/overview" className="tile"><b>{usd(s.ai?.cost_month)}</b><span>هزینه‌ی هوش مصنوعی این ماه {s.ai && !s.ai.enabled ? '(خاموش)' : ''}</span></a>
-        </div>
-      </section>
       <Reports />
       <section className="card">
         <h2>آخرین پاسخ‌ها</h2>

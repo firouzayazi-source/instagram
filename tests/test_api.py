@@ -40,6 +40,13 @@ def test_login_logout(client):
     assert client.get("/api/me").status_code == 401
 
 
+def _match(channel, text):
+    from app import db
+    from app.rules import Incoming, find_rule
+    with db.connect() as c:
+        return find_rule(db.load_rules(c), Incoming(channel, "test", text), lambda *_: None)
+
+
 def test_rules_crud_and_test(client):
     login(client)
     bad = client.post("/api/rules", json={"name": "x", "channels": ["comment"], "actions": {}})
@@ -48,12 +55,12 @@ def test_rules_crud_and_test(client):
                                         "triggers": [{"match": "contains", "value": "تقویم"}],
                                         "actions": {"public_replies": ["چک کن دایرکت"]}})
     rid = r.json()["id"]
-    assert client.post("/api/rules/test", json={"channel": "comment", "text": "تقويم رو میخوام"}).json()["rule"]["id"] == rid
-    assert client.post("/api/rules/test", json={"channel": "dm", "text": "تقویم"}).json()["rule"] is None
+    assert _match("comment", "تقويم رو میخوام")["id"] == rid      # همان آزمون، بی مسیر حذف‌شده‌ی ‎/rules/test‎
+    assert _match("dm", "تقویم") is None
     assert client.get("/api/saved-replies").json() == ["چک کن دایرکت"]
     client.post(f"/api/rules/{rid}/enable", json={"enabled": False})
     assert client.get("/api/rules").json()[0]["enabled"] == 0
-    assert client.post("/api/rules/test", json={"channel": "comment", "text": "تقویم"}).json()["rule"] is None
+    assert _match("comment", "تقویم") is None
     client.delete(f"/api/rules/{rid}")
     assert client.get("/api/rules").json() == []
 

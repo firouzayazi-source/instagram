@@ -183,10 +183,13 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         alt = adv.get("over_limit_reply", "")
         acts = {"private_replies": [alt], "public_replies": []} if inc.channel == "comment" else {"dm_replies": [alt]}
     sent = False
-    form_q = forms.start(c, acts["form_id"], inc.user_id) if acts.get("form_id") and not over else None
+    public_only = inc.channel == "comment" and acts.get("comment_mode") == "public"    # فقط جواب زیر کامنت، بی دایرکت
+    form_q = forms.start(c, acts["form_id"], inc.user_id) if acts.get("form_id") and not over and not public_only else None
     if inc.channel == "comment":
-        # دستوری که هم کامنت دارد هم دایرکت و فقط متن دایرکت نوشته شده: همان متن به کامنت‌گذار دایرکت می‌شود
-        if not acts.get("private_replies") and acts.get("dm_replies"):
+        if public_only:
+            acts = {**acts, "private_replies": []}
+        # دستوری قدیمی که هم کامنت دارد هم دایرکت و فقط متن دایرکت نوشته شده: همان متن به کامنت‌گذار دایرکت می‌شود
+        elif not acts.get("private_replies") and acts.get("dm_replies"):
             acts = {**acts, "private_replies": acts["dm_replies"]}
         for kind in ("private", "public"):
             text = leads.track_links(pick(acts.get(f"{kind}_replies", []), n - 1), rule["id"])

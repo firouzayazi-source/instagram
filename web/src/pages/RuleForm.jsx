@@ -5,7 +5,7 @@ import Icon from '../icons.jsx'
 const EMPTY = {
   name: '', enabled: true, priority: 100, channels: ['comment'], post_scope: 'all',
   triggers: [{ match: 'contains', value: '' }],
-  actions: { public_replies: [], private_replies: [''], dm_replies: [''], quick_replies: [] },
+  actions: { comment_mode: 'dm', public_replies: [''], private_replies: [''], dm_replies: [''], quick_replies: [] },
   advanced: { require_follow: false, follow_prompt: '', once_per_user: false, cooldown_minutes: 0, active_hours: null, followup: null,
     pause_ai_minutes: 0, handoff: false, max_uses: 0, over_limit_reply: '' },
 }
@@ -15,6 +15,15 @@ const WHERE = [
   ['story_reply', 'جواب به استوری', 'وقتی کسی روی استوری جواب می‌دهد', 'story'],
   ['mention', 'منشن در استوری', 'وقتی کسی پیج را در استوری‌اش منشن می‌کند', 'at'],
 ]
+// نوع جواب به کامنت؛ «هر دو» یعنی اول دایرکت، بعد جواب کوتاه زیر کامنت
+const CMODES = [
+  ['public', 'فقط جواب زیر کامنت', 'جواب عمومی، بدون دایرکت', 'comment'],
+  ['dm', 'فقط دایرکت به کامنت‌گذار', 'متن کامل در دایرکت او (اینستاگرام فقط یک بار و تا ۷ روز اجازه می‌دهد)', 'dm'],
+  ['both', 'دایرکت و جواب زیر کامنت', 'متن کامل در دایرکت، و یک جواب کوتاه زیر کامنت (مثلاً «دایرکت رو ببین»)', 'repeat'],
+]
+const modeOf = (a) => a.comment_mode || ((a.private_replies || []).some((t) => t.trim())
+  ? ((a.public_replies || []).some((t) => t.trim()) ? 'both' : 'dm')
+  : ((a.public_replies || []).some((t) => t.trim()) ? 'public' : 'dm'))
 const MATCH = [['contains', 'شامل باشد'], ['exact', 'برابر دقیق'], ['starts_with', 'با این شروع شود'], ['any', 'هر مقداری'], ['regex', 'الگو (پیشرفته)']]
 const faDate = (ts) => new Date(ts).toLocaleString('fa-IR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tehran' })
 
@@ -115,9 +124,11 @@ function Preview({ r, onClose }) {
         {c && <>
           <div className="bubble-label">زیر پست</div>
           <div className="bubble them">{ex}</div>
-          {first('public_replies') && <div className="bubble us">{first('public_replies')}</div>}
-          <div className="bubble-label">در دایرکت کامنت‌گذار</div>
-          <div className="bubble us">{first('private_replies') || '— بدون پیام —'}</div>
+          {r.actions.comment_mode !== 'dm' && <div className="bubble us">{first('public_replies') || '— بدون جواب —'}</div>}
+          {r.actions.comment_mode !== 'public' && <>
+            <div className="bubble-label">در دایرکت کامنت‌گذار</div>
+            <div className="bubble us">{first('private_replies') || '— بدون پیام —'}</div>
+          </>}
         </>}
         {!c && <>
           <div className="bubble-label">دایرکت</div>
@@ -160,7 +171,7 @@ export default function RuleForm({ id }) {
       if (x) {
         setR({
           ...x,
-          actions: { public_replies: x.actions.public_replies || [], private_replies: x.actions.private_replies || [], dm_replies: x.actions.dm_replies || [], quick_replies: x.actions.quick_replies || [], form_id: x.actions.form_id || 0 },
+          actions: { comment_mode: modeOf(x.actions), public_replies: x.actions.public_replies?.length ? x.actions.public_replies : [''], private_replies: x.actions.private_replies?.length ? x.actions.private_replies : [''], dm_replies: x.actions.dm_replies || [], quick_replies: x.actions.quick_replies || [], form_id: x.actions.form_id || 0 },
           advanced: { ...EMPTY.advanced, ...x.advanced, cooldown_minutes: Math.round((x.advanced.cooldown_seconds || 0) / 60) },
         })
         setAdvOpen(true)
@@ -178,13 +189,18 @@ export default function RuleForm({ id }) {
   const toggleChannel = (c) => set({ channels: r.channels.includes(c) ? r.channels.filter((x) => x !== c) : [...r.channels, c] })
   const toggleScopeId = (mid) => set({ post_scope: scope.includes(mid) ? scope.filter((x) => x !== mid) : [...scope.filter((x) => x !== 'next'), mid] })
   const a = r.advanced
-  const advCount = [a.require_follow, scope && hasC, a.followup?.text !== undefined && a.followup !== null, hasC && r.actions.public_replies.length > 0,
+  const cmode = r.actions.comment_mode || 'dm'
+  const formOk = cmode !== 'public' || hasD     // فرم در دایرکت ادامه پیدا می‌کند
+  const advCount = [a.require_follow, scope && hasC, a.followup?.text !== undefined && a.followup !== null,
     a.max_uses > 0, !!r.actions.form_id, a.once_per_user, Number(a.cooldown_minutes) > 0, !!a.active_hours, a.handoff, Number(a.pause_ai_minutes) > 0].filter(Boolean).length
 
   async function save(e) {
     e.preventDefault(); setErr('')
     if (!r.name.trim()) return setErr('یک نام برای دستور بنویسید')
     if (!r.channels.length) return setErr('محل دریافت پیام را انتخاب کنید')
+    const has = (k) => (r.actions[k] || []).some((t) => t.trim())
+    if (hasC && cmode !== 'public' && !has('private_replies')) return setErr('متن دایرکت به کامنت‌گذار را بنویسید')
+    if (hasC && cmode !== 'dm' && !has('public_replies')) return setErr('متن جواب زیر کامنت را بنویسید')
     setBusy(true)
     const clean = (l) => (l || []).map((t) => t.trim()).filter(Boolean)
     const adv = { ...r.advanced }
@@ -202,9 +218,10 @@ export default function RuleForm({ id }) {
       ...r, name: r.name.trim(), advanced: adv,
       post_scope: scope && scope.length ? scope : 'all',
       triggers: r.triggers.filter((t) => t.match === 'any' || t.value.trim()),
-      actions: { public_replies: hasC ? clean(r.actions.public_replies) : [], private_replies: hasC ? clean(r.actions.private_replies) : [],
+      actions: { ...(hasC ? { comment_mode: cmode } : {}),
+        public_replies: hasC && cmode !== 'dm' ? clean(r.actions.public_replies) : [], private_replies: hasC && cmode !== 'public' ? clean(r.actions.private_replies) : [],
         dm_replies: hasD ? clean(r.actions.dm_replies) : [], quick_replies: hasD ? clean(r.actions.quick_replies).map((t) => t.slice(0, 20)).slice(0, 13) : [],
-        ...(r.actions.form_id > 0 ? { form_id: Number(r.actions.form_id) } : {}) },
+        ...(r.actions.form_id > 0 && formOk ? { form_id: Number(r.actions.form_id) } : {}) },
     }
     if (!body.triggers.length) body.triggers = [{ match: 'any', value: '' }]
     delete body.id; delete body.use_count
@@ -256,11 +273,24 @@ export default function RuleForm({ id }) {
       </Sec>
 
       {hasC && (
-        <Sec icon="comment" title="جواب به کامنت: دایرکت به کامنت‌گذار" badge={`${r.actions.private_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام`}
-          desc="وقتی کسی کامنت می‌گذارد، این متن به دایرکت او می‌رود (اینستاگرام فقط یک بار و تا ۷ روز اجازه می‌دهد). برای جواب زیر خود کامنت: تنظیمات پیشرفته ← «کامنت بعد از دایرکت».">
-          {!r.actions.private_replies.some((t) => t.trim()) && <div className="note warn">حداقل یک پیام برای این دستور لازم است.</div>}
-          <Messages list={r.actions.private_replies} onChange={(l) => setAct('private_replies', l)} saved={saved} placeholder="مثلاً: سلام! قیمت لحظه‌ای و اقساط اینجاست: https://t.me/…" />
-          <small className="muted">لینک ربات پشتیبان در متن خودکار نشانه‌ی همین دستور را می‌گیرد تا معلوم شود چند نفر از این دستور وارد ربات شدند؛ به‌جای لینک می‌توانید بنویسید <code dir="ltr">{'{bot}'}</code>.</small>
+        <Sec icon="comment" title="جواب به کامنت" desc="کامنت چطور جواب بگیرد؟">
+          {CMODES.map(([k, t, d, ic]) => <Opt key={k} on={cmode === k} icon={ic} title={t} desc={d} onClick={() => setAct('comment_mode', k)} />)}
+          {cmode !== 'public' && (
+            <div className="sub-card">
+              <b>متن دایرکت به کامنت‌گذار <span className="tag">{r.actions.private_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام</span></b>
+              {!r.actions.private_replies.some((t) => t.trim()) && <div className="note warn">متن دایرکت لازم است.</div>}
+              <Messages list={r.actions.private_replies} onChange={(l) => setAct('private_replies', l)} saved={saved} placeholder="مثلاً: سلام! قیمت لحظه‌ای و اقساط اینجاست: https://t.me/…" />
+              <small className="muted">لینک ربات پشتیبان در متن خودکار نشانه‌ی همین دستور را می‌گیرد تا معلوم شود چند نفر از این دستور وارد ربات شدند؛ به‌جای لینک می‌توانید بنویسید <code dir="ltr">{'{bot}'}</code>.</small>
+            </div>
+          )}
+          {cmode !== 'dm' && (
+            <div className="sub-card">
+              <b>جواب زیر کامنت <span className="tag">{r.actions.public_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} متن</span></b>
+              <small className="muted">{cmode === 'both' ? 'بعد از فرستادن دایرکت، یکی از این متن‌ها به نوبت زیر همان کامنت می‌رود.' : 'یکی از این متن‌ها به نوبت زیر کامنت جواب داده می‌شود؛ همه آن را می‌بینند.'}</small>
+              {!r.actions.public_replies.some((t) => t.trim()) && <div className="note warn">متن جواب لازم است.</div>}
+              <Messages list={r.actions.public_replies} onChange={(l) => setAct('public_replies', l)} saved={saved} placeholder={cmode === 'both' ? 'مثلاً: دایرکت رو ببین 📩' : 'مثلاً: ممنون از همراهیتون 🌸'} addLabel="متن جدید" />
+            </div>
+          )}
         </Sec>
       )}
       {hasD && (
@@ -276,7 +306,7 @@ export default function RuleForm({ id }) {
         </Sec>
       )}
 
-      <Sec icon="gear" title="تنظیمات پیشرفته" desc="شرط فالو، محدود به پست، کامنت بعد از دایرکت، پیگیری و…" badge={advCount ? `${advCount.toLocaleString('fa-IR')} فعال` : 'اختیاری'}
+      <Sec icon="gear" title="تنظیمات پیشرفته" desc="شرط فالو، محدود به پست، فرم، پیگیری و…" badge={advCount ? `${advCount.toLocaleString('fa-IR')} فعال` : 'اختیاری'}
         open={advOpen} onToggle={() => setAdvOpen(!advOpen)}>
         <Adv on={!!a.require_follow} icon="insta" title="شرط دنبال کردن صفحه" desc="اگر کاربر صفحه را دنبال نکرده باشد، اول پیام راهنما دریافت می‌کند."
           onToggle={() => setAdv({ require_follow: !a.require_follow })}>
@@ -306,12 +336,7 @@ export default function RuleForm({ id }) {
           <textarea value={a.followup?.text || ''} placeholder="متن پیگیری، مثلاً: سؤالی بود در خدمتم 🙏" onChange={(e) => setAdv({ followup: { ...a.followup, text: e.target.value } })} />
         </Adv>
 
-        <Adv on={hasC && r.actions.public_replies.length > 0} disabled={!hasC} icon="comment" title="کامنت بعد از دایرکت" desc="بعد از فرستادن دایرکت، یکی از این متن‌ها به نوبت زیر همان کامنت جواب داده می‌شود."
-          onToggle={() => setAct('public_replies', r.actions.public_replies.length ? [] : ['پیام در دایرکت ارسال شد ✅', 'لطفاً دایرکت رو چک کنید 🙏', 'فرستادم برات 📩'])}>
-          <Messages list={r.actions.public_replies} onChange={(l) => setAct('public_replies', l)} saved={[]} placeholder="متن جواب زیر کامنت" addLabel="متن جدید" />
-        </Adv>
-
-        <Adv on={!!r.actions.form_id} icon="edit" title="شروع فرم" desc="بعد از پیام این دستور، سؤال‌های فرم یکی‌یکی در دایرکت پرسیده و جواب‌ها ذخیره می‌شود (حتی وقتی جواب خودکار دایرکت خاموش است)."
+        <Adv on={!!r.actions.form_id && formOk} disabled={!formOk} icon="edit" title="شروع فرم" desc="بعد از پیام این دستور، سؤال‌های فرم یکی‌یکی در دایرکت پرسیده و جواب‌ها ذخیره می‌شود (حتی وقتی جواب خودکار دایرکت خاموش است)."
           onToggle={() => setR((x) => ({ ...x, actions: { ...x.actions, form_id: x.actions.form_id ? 0 : (formsList[0]?.id || -1) } }))}>
           {formsList.length ? (
             <select value={r.actions.form_id > 0 ? r.actions.form_id : ''} onChange={(e) => setR((x) => ({ ...x, actions: { ...x.actions, form_id: Number(e.target.value) } }))}>

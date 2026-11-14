@@ -72,6 +72,7 @@ export default function Rules() {
         <div style={{ borderTop: shown.length ? '1px solid var(--line)' : 0 }}>
           {shown.map((r) => {
             const toComment = (r.actions.private_replies || [])[0], toDm = (r.actions.dm_replies || [])[0]
+            const underComment = (r.actions.public_replies || [])[0]
             return (
               <div key={r.id} className="rule" style={r.enabled ? undefined : { opacity: 0.6 }}>
                 <div className="rh">
@@ -83,7 +84,8 @@ export default function Rules() {
                   {r.post_scope !== 'all' && <span className="tag">{r.post_scope.includes('next') ? 'پست بعدی' : `${fa(r.post_scope.length)} پست خاص`}</span>}
                 </div>
                 <small className="muted">شرط: {r.triggers.map((t) => (t.match === 'any' ? MATCH.any : `${MATCH[t.match]} «${t.value}»`)).join(' یا ')}</small>
-                {toComment && r.channels.includes('comment') && <small className="muted" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>به کامنت: {toComment}</small>}
+                {underComment && r.channels.includes('comment') && <small className="muted" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>زیر کامنت: {underComment}</small>}
+                {toComment && r.channels.includes('comment') && <small className="muted" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>دایرکت به کامنت‌گذار: {toComment}</small>}
                 {toDm && r.channels.some((c) => c !== 'comment') && <small className="muted" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>به دایرکت و استوری: {toDm}</small>}
                 <div className="actions" style={{ marginTop: 4 }}>
                   <a href={`#/rules/${r.id}`} className="btn sm"><Icon n="edit" /> ویرایش</a>

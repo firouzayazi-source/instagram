@@ -49,6 +49,15 @@ def validate(rule: dict) -> list[str]:
     mx = adv.get("max_uses")
     if mx not in (None, "", 0) and (not isinstance(mx, int) or not 0 < mx <= 1_000_000):
         errs.append("محدودیت تعداد پاسخ باید عددی مثبت باشد")
+    cm = acts.get("comment_mode")
+    if cm not in (None, "", "public", "dm", "both"):
+        errs.append("نوع جواب کامنت نامعتبر است")
+    elif "comment" in rule.get("channels", []) and cm == "public" and not acts.get("public_replies"):
+        errs.append("برای «فقط جواب زیر کامنت» متن جواب لازم است")
+    elif "comment" in rule.get("channels", []) and cm in ("dm", "both") and not (acts.get("private_replies") or acts.get("dm_replies")):
+        errs.append("متن دایرکت به کامنت‌گذار لازم است")
+    elif "comment" in rule.get("channels", []) and cm == "both" and not acts.get("public_replies"):
+        errs.append("برای «دایرکت و جواب زیر کامنت» متن جواب زیر کامنت لازم است")
     qr = acts.get("quick_replies", [])
     if not isinstance(qr, list) or len(qr) > 13 or any(not isinstance(x, str) or len(x) > 20 for x in qr):
         errs.append("quick_replies: حداکثر ۱۳ دکمه، هر کدام تا ۲۰ نویسه")

@@ -96,3 +96,37 @@ async def test_worker_tags_bot_link_with_rule(tmp_path, monkeypatch):
         db.add_event(c, "c:k1", "comment", {"id": "k1", "text": "قیمت", "from": {"id": "u1", "username": "a"}, "media": {"id": "m"}})
         assert await worker.handle_event(ig, db.pending_events(c)[0], c) == "done"
     assert ("private", "k1", f"لینک: https://t.me/{U}?start=insta_r{rid}") in ig.calls
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("mode,expect", [
+    ("public", {"public"}),               # فقط جواب زیر کامنت؛ حتی با متن دایرکت در دستور، دایرکتی نمی‌رود
+    ("dm", {"private"}),
+    ("both", {"private", "public"}),
+])
+async def test_comment_reply_modes(tmp_path, monkeypatch, mode, expect):
+    from app import worker
+    from tests.test_instagram_features import IG
+    monkeypatch.setattr(config, "SEND_DELAY_MIN", 0)
+    monkeypatch.setattr(config, "SEND_DELAY_MAX", 0)
+    db.init()
+    ig = IG()
+    acts = {"comment_mode": mode, "dm_replies": ["متن دایرکت"]}
+    if mode != "dm":
+        acts["public_replies"] = ["ممنون 🌸"]
+    if mode != "public":
+        acts["private_replies"] = ["قیمت در دایرکت"]
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "x", "channels": ["comment", "dm"], "triggers": [{"match": "any"}], "actions": acts})
+        db.add_event(c, "c:m1", "comment", {"id": "m1", "text": "عالی", "from": {"id": "u1", "username": "a"}, "media": {"id": "p"}})
+        assert await worker.handle_event(ig, db.pending_events(c)[0], c) == "done"
+    assert {k for k, *_ in ig.calls} == expect
+
+
+def test_validate_comment_mode():
+    from app.importer import validate
+    base = {"name": "x", "channels": ["comment"]}
+    assert validate({**base, "actions": {"comment_mode": "public", "public_replies": ["ممنون"]}}) == []
+    assert validate({**base, "actions": {"comment_mode": "public", "private_replies": ["x"]}})
+    assert validate({**base, "actions": {"comment_mode": "both", "private_replies": ["x"]}})
+    assert validate({**base, "actions": {"comment_mode": "zzz", "public_replies": ["x"]}})
