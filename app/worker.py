@@ -161,7 +161,9 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
     if inc.channel == "dm" and s["welcome_text"].strip() and db.is_first_message(c, inc.user_id):
         await _send(ig, c, row["id"], None, "dm", payload, inc, s["welcome_text"].strip())
     rules = db.load_rules(c)
-    rule = find_rule(rules, inc, lambda rid, uid: db.last_hit(c, rid, uid))
+    # «یک بار برای هر کاربر» و فاصله: برای کامنت جدا برای هر پست (کسی که ماه پیش لیست گرفته، روی پست تازه هم می‌گیرد)
+    hit_key = f"{inc.user_id}|{inc.media_id}" if inc.channel == "comment" and inc.media_id else inc.user_id
+    rule = find_rule(rules, inc, lambda rid, uid: db.last_hit(c, rid, hit_key))
     bl = payload.get("_backlog") or {}          # کامنت قدیمی که tools/backlog_comments.py در صف گذاشته
     if rule is None and inc.channel == "comment" and bl.get("reply"):
         ok = await _send(ig, c, row["id"], None, "public", payload, inc, bl["reply"])
@@ -181,7 +183,7 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
             await _send(ig, c, row["id"], rule["id"], "public" if inc.channel == "comment" else "dm", payload, inc, text)
             return "done"
     over = adv.get("max_uses") and rule.get("use_count", 0) >= adv["max_uses"]
-    n = db.bump_rule(c, rule["id"])
+    n = rule.get("use_count", 0) + 1          # شمارنده فقط بعد از ارسال موفق جلو می‌رود (ارسال ناموفق سهمیه نمی‌خورد)
     acts = rule["actions"]
     if over:     # سقف پاسخ پر شده: فقط پیام جایگزین (در دایرکت به کامنت‌گذار یا در گفتگو)
         alt = adv.get("over_limit_reply", "")
@@ -242,8 +244,10 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         db.set_human(c, inc.user_id, float(adv["pause_ai_minutes"]))   # «توقف هوش مصنوعی» بعد از این دستور
     if adv.get("handoff"):
         _rule_handoff(c, rule, inc, payload, s)
-    if sent:
-        db.record_hit(c, rule["id"], inc.user_id)
+    # دایرکت به کامنت‌گذار نرسید: نه «جواب‌گرفته» حساب می‌شود (تا با کامنت بعدی دوباره امتحان شود) نه از سهمیه کم می‌شود
+    if sent and not private_failed:
+        db.bump_rule(c, rule["id"])
+        db.record_hit(c, rule["id"], hit_key)
         fu = adv.get("followup")  # {"after_seconds": 3600, "text": "..."}
         if fu and fu.get("text") and fu.get("after_seconds"):
             db.add_followup(c, rule["id"], inc.user_id, fu["text"], float(fu["after_seconds"]))

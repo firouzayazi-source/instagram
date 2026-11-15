@@ -109,3 +109,40 @@ async def test_public_reply_does_not_claim_sent_when_dm_fails(monkeypatch):
         await worker.handle_event(ig, db.pending_events(c)[0], c)
     pub = [t for k, _, t in ig.calls if k == "public"]
     assert pub and "برات فرستادم" not in pub[0] and "دایرکت" in pub[0]
+
+
+@pytest.mark.asyncio
+async def test_once_per_user_not_burned_by_failed_dm_and_per_post(monkeypatch):
+    """دایرکتی که نرسید «یک بار» را مصرف نمی‌کند؛ «یک بار» برای هر پست جداست؛ ارسال ناموفق سهمیه نمی‌خورد."""
+    monkeypatch.setattr(config, "SEND_DELAY_MIN", 0)
+    monkeypatch.setattr(config, "SEND_DELAY_MAX", 0)
+    monkeypatch.setattr(worker, "MAX_RETRIES", 1)
+
+    class Flaky(IG):
+        fail = True
+
+        async def private_reply(self, cid, text, buttons=None):
+            if self.fail:
+                raise RuntimeError("IG 400 user cannot be messaged")
+            self.calls.append(("private", cid, text))
+            return "p"
+    db.init()
+    ig = Flaky()
+
+    async def comment(cid, media="p1"):
+        with db.connect() as c:
+            db.add_event(c, f"c:{cid}", "comment", {"id": cid, "text": "لیست", "from": {"id": "u1"}, "media": {"id": media}})
+            row = [r for r in db.pending_events(c) if r["id"] == f"c:{cid}"][0]
+            return await worker.handle_event(ig, row, c)
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "لیست", "channels": ["comment"], "triggers": [{"match": "contains", "value": "لیست"}],
+                           "actions": {"comment_mode": "dm", "private_replies": ["لیست قیمت"]}, "advanced": {"once_per_user": True}})
+    await comment("a1")                                  # دایرکت نرسید
+    ig.fail = False
+    assert await comment("a2") == "done"                 # دوباره امتحان می‌شود
+    assert ("private", "a2", "لیست قیمت") in ig.calls
+    n = len(ig.calls)
+    assert await comment("a3") != "done" and len(ig.calls) == n      # حالا رسیده: همان پست دیگر نه
+    assert await comment("b1", media="p2") == "done"     # پست دیگر: دوباره
+    with db.connect() as c:
+        assert c.execute("SELECT use_count FROM rules").fetchone()[0] == 2     # فقط ارسال‌های موفق

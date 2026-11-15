@@ -89,7 +89,8 @@ async def test_worker_comment_sends_private_and_public(env):
         db.add_event(c, "c:c100", "comment", COMMENT["entry"][0]["changes"][0]["value"])
         row = db.pending_events(c)[0]
         assert await worker.handle_event(env, row, c) == "done"
-        assert db.last_hit(c, 1, "u1") is not None
+        media = COMMENT["entry"][0]["changes"][0]["value"]["media"]["id"]
+        assert db.last_hit(c, 1, f"u1|{media}") is not None        # «یک بار» برای هر پست جدا
         assert c.execute("SELECT COUNT(*) FROM replies WHERE ok=1").fetchone()[0] == 2
     assert env.calls == [("private", "c100", "لینک: x"), ("public", "c100", "چک کن دایرکت")]
 
