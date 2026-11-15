@@ -21,6 +21,8 @@ INTERVAL = 60
 RECENT = 25          # پست‌های اخیری که بررسی می‌شوند
 FORCE_RECENT = 3
 FORCE_EVERY = 180
+OVERLAP = 600         # ثانیه: کامنت‌هایی که اینستاگرام دیرتر نشان می‌دهد هم خوانده شوند (تکراری‌ها با شناسه کنار می‌روند)
+COUNT_RETRY = 5       # دور: تعداد کامنت بالا رفت ولی کامنت تازه هنوز دیده نشد؛ تا این‌قدر دوباره خوانده می‌شود
 STATE_KEY = "comment_poll_state"
 STATUS_KEY = "comment_poll"
 DM_STATE_KEY = "dm_poll_state"
@@ -75,6 +77,9 @@ async def poll_once(ig, c, now: float | None = None) -> dict:
         except Exception:  # noqa: BLE001
             continue
     me = await _own_username(ig, state)
+    if not me:
+        # بی نام کاربری پیج، جواب‌های خود پیج از کامنت مشتری جدا نمی‌شوند (ربات به خودش جواب می‌داد): این دور رد
+        raise RuntimeError("نام کاربری پیج خوانده نشد؛ دور بعد دوباره")
     # تعداد کامنت همیشه عوض نمی‌شود (کامنتی پاک و کامنت تازه گذاشته شود): پست‌هایی که دستور دارند بی‌توجه به
     # تعداد هم خوانده می‌شوند؛ پست‌های مشخص هر دور، و برای دستور «همه‌ی پست‌ها» سه پست آخر هر ۳ دقیقه.
     watched = watched_media(c)
@@ -88,27 +93,42 @@ async def poll_once(ig, c, now: float | None = None) -> dict:
             st = media[mid] = {"count": 0 if fresh else n, "since": posted[mid] if fresh else now}
             if fresh:
                 db.bind_next_post(c, mid, posted[mid])       # دستورهای «پست یا ریل بعدی»
-        force = mid in watched or (mid in latest and now - st.get("forced_at", 0) >= FORCE_EVERY)
+        force = mid in watched or (mid in latest and now - st.get("forced_at", 0) >= FORCE_EVERY) or st.get("resume") \
+            or st.get("retry", 0) > 0
         if n <= st["count"] and not force:
             st["count"] = n
             continue
         if force:
             st["forced_at"] = now
         checked += 1
-        rows = await _comments(ig, mid, st["since"])
-        newest = st["since"]
+        # کف سخت: کامنت‌های پیش از روشن شدن خوانش (یا پیش از اولین دیدن این پست) هرگز جواب نمی‌گیرند
+        floor = st.setdefault("floor", st["since"])
+        low = max(st["since"] - OVERLAP, floor)
+        rows, resume = await _comments(ig, mid, low, st.get("resume"))
+        newest = max(st["since"], st.get("pending_newest", 0))
+        fresh_seen = False
         for x in rows:
             t = _ts(x.get("timestamp", ""))
             frm = x.get("from") or {}
-            if t <= st["since"] or not x.get("id") or not frm.get("id"):
+            if t <= low or not x.get("id") or not frm.get("id"):
                 continue
             newest = max(newest, t)
+            fresh_seen |= t > st["since"]
             if me and frm.get("username") == me:
                 continue               # جواب‌های خود پیج
             payload = {"id": x["id"], "text": x.get("text", ""), "from": frm, "media": {"id": mid},
                        "parent_id": x.get("parent_id"), "_via": "poll"}
             queued += db.add_event(c, f"c:{x['id']}", "comment", payload)
-        st.update(count=n, since=newest)
+        if resume:
+            # موج بزرگ‌تر از ۴ صفحه: نقطه‌ی شروع جلو نمی‌رود و دور بعد از همان صفحه ادامه می‌یابد
+            st.update(resume=resume, pending_newest=newest)
+        else:
+            st.pop("resume", None); st.pop("pending_newest", None)
+            old_count = st.get("count", 0)
+            if n > old_count and not fresh_seen and st.get("retry", 0) < COUNT_RETRY:
+                st["retry"] = st.get("retry", 0) + 1         # تعداد زودتر از خود کامنت عوض شده: دور بعد دوباره
+            else:
+                st.update(count=n, since=newest, retry=0)
         c.commit()
     db.kv_set(c, STATE_KEY, json.dumps(state, ensure_ascii=False))
     return {"queued": queued, "checked": checked}
@@ -118,10 +138,11 @@ COMMENT_PAGE = 50
 COMMENT_PAGES = 4
 
 
-async def _comments(ig, mid: str, since: float) -> list[dict]:
-    """کامنت‌های پست به‌همراه جواب‌هایشان (ریپلای زیر کامنت دیگر)، صفحه‌به‌صفحه تا به کامنت‌های قبل از since برسد
-    (حداکثر ۴ صفحه‌ی ۵۰تایی در هر دور؛ موج بزرگ‌تر دور بعد خوانده می‌شود)."""
-    out, after = [], None
+async def _comments(ig, mid: str, since: float, after: str | None = None) -> tuple[list[dict], str | None]:
+    """کامنت‌های پست به‌همراه جواب‌هایشان (ریپلای زیر کامنت دیگر)، صفحه‌به‌صفحه تا به کامنت‌های قبل از since برسد.
+    حداکثر ۴ صفحه‌ی ۵۰تایی در هر دور؛ اگر موج بزرگ‌تر بود، نشانگر صفحه‌ی بعد برمی‌گردد تا دور بعد از همان‌جا ادامه دهد.
+    خروجی: (کامنت‌ها، نشانگر ادامه یا None)"""
+    out = []
     for _ in range(COMMENT_PAGES):
         params = {"fields": "id,text,timestamp,from,parent_id,replies{id,text,timestamp,from}", "limit": COMMENT_PAGE}
         if after:
@@ -134,8 +155,8 @@ async def _comments(ig, mid: str, since: float) -> list[dict]:
                 out.append({**r, "parent_id": x.get("id")})
         after = ((d.get("paging") or {}).get("cursors") or {}).get("after")
         if len(page) < COMMENT_PAGE or not after or all(_ts(x.get("timestamp", "")) <= since for x in page):
-            break
-    return out
+            return out, None
+    return out, after
 
 
 def dm_reply_enabled(c) -> bool:
@@ -181,8 +202,10 @@ async def poll_dms_once(ig, c, now: float | None = None) -> dict:
     first = "since" not in state
     since = state.setdefault("since", now)
     seen = state.setdefault("conv", {})
-    convs = (await ig._get("me/conversations", platform="instagram", fields="id,updated_time", limit=DM_CONVS)).get("data", [])
     me = await _own_username(ig, state)
+    if not me:
+        raise RuntimeError("نام کاربری پیج خوانده نشد؛ دور بعد دوباره")    # پیش از علامت «دیده‌شده»، تا پیامی گم نشود
+    convs = (await ig._get("me/conversations", platform="instagram", fields="id,updated_time", limit=DM_CONVS)).get("data", [])
     queued = checked = 0
     for cv in convs:
         cid, upd = cv.get("id"), cv.get("updated_time", "")

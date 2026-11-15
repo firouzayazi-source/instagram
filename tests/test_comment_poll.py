@@ -264,3 +264,73 @@ def test_replies_under_comments_are_read():
         asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 60))
         ev = events(c)
         assert "c:rep1" in ev and ev["c:rep1"]["parent_id"] == "top" and ev["c:rep1"]["text"] == "قیمت؟"
+
+
+def test_late_comment_within_overlap_is_not_lost():
+    """کامنتی که اینستاگرام دیرتر نشان داد (زمانش قبل از جدیدترین کامنت دیده‌شده) باز هم خوانده می‌شود."""
+    ig = PollIG()
+    db.init()
+    with db.connect() as c:
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0))
+        ig.comments["p1"].insert(0, {"id": "n2", "text": "x", "timestamp": iso(T0 + 259), "from": {"id": "u4", "username": "d"}})
+        ig.posts[0]["comments_count"] = 3
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 300))
+        ig.comments["p1"].insert(1, {"id": "late", "text": "لیست", "timestamp": iso(T0 + 200), "from": {"id": "u5", "username": "e"}})
+        ig.posts[0]["comments_count"] = 4
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 360))
+        assert {"c:n2", "c:late"} <= set(events(c))
+
+
+def test_count_rises_before_comment_visible_is_retried():
+    ig = PollIG()
+    db.init()
+    with db.connect() as c:
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0))
+        ig.posts[0]["comments_count"] = 3                       # تعداد بالا رفت ولی کامنت هنوز در API نیست
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 60))
+        ig.comments["p1"].insert(0, {"id": "slow", "text": "x", "timestamp": iso(T0 + 50), "from": {"id": "u6", "username": "f"}})
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 120))
+        assert "c:slow" in events(c)
+
+
+class PagedIG(PollIG):
+    def __init__(self, n):
+        super().__init__()
+        self.wave = [{"id": f"w{i}", "text": "لیست", "timestamp": iso(T0 + 1000 - i), "from": {"id": f"x{i}", "username": f"y{i}"}}
+                     for i in range(n)]
+
+    async def _get(self, path, **params):
+        if path.endswith("/comments"):
+            start = int(params.get("after") or 0)
+            page = self.wave[start:start + comment_poll.COMMENT_PAGE] if self.on else self.comments["p1"]
+            nxt = start + comment_poll.COMMENT_PAGE
+            return {"data": page, "paging": ({"cursors": {"after": str(nxt)}, "next": "x"} if self.on and nxt < len(self.wave) else {})}
+        return await super()._get(path, **params)
+
+
+def test_wave_bigger_than_page_cap_continues_next_round():
+    ig = PagedIG(250)
+    ig.on = False
+    db.init()
+    with db.connect() as c:
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0))
+        ig.on = True
+        ig.posts[0]["comments_count"] = 252
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 1100))
+        assert len(events(c)) == 200
+        asyncio.run(comment_poll.poll_once(ig, c, now=T0 + 1160))
+        assert len(events(c)) == 250                            # ۵۰ تای قدیمی‌تر در دور بعد، نه گم‌شده
+
+
+def test_missing_page_username_skips_round_without_marking_dms_seen():
+    import pytest
+    ig = PollIG()
+
+    async def broken(path, **params):
+        raise RuntimeError("timeout")
+    ig._get = broken
+    db.init()
+    with db.connect() as c:
+        with pytest.raises(RuntimeError):
+            asyncio.run(comment_poll.poll_dms_once(ig, c, now=T0))
+        assert db.kv_get(c, comment_poll.DM_STATE_KEY) is None
