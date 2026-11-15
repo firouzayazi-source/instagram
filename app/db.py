@@ -302,6 +302,9 @@ def init(path: str | None = None) -> None:
         c.execute("UPDATE customers SET phone_at=first_seen WHERE phone<>'' AND phone_at IS NULL")
         from . import auth
         auth.ensure(c)              # دستگاه‌ها و قفل تلاش ناموفق
+        # ورودهای قدیمیِ بی‌دستگاه، وقتی دستگاه شناخته‌شده هست، دیگر خودکار شناخته‌شده نشوند (گوشی گم‌شده‌ی قدیمی)
+        if c.execute("SELECT 1 FROM devices WHERE status='trusted'").fetchone():
+            c.execute("DELETE FROM sessions WHERE device_id=''")
 
 
 # ستون‌هایی که بعد از ساخت جدول اضافه شده‌اند؛ پایگاه داده‌ی قدیمی بی‌خطر ارتقا می‌یابد

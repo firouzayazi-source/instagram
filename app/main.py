@@ -11,6 +11,28 @@ from . import api, api_ai, comment_poll, config, db, internal, monitor, schedule
 from .instagram import Instagram, verify_signature
 
 
+class _SameOrigin:
+    """درخواست‌های تغییردهنده‌ی ‎/api/‎ که از سایت دیگری آمده‌اند (سربرگ Origin با دامنه‌ی پنل یکی نیست) رد می‌شوند؛
+    کوکی‌های SameSite=Lax زیردامنه‌های دیگر همان دامنه را «همان سایت» حساب می‌کنند."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and scope["path"].startswith("/api/") and scope["method"] not in ("GET", "HEAD", "OPTIONS"):
+            h = {k.decode().lower(): v.decode() for k, v in scope.get("headers", [])}
+            origin = h.get("origin")
+            if origin and origin != "null":
+                from urllib.parse import urlparse
+                if urlparse(origin).netloc.lower() != h.get("host", "").lower():
+                    from starlette.responses import JSONResponse
+                    return await JSONResponse({"detail": "درخواست از سایت دیگر پذیرفته نمی‌شود"}, status_code=403)(scope, receive, send)
+            elif h.get("sec-fetch-site") in ("cross-site", "same-site"):
+                from starlette.responses import JSONResponse
+                return await JSONResponse({"detail": "درخواست از سایت دیگر پذیرفته نمی‌شود"}, status_code=403)(scope, receive, send)
+        return await self.app(scope, receive, send)
+
+
 class _ApiGzip:
     """فشرده‌سازی فقط برای ‎/api/‎ (نه ویدیوهای ‎/media/‎ که اینستاگرام برمی‌دارد، نه وبهوک)."""
 
@@ -125,6 +147,7 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
         return FileResponse(p)
 
     app.add_middleware(_ApiGzip)          # جواب‌های JSON پنل فشرده (اینترنت همراه کند)
+    app.add_middleware(_SameOrigin)
     app.include_router(api.router)
     app.include_router(api.protected)
     app.include_router(api_ai.router)

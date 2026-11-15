@@ -51,7 +51,11 @@ def status() -> list[dict]:
 
 
 def _validate(name: str, value: str) -> str:
+    import unicodedata
     value = (value or "").strip()
+    # هیچ نویسه‌ی کنترلی یا جداکننده‌ی خط (‎\r، ‎\x85، ‎\u2028…): وگرنه خط تازه‌ای در ‎.env‎ نوشته می‌شد
+    if any(unicodedata.category(ch)[0] == "C" or ch in "\u2028\u2029\x85" for ch in value):
+        raise ValueError("مقدار نویسه‌ی نامعتبر (خط تازه یا نویسه‌ی کنترلی) دارد")
     if name not in allowed():
         raise ValueError("این مقدار از پنل تغییر نمی‌کند")
     if not value:

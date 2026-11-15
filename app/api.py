@@ -495,19 +495,21 @@ def form_entries(form_id: int, since: float = 0, until: float = 0):
 @protected.get("/phones")
 def phones(q: str = "", since: float = 0, until: float = 0, status: str = ""):
     """مشتری‌هایی که شماره دارند (از پیام، فرم یا پنل) با وضعیت پیگیری. بازه بر اساس آخرین تماس مشتری.
-    status: new (تازه، شامل بی‌وضعیت) | called | bought | lost"""
+    status: new (تازه، شامل بی‌وضعیت) | called | bought | lost. فیلترها در خود SQL (نه بعد از سقف تعداد)."""
+    where, args = ["phone<>''", "last_seen>=?", "last_seen<?"], [since, until or time.time() + 60]
+    if status == "new":
+        where.append("lead_status IN ('','new')")
+    elif status in ("called", "bought", "lost"):
+        where.append("lead_status=?"); args.append(status)
+    if q.strip():
+        like = f"%{q.strip().lstrip('@')}%"
+        where.append("(username LIKE ? OR name LIKE ? OR phone LIKE ?)"); args += [like, like, like]
     with db.connect() as c:
-        rows = crm.search(c, q, phone="yes", limit=5000)
-    until = until or time.time() + 60
-    out = []
-    for r in rows:
-        st = r.get("lead_status") or "new"
-        if since <= r["last_seen"] < until and (not status or st == status):
-            out.append({"key": r["id"], "channel": r["channel"], "username": r["username"] or "", "name": r["name"],
-                        "phone": r["phone"], "tags": r["tags"], "first_seen": r["first_seen"], "last_seen": r["last_seen"],
-                        "phone_at": r.get("phone_at") or r["first_seen"],
-                        "lead_status": st, "lead_at": r.get("lead_at")})
-    return out
+        rows = c.execute(f"SELECT * FROM customers WHERE {' AND '.join(where)} ORDER BY last_seen DESC LIMIT 20000", args).fetchall()
+    return [{"key": r["id"], "channel": r["channel"], "username": r["username"] or "", "name": r["name"], "phone": r["phone"],
+             "tags": json.loads(r["tags"] or "[]"), "first_seen": r["first_seen"], "last_seen": r["last_seen"],
+             "phone_at": r["phone_at"] or r["first_seen"], "lead_status": r["lead_status"] or "new", "lead_at": r["lead_at"]}
+            for r in rows]
 
 
 @protected.post("/phones/{key}/status")

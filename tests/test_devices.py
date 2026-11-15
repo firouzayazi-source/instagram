@@ -86,3 +86,27 @@ def test_weak_password_flag(env, monkeypatch):
     assert auth.weak_password()
     monkeypatch.setattr(config, "PANEL_PASSWORD", "12345678")
     assert not auth.weak_password()
+
+
+def test_cross_site_post_rejected_and_bad_password_chars(env):
+    with client(UA_IPHONE) as a:
+        assert a.post("/api/login", json={"password": "good-password"}).status_code == 200
+        assert a.put("/api/comment-limit", json={"limit": 50}, headers={"origin": "https://evil.stland.ir"}).status_code == 403
+        assert a.put("/api/comment-limit", json={"limit": 50}, headers={"sec-fetch-site": "same-site"}).status_code == 403
+        assert a.put("/api/comment-limit", json={"limit": 50}, headers={"origin": "http://testserver"}).status_code == 200
+        r = a.post("/api/password", json={"current": "good-password", "new": "Ab\\\\cd12345"})
+        assert r.status_code == 422
+
+
+def test_env_value_with_line_separator_rejected(env):
+    from app import secrets_env
+    with pytest.raises(ValueError):
+        secrets_env.set_value("CUSTOM_AI_NAME", "x\rLD_PRELOAD=/tmp/x")
+
+
+def test_parallel_wrong_passwords_still_lock(env):
+    from concurrent.futures import ThreadPoolExecutor
+    with client(UA_IPHONE) as a:
+        with ThreadPoolExecutor(20) as ex:
+            codes = list(ex.map(lambda _: a.post("/api/login", json={"password": "nope"}).status_code, range(20)))
+    assert codes.count(401) <= auth.MAX_FAILS and codes.count(429) >= 15

@@ -49,7 +49,17 @@ def ensure(c) -> None:
 
 
 def _ip(request: Request) -> str:
-    return request.headers.get("x-forwarded-for", request.client.host if request.client else "?").split(",")[0].strip()
+    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "?").split(",")[0].strip()
+    if ":" in ip:      # IPv6: هر دستگاه یک /64 کامل دارد؛ قفل برای کل همان بازه
+        parts = (ip.split("::")[0].split(":") + ["0"] * 4)[:4]
+        ip = ":".join(parts) + "::/64"
+    return ip
+
+
+# درخواست‌های ورود پشت‌سرهم بررسی می‌شوند (نه هم‌زمان)، تا با ده‌ها درخواست موازی قفل ۵ تلاش دور زده نشود
+import threading  # noqa: E402
+_LOGIN_LOCK = threading.Lock()
+PASSWORD_RX = re.compile(r"^[A-Za-z0-9!@%^*_+=.,:/?~\-]{8,128}$")
 
 
 def _hash(token: str) -> str:
@@ -74,10 +84,12 @@ def _check_lock(c, ip: str) -> int:
     return r["count"] if r and r["until"] == 0 else 0
 
 
-def _fail(c, ip: str, count: int) -> None:
-    count += 1
-    c.execute("INSERT OR REPLACE INTO login_fails(ip,count,until,updated_at) VALUES (?,?,?,?)",
-              (ip, 0 if count >= MAX_FAILS else count, time.time() + LOCK_SECONDS if count >= MAX_FAILS else 0, time.time()))
+def _fail(c, ip: str, count: int = 0) -> None:
+    now = time.time()
+    c.execute("INSERT INTO login_fails(ip,count,until,updated_at) VALUES (?,1,0,?) "
+              "ON CONFLICT(ip) DO UPDATE SET count=count+1, updated_at=excluded.updated_at", (ip, now))   # افزایش اتمی
+    if c.execute("SELECT count FROM login_fails WHERE ip=?", (ip,)).fetchone()[0] >= MAX_FAILS:
+        c.execute("UPDATE login_fails SET count=0, until=? WHERE ip=?", (now + LOCK_SECONDS, ip))
     c.execute("DELETE FROM login_fails WHERE updated_at<? AND until<?", (time.time() - 86400, time.time()))
 
 
@@ -101,7 +113,7 @@ def login(request: Request, password: str, device_token: str | None) -> dict:
     """{"session": توکن یا None، "device": توکن کوکی دستگاه، "status": trusted | pending}
     رمز اشتباه ← 401، تلاش زیاد ← 429، دستگاه برداشته‌شده ← 403."""
     ip, now = _ip(request), time.time()
-    with db.connect() as c:
+    with _LOGIN_LOCK, db.connect() as c:
         ensure(c)
         count = _check_lock(c, ip)
         if not _password_ok(password):
@@ -198,15 +210,17 @@ def change_password(request: Request, session: str, current: str, new: str) -> N
     (فقط همان خط، دسترسی ۶۰۰) نوشته و همان لحظه فعال می‌شود، و همه‌ی ورودهای دیگر باطل می‌شوند."""
     from . import secrets_env
     ip = _ip(request)
-    with db.connect() as c:
+    with _LOGIN_LOCK, db.connect() as c:
         ensure(c)
         count = _check_lock(c, ip)
         if not _password_ok(current):
             _fail(c, ip, count)
             raise HTTPException(401, "رمز فعلی اشتباه است")
         c.execute("DELETE FROM login_fails WHERE ip=?", (ip,))
-    if len(new) < MIN_PASSWORD or len(new) > 128 or any(ch.isspace() for ch in new):
-        raise HTTPException(422, f"رمز تازه باید دست‌کم {MIN_PASSWORD} نویسه و بدون فاصله باشد")
+    if not PASSWORD_RX.match(new):
+        # \ و گیومه و $ در فایل ‎.env‎ با ری‌استارت معنی دیگری می‌گیرند و رمز عملاً عوض می‌شد
+        raise HTTPException(422, f"رمز تازه باید دست‌کم {MIN_PASSWORD} نویسه باشد و فقط حرف انگلیسی، عدد و "
+                                 "این نشانه‌ها: ! @ % ^ * _ + = . , : / ? ~ -")
     if new == current:
         raise HTTPException(422, "رمز تازه با رمز فعلی یکی است")
     try:
