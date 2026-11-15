@@ -8,7 +8,8 @@ from . import config
 
 
 def verify_signature(app_secret: str, body: bytes, header: str | None) -> bool:
-    if not header or not header.startswith("sha256="):
+    # بی کلید اپ Meta، امضا را هر کسی می‌تواند بسازد: هیچ وبهوکی پذیرفته نمی‌شود
+    if not app_secret or not header or not header.startswith("sha256="):
         return False
     expected = hmac.new(app_secret.encode(), body, hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected, header[7:])

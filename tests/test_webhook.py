@@ -131,3 +131,18 @@ async def test_require_follow(env):
         db.add_event(c, "c:c100", "comment", COMMENT["entry"][0]["changes"][0]["value"])
         await worker.handle_event(env, db.pending_events(c)[0], c)
     assert env.calls == [("public", "c100", "اول فالو کن")]
+
+
+def test_webhook_rejected_without_app_secret(tmp_path, monkeypatch):
+    """تا اپ Meta وصل نیست (کلید خالی)، امضای ساخته‌شده با کلید خالی پذیرفته نشود (جعل وبهوک)."""
+    import hashlib
+    import hmac
+    from fastapi.testclient import TestClient
+    from app.main import create_app
+    monkeypatch.setattr(config, "IG_APP_SECRET", "")
+    monkeypatch.setattr(config, "WEB_DIST", str(tmp_path / "nodist"))
+    db.init()
+    body = b'{"object":"instagram","entry":[]}'
+    sig = "sha256=" + hmac.new(b"", body, hashlib.sha256).hexdigest()
+    with TestClient(create_app(FakeIG())) as c:
+        assert c.post("/webhook", content=body, headers={"x-hub-signature-256": sig}).status_code == 403
