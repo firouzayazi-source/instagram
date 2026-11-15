@@ -1,21 +1,27 @@
-import React, { useEffect, useState } from 'react'
+import React, { Suspense, lazy, useEffect, useState } from 'react'
 import { api } from './api.js'
 import Login from './pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
-import Comments from './pages/Comments.jsx'
-import Messages from './pages/Messages.jsx'
-import Ai from './pages/Ai.jsx'
-import RuleForm from './pages/RuleForm.jsx'
-import Settings from './pages/Settings.jsx'
-import Channels from './pages/Channels.jsx'
-import Customers from './pages/Customers.jsx'
-import Orders from './pages/Orders.jsx'
-import Rules from './pages/Rules.jsx'
-import Content from './pages/Content.jsx'
-import More from './pages/More.jsx'
-import Smart from './pages/Smart.jsx'
+// بعد از انتشار تازه، صفحه‌ای که از نسخه‌ی قبلی در کش مانده ممکن است دنبال فایل قدیمی بگردد: یک بار تازه‌سازی
+const lazyPage = (load) => lazy(() => load().then((m) => { sessionStorage.removeItem('chunk-reload'); return m }).catch((e) => {
+  if (!sessionStorage.getItem('chunk-reload')) { sessionStorage.setItem('chunk-reload', '1'); location.reload() }
+  throw e
+}))
+const Comments = lazyPage(() => import('./pages/Comments.jsx'))
+const Messages = lazyPage(() => import('./pages/Messages.jsx'))
+const Ai = lazyPage(() => import('./pages/Ai.jsx'))
+const RuleForm = lazyPage(() => import('./pages/RuleForm.jsx'))
+const Settings = lazyPage(() => import('./pages/Settings.jsx'))
+const Channels = lazyPage(() => import('./pages/Channels.jsx'))
+const Customers = lazyPage(() => import('./pages/Customers.jsx'))
+const Orders = lazyPage(() => import('./pages/Orders.jsx'))
+const Rules = lazyPage(() => import('./pages/Rules.jsx'))
+const Content = lazyPage(() => import('./pages/Content.jsx'))
+const More = lazyPage(() => import('./pages/More.jsx'))
+const Smart = lazyPage(() => import('./pages/Smart.jsx'))
 import Icon from './icons.jsx'
 
+// پیشخوان و ورود همراه برنامه می‌آیند؛ بقیه‌ی صفحه‌ها فقط وقتی باز شوند (باز شدن سریع‌تر روی اینترنت کند)
 const TABS = [
   ['/', 'پیشخوان', 'grid'],
   ['/content', 'محتوا', 'folder'],
@@ -86,7 +92,7 @@ export default function App() {
     : false
   return (
     <div className="app">
-      <main>{page}</main>
+      <main><Suspense fallback={<div className="empty">در حال بارگذاری…</div>}>{page}</Suspense></main>
       <nav className="nav" aria-label="منوی اصلی">
         {TABS.map(([path, label, icon]) => (
           <a key={path} href={`#${path}`} className={isActive(path) ? 'active' : ''}>

@@ -11,6 +11,19 @@ from . import api, api_ai, comment_poll, config, db, internal, monitor, schedule
 from .instagram import Instagram, verify_signature
 
 
+class _ApiGzip:
+    """فشرده‌سازی فقط برای ‎/api/‎ (نه ویدیوهای ‎/media/‎ که اینستاگرام برمی‌دارد، نه وبهوک)."""
+
+    def __init__(self, app):
+        from starlette.middleware.gzip import GZipMiddleware
+        self.app, self.gz = app, GZipMiddleware(app, minimum_size=1024)
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and scope["path"].startswith("/api/"):
+            return await self.gz(scope, receive, send)
+        return await self.app(scope, receive, send)
+
+
 def extract_events(body: dict) -> list[tuple[str, str, dict]]:
     """(event_id, kind, payload) از ساختار وبهوک Instagram Login."""
     out = []
@@ -99,6 +112,7 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
             raise HTTPException(404)
         return FileResponse(p)
 
+    app.add_middleware(_ApiGzip)          # جواب‌های JSON پنل فشرده (اینترنت همراه کند)
     app.include_router(api.router)
     app.include_router(api.protected)
     app.include_router(api_ai.router)
@@ -107,7 +121,7 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
     dist = Path(config.WEB_DIST)
     if dist.is_dir():
         @app.get("/{path:path}", include_in_schema=False)
-        async def spa(path: str):
+        async def spa(path: str, request: Request):
             """فایل‌های پنل؛ هر مسیر ناشناخته به index.html می‌رود (SPA)."""
             target = (dist / path).resolve()
             if path and target.is_file() and dist.resolve() in target.parents:
@@ -117,6 +131,11 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
                     headers = {"Cache-Control": "public, max-age=31536000, immutable"}
                 else:
                     headers = {}
+                gz = target.with_name(target.name + ".gz")      # web/scripts/gzip.mjs بعد از ساخت می‌سازد
+                if "gzip" in request.headers.get("accept-encoding", "") and gz.is_file():
+                    import mimetypes
+                    return FileResponse(gz, media_type=mimetypes.guess_type(target.name)[0] or "application/octet-stream",
+                                        headers={**headers, "Content-Encoding": "gzip", "Vary": "Accept-Encoding"})
                 return FileResponse(target, headers=headers)
             return FileResponse(dist / "index.html", headers={"Cache-Control": "no-cache"})
 

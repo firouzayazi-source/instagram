@@ -27,3 +27,18 @@ def test_cache_headers(tmp_path, monkeypatch):
         assert "immutable" in c.get("/assets/index-abc.js").headers["cache-control"]
         assert c.get("/sw.js").headers["cache-control"] == "no-cache"
         assert c.get("/some/route").headers["cache-control"] == "no-cache"
+
+
+def test_precompressed_assets_and_api_gzip(tmp_path, monkeypatch):
+    import gzip
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<html></html>")
+    body = b"console.log('x');" * 200
+    (dist / "assets" / "index-abc.js").write_bytes(body)
+    (dist / "assets" / "index-abc.js.gz").write_bytes(gzip.compress(body))
+    monkeypatch.setattr(config, "WEB_DIST", str(dist))
+    with TestClient(create_app(IG())) as c:
+        r = c.get("/assets/index-abc.js", headers={"accept-encoding": "gzip"})
+        assert r.headers["content-encoding"] == "gzip" and "javascript" in r.headers["content-type"] and r.content == body
+        assert "content-encoding" not in c.get("/assets/index-abc.js", headers={"accept-encoding": "identity"}).headers
