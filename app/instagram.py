@@ -73,18 +73,29 @@ class Instagram:
         d = await self._post(f"{comment_id}/replies", data={"message": text})
         return d["id"]
 
-    async def private_reply(self, comment_id: str, text: str) -> str:
+    @staticmethod
+    def _message(text: str, buttons: list[dict] | None = None) -> dict:
+        """متن ساده، یا متن با دکمه‌ی لینک (button template؛ متن تا ۶۴۰ نویسه، حداکثر ۳ دکمه)."""
+        if not buttons:
+            return {"text": text}
+        return {"attachment": {"type": "template", "payload": {
+            "template_type": "button", "text": text[:640],
+            "buttons": [{"type": "web_url", "url": b["url"], "title": b["title"][:20]} for b in buttons[:3]]}}}
+
+    async def private_reply(self, comment_id: str, text: str, buttons: list[dict] | None = None) -> str:
         """دایرکت خصوصی به کامنت‌گذار؛ تا ۷ روز بعد از کامنت مجاز است."""
         d = await self._post(
             f"{self.user_id}/messages",
-            json={"recipient": {"comment_id": comment_id}, "message": {"text": text}},
+            json={"recipient": {"comment_id": comment_id}, "message": self._message(text, buttons)},
         )
         return d.get("message_id", "")
 
-    async def send_dm(self, recipient_id: str, text: str, quick_replies: list[str] | None = None) -> str:
+    async def send_dm(self, recipient_id: str, text: str, quick_replies: list[str] | None = None,
+                      buttons: list[dict] | None = None) -> str:
         """پاسخ دایرکت؛ تا ۲۴ ساعت بعد از آخرین پیام کاربر مجاز است.
-        quick_replies: دکمه‌های پاسخ سریع زیر پیام (حداکثر ۱۳، هر کدام تا ۲۰ نویسه)؛ لمسش همان متن را می‌فرستد."""
-        message = {"text": text}
+        quick_replies: دکمه‌های پاسخ سریع زیر پیام (حداکثر ۱۳، هر کدام تا ۲۰ نویسه)؛ لمسش همان متن را می‌فرستد.
+        buttons: دکمه‌های لینک [{title, url}] (حداکثر ۳)."""
+        message = self._message(text, buttons)
         if quick_replies:
             message["quick_replies"] = [{"content_type": "text", "title": t[:20], "payload": t[:20]}
                                         for t in quick_replies[:13]]

@@ -6,7 +6,7 @@ import Sortable, { AutoText } from '../sortable.jsx'
 const EMPTY = {
   name: '', enabled: true, priority: 100, channels: ['comment'], post_scope: 'all',
   triggers: [{ match: 'contains', value: '' }],
-  actions: { comment_mode: 'dm', public_replies: [''], private_replies: [''], dm_replies: [''], quick_replies: [] },
+  actions: { comment_mode: 'dm', public_replies: [''], private_replies: [''], dm_replies: [''], quick_replies: [], buttons: [] },
   advanced: { require_follow: false, follow_prompt: '', once_per_user: true, cooldown_minutes: 0, active_hours: null, followup: null,
     pause_ai_minutes: 0, handoff: false, max_uses: 0, over_limit_reply: '' },
 }
@@ -86,6 +86,25 @@ function Messages({ list, onChange, saved, placeholder, addLabel = 'پیام ج�
         </div>
       )}
     </>
+  )
+}
+
+// دکمه‌های لینک زیر دایرکت (تا ۳)؛ لینک‌ها هم مثل لینک‌های متن شمرده می‌شوند
+function LinkButtons({ list, onChange }) {
+  const set = (i, patch) => onChange(list.map((b, j) => (j === i ? { ...b, ...patch } : b)))
+  return (
+    <div className="sub-card">
+      <b>دکمه‌ی لینک زیر دایرکت (اختیاری)</b>
+      <small className="muted">به‌جای لینک خام در متن، دکمه‌ای که با یک لمس باز می‌شود؛ تا ۳ دکمه، عنوان تا ۲۰ نویسه.</small>
+      {list.map((b, i) => (
+        <div key={i} className="msg-row" style={{ flexWrap: 'wrap' }}>
+          <input type="text" maxLength={20} value={b.title} placeholder="عنوان، مثلاً: 🌐 قیمت‌ها در سایت" style={{ flex: '1 1 40%', border: 0, background: 'transparent' }} onChange={(e) => set(i, { title: e.target.value })} />
+          <input type="url" dir="ltr" value={b.url} placeholder="https://…" style={{ flex: '1 1 45%', border: 0, background: 'transparent' }} onChange={(e) => set(i, { url: e.target.value })} />
+          <button type="button" className="x" aria-label="حذف" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      {list.length < 3 && <div className="msg-add"><button type="button" className="btn sm" onClick={() => onChange([...list, { title: '', url: '' }])}><Icon n="plus" /> دکمه‌ی لینک</button></div>}
+    </div>
   )
 }
 
@@ -170,7 +189,7 @@ export default function RuleForm({ id }) {
       if (x) {
         setR({
           ...x,
-          actions: { comment_mode: modeOf(x.actions), public_replies: x.actions.public_replies?.length ? x.actions.public_replies : [''], private_replies: x.actions.private_replies?.length ? x.actions.private_replies : [''], dm_replies: x.actions.dm_replies || [], quick_replies: x.actions.quick_replies || [], form_id: x.actions.form_id || 0 },
+          actions: { comment_mode: modeOf(x.actions), public_replies: x.actions.public_replies?.length ? x.actions.public_replies : [''], private_replies: x.actions.private_replies?.length ? x.actions.private_replies : [''], dm_replies: x.actions.dm_replies || [], quick_replies: x.actions.quick_replies || [], form_id: x.actions.form_id || 0, buttons: x.actions.buttons || [] },
           advanced: { ...EMPTY.advanced, ...x.advanced, cooldown_minutes: Math.round((x.advanced.cooldown_seconds || 0) / 60) },
         })
         setAdvOpen(true)
@@ -212,6 +231,7 @@ export default function RuleForm({ id }) {
     if (!adv.pause_ai_minutes) delete adv.pause_ai_minutes
     if (!adv.handoff) delete adv.handoff
     if (!adv.random_pick) delete adv.random_pick
+    if (adv.track_clicks !== false) delete adv.track_clicks
     adv.max_uses = parseInt(adv.max_uses, 10) || 0
     if (!adv.max_uses) { delete adv.max_uses; delete adv.over_limit_reply }
     const body = {
@@ -221,7 +241,8 @@ export default function RuleForm({ id }) {
       actions: { ...(hasC ? { comment_mode: cmode } : {}),
         public_replies: hasC && cmode !== 'dm' ? clean(r.actions.public_replies) : [], private_replies: hasC && cmode !== 'public' ? clean(r.actions.private_replies) : [],
         dm_replies: hasD ? clean(r.actions.dm_replies) : [], quick_replies: hasD ? clean(r.actions.quick_replies).map((t) => t.slice(0, 20)).slice(0, 13) : [],
-        ...(r.actions.form_id > 0 && formOk ? { form_id: Number(r.actions.form_id) } : {}) },
+        ...(r.actions.form_id > 0 && formOk ? { form_id: Number(r.actions.form_id) } : {}),
+        buttons: (r.actions.buttons || []).map((b) => ({ title: b.title.trim(), url: b.url.trim() })).filter((b) => b.title || b.url) },
     }
     if (!body.triggers.length) body.triggers = [{ match: 'any', value: '' }]
     delete body.id; delete body.use_count
@@ -275,14 +296,15 @@ export default function RuleForm({ id }) {
       {hasC && (
         <Sec icon="comment" title="جواب به کامنت" desc="کامنت چطور جواب بگیرد؟">
           {CMODES.map(([k, t, d, ic]) => <Opt key={k} on={cmode === k} icon={ic} title={t} desc={d} onClick={() => setAct('comment_mode', k)} />)}
-          {cmode !== 'public' && (
+          {cmode !== 'public' && (<>
             <div className="sub-card">
               <b>متن دایرکت به کامنت‌گذار <span className="tag">{r.actions.private_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام</span></b>
               {!r.actions.private_replies.some((t) => t.trim()) && <div className="note warn">متن دایرکت لازم است.</div>}
               <Messages list={r.actions.private_replies} onChange={(l) => setAct('private_replies', l)} saved={saved} placeholder="مثلاً: سلام! قیمت لحظه‌ای و اقساط اینجاست: https://t.me/…" />
-              <small className="muted">لینک ربات پشتیبان در متن خودکار نشانه‌ی همین دستور را می‌گیرد تا معلوم شود چند نفر از این دستور وارد ربات شدند؛ به‌جای لینک می‌توانید بنویسید <code dir="ltr">{'{bot}'}</code>.</small>
+              <small className="muted"><code dir="ltr">{'{username}'}</code> = نام کاربری مخاطب · <code dir="ltr">{'{bot}'}</code> = لینک ربات پشتیبان. هر لینک خودکار شمرده می‌شود (چند نفر زدند) و لینک ربات نشانه‌ی همین دستور را می‌گیرد.</small>
             </div>
-          )}
+            <LinkButtons list={r.actions.buttons || []} onChange={(l) => setAct('buttons', l)} />
+          </>)}
           {cmode !== 'dm' && (
             <div className="sub-card">
               <b>جواب زیر کامنت <span className="tag">{r.actions.public_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} متن</span></b>
@@ -297,7 +319,8 @@ export default function RuleForm({ id }) {
         <Sec icon="dm" title={`جواب به ${r.channels.filter((c) => c !== 'comment').map((c) => ({ dm: 'دایرکت', story_reply: 'جواب استوری', mention: 'منشن' })[c]).join('، ')}`} badge={`${r.actions.dm_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام`}
           desc={hasC ? 'این متن فقط برای پیام‌هایی است که مستقیم در دایرکت می‌آیند، نه برای کامنت‌ها. چند پیام یعنی هر بار یکی به نوبت.' : 'چند پیام یعنی هر بار یکی به نوبت.'}>
           <Messages list={r.actions.dm_replies} onChange={(l) => setAct('dm_replies', l)} saved={saved} placeholder="متن پاسخ" />
-          <small className="muted">لینک ربات پشتیبان خودکار نشانه‌ی همین دستور را می‌گیرد (یا بنویسید <code dir="ltr">{'{bot}'}</code>).</small>
+          <small className="muted"><code dir="ltr">{'{username}'}</code> = نام کاربری مخاطب · <code dir="ltr">{'{bot}'}</code> = لینک ربات پشتیبان · هر لینک خودکار شمرده می‌شود.</small>
+          {!r.channels.includes('comment') && <LinkButtons list={r.actions.buttons || []} onChange={(l) => setAct('buttons', l)} />}
           <div className="sub-card">
             <b>دکمه‌های پاسخ سریع (اختیاری)</b>
             <small className="muted">زیر پیام نشان داده می‌شوند؛ هر خط یک دکمه، تا ۱۳ دکمه و هر کدام ۲۰ نویسه.</small>
@@ -346,6 +369,9 @@ export default function RuleForm({ id }) {
           ) : <div className="note warn">هنوز فرمی نساخته‌اید. <a href="#/smart/forms/new">ساخت فرم</a></div>}
           {hasC && <div className="note info">برای کامنت، سؤال اول همراه همان دایرکت به کامنت‌گذار می‌رود و جواب‌ها در دایرکت ادامه پیدا می‌کند.</div>}
         </Adv>
+
+        <Adv on={a.track_clicks !== false} icon="link" title="شمارش کلیک لینک‌ها" desc="لینک‌های پیام و دکمه‌ها از نشانی کوتاه پنل رد می‌شوند تا معلوم شود چند نفر زدند (در فهرست دستورها). خاموش: لینک خام فرستاده می‌شود."
+          onToggle={() => setAdv({ track_clicks: a.track_clicks === false })} />
 
         <Adv on={!!a.random_pick} icon="repeat" title="انتخاب تصادفی متن" desc="به‌جای به نوبت (۱، ۲، ۳…)، هر بار یکی از متن‌ها تصادفی فرستاده می‌شود؛ طبیعی‌تر دیده می‌شود."
           onToggle={() => setAdv({ random_pick: !a.random_pick })} />

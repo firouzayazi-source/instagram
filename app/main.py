@@ -104,6 +104,18 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
                 added += db.add_event(c, event_id, kind, payload)
         return {"queued": added}
 
+    @app.get("/l/{code}", include_in_schema=False)
+    async def link_click(code: str, request: Request):
+        """لینک ردیابی‌شده‌ی پیام دستورها: یک کلیک ثبت و به نشانی اصلی می‌رود (app/links.py)."""
+        from fastapi.responses import RedirectResponse
+        from . import links
+        ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "").split(",")[0].strip()
+        with db.connect() as c:
+            url = links.click(c, code, ip)
+        if not url:
+            raise HTTPException(404)
+        return RedirectResponse(url, status_code=302, headers={"Cache-Control": "no-store"})
+
     @app.get("/media/{name}", include_in_schema=False)
     async def media_file(name: str):
         """فایل انتشار زمان‌بندی‌شده؛ اینستاگرام از همین نشانی برمی‌دارد (نام تصادفی، بدون ورود)."""

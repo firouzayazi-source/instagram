@@ -49,6 +49,11 @@ def validate(rule: dict) -> list[str]:
     mx = adv.get("max_uses")
     if mx not in (None, "", 0) and (not isinstance(mx, int) or not 0 < mx <= 1_000_000):
         errs.append("محدودیت تعداد پاسخ باید عددی مثبت باشد")
+    try:
+        from .links import clean_buttons
+        clean_buttons(acts.get("buttons"))
+    except ValueError as e:
+        errs.append(str(e))
     cm = acts.get("comment_mode")
     if cm not in (None, "", "public", "dm", "both"):
         errs.append("نوع جواب کامنت نامعتبر است")

@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from . import ai, channels, config, crm, db, dm_menu, forms, knowledge, leads, learning, memory, moderation, orders, push, tg_notify
+from . import ai, channels, config, crm, db, dm_menu, forms, knowledge, leads, links, learning, memory, moderation, orders, push, tg_notify
 from .rules import Incoming, find_rule, pick
 
 MAX_RETRIES = 3
@@ -187,6 +187,20 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         alt = adv.get("over_limit_reply", "")
         acts = {"private_replies": [alt], "public_replies": []} if inc.channel == "comment" else {"dm_replies": [alt]}
     sent = False
+    username = (payload.get("from") or {}).get("username") if inc.channel == "comment" else db.conversation_username(c, inc.user_id)
+    track = adv.get("track_clicks", True)
+
+    def prep(t):
+        """لینک ربات با نشانه‌ی دستور، نام کاربر، و لینک ردیابی‌شده."""
+        t = links.personalize(leads.track_links(t, rule["id"]), username)
+        return links.track_text(c, t, rule["id"]) if t and track else t
+    btns = []
+    try:
+        btns = links.clean_buttons(acts.get("buttons"))
+    except ValueError:
+        pass
+    btns = links.track_buttons(c, [{**b, "url": leads.track_links(b["url"], rule["id"])} for b in btns], rule["id"]) \
+        if btns and track else btns
     # شماره‌ی متن: به نوبت (پیش‌فرض) یا تصادفی؛ در «دایرکت و جواب زیر کامنت» هر دو متن هم‌شماره‌اند
     idx = random.randrange(1_000_000) if adv.get("random_pick") else n - 1
     if inc.channel == "comment" and bl.get("old") and (acts.get("private_replies") or acts.get("dm_replies")):
@@ -202,19 +216,21 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         elif not acts.get("private_replies") and acts.get("dm_replies"):
             acts = {**acts, "private_replies": acts["dm_replies"]}
         for kind in ("private", "public"):
-            text = leads.track_links(pick(acts.get(f"{kind}_replies", []), idx), rule["id"])
+            text = prep(pick(acts.get(f"{kind}_replies", []), idx))
             if kind == "private" and form_q:     # به هر کامنت فقط یک دایرکت می‌شود فرستاد: سؤال اول همراه همان پیام
                 text = "\n\n".join(x for x in (text, form_question_text(*form_q)) if x)
             if text:
-                ok = await _send(ig, c, row["id"], rule["id"], kind, payload, inc, text)
+                ok = await _send(ig, c, row["id"], rule["id"], kind, payload, inc, text,
+                                 buttons=(btns or None) if kind == "private" and not form_q else None)
                 sent |= ok
                 if kind == "private" and form_q and not ok:
                     forms.cancel(c, inc.user_id)
     else:
-        text = leads.track_links(pick(acts.get("dm_replies", []), idx), rule["id"])
+        text = prep(pick(acts.get("dm_replies", []), idx))
         if text:
             sent |= await _send(ig, c, row["id"], rule["id"], "dm", payload, inc, text,
-                                quick_replies=None if form_q else acts.get("quick_replies") or None)
+                                quick_replies=None if form_q or btns else acts.get("quick_replies") or None,
+                                buttons=(btns or None) if not form_q else None)
         if form_q and not await _send(ig, c, row["id"], rule["id"], "dm", payload, inc, form_q[0], quick_replies=form_q[1]):
             forms.cancel(c, inc.user_id)
     if adv.get("pause_ai_minutes") and inc.channel == "dm":
@@ -394,7 +410,7 @@ async def process_followups(ig, c, now: float | None = None) -> int:
     return n
 
 
-async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replies=None) -> bool:
+async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replies=None, buttons=None) -> bool:
     target = payload.get("id", "") if kind in ("public", "private") else inc.user_id
     if kind == "dm" and ai.settings(c)["typing_indicator"]:
         for action in ("mark_seen", "typing_on"):      # بهترین تلاش؛ خطایش ارسال را متوقف نمی‌کند
@@ -409,7 +425,9 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replie
                 # اینستاگرام فقط به کامنت سطح اول جواب می‌دهد؛ جواب به یک ریپلای زیر همان رشته (کامنت اصلی) می‌رود
                 ig_id = await ig.reply_comment(payload.get("parent_id") or target, text)
             elif kind == "private":
-                ig_id = await ig.private_reply(target, text)
+                ig_id = await (ig.private_reply(target, text, buttons=buttons) if buttons else ig.private_reply(target, text))
+            elif buttons:
+                ig_id = await ig.send_dm(target, text, quick_replies=quick_replies, buttons=buttons)
             elif quick_replies:
                 ig_id = await ig.send_dm(target, text, quick_replies=quick_replies)
             else:
@@ -424,6 +442,11 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replie
             return True
         except Exception as e:  # noqa: BLE001
             err = str(e)
+            if buttons and "2534022" not in err:
+                # دکمه پذیرفته نشد: همان پیام با لینک‌ها در متن (پیام مهم‌تر از شکل آن است)
+                text = text + "\n\n" + "\n".join(f"{b['title']}: {b['url']}" for b in buttons)
+                buttons = None
+                continue
             # خطاهای پنجره‌ی زمانی (۲۴ ساعت / ۷ روز) با تکرار درست نمی‌شوند
             if "2534022" in err or attempt == MAX_RETRIES - 1:
                 db.log_reply(c, event_id, rule_id, kind, target, text, ok=False, error=err)

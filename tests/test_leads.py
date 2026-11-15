@@ -95,7 +95,10 @@ async def test_worker_tags_bot_link_with_rule(tmp_path, monkeypatch):
                                  "actions": {"private_replies": [f"لینک: https://t.me/{U}"]}})
         db.add_event(c, "c:k1", "comment", {"id": "k1", "text": "قیمت", "from": {"id": "u1", "username": "a"}, "media": {"id": "m"}})
         assert await worker.handle_event(ig, db.pending_events(c)[0], c) == "done"
-    assert ("private", "k1", f"لینک: https://t.me/{U}?start=insta_r{rid}") in ig.calls
+    sent = [t for k, tg, t in ig.calls if k == "private" and tg == "k1"][0]
+    assert sent.startswith(f"لینک: {config.PUBLIC_URL.rstrip('/')}/l/")          # لینک ردیابی‌شده (شمارش کلیک)
+    with db.connect() as c:
+        assert c.execute("SELECT url FROM links").fetchone()[0] == f"https://t.me/{U}?start=insta_r{rid}"   # و نشانه‌ی دستور
 
 
 @pytest.mark.asyncio

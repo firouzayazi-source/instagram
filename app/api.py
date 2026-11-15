@@ -524,8 +524,13 @@ def phone_status(key: str, body: dict):
 @protected.get("/rules-entries")
 def rules_entries(days: int = 30):
     """هر دستور چند نفر را از لینک خودش به ربات تلگرام آورد (ورود تازه)."""
-    e = leads.rule_entries(time.time() - max(1, min(365, days)) * 86400)
-    return {"available": e is not None, "entries": {str(k): v for k, v in (e or {}).items()}, "bot": leads.bot_username()}
+    from . import links
+    since = time.time() - max(1, min(365, days)) * 86400
+    e = leads.rule_entries(since)
+    with db.connect() as c:
+        clicks = links.rule_clicks(c, since)
+    return {"available": e is not None, "entries": {str(k): v for k, v in (e or {}).items()}, "bot": leads.bot_username(),
+            "clicks": {str(k): v for k, v in clicks.items()}}
 
 
 @protected.get("/report/weekly")

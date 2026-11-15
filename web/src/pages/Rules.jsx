@@ -18,12 +18,13 @@ export default function Rules() {
   const [q, setQ] = useState('')
   const [search, setSearch] = useState(false)
   const [entries, setEntries] = useState(null)
+  const [clicks, setClicks] = useState({})
   const load = () => api.get('/api/rules').then(setRules).catch(() => setRules([]))
   useEffect(() => {
     load()
     api.get('/api/channels').then((xs) => setIg(xs.find((x) => x.id === 'instagram'))).catch(() => {})
     api.get('/api/comment-poll').then(setPoll).catch(() => {})
-    api.get('/api/rules-entries?days=30').then((d) => d.available && setEntries(d.entries)).catch(() => {})
+    api.get('/api/rules-entries?days=30').then((d) => { if (d.available) setEntries(d.entries); setClicks(d.clicks || {}) }).catch(() => {})
   }, [])
 
   async function toggle(r, on) { await api.post(`/api/rules/${r.id}/enable`, { enabled: on }); load() }
@@ -102,7 +103,7 @@ export default function Rules() {
                   <a href={`#/rules/${r.id}`} className="btn sm"><Icon n="edit" /> ویرایش</a>
                   <button type="button" className="btn sm" onClick={() => duplicate(r)}><Icon n="copy" /> کپی</button>
                   <button type="button" className="iconbtn" style={{ width: 36, height: 36 }} aria-label="حذف" onClick={() => remove(r)}><Icon n="trash" /></button>
-                  <small className="muted" style={{ alignSelf: 'center', marginInlineStart: 'auto' }}>{fa(r.use_count)} بار اجرا{entries && <> · <span title="کاربر تازه‌ی ربات تلگرام از لینک همین دستور، ۳۰ روز اخیر">🤖 {fa(entries[r.id] || 0)} ورود به ربات</span></>}</small>
+                  <small className="muted" style={{ alignSelf: 'center', marginInlineStart: 'auto' }}>{fa(r.use_count)} بار اجرا{clicks[r.id] && <> · <span title="لمس لینک‌ها و دکمه‌های همین دستور، ۳۰ روز اخیر (نفر یکتا در روز)">🔗 {fa(clicks[r.id].people)} کلیک</span></>}{entries && <> · <span title="کاربر تازه‌ی ربات تلگرام از لینک همین دستور، ۳۰ روز اخیر">🤖 {fa(entries[r.id] || 0)} ورود به ربات</span></>}</small>
                 </div>
               </div>
             )
