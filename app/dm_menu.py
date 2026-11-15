@@ -48,7 +48,10 @@ def reply_for(c, payload: str, text: str) -> str | None:
     items = load(c)
     if payload.startswith("MENU:"):
         try:
-            x = items[int(payload[5:])]
+            i = int(payload[5:])
+            if i < 0:
+                return None              # MENU:-1 نباید آخرین دکمه را برگرداند
+            x = items[i]
             return x["value"] if x["type"] == "text" else None
         except (ValueError, IndexError):
             return None

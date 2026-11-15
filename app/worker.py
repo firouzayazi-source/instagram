@@ -210,6 +210,7 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         # (که دروغ می‌شد) زیر کامنت می‌گوییم دایرکت بدهد
         acts = {"comment_mode": "public", "public_replies": [bl.get("old_text") or "برای دریافت، یک پیام به دایرکت پیج بده 📩"]}
     public_only = inc.channel == "comment" and acts.get("comment_mode") == "public"    # فقط جواب زیر کامنت، بی دایرکت
+    form_prev = forms.snapshot(c, inc.user_id) if acts.get("form_id") else None     # فرم نیمه‌کاره‌ی قبلی
     form_q = forms.start(c, acts["form_id"], inc.user_id) if acts.get("form_id") and not over and not public_only else None
     private_failed = False
     if inc.channel == "comment":
@@ -231,7 +232,7 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
                 if kind == "private" and not ok:
                     private_failed = True
                 if kind == "private" and form_q and not ok:
-                    forms.cancel(c, inc.user_id)
+                    (forms.restore(c, form_prev) if form_prev else forms.cancel(c, inc.user_id))
     else:
         text = prep(pick(acts.get("dm_replies", []), idx))
         if text:
@@ -239,7 +240,7 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
                                 quick_replies=None if form_q or btns else acts.get("quick_replies") or None,
                                 buttons=(btns or None) if not form_q else None)
         if form_q and not await _send(ig, c, row["id"], rule["id"], "dm", payload, inc, form_q[0], quick_replies=form_q[1]):
-            forms.cancel(c, inc.user_id)
+            (forms.restore(c, form_prev) if form_prev else forms.cancel(c, inc.user_id))
     if adv.get("pause_ai_minutes") and inc.channel == "dm":
         db.set_human(c, inc.user_id, float(adv["pause_ai_minutes"]))   # «توقف هوش مصنوعی» بعد از این دستور
     if adv.get("handoff"):
@@ -422,6 +423,12 @@ async def process_followups(ig, c, now: float | None = None) -> int:
 DM_MAX = 1000      # اینستاگرام پیام دایرکت بلندتر را نمی‌پذیرد
 
 
+def _retryable(err: str) -> bool:
+    """خطایی که یقیناً یعنی «پیام نرفت» و تکرارش امن است (سرور اینستاگرام یا محدودیت نرخ)."""
+    return any(k in err for k in ("IG 500", "IG 502", "IG 503", "IG 504", "IG 429", "is_transient': True",
+                                   '"is_transient": true', "Please retry", "rate limit"))
+
+
 def _fit(text: str, limit: int = DM_MAX) -> str:
     """دایرکت به کامنت‌گذار فقط یک پیام است: اگر بلندتر بود، از آخرین خط کامل بریده و راهنمای ادامه اضافه می‌شود."""
     if len(text) <= limit:
@@ -437,6 +444,8 @@ def _chunks(text: str, limit: int = DM_MAX) -> list[str]:
     """دایرکت در گفتگو (پنجره‌ی ۲۴ ساعته): متن بلند در چند پیام پشت‌سرهم، از مرز خط."""
     out, cur = [], ""
     for line in text.split("\n"):
+        if len(line) > limit and cur:
+            out.append(cur.rstrip("\n")); cur = ""          # ترتیب: اول آنچه پیش از این خط جمع شده
         while len(line) > limit:
             out.append(line[:limit]); line = line[limit:]
         if len(cur) + len(line) + 1 > limit and cur:
@@ -449,7 +458,9 @@ def _chunks(text: str, limit: int = DM_MAX) -> list[str]:
 
 async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replies=None, buttons=None) -> bool:
     if kind == "private":
-        text = _fit(text)
+        text = _fit(text, 640 if buttons else DM_MAX)       # پیام دکمه‌دار اینستاگرام تا ۶۴۰ نویسه
+    elif kind == "dm" and buttons and len(text) > 640:
+        text = _fit(text, 640)
     elif kind == "dm" and len(text) > DM_MAX:
         parts = _chunks(text)
         for p in parts[:-1]:
@@ -490,10 +501,13 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replie
             if buttons and "2534022" not in err:
                 # دکمه پذیرفته نشد: همان پیام با لینک‌ها در متن (پیام مهم‌تر از شکل آن است)
                 text = text + "\n\n" + "\n".join(f"{b['title']}: {b['url']}" for b in buttons)
+                text = _fit(text) if kind == "private" else text
                 buttons = None
                 continue
-            # خطاهای پنجره‌ی زمانی (۲۴ ساعت / ۷ روز) با تکرار درست نمی‌شوند
-            if "2534022" in err or attempt == MAX_RETRIES - 1:
+            # خطاهای پنجره‌ی زمانی (۲۴ ساعت / ۷ روز) با تکرار درست نمی‌شوند. جواب عمومی و دایرکت گفتگو فقط با خطای
+            # صریح سرور دوباره فرستاده می‌شوند: بعد از timeout ممکن است پیام رفته باشد و تکرارش جواب تکراری می‌ساخت
+            # (دایرکت به کامنت‌گذار تکراری نمی‌شود: اینستاگرام فقط یکی را می‌پذیرد)
+            if "2534022" in err or attempt == MAX_RETRIES - 1 or (kind != "private" and not _retryable(err)):
                 db.log_reply(c, event_id, rule_id, kind, target, text, ok=False, error=err)
                 return False
             await asyncio.sleep(2 ** attempt)
@@ -573,7 +587,8 @@ def plan_batches(rows, wait: float, now: float | None = None) -> list[tuple]:
         return [(r, False, None) for r in rows]
     out, groups = [], {}
     for r in rows:
-        s = _sender(r) if r["kind"] == "message" else ""
+        is_echo = '"is_echo": true' in r["payload"]
+        s = _sender(r) if r["kind"] == "message" and not is_echo else ""     # echo (پیام خود پیج) گروه نمی‌شود
         if not s:
             out.append((r, False, None))
         else:

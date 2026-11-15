@@ -146,3 +146,31 @@ async def test_once_per_user_not_burned_by_failed_dm_and_per_post(monkeypatch):
     assert await comment("b1", media="p2") == "done"     # پست دیگر: دوباره
     with db.connect() as c:
         assert c.execute("SELECT use_count FROM rules").fetchone()[0] == 2     # فقط ارسال‌های موفق
+
+
+def test_normalize_and_matching_edge_cases():
+    from app.normalize import normalize
+    from app.rules import trigger_matches
+    ex = {"match": "exact", "value": "لیست"}
+    for t in ["لیست 😍", "لیست❤️", "لیـست", "لیستُ", "  لیست!! 🙏"]:
+        assert trigger_matches(ex, normalize(t)), t
+    assert trigger_matches({"match": "contains", "value": "میخوام"}, normalize("می خوام لیست"))
+    assert trigger_matches({"match": "regex", "value": "IPHONE"}, normalize("iphone 13"))
+
+
+def test_chunks_keep_order_with_very_long_line():
+    parts = worker._chunks("A\n" + "x" * 2500 + "\nB")
+    assert parts[0] == "A" and parts[-1].endswith("B") and all(len(p) <= worker.DM_MAX for p in parts)
+
+
+def test_retry_only_when_clearly_not_sent():
+    assert worker._retryable("IG 503: service unavailable") and worker._retryable("IG 429: rate")
+    assert not worker._retryable("TimeoutError") and not worker._retryable("IG 400: bad")
+
+
+def test_menu_negative_index():
+    from app import dm_menu
+    db.init()
+    with db.connect() as c:
+        dm_menu.save(c, [{"title": "ساعت", "type": "text", "value": "۱۱ تا ۱۴"}])
+        assert dm_menu.reply_for(c, "MENU:-1", "") is None and dm_menu.reply_for(c, "MENU:0", "") == "۱۱ تا ۱۴"

@@ -27,15 +27,16 @@ def trigger_matches(trigger: dict, text_norm: str) -> bool:
         return True
     if not v:
         return False
+    nospace = lambda s: s.replace(" ", "")  # noqa: E731   «می خوام» و «میخوام» (نیم‌فاصله حذف می‌شود، فاصله نه)
     if m == "exact":
-        return text_norm == v
+        return text_norm == v or nospace(text_norm) == nospace(v)
     if m == "contains":
-        return v in text_norm
+        return v in text_norm or nospace(v) in nospace(text_norm)
     if m == "starts_with":
-        return text_norm.startswith(v)
+        return text_norm.startswith(v) or nospace(text_norm).startswith(nospace(v))
     if m == "regex":
         try:
-            return re.search(trigger.get("value", ""), text_norm) is not None
+            return re.search(trigger.get("value", ""), text_norm, re.I) is not None
         except re.error:
             return False
     return False
