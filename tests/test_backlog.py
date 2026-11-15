@@ -57,3 +57,17 @@ def test_live_comments_before_backlog():
         db.add_event(c, "c:bk", "comment", {"id": "bk", "_backlog": {"reply": "x"}})
         db.add_event(c, "c:live", "comment", {"id": "live"})
         assert [r["id"] for r in db.pending_events(c, comments=True)] == ["c:live", "c:bk"]
+
+
+def test_previously_ignored_comment_is_requeued():
+    db.init()
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "x", "channels": ["comment"], "triggers": [{"match": "any"}],
+                           "actions": {"comment_mode": "public", "public_replies": ["مرسی"]}})
+        db.add_event(c, "c:ig1", "comment", {"id": "ig1"})
+        db.finish_event(c, "c:ig1", "ignored")               # آن موقع دستوری نبود
+        db.add_event(c, "c:done1", "comment", {"id": "done1"})
+        db.finish_event(c, "c:done1", "done")
+        items = {i["id"]: i for i in bc.plan(c, [c_("ig1", "سلام", 2), c_("done1", "سلام", 2)], TEXTS, now=T0)}
+    assert items["ig1"]["kind"] == "rule" and items["ig1"]["eid"] == "c:ig1:b"
+    assert items["done1"]["kind"] == "queued"

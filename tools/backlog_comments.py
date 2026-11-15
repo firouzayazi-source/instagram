@@ -83,9 +83,18 @@ def plan(c, comments: list[dict], texts: dict, now: float | None = None) -> list
     rules = db.load_rules(c)
     out, n = [], 0
     for x in comments:
-        if c.execute("SELECT 1 FROM events WHERE id=?", (f"c:{x['id']}",)).fetchone():
-            out.append({**x, "kind": "queued"})           # قبلاً در صف یا جواب‌داده
-            continue
+        eid = f"c:{x['id']}"
+        ev = c.execute("SELECT status FROM events WHERE id=?", (eid,)).fetchone()
+        if ev:
+            replied = c.execute("SELECT 1 FROM replies WHERE target_id=? AND ok=1", (x["id"],)).fetchone()
+            if replied or ev["status"] not in ("ignored", "skipped", "error"):
+                out.append({**x, "kind": "queued"})       # در صف است یا جواب گرفته
+                continue
+            # برنامه دیده بود ولی آن موقع دستوری نداشت (یا خطا داد): دوباره با شناسه‌ی جدا
+            eid = f"c:{x['id']}:b"
+            if c.execute("SELECT 1 FROM events WHERE id=?", (eid,)).fetchone():
+                out.append({**x, "kind": "queued"})
+                continue
         old = now - x["ts"] > DM_WINDOW
         rule = find_rule(rules, Incoming("comment", str(x["from"]["id"]), x["text"], x["media"]), lambda *_: None)
         bl = {"old": old, "old_text": texts["old"]}
@@ -99,7 +108,7 @@ def plan(c, comments: list[dict], texts: dict, now: float | None = None) -> list
             elif kind in ("question", "greet"):
                 bl["reply"] = texts[kind]
         payload = {"id": x["id"], "text": x["text"], "from": x["from"], "media": {"id": x["media"]}, "_via": "poll", "_backlog": bl}
-        out.append({**x, "kind": kind, "rule": rule["name"] if rule else "", "old": old, "payload": payload})
+        out.append({**x, "kind": kind, "rule": rule["name"] if rule else "", "old": old, "payload": payload, "eid": eid})
     return out
 
 
@@ -145,6 +154,14 @@ def main(argv=None) -> int:
         per[key] = per.get(key, 0) + 1
     for (mid, rule), v in sorted(per.items(), key=lambda kv: -kv[1]):
         print(f"  پست {mid} · {('دستور «' + rule + '»') if rule != '—' else 'متن‌های عمومی بالا'}: {v}")
+    by_rule = {}
+    for (mid, rule), v in per.items():
+        if rule != "—":
+            by_rule.setdefault(rule, set()).add(mid)
+    for rule, mids in by_rule.items():
+        if len(mids) > 1:
+            print(f"\n⚠️ دستور «{rule}» به کامنت‌های {len(mids)} پست جواب می‌دهد. اگر مخصوص یک پست است، در فرم دستور ← "
+                  "تنظیمات پیشرفته ← «محدود به پست» همان پست را انتخاب کنید و دوباره گزارش بگیرید.")
     rate = max(1, limit - worker.BACKLOG_RESERVE)
     print(f"\nمتن سؤال: {a.question_text}\nمتن سلام: {a.greet_text}\nمتن کامنت‌های قدیمی دستورها: {a.old_text}")
     print(f"\nبا سقف {limit} در ساعت (۲۰ تا برای کامنت‌های تازه)، حدود {len(send) / rate:.1f} ساعت طول می‌کشد.")
@@ -152,7 +169,7 @@ def main(argv=None) -> int:
         print("\nفقط گزارش بود؛ چیزی فرستاده نشد. برای گذاشتن در صف: --apply")
         return 0
     with db.connect() as c:
-        added = sum(db.add_event(c, f"c:{it['id']}", "comment", it["payload"]) for it in send)
+        added = sum(db.add_event(c, it["eid"], "comment", it["payload"]) for it in send)
     print(f"\n✅ {added} کامنت در صف گذاشته شد. پیشرفت: پنل ← پاسخ هوشمند (جواب‌های ساعت گذشته و کامنت‌های در صف).")
     return 0
 
