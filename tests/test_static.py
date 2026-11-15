@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 def test_no_external_font_in_index():
     html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
     assert "fonts.googleapis" not in html and "fonts.gstatic" not in html
-    assert 'id="boot"' in html                      # پیش‌نمایش فوری به‌جای صفحه‌ی سفید
+    assert 'id="splash"' in html and "<svg" in html    # صفحه‌ی انتظار با لوگو، داخل همان فایل (بی درخواست اضافه)
 
 
 def test_cache_headers(tmp_path, monkeypatch):

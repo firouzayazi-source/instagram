@@ -61,7 +61,8 @@ export default function App() {
     return () => clearInterval(t)
   }, [authed, route])
 
-  if (authed === null) return <div className="empty">در حال بارگذاری…</div>
+  useEffect(() => { if (authed !== null) window.hideSplash?.() }, [authed])
+  if (authed === null) return null      // صفحه‌ی انتظار لوگو هنوز روی صفحه است
   if (!authed) return <Login onLogin={() => setAuthed(true)} />
 
   let page
