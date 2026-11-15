@@ -162,6 +162,10 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         await _send(ig, c, row["id"], None, "dm", payload, inc, s["welcome_text"].strip())
     rules = db.load_rules(c)
     rule = find_rule(rules, inc, lambda rid, uid: db.last_hit(c, rid, uid))
+    bl = payload.get("_backlog") or {}          # کامنت قدیمی که tools/backlog_comments.py در صف گذاشته
+    if rule is None and inc.channel == "comment" and bl.get("reply"):
+        ok = await _send(ig, c, row["id"], None, "public", payload, inc, bl["reply"])
+        return "done" if ok else "skipped"
     if rule is None:
         if payload.get("_via") == "poll":
             return "ignored"    # کامنت خوانده‌شده با Composio فقط با دستورها جواب می‌گیرد، نه هوش مصنوعی خودسر
@@ -185,6 +189,10 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
     sent = False
     # شماره‌ی متن: به نوبت (پیش‌فرض) یا تصادفی؛ در «دایرکت و جواب زیر کامنت» هر دو متن هم‌شماره‌اند
     idx = random.randrange(1_000_000) if adv.get("random_pick") else n - 1
+    if inc.channel == "comment" and bl.get("old") and (acts.get("private_replies") or acts.get("dm_replies")):
+        # بیش از ۷ روز از کامنت گذشته: اینستاگرام دیگر اجازه‌ی دایرکت به کامنت‌گذار نمی‌دهد؛ به‌جای «ارسال شد»
+        # (که دروغ می‌شد) زیر کامنت می‌گوییم دایرکت بدهد
+        acts = {"comment_mode": "public", "public_replies": [bl.get("old_text") or "برای دریافت، یک پیام به دایرکت پیج بده 📩"]}
     public_only = inc.channel == "comment" and acts.get("comment_mode") == "public"    # فقط جواب زیر کامنت، بی دایرکت
     form_q = forms.start(c, acts["form_id"], inc.user_id) if acts.get("form_id") and not over and not public_only else None
     if inc.channel == "comment":
@@ -517,6 +525,7 @@ def plan_batches(rows, wait: float, now: float | None = None) -> list[tuple]:
 
 COMMENT_LIMIT_KEY = "comment_hourly_limit"   # سقف جواب خودکار به کامنت در ساعت؛ پیش‌فرض ۱۰۰ (مثل نوین‌هاب)
 COMMENT_LIMIT_DEFAULT = 100
+BACKLOG_RESERVE = 20          # از سقف ساعتی، این‌قدر همیشه برای کامنت‌های تازه می‌ماند
 
 
 def comment_limit(c) -> int:
@@ -554,6 +563,8 @@ async def run_forever(ig, stop: asyncio.Event, comments: bool | None = None) -> 
                         _limit_alert(c)
                         rows = []
                         await asyncio.sleep(30)
+                    # کامنت‌های قدیمی (صف عقب‌افتاده) فقط با ظرفیت اضافه؛ همیشه جا برای کامنت‌های تازه می‌ماند
+                    rows = [r for i, r in enumerate(rows) if '"_backlog"' not in r["payload"] or i < room - BACKLOG_RESERVE]
                     rows = rows[:max(room, 0)]
                 if comments is not True:
                     await process_followups(ig, c)

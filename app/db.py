@@ -354,7 +354,8 @@ def pending_events(c: sqlite3.Connection, limit: int = 20, comments: bool | None
     """comments: True فقط کامنت‌ها، False همه جز کامنت (دایرکت و دکمه‌ها)، None همه."""
     cond = {True: " AND kind='comment'", False: " AND kind<>'comment'", None: ""}[comments]
     return c.execute(
-        f"SELECT * FROM events WHERE status='pending'{cond} ORDER BY created_at LIMIT ?", (limit,)
+        # کامنت‌های قدیمی صف عقب‌افتاده (tools/backlog_comments.py) همیشه بعد از رویدادهای تازه
+        f"SELECT * FROM events WHERE status='pending'{cond} ORDER BY instr(payload, '\"_backlog\"')>0, created_at LIMIT ?", (limit,)
     ).fetchall()
 
 
