@@ -75,3 +75,37 @@ async def test_private_reply_with_buttons_and_fallback(monkeypatch, fail):
         assert text.startswith("سلام ali") and "🌐 سایت: " in text and "/l/" in text and ig.btn == [None]
     else:
         assert text == "سلام ali" and ig.btn[0][0]["title"] == "🌐 سایت" and "/l/" in ig.btn[0][0]["url"]
+
+
+def test_fit_and_chunks():
+    long = "\n".join(f"آیفون {i} — قیمت تماس بگیرید" for i in range(80))
+    f = worker._fit(long)
+    assert len(f) <= worker.DM_MAX and f.endswith("بپرس 🌸)") and "آیفون 0" in f
+    parts = worker._chunks(long)
+    assert len(parts) > 1 and all(len(p) <= worker.DM_MAX for p in parts) and "\n".join(parts) == long
+
+
+def test_long_private_text_rejected_on_save():
+    from app.importer import validate
+    errs = validate({"name": "x", "channels": ["comment"], "actions": {"private_replies": ["ا" * 1200]}})
+    assert any("۱۰۰۰" in e or "1000" in e for e in errs)
+
+
+@pytest.mark.asyncio
+async def test_public_reply_does_not_claim_sent_when_dm_fails(monkeypatch):
+    monkeypatch.setattr(config, "SEND_DELAY_MIN", 0)
+    monkeypatch.setattr(config, "SEND_DELAY_MAX", 0)
+    monkeypatch.setattr(worker, "MAX_RETRIES", 1)
+
+    class Fail(IG):
+        async def private_reply(self, cid, text, buttons=None):
+            raise RuntimeError("IG 400 over the limit")
+    db.init()
+    ig = Fail()
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "x", "channels": ["comment"], "triggers": [{"match": "any"}],
+                           "actions": {"comment_mode": "both", "private_replies": ["لیست"], "public_replies": ["برات فرستادم"]}})
+        db.add_event(c, "c:f1", "comment", {"id": "f1", "text": "لیست", "from": {"id": "u1"}, "media": {"id": "p"}})
+        await worker.handle_event(ig, db.pending_events(c)[0], c)
+    pub = [t for k, _, t in ig.calls if k == "public"]
+    assert pub and "برات فرستادم" not in pub[0] and "دایرکت" in pub[0]

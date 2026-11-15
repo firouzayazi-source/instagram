@@ -64,7 +64,7 @@ function Adv({ on, icon, title, desc, onToggle, children, disabled }) {
 }
 
 // پیام‌های شماره‌دار با جابه‌جایی؛ چند پیام یعنی هر بار یکی به نوبت (تا تکراری نباشد)
-function Messages({ list, onChange, saved, placeholder, addLabel = 'پیام جدید' }) {
+function Messages({ list, onChange, saved, placeholder, addLabel = 'پیام جدید', limit }) {
   const [pick, setPick] = useState(false)
   return (
     <>
@@ -73,9 +73,11 @@ function Messages({ list, onChange, saved, placeholder, addLabel = 'پیام ج�
           {handle}
           <span className="num">{(i + 1).toLocaleString('fa-IR')}</span>
           <AutoText value={t} placeholder={placeholder} onChange={(e) => onChange(list.map((x, j) => (j === i ? e.target.value : x)))} />
+          {limit && t.length > limit * 0.8 && <small className={t.length > limit ? 'err' : 'muted'} style={{ flex: 'none', fontSize: 11 }}>{t.length.toLocaleString('fa-IR')}/{limit.toLocaleString('fa-IR')}</small>}
           {list.length > 1 && <button type="button" className="x" aria-label="حذف" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>}
         </div>
       )} />
+      {limit && list.some((t) => t.length > limit) && <div className="note warn">اینستاگرام دایرکت بلندتر از {limit.toLocaleString('fa-IR')} نویسه را نمی‌پذیرد. متن را کوتاه کنید، یا فهرست بلند (مثل لیست قیمت) را در سایت یا ربات بگذارید و با «دکمه‌ی لینک» بدهید.</div>}
       <div className="msg-add">
         <button type="button" className="btn sm" onClick={() => onChange([...list, ''])}><Icon n="plus" /> {addLabel}</button>
         {saved.length > 0 && <button type="button" className="btn sm" onClick={() => setPick(!pick)}><Icon n="msg" /> از پیام‌های قبلی</button>}
@@ -300,7 +302,7 @@ export default function RuleForm({ id }) {
             <div className="sub-card">
               <b>متن دایرکت به کامنت‌گذار <span className="tag">{r.actions.private_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام</span></b>
               {!r.actions.private_replies.some((t) => t.trim()) && <div className="note warn">متن دایرکت لازم است.</div>}
-              <Messages list={r.actions.private_replies} onChange={(l) => setAct('private_replies', l)} saved={saved} placeholder="مثلاً: سلام! قیمت لحظه‌ای و اقساط اینجاست: https://t.me/…" />
+              <Messages limit={1000} list={r.actions.private_replies} onChange={(l) => setAct('private_replies', l)} saved={saved} placeholder="مثلاً: سلام! قیمت لحظه‌ای و اقساط اینجاست: https://t.me/…" />
               <small className="muted"><code dir="ltr">{'{username}'}</code> = نام کاربری مخاطب · <code dir="ltr">{'{bot}'}</code> = لینک ربات پشتیبان. هر لینک خودکار شمرده می‌شود (چند نفر زدند) و لینک ربات نشانه‌ی همین دستور را می‌گیرد.</small>
             </div>
             <LinkButtons list={r.actions.buttons || []} onChange={(l) => setAct('buttons', l)} />

@@ -209,6 +209,7 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         acts = {"comment_mode": "public", "public_replies": [bl.get("old_text") or "برای دریافت، یک پیام به دایرکت پیج بده 📩"]}
     public_only = inc.channel == "comment" and acts.get("comment_mode") == "public"    # فقط جواب زیر کامنت، بی دایرکت
     form_q = forms.start(c, acts["form_id"], inc.user_id) if acts.get("form_id") and not over and not public_only else None
+    private_failed = False
     if inc.channel == "comment":
         if public_only:
             acts = {**acts, "private_replies": []}
@@ -219,10 +220,14 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
             text = prep(pick(acts.get(f"{kind}_replies", []), idx))
             if kind == "private" and form_q:     # به هر کامنت فقط یک دایرکت می‌شود فرستاد: سؤال اول همراه همان پیام
                 text = "\n\n".join(x for x in (text, form_question_text(*form_q)) if x)
+            if kind == "public" and private_failed:
+                text = "برای دریافت، یه پیام به دایرکت پیج بده 📩"     # دایرکت نرسید؛ «ارسال شد» دروغ می‌شد
             if text:
                 ok = await _send(ig, c, row["id"], rule["id"], kind, payload, inc, text,
                                  buttons=(btns or None) if kind == "private" and not form_q else None)
                 sent |= ok
+                if kind == "private" and not ok:
+                    private_failed = True
                 if kind == "private" and form_q and not ok:
                     forms.cancel(c, inc.user_id)
     else:
@@ -410,7 +415,43 @@ async def process_followups(ig, c, now: float | None = None) -> int:
     return n
 
 
+DM_MAX = 1000      # اینستاگرام پیام دایرکت بلندتر را نمی‌پذیرد
+
+
+def _fit(text: str, limit: int = DM_MAX) -> str:
+    """دایرکت به کامنت‌گذار فقط یک پیام است: اگر بلندتر بود، از آخرین خط کامل بریده و راهنمای ادامه اضافه می‌شود."""
+    if len(text) <= limit:
+        return text
+    tail = "\n…\n(بقیه رو در دایرکت بپرس 🌸)"
+    cut = text[:limit - len(tail)]
+    if "\n" in cut[len(cut) // 2:]:
+        cut = cut[:cut.rfind("\n")]
+    return cut.rstrip() + tail
+
+
+def _chunks(text: str, limit: int = DM_MAX) -> list[str]:
+    """دایرکت در گفتگو (پنجره‌ی ۲۴ ساعته): متن بلند در چند پیام پشت‌سرهم، از مرز خط."""
+    out, cur = [], ""
+    for line in text.split("\n"):
+        while len(line) > limit:
+            out.append(line[:limit]); line = line[limit:]
+        if len(cur) + len(line) + 1 > limit and cur:
+            out.append(cur.rstrip("\n")); cur = ""
+        cur += line + "\n"
+    if cur.strip():
+        out.append(cur.rstrip("\n"))
+    return out or [text]
+
+
 async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replies=None, buttons=None) -> bool:
+    if kind == "private":
+        text = _fit(text)
+    elif kind == "dm" and len(text) > DM_MAX:
+        parts = _chunks(text)
+        for p in parts[:-1]:
+            if not await _send(ig, c, event_id, rule_id, kind, payload, inc, p):
+                return False
+        text = parts[-1]
     target = payload.get("id", "") if kind in ("public", "private") else inc.user_id
     if kind == "dm" and ai.settings(c)["typing_indicator"]:
         for action in ("mark_seen", "typing_on"):      # بهترین تلاش؛ خطایش ارسال را متوقف نمی‌کند

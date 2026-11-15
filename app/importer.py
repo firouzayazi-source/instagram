@@ -25,6 +25,7 @@ from . import db
 from .rules import MATCHES
 
 CHANNELS = {"comment", "dm", "story_reply", "mention"}
+DM_MAX = 1000          # سقف طول یک پیام دایرکت اینستاگرام (خطای «length of the message sent is over the limit»)
 
 
 def validate(rule: dict) -> list[str]:
@@ -54,6 +55,11 @@ def validate(rule: dict) -> list[str]:
         clean_buttons(acts.get("buttons"))
     except ValueError as e:
         errs.append(str(e))
+    for t in acts.get("private_replies") or []:
+        if len(t) > DM_MAX:
+            errs.append(f"متن دایرکت به کامنت‌گذار حداکثر {DM_MAX} نویسه است (اینستاگرام بیشتر را نمی‌پذیرد)؛ این متن "
+                        f"{len(t)} نویسه است. کوتاهش کنید یا فهرست بلند را با «دکمه‌ی لینک» بدهید")
+            break
     cm = acts.get("comment_mode")
     if cm not in (None, "", "public", "dm", "both"):
         errs.append("نوع جواب کامنت نامعتبر است")
