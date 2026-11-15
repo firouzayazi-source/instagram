@@ -9,17 +9,27 @@ main() {
   # بکاپ پیش از انتشار: اگر نسخه‌ی تازه ستون یا جدولی به پایگاه داده اضافه کند و مشکلی پیش بیاید، راه برگشت هست
   BK=/var/backups/igbot; mkdir -p "$BK"; STAMP=$(date +%Y%m%d-%H%M%S)
   if [ -f data/bot.db ]; then
-    sqlite3 data/bot.db ".backup '$BK/pre-deploy-$STAMP.db'" && chmod 600 "$BK/pre-deploy-$STAMP.db"
+    sqlite3 data/bot.db ".backup '$BK/pre-deploy-$STAMP.db'"      # اگر نشد، set -e انتشار را متوقف می‌کند
+    chmod 600 "$BK/pre-deploy-$STAMP.db"
     echo "بکاپ پیش از انتشار: $BK/pre-deploy-$STAMP.db (commit قبلی: $(git -c safe.directory=/opt/igbot rev-parse --short HEAD))"
     ls -1t "$BK"/pre-deploy-*.db 2>/dev/null | tail -n +6 | xargs -r rm -f      # فقط ۵ تای آخر
   fi
   # مخزن مال کاربر igbot است و اسکریپت با root اجرا می‌شود
+  PREV=$(git -c safe.directory=/opt/igbot rev-parse HEAD)
   git -c safe.directory=/opt/igbot pull --ff-only
   .venv/bin/pip install -q -r requirements.txt
   (cd web && npm ci --no-audit --no-fund --silent && npm run build --silent)
   # تست‌ها هرگز روی داده‌ی زنده: مسیرها به پوشه‌ی موقت (لایه‌ی دوم ایمنی کنار tests/conftest.py)
   T=$(mktemp -d)
-  DB_PATH=$T/bot.db TG_DATA_DIR=$T/telegram .venv/bin/python -m pytest -q -p no:cacheprovider
+  if ! DB_PATH=$T/bot.db TG_DATA_DIR=$T/telegram .venv/bin/python -m pytest -q -p no:cacheprovider; then
+    rm -rf "$T"
+    # کد تست‌نشده روی دیسک نماند (با ری‌استارت یا کرش بالا می‌آمد): برگشت به نسخه‌ی قبلی و ساخت دوباره‌ی پنل
+    echo "❌ تست‌ها رد شد؛ برگشت به نسخه‌ی قبلی ($PREV)"
+    git -c safe.directory=/opt/igbot reset -q --hard "$PREV"
+    (cd web && npm ci --no-audit --no-fund --silent && npm run build --silent)
+    chown -R igbot:igbot /opt/igbot
+    exit 1
+  fi
   rm -rf "$T"
 
   # فایل سرویس اگر در ریپو عوض شده باشد، با بکاپ از نسخه‌ی قبلی

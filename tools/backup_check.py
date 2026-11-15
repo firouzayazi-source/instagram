@@ -41,14 +41,13 @@ def check_db(path: Path, live: Path | None = None, app_schema: bool = False) -> 
             if app_schema:
                 from app import db
                 db.init(str(tmp))                     # همان راه‌اندازی برنامه، روی کپی
-                lv_copy = _live_copy(live, Path(t))
-                with sqlite3.connect(tmp) as c, (sqlite3.connect(lv_copy) if lv_copy else _Null()) as lv:
+                live_counts = _live_counts(live, Path(t))
+                with sqlite3.connect(tmp) as c:
                     for tb in TABLES:
                         n = c.execute(f"SELECT COUNT(*) FROM {tb}").fetchone()[0]
-                        if lv is not None:
-                            m = lv.execute(f"SELECT COUNT(*) FROM {tb}").fetchone()[0]
-                            if m >= 20 and n < m * 0.5:          # بکاپ دیشب نباید نصف داده‌ی امروز باشد
-                                return False, f"{path.name}: جدول {tb} فقط {n} ردیف (زنده: {m})"
+                        m = live_counts.get(tb)
+                        if m is not None and m >= 20 and n < m * 0.5:     # بکاپ دیشب نباید نصف داده‌ی امروز باشد
+                            return False, f"{path.name}: جدول {tb} فقط {n} ردیف (زنده: {m})"
         except sqlite3.Error as e:
             return False, f"{path.name}: باز نشد ({e})"
     return True, f"{path.name}: سالم"
@@ -65,6 +64,29 @@ def check_secrets(path: Path) -> tuple[bool, str]:
     except (tarfile.TarError, OSError) as e:
         return False, f"{path.name}: باز نشد ({e})"
     return True, f"{path.name}: سالم"
+
+
+def _live_counts(live: Path | None, d: Path) -> dict:
+    """تعداد ردیف‌های پایگاه زنده از روی کپی‌اش. کپی وسط نوشتن سرویس ممکن است ناسازگار باشد؛ آن وقت مقایسه
+    انجام نمی‌شود (تقصیر به گردن بکاپ سالم نمی‌افتد)."""
+    try:
+        p = _live_copy(live, d)
+        if not p:
+            return {}
+        with sqlite3.connect(p) as lv:
+            return {tb: lv.execute(f"SELECT COUNT(*) FROM {tb}").fetchone()[0] for tb in TABLES}
+    except (sqlite3.Error, OSError):
+        return {}
+
+
+def check_tg_json(path: Path) -> tuple[bool, str]:
+    import tarfile
+    try:
+        with tarfile.open(path, "r:gz") as t:
+            n = sum(1 for m in t.getmembers() if m.name.endswith(".json") and m.size > 0)
+    except (tarfile.TarError, OSError) as e:
+        return False, f"{path.name}: باز نشد ({e})"
+    return (True, f"{path.name}: سالم") if n else (False, f"{path.name}: هیچ فایل JSON ربات تلگرام در بایگانی نیست")
 
 
 def _live_copy(live: Path | None, d: Path) -> Path | None:
@@ -119,9 +141,17 @@ def run(backup_dir: Path, live_db: Path, max_age_h: float = 30) -> dict:
         notes.append("بکاپ رازها (secrets-*.tar.gz) پیدا نشد")
     t = latest(backup_dir, "tg-users-*.db")
     if t:
+        if time.time() - t.stat().st_mtime > max_age_h * 3600:
+            ok = False
+            notes.append(f"آخرین بکاپ کاربران ربات تلگرام ({t.name}) قدیمی است")
         r, msg = check_db(t)
         ok &= r
         notes.append(msg)
+        j = latest(backup_dir, "tg-json-*.tar.gz")
+        if j:
+            r, msg = check_tg_json(j)
+            ok &= r
+            notes.append(msg)
     return {"at": time.time(), "ok": ok, "error": "" if ok else "؛ ".join(n for n in notes if "سالم" not in n), "notes": notes}
 
 

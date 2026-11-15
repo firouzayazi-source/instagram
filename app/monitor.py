@@ -37,6 +37,13 @@ def check_health(c, bridge_active: bool, now: float | None = None) -> list[str]:
     for key, (label, stale_after, bridge_only) in CHECKS.items():
         st = json.loads(db.kv_get(c, key) or "null")
         s = state.setdefault(key, {})
+        if st is None and not bridge_only and stale_after:
+            # هرگز ثبت نشده (مثلاً cron بکاپ نصب نیست یا ثبت نتیجه شکست خورد): بعد از همان مهلت هم هشدار
+            first = s.setdefault("none_since", now)
+            if now - first > stale_after and not s.get("alerted"):
+                s["alerted"] = True
+                out.append(f"⚠️ {label} هنوز هیچ‌وقت اجرا نشده\n\nروی سرور: crontab -l و tools/backup_check.py")
+            continue
         if (bridge_only and not bridge_active) or st is None:
             s.clear()
             continue

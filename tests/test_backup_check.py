@@ -89,3 +89,26 @@ def test_prune_keeps_pending_and_recent():
             c.execute("UPDATE events SET created_at=?, status=? WHERE id=?", (now - age * 86400, st, eid))
         assert db.prune(c, now) == 1
         assert {r[0] for r in c.execute("SELECT id FROM events")} == {"old-pending", "new-done"}
+
+
+def test_tg_json_archive_must_have_files(tmp_path):
+    import tarfile
+    empty = tmp_path / "tg-json-2026-11-13.tar.gz"
+    with tarfile.open(empty, "w:gz"):
+        pass
+    assert not backup_check.check_tg_json(empty)[0]
+    (tmp_path / "faq.json").write_text("[]")
+    good = tmp_path / "tg-json-2026-11-14.tar.gz"
+    with tarfile.open(good, "w:gz") as t:
+        t.add(tmp_path / "faq.json", arcname="faq.json")
+    assert backup_check.check_tg_json(good)[0]
+
+
+def test_monitor_alerts_when_backup_check_never_ran():
+    db.init()
+    now = time.time()
+    with db.connect() as c:
+        assert monitor.check_health(c, False, now) == []
+        out = monitor.check_health(c, False, now + 31 * 3600)
+        assert any("هیچ‌وقت" in m and "بکاپ" in m for m in out)
+        assert monitor.check_health(c, False, now + 32 * 3600) == []          # یک بار

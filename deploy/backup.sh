@@ -12,13 +12,16 @@ sqlite3 /opt/igbot/data/bot.db ".backup '$DST/bot-$D.db'"
 TG=/opt/igbot/data/telegram
 if [ -d "$TG" ]; then
   [ -f "$TG/users.db" ] && sqlite3 "$TG/users.db" ".backup '$DST/tg-users-$D.db'"
-  tar -czf "$DST/tg-json-$D.tar.gz" -C "$TG" --wildcards '*.json' 2>/dev/null || true
+  # (--wildcards هنگام ساختن بایگانی الگو را باز نمی‌کند و بایگانی خالی می‌ساخت؛ حالا پوسته فهرست را می‌سازد)
+  ( cd "$TG" && shopt -s nullglob && files=(*.json) && [ ${#files[@]} -gt 0 ] && tar -czf "$DST/tg-json-$D.tar.gz" "${files[@]}" ) \
+    || echo "❌ بکاپ فایل‌های JSON ربات تلگرام ساخته نشد"
 fi
 
 # رازها و کلیدها (.env، کلید داخلی، کانال‌ها): بی این‌ها بعد از از دست رفتن سرور همه‌ی اتصال‌ها از صفر ساخته می‌شوند.
 # فقط root می‌خواند (۶۰۰).
-( umask 077; tar -czf "$DST/secrets-$D.tar.gz" -C /opt/igbot .env data/internal.key data/channels.json 2>/dev/null || \
-  tar -czf "$DST/secrets-$D.tar.gz" -C /opt/igbot .env )
+# فقط فایل‌هایی که هستند (نبودن یکی، بقیه را از بایگانی بیرون نیندازد)
+( umask 077; cd /opt/igbot && files=(); for f in .env data/internal.key data/channels.json; do [ -f "$f" ] && files+=("$f"); done
+  tar -czf "$DST/secrets-$D.tar.gz" "${files[@]}" )
 chmod 600 "$DST/secrets-$D.tar.gz"
 
 find "$DST" \( -name 'bot-*.db' -o -name 'tg-users-*.db' -o -name 'tg-json-*.tar.gz' -o -name 'secrets-*.tar.gz' \) -mtime +14 -delete
@@ -33,7 +36,9 @@ fi
 # mount شده)، بکاپ امشب آنجا هم کپی می‌شود. مقصد را صاحب سرور تعیین می‌کند؛ این اسکریپت کلید یا اتصال تازه نمی‌سازد.
 COPY_DIR=$(grep -E '^BACKUP_COPY_DIR=' /opt/igbot/.env 2>/dev/null | tail -1 | cut -d= -f2- || true)
 if [ -n "${COPY_DIR:-}" ] && [ -d "$COPY_DIR" ]; then
-  cp -p "$DST"/bot-"$D".db "$DST"/tg-users-"$D".db "$DST"/tg-json-"$D".tar.gz "$COPY_DIR"/ 2>/dev/null || echo "❌ کپی بیرونی بکاپ ناموفق"
+  for f in bot-"$D".db tg-users-"$D".db tg-json-"$D".tar.gz; do
+    [ -f "$DST/$f" ] && { cp -p "$DST/$f" "$COPY_DIR"/ || echo "❌ کپی بیرونی $f ناموفق"; }
+  done
   # رازها فقط اگر صاحب سرور صریح خواسته باشد (BACKUP_COPY_SECRETS=1)؛ مقصد بیرونی باید امن باشد
   if grep -qE '^BACKUP_COPY_SECRETS=1' /opt/igbot/.env 2>/dev/null; then
     cp -p "$DST"/secrets-"$D".tar.gz "$COPY_DIR"/ || echo "❌ کپی بیرونی رازها ناموفق"
