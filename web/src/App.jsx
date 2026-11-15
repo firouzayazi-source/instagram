@@ -21,6 +21,22 @@ const More = lazyPage(() => import('./pages/More.jsx'))
 const Smart = lazyPage(() => import('./pages/Smart.jsx'))
 import Icon from './icons.jsx'
 
+// خطای بارگذاری صفحه (معمولاً نسخه‌ی تازه منتشر شده): به‌جای صفحه‌ی سفید، دکمه‌ی تازه‌سازی
+class PageError extends React.Component {
+  constructor(p) { super(p); this.state = { err: null } }
+  static getDerivedStateFromError(err) { return { err } }
+  componentDidUpdate(prev) { if (prev.route !== this.props.route && this.state.err) this.setState({ err: null }) }
+  render() {
+    if (!this.state.err) return this.props.children
+    return (
+      <div className="empty">
+        <p>این صفحه باز نشد؛ احتمالاً نسخه‌ی تازه‌ی پنل آمده است.</p>
+        <button className="btn primary" onClick={() => { sessionStorage.removeItem('chunk-reload'); location.reload() }}>تازه‌سازی</button>
+      </div>
+    )
+  }
+}
+
 // پیشخوان و ورود همراه برنامه می‌آیند؛ بقیه‌ی صفحه‌ها فقط وقتی باز شوند (باز شدن سریع‌تر روی اینترنت کند)
 const TABS = [
   ['/', 'پیشخوان', 'grid'],
@@ -93,7 +109,7 @@ export default function App() {
     : false
   return (
     <div className="app">
-      <main><Suspense fallback={<div className="empty">در حال بارگذاری…</div>}>{page}</Suspense></main>
+      <main><PageError route={route}><Suspense fallback={<div className="empty">در حال بارگذاری…</div>}>{page}</Suspense></PageError></main>
       <nav className="nav" aria-label="منوی اصلی">
         {TABS.map(([path, label, icon]) => (
           <a key={path} href={`#${path}`} className={isActive(path) ? 'active' : ''}>

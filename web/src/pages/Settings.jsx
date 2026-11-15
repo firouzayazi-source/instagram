@@ -30,12 +30,12 @@ export default function Settings({ onLogout }) {
   }
 
   async function disablePush() {
-    await api.del('/api/push/subscribe', { endpoint: sub.endpoint })
-    await sub.unsubscribe(); setSub(null); setMsg('اعلان غیرفعال شد')
+    try { await api.del('/api/push/subscribe', { endpoint: sub.endpoint }) } catch { /* سرور در دسترس نبود؛ اشتراک مرورگر باز هم لغو شود */ }
+    try { await sub.unsubscribe(); setSub(null); setMsg('اعلان غیرفعال شد') } catch (e) { setMsg('غیرفعال نشد: ' + e.message) }
   }
 
   async function setMode(mode) {
-    await api.put('/api/settings', { push_mode: mode }); setS({ ...s, push_mode: mode })
+    try { await api.put('/api/settings', { push_mode: mode }); setS({ ...s, push_mode: mode }) } catch (e) { setMsg('ذخیره نشد: ' + e.message) }
   }
 
   async function logout() { await api.post('/api/logout'); onLogout() }
@@ -89,7 +89,7 @@ function PasswordForm() {
   const [msg, setMsg] = useState(null)
   const [busy, setBusy] = useState(false)
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
-  const problem = f.next && f.next.length < 8 ? 'دست‌کم ۸ نویسه' : /\s/.test(f.next) ? 'بدون فاصله' : f.again && f.again !== f.next ? 'تکرار یکی نیست' : ''
+  const problem = f.next && f.next.length < 8 ? 'دست‌کم ۸ نویسه' : f.next && !/^[A-Za-z0-9!@%^*_+=.,:/?~-]+$/.test(f.next) ? 'فقط حرف انگلیسی، عدد و ! @ % ^ * _ + = . , : / ? ~ -' : f.again && f.again !== f.next ? 'تکرار یکی نیست' : ''
 
   async function save(e) {
     e.preventDefault(); setMsg(null); setBusy(true)
@@ -139,7 +139,7 @@ function Devices() {
   }
   async function lock(on) {
     if (!on && !confirm('با خاموش شدن قفل، هر دستگاهی که رمز را بداند وارد می‌شود. خاموش شود؟')) return
-    setD(await api.put('/api/devices/lock', { on }))
+    try { setD(await api.put('/api/devices/lock', { on })) } catch (ex) { setMsg({ ok: false, text: ex.message }) }
   }
   return (
     <div style={{ marginTop: 16 }}>

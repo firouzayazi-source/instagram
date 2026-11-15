@@ -22,6 +22,9 @@ const CMODES = [
   ['dm', 'فقط دایرکت به کامنت‌گذار', 'متن کامل در دایرکت او (اینستاگرام فقط یک بار و تا ۷ روز اجازه می‌دهد)', 'dm'],
   ['both', 'دایرکت و جواب زیر کامنت', 'متن کامل در دایرکت، و یک جواب کوتاه زیر کامنت (مثلاً «دایرکت رو ببین»)', 'repeat'],
 ]
+// عدد از کادر متن (رقم فارسی هم)؛ خالی یعنی ۰
+const toNum = (v) => parseInt(String(v ?? '').replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)), 10) || 0
+const isOn = (v) => v !== 0 && v !== undefined && v !== null && v !== false   // '' یعنی روشن و هنوز در حال نوشتن
 const modeOf = (a) => a.comment_mode || ((a.private_replies || []).some((t) => t.trim())
   ? ((a.public_replies || []).some((t) => t.trim()) ? 'both' : 'dm')
   : ((a.public_replies || []).some((t) => t.trim()) ? 'public' : 'dm'))
@@ -192,7 +195,8 @@ export default function RuleForm({ id }) {
         setR({
           ...x,
           actions: { comment_mode: modeOf(x.actions), public_replies: x.actions.public_replies?.length ? x.actions.public_replies : [''], private_replies: x.actions.private_replies?.length ? x.actions.private_replies : [''], dm_replies: x.actions.dm_replies || [], quick_replies: x.actions.quick_replies || [], form_id: x.actions.form_id || 0, buttons: x.actions.buttons || [] },
-          advanced: { ...EMPTY.advanced, ...x.advanced, cooldown_minutes: Math.round((x.advanced.cooldown_seconds || 0) / 60) },
+          // پیش‌فرض «یک بار برای هر کاربر» فقط برای دستور تازه است؛ دستور واردشده‌ای که این کلید را ندارد خاموش می‌ماند
+          advanced: { ...EMPTY.advanced, once_per_user: false, ...x.advanced, cooldown_minutes: Math.round((x.advanced.cooldown_seconds || 0) / 60) },
         })
         setAdvOpen(true)
       }
@@ -206,13 +210,20 @@ export default function RuleForm({ id }) {
   const hasD = ['dm', 'story_reply', 'mention'].some((c) => r.channels.includes(c))
   const scope = r.post_scope === 'all' ? null : r.post_scope
   const isNext = scope && scope.includes('next')
-  const toggleChannel = (c) => set({ channels: r.channels.includes(c) ? r.channels.filter((x) => x !== c) : [...r.channels, c] })
+  const toggleChannel = (c) => set({
+    channels: r.channels.includes(c) ? r.channels.filter((x) => x !== c) : [...r.channels, c],
+    // پست‌های انتخاب‌شده برای کامنت با برداشتن «کامنت» نباید محدودیت استوری شوند (و برعکس)
+    ...(c === 'comment' && r.post_scope !== 'all' ? { post_scope: 'all' } : {}),
+  })
   const toggleScopeId = (mid) => set({ post_scope: scope.includes(mid) ? scope.filter((x) => x !== mid) : [...scope.filter((x) => x !== 'next'), mid] })
   const a = r.advanced
   const cmode = r.actions.comment_mode || 'dm'
+  // دکمه‌ی لینک: زیر دایرکت به کامنت‌گذار (اگر دایرکت دارد) یا زیر جواب دایرکت؛ آنچه دیده نمی‌شود ذخیره هم نمی‌شود
+  const btnInComment = hasC && cmode !== 'public'
+  const btnVisible = btnInComment || hasD
   const formOk = cmode !== 'public' || hasD     // فرم در دایرکت ادامه پیدا می‌کند
   const advCount = [a.require_follow, scope && hasC, a.followup?.text !== undefined && a.followup !== null,
-    a.max_uses > 0, !!a.random_pick, !!r.actions.form_id, a.once_per_user, Number(a.cooldown_minutes) > 0, !!a.active_hours, a.handoff, Number(a.pause_ai_minutes) > 0].filter(Boolean).length
+    isOn(a.max_uses), !!a.random_pick, !!r.actions.form_id, a.once_per_user, isOn(a.cooldown_minutes), !!a.active_hours, a.handoff, isOn(a.pause_ai_minutes)].filter(Boolean).length
 
   async function save(e) {
     e.preventDefault(); setErr('')
@@ -224,17 +235,17 @@ export default function RuleForm({ id }) {
     setBusy(true)
     const clean = (l) => (l || []).map((t) => t.trim()).filter(Boolean)
     const adv = { ...r.advanced }
-    adv.cooldown_seconds = (Number(adv.cooldown_minutes) || 0) * 60
+    adv.cooldown_seconds = toNum(adv.cooldown_minutes) * 60
     delete adv.cooldown_minutes
     if (!adv.require_follow) delete adv.follow_prompt
     if (!adv.followup?.text) delete adv.followup
     if (!adv.active_hours) delete adv.active_hours
-    adv.pause_ai_minutes = Number(adv.pause_ai_minutes) || 0
+    adv.pause_ai_minutes = toNum(adv.pause_ai_minutes)
     if (!adv.pause_ai_minutes) delete adv.pause_ai_minutes
     if (!adv.handoff) delete adv.handoff
     if (!adv.random_pick) delete adv.random_pick
     if (adv.track_clicks !== false) delete adv.track_clicks
-    adv.max_uses = parseInt(adv.max_uses, 10) || 0
+    adv.max_uses = toNum(adv.max_uses)
     if (!adv.max_uses) { delete adv.max_uses; delete adv.over_limit_reply }
     const body = {
       ...r, name: r.name.trim(), advanced: adv,
@@ -244,7 +255,7 @@ export default function RuleForm({ id }) {
         public_replies: hasC && cmode !== 'dm' ? clean(r.actions.public_replies) : [], private_replies: hasC && cmode !== 'public' ? clean(r.actions.private_replies) : [],
         dm_replies: hasD ? clean(r.actions.dm_replies) : [], quick_replies: hasD ? clean(r.actions.quick_replies).map((t) => t.slice(0, 20)).slice(0, 13) : [],
         ...(r.actions.form_id > 0 && formOk ? { form_id: Number(r.actions.form_id) } : {}),
-        buttons: (r.actions.buttons || []).map((b) => ({ title: b.title.trim(), url: b.url.trim() })).filter((b) => b.title || b.url) },
+        buttons: btnVisible ? (r.actions.buttons || []).map((b) => ({ title: b.title.trim(), url: b.url.trim() })).filter((b) => b.title || b.url) : [] },
     }
     if (!body.triggers.length) body.triggers = [{ match: 'any', value: '' }]
     delete body.id; delete body.use_count
@@ -322,7 +333,7 @@ export default function RuleForm({ id }) {
           desc={hasC ? 'این متن فقط برای پیام‌هایی است که مستقیم در دایرکت می‌آیند، نه برای کامنت‌ها. چند پیام یعنی هر بار یکی به نوبت.' : 'چند پیام یعنی هر بار یکی به نوبت.'}>
           <Messages list={r.actions.dm_replies} onChange={(l) => setAct('dm_replies', l)} saved={saved} placeholder="متن پاسخ" />
           <small className="muted"><code dir="ltr">{'{username}'}</code> = نام کاربری مخاطب · <code dir="ltr">{'{bot}'}</code> = لینک ربات پشتیبان · هر لینک خودکار شمرده می‌شود.</small>
-          {!r.channels.includes('comment') && <LinkButtons list={r.actions.buttons || []} onChange={(l) => setAct('buttons', l)} />}
+          {!btnInComment && <LinkButtons list={r.actions.buttons || []} onChange={(l) => setAct('buttons', l)} />}
           <div className="sub-card">
             <b>دکمه‌های پاسخ سریع (اختیاری)</b>
             <small className="muted">زیر پیام نشان داده می‌شوند؛ هر خط یک دکمه، تا ۱۳ دکمه و هر کدام ۲۰ نویسه.</small>
@@ -378,10 +389,10 @@ export default function RuleForm({ id }) {
         <Adv on={!!a.random_pick} icon="repeat" title="انتخاب تصادفی متن" desc="به‌جای به نوبت (۱، ۲، ۳…)، هر بار یکی از متن‌ها تصادفی فرستاده می‌شود؛ طبیعی‌تر دیده می‌شود."
           onToggle={() => setAdv({ random_pick: !a.random_pick })} />
 
-        <Adv on={a.max_uses > 0} icon="clock" title="محدودیت تعداد پاسخ" desc="بعد از رسیدن به سقف، پاسخ اصلی متوقف می‌شود و پیام جایگزین فرستاده می‌شود (اگر بنویسید)."
-          onToggle={() => setAdv({ max_uses: a.max_uses > 0 ? 0 : 100 })}>
+        <Adv on={isOn(a.max_uses)} icon="clock" title="محدودیت تعداد پاسخ" desc="بعد از رسیدن به سقف، پاسخ اصلی متوقف می‌شود و پیام جایگزین فرستاده می‌شود (اگر بنویسید)."
+          onToggle={() => setAdv({ max_uses: isOn(a.max_uses) ? 0 : 100 })}>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><span>سقف</span>
-            <input type="number" min="1" style={{ width: 120 }} value={a.max_uses || ''} onChange={(e) => setAdv({ max_uses: Number(e.target.value) })} /><span>پاسخ</span></div>
+            <input type="text" inputMode="numeric" style={{ width: 120 }} value={a.max_uses || ''} onChange={(e) => setAdv({ max_uses: e.target.value })} /><span>پاسخ</span></div>
           <small className="muted">تا الان {(r.use_count || 0).toLocaleString('fa-IR')} بار اجرا شده.</small>
           <textarea value={a.over_limit_reply || ''} placeholder="پیام جایگزین (اختیاری)، مثلاً: ظرفیت این پیشنهاد تمام شد 🙏" onChange={(e) => setAdv({ over_limit_reply: e.target.value })} />
         </Adv>
@@ -389,9 +400,9 @@ export default function RuleForm({ id }) {
         <Adv on={!!a.once_per_user} icon="user" title="هر کاربر فقط یک بار" desc="اگر کسی دوباره کامنت یا پیام بدهد، این دستور دوباره برایش اجرا نمی‌شود."
           onToggle={() => setAdv({ once_per_user: !a.once_per_user })} />
 
-        <Adv on={Number(a.cooldown_minutes) > 0} icon="repeat" title="فاصله‌ی بین دو پاسخ به یک نفر" desc="پاسخ دوباره به همان نفر فقط بعد از این مدت."
-          onToggle={() => setAdv({ cooldown_minutes: Number(a.cooldown_minutes) > 0 ? 0 : 60 })}>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="number" min="1" style={{ width: 110 }} value={a.cooldown_minutes || ''} onChange={(e) => setAdv({ cooldown_minutes: e.target.value })} /><span>دقیقه</span></div>
+        <Adv on={isOn(a.cooldown_minutes)} icon="repeat" title="فاصله‌ی بین دو پاسخ به یک نفر" desc="پاسخ دوباره به همان نفر فقط بعد از این مدت."
+          onToggle={() => setAdv({ cooldown_minutes: isOn(a.cooldown_minutes) ? 0 : 60 })}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="text" inputMode="numeric" style={{ width: 110 }} value={a.cooldown_minutes || ''} onChange={(e) => setAdv({ cooldown_minutes: e.target.value })} /><span>دقیقه</span></div>
         </Adv>
 
         <Adv on={!!a.active_hours} icon="cal" title="ساعت فعال" desc="فقط در این بازه‌ی ساعت اجرا شود (به وقت سرور)."
@@ -405,9 +416,9 @@ export default function RuleForm({ id }) {
           onToggle={() => setAdv({ handoff: !a.handoff })} />
 
         {hasD && (
-          <Adv on={Number(a.pause_ai_minutes) > 0} icon="pause" title="توقف ربات برای همین مشتری" desc="تا این مدت ربات در دایرکت او ساکت می‌ماند تا همکار جواب بدهد."
-            onToggle={() => setAdv({ pause_ai_minutes: Number(a.pause_ai_minutes) > 0 ? 0 : 60 })}>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="number" min="1" max="10080" style={{ width: 110 }} value={a.pause_ai_minutes || ''} onChange={(e) => setAdv({ pause_ai_minutes: e.target.value })} /><span>دقیقه</span></div>
+          <Adv on={isOn(a.pause_ai_minutes)} icon="pause" title="توقف ربات برای همین مشتری" desc="تا این مدت ربات در دایرکت او ساکت می‌ماند تا همکار جواب بدهد."
+            onToggle={() => setAdv({ pause_ai_minutes: isOn(a.pause_ai_minutes) ? 0 : 60 })}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="text" inputMode="numeric" style={{ width: 110 }} value={a.pause_ai_minutes || ''} onChange={(e) => setAdv({ pause_ai_minutes: e.target.value })} /><span>دقیقه</span></div>
           </Adv>
         )}
 

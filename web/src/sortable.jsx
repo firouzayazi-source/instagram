@@ -5,6 +5,7 @@ import React, { useRef, useState } from 'react'
 export default function Sortable({ items, onChange, renderItem, keyOf = (_, i) => i }) {
   const refs = useRef([])
   const [drag, setDrag] = useState(null)        // {from, to, dy, startY}
+  const [settling, setSettling] = useState(false)
 
   function start(e, i) {
     if (items.length < 2) return
@@ -27,6 +28,8 @@ export default function Sortable({ items, onChange, renderItem, keyOf = (_, i) =
   }
   function end() {
     if (!drag) return
+    // بعد از رها کردن، دو فریم بی انیمیشن تا ردیف‌ها از جای جدیدشان سُر نخورند
+    setSettling(true); requestAnimationFrame(() => requestAnimationFrame(() => setSettling(false)))
     if (drag.to !== drag.from) {
       const l = [...items]
       const [x] = l.splice(drag.from, 1)
@@ -54,7 +57,7 @@ export default function Sortable({ items, onChange, renderItem, keyOf = (_, i) =
         )
         return (
           <div key={keyOf(it, i)} ref={(el) => { refs.current[i] = el }} className={dragging ? 'sort-item dragging' : 'sort-item'}
-            style={{ transform: `translateY(${dragging ? drag.dy : shift}px)`, transition: dragging ? 'none' : 'transform .15s' }}>
+            style={{ transform: `translateY(${dragging ? drag.dy : shift}px)`, transition: dragging || settling ? 'none' : 'transform .15s' }}>
             {renderItem(it, i, items.length > 1 ? handle : null)}
           </div>
         )

@@ -1,7 +1,7 @@
 // سرویس‌ورکر: باز شدن سریع پنل و دریافت اعلان پوش
 // - فایل‌های /assets/ (نام هش‌دار، هرگز عوض نمی‌شوند): اول از کش، بی‌انتظار شبکه
 // - صفحه‌ی اصلی: از شبکه، ولی اگر تا ۲.۵ ثانیه جواب نیامد، نسخه‌ی کش‌شده (اینترنت کند همراه)
-const CACHE = 'panel-v2'
+const CACHE = 'panel-v3'
 const NAV_TIMEOUT = 2500
 
 self.addEventListener('install', () => self.skipWaiting())
@@ -11,13 +11,16 @@ self.addEventListener('activate', (e) => {
 })
 
 function put(req, res) {
-  if (res && res.ok) caches.open(CACHE).then((c) => c.put(req, res.clone()))
+  // فقط جواب سالم؛ و هرگز صفحه‌ی HTML زیر نشانی یک فایل /assets/ (نسخه‌ی قدیمی که دیگر نیست)
+  const html = (res && res.headers.get('content-type') || '').includes('text/html')
+  const isAsset = typeof req !== 'string' && new URL(req.url).pathname.startsWith('/assets/')
+  if (res && res.ok && !(isAsset && html)) caches.open(CACHE).then((c) => c.put(req, res.clone()))
   return res
 }
 
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url)
-  if (e.request.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/api/') || url.pathname.startsWith('/media/')) return
+  if (e.request.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/api/') || url.pathname.startsWith('/media/') || url.pathname.startsWith('/l/') || url.pathname === '/webhook') return
   if (url.pathname.startsWith('/assets/')) {
     e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request).then((res) => put(e.request, res))))
     return
@@ -28,7 +31,15 @@ self.addEventListener('fetch', (e) => {
     let done = false
     const fallback = () => caches.match(key).then((hit) => { if (hit && !done) { done = true; resolve(hit) } })
     const t = setTimeout(fallback, NAV_TIMEOUT)
-    net.then((res) => { clearTimeout(t); if (!done) { done = true; resolve(res) } })
+    net.then((res) => {
+      clearTimeout(t)
+      if (done) return
+      if (!res.ok) {           // ۵۰۲ و ۵۰۳ وسط انتشار: نسخه‌ی ذخیره‌شده بهتر از صفحه‌ی خطاست
+        caches.match(key).then((hit) => { if (!done) { done = true; resolve(hit || res) } })
+        return
+      }
+      done = true; resolve(res)
+    })
       .catch(() => { clearTimeout(t); caches.match(key).then((hit) => { if (!done) { done = true; resolve(hit || Response.error()) } }) })
   }))
 })
@@ -52,7 +63,11 @@ self.addEventListener('notificationclick', (e) => {
   const url = (e.notification.data && e.notification.data.url) || '/'
   e.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
-      for (const c of list) if ('focus' in c) { c.navigate(url); return c.focus() }
+      for (const c of list) {
+        if (!('focus' in c)) continue
+        if ('navigate' in c) c.navigate(url).catch(() => {})     // پنجره‌ی بی‌کنترل یا Safari: خطایش focus را نگیرد
+        return c.focus()
+      }
       return self.clients.openWindow(url)
     })
   )

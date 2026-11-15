@@ -33,7 +33,13 @@ const faTime = (ts) => new Date(ts * 1000).toLocaleString('fa-IR', { day: 'numer
 // فایل CSV با BOM تا اکسل فارسی را درست نشان دهد
 function downloadCsv(name, rows) {
   // متنی که با = + - @ شروع شود در اکسل فرمول حساب می‌شود (جواب فرم را مشتری می‌نویسد)
-  const esc = (v) => { let t = String(v ?? ''); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"` }
+  // شماره به شکل ="0912…" تا اکسل صفر اولش را نیندازد (تنها فرمولی که خودمان می‌سازیم؛ فقط رقم و +)
+  const esc = (v) => {
+    if (v && typeof v === 'object' && 'phone' in v) {
+      const n = String(v.phone || '').replace(/[^0-9+]/g, '')
+      return n ? '"=""' + n + '"""' : '""'
+    }
+    let t = String(v ?? ''); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return `"${t.replace(/"/g, '""')}"` }
   const blob = new Blob(['﻿' + rows.map((r) => r.map(esc).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
@@ -176,7 +182,11 @@ function Entries({ id }) {
   const labels = d.form.questions.map((q) => q.label)
   function csv() {
     downloadCsv(`form-${id}.csv`, [['تاریخ', 'نام کاربری', ...labels],
-      ...d.items.map((e) => [faTime(e.created_at), e.username ? `@${e.username}` : '', ...labels.map((l) => (e.answers.find((a) => a.label === l) || {}).value || '')])])
+      ...d.items.map((e) => [faTime(e.created_at), e.username ? `@${e.username}` : '', ...labels.map((l, i) => {
+        // جواب‌ها به ترتیب سؤال؛ متن سؤال فقط وقتی جایگاه نخواند (سؤال تکراری یا عوض‌شده)
+        const a = (e.answers[i] && e.answers[i].label === l ? e.answers[i] : e.answers.find((x) => x.label === l) || e.answers[i]) || {}
+        return a.kind === 'phone' && a.value ? { phone: a.value } : (a.value || '')
+      })])])
   }
   return (
     <section className="sec">
@@ -305,7 +315,7 @@ function Phones() {
   }
   function csv() {
     downloadCsv('phones.csv', [['شماره', 'نام', 'نام کاربری', 'کانال', 'وضعیت', 'برچسب‌ها', 'اولین تماس', 'آخرین تماس'],
-      ...items.map((r) => [r.phone, r.name, r.username ? `@${r.username}` : '', r.channel === 'ig' ? 'اینستاگرام' : r.channel, (LEAD.find(([k]) => k === r.lead_status) || [])[1] || '', r.tags.join('، '), faDay(r.first_seen), faDay(r.last_seen)])])
+      ...items.map((r) => [{ phone: r.phone }, r.name, r.username ? `@${r.username}` : '', r.channel === 'ig' ? 'اینستاگرام' : r.channel, (LEAD.find(([k]) => k === r.lead_status) || [])[1] || '', r.tags.join('، '), faDay(r.first_seen), faDay(r.last_seen)])])
   }
   async function copyAll() {
     try { await navigator.clipboard.writeText(items.map((r) => r.phone).join('\n')); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* مرورگر اجازه نداد */ }

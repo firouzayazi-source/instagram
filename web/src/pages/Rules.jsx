@@ -27,7 +27,9 @@ export default function Rules() {
     api.get('/api/rules-entries?days=30').then((d) => { if (d.available) setEntries(d.entries); setClicks(d.clicks || {}) }).catch(() => {})
   }, [])
 
-  async function toggle(r, on) { await api.post(`/api/rules/${r.id}/enable`, { enabled: on }); load() }
+  // کارهای سریع: خطا (نبود اینترنت، خطای سرور) پیام می‌دهد، نه بی‌صدا
+  const safe = (fn) => async (...a) => { try { await fn(...a) } catch (ex) { alert(ex.message) } }
+  const toggle = safe(async (r, on) => { await api.post(`/api/rules/${r.id}/enable`, { enabled: on }); load() })
   async function setChannel(on) {
     if (!on && !confirm('همه‌ی پاسخ‌های خودکار اینستاگرام خاموش شود؟ پیام‌ها همچنان در صندوق ثبت می‌شوند.')) return
     setIg(await api.put('/api/channels/instagram', { enabled: on }))
@@ -38,8 +40,8 @@ export default function Rules() {
     try { await api.put('/api/comment-limit', { limit: Number(String(v).replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) }); setPoll(await api.get('/api/comment-poll')) }
     catch (ex) { alert(ex.message) }
   }
-  async function duplicate(r) { const { id } = await api.post(`/api/rules/${r.id}/copy`, { channels: r.channels }); location.hash = `#/rules/${id}` }
-  async function remove(r) { if (confirm(`دستور «${r.name}» حذف شود؟`)) { await api.del(`/api/rules/${r.id}`); load() } }
+  const duplicate = safe(async (r) => { const { id } = await api.post(`/api/rules/${r.id}/copy`, { channels: r.channels }); location.hash = `#/rules/${id}` })
+  const remove = safe(async (r) => { if (confirm(`دستور «${r.name}» حذف شود؟`)) { await api.del(`/api/rules/${r.id}`); load() } })
 
   const shown = (rules || []).filter((r) => !q.trim() || (r.name + JSON.stringify(r.triggers) + JSON.stringify(r.actions)).includes(q.trim()))
   const st = poll?.status

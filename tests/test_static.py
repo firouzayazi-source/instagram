@@ -42,3 +42,13 @@ def test_precompressed_assets_and_api_gzip(tmp_path, monkeypatch):
         r = c.get("/assets/index-abc.js", headers={"accept-encoding": "gzip"})
         assert r.headers["content-encoding"] == "gzip" and "javascript" in r.headers["content-type"] and r.content == body
         assert "content-encoding" not in c.get("/assets/index-abc.js", headers={"accept-encoding": "identity"}).headers
+
+
+def test_missing_asset_is_404_not_index(tmp_path, monkeypatch):
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<html></html>")
+    monkeypatch.setattr(config, "WEB_DIST", str(dist))
+    with TestClient(create_app(IG())) as c:
+        assert c.get("/assets/RuleForm-old.js").status_code == 404          # نسخه‌ی قبلی: نه index.html
+        assert c.get("/rules/new").status_code == 200                       # مسیرهای پنل همچنان index.html

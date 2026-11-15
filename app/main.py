@@ -172,6 +172,9 @@ def create_app(ig: Instagram | None = None) -> FastAPI:
                     return FileResponse(gz, media_type=mimetypes.guess_type(target.name)[0] or "application/octet-stream",
                                         headers={**headers, "Content-Encoding": "gzip", "Vary": "Accept-Encoding"})
                 return FileResponse(target, headers=headers)
+            if path.startswith("assets/"):
+                # فایل هش‌دار نسخه‌ی قبلی که دیگر نیست: ۴۰۴ (نه index.html که سرویس‌ورکر به‌جای JS کش می‌کرد)
+                raise HTTPException(404)
             return FileResponse(dist / "index.html", headers={"Cache-Control": "no-cache"})
 
     return app
