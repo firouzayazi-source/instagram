@@ -116,6 +116,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=30, help="پست‌های چند روز اخیر (پیش‌فرض ۳۰)")
     ap.add_argument("--post", help="فقط همین پست (شناسه)")
+    ap.add_argument("--comment-days", type=float, default=0,
+                    help="فقط کامنت‌های این چند روز اخیر (مثلاً ۷: همان‌هایی که هنوز می‌شود به صاحبشان دایرکت داد)")
     ap.add_argument("--apply", action="store_true", help="گذاشتن در صف؛ بی آن فقط گزارش")
     ap.add_argument("--question-text", default=QUESTION)
     ap.add_argument("--greet-text", default=GREET)
@@ -132,6 +134,8 @@ def main(argv=None) -> int:
         me = (await ig._get("me", fields="username")).get("username", "")
         return await collect(ig, a.days, me, a.post)
     comments = asyncio.run(run())
+    if a.comment_days:
+        comments = [x for x in comments if time.time() - x["ts"] <= a.comment_days * 86400]
     texts = {"question": a.question_text, "greet": a.greet_text, "old": a.old_text, "thanks": THANKS}
     with db.connect() as c:
         items = plan(c, comments, texts)

@@ -71,3 +71,28 @@ def test_previously_ignored_comment_is_requeued():
         items = {i["id"]: i for i in bc.plan(c, [c_("ig1", "سلام", 2), c_("done1", "سلام", 2)], TEXTS, now=T0)}
     assert items["ig1"]["kind"] == "rule" and items["ig1"]["eid"] == "c:ig1:b"
     assert items["done1"]["kind"] == "queued"
+
+
+def test_comment_days_filter(monkeypatch):
+    import asyncio as _a
+    olds = [c_("n1", "سلام", 1), c_("o1", "سلام", 20)]
+    for x in olds:
+        x["ts"] = __import__("time").time() - (1 if x["id"] == "n1" else 20) * 86400
+
+    async def fake_collect(ig, days, me, only=None):
+        return olds
+    monkeypatch.setattr(bc, "collect", fake_collect)
+
+    class FakeIG:
+        token = "t"
+        def via_composio(self): return False
+        async def _get(self, *a, **k): return {"username": "stock_land.ir"}
+    monkeypatch.setattr("app.instagram.Instagram", lambda *a, **k: FakeIG())
+    db.init()
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "x", "channels": ["comment"], "triggers": [{"match": "any"}],
+                           "actions": {"comment_mode": "public", "public_replies": ["مرسی"]}})
+    assert bc.main(["--comment-days", "7", "--apply"]) == 0
+    with db.connect() as c:
+        ids = {r[0] for r in c.execute("SELECT id FROM events")}
+    assert ids == {"c:n1"}
