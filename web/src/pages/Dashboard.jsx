@@ -90,6 +90,7 @@ function Today({ s }) {
 function Brake({ brake }) {
   const [b, setB] = useState(brake || {})
   const [busy, setBusy] = useState(false)
+  useEffect(() => { setB(brake || {}) }, [brake?.on, brake?.at])      // آمار پیشخوان بعد از اولین نمایش می‌رسد
   async function set(on) {
     if (!confirm(on ? 'همه‌ی جواب‌ها، دایرکت‌ها و انتشارهای خودکار همین الان متوقف شود؟'
       : 'مطمئنید پیج سالم است (صفحه‌ی Account Status اینستاگرام مشکلی نشان نمی‌دهد) و ارسال خودکار دوباره شروع شود؟')) return
@@ -110,7 +111,10 @@ function Brake({ brake }) {
 // سلامت سیستم: خوانش کامنت و دایرکت، آمار، بکاپ شبانه؛ فقط وقتی مشکلی هست جزئیات می‌آید
 function Health({ items, errors, tokenDays, weak, pending, brake }) {
   const bad = items.filter((x) => !x.ok)
-  const issues = [...bad.map((x) => `${x.label}: ${x.error || 'خطا'}`),
+  // خطای «دسترسی باطل» (کد 190، معمولاً بعد از عوض شدن رمز پیج) به زبان ساده
+  const plain = (e) => /190|session has been invalidated|validating access token/i.test(e || '')
+    ? 'اتصال به اینستاگرام قطع شده (رمز پیج عوض شده)؛ باید دوباره وصل شود' : (e || 'خطا')
+  const issues = [...bad.map((x) => `${x.label}: ${plain(x.error)}`),
     ...(errors ? [`${fa(errors)} رویداد با خطا`] : []),
     ...(tokenDays !== null && tokenDays < 10 ? [`${fa(tokenDays)} روز تا انقضای توکن`] : []),
     ...(pending ? [`${fa(pending)} دستگاه تازه منتظر تأیید ورود (بیشتر ← حساب و رمز)`] : []),
