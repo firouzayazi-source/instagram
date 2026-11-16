@@ -152,7 +152,7 @@ async def test_comment_queue_hourly_limit_and_dm_queue_separate(tmp_path, monkey
     with db.connect() as c:
         db.kv_set(c, worker.COMMENT_LIMIT_KEY, "2")
         db.upsert_rule(c, {"name": "x", "channels": ["comment"], "triggers": [{"match": "any"}],
-                           "actions": {"comment_mode": "public", "public_replies": ["ممنون"]}})
+                           "actions": {"comment_mode": "public", "public_replies": ["ممنون", "مرسی", "سپاس"]}})
         for i in range(4):
             db.add_event(c, f"c:k{i}", "comment", {"id": f"k{i}", "text": "سلام", "from": {"id": f"u{i}"}, "media": {"id": "p"}})
         db.add_event(c, "m:d1", "message", {"sender": {"id": "z"}, "timestamp": 1, "message": {"mid": "d1", "text": "سلام"}})

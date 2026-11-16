@@ -76,7 +76,7 @@ def test_engine_answers_from_shared_knowledge(env):
 @pytest.mark.asyncio
 async def test_brain_layer_in_decide_without_ai(env):
     with db.connect() as c:
-        ai.save_settings(c, {"brain_enabled": True})        # هوش مصنوعی خاموش، فقط موتور فهم
+        ai.save_settings(c, {"brain_enabled": True, "comment_mode": "dm_and_public"})  # هوش مصنوعی خاموش، فقط موتور فهم
         d = await ai.decide(c, channel="dm", text="قیمت آیفون ۱۳ پرو چنده؟", user_id="u1")
         assert d.action == "reply" and "۱۹۰" in d.reply
         row = c.execute("SELECT model, cost, status FROM ai_log WHERE id=?", (d.log_id,)).fetchone()

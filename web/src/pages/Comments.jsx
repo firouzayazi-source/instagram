@@ -23,6 +23,8 @@ export default function Comments() {
   }
 
   async function send(kind, c) {
+    if (kind === 'reply' && /(https?:\/\/|www\.)|\b[a-z0-9-]+\.(ir|com|net|org|io|me|ly)\b/i.test(text)) return setMsg('جواب عمومی لینک نداشته باشد (اینستاگرام اسپم می‌داند)؛ لینک را دایرکت کنید')
+    if (kind === 'reply' && text.trim().length > 150) return setMsg('جواب عمومی حداکثر ۱۵۰ نویسه')
     setBusy(true); setMsg('')
     try {
       await api.post(`/api/comments/${c.id}/${kind}`, { text })

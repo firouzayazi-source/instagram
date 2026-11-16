@@ -14,10 +14,14 @@ function BulkBar({ ids, onDone }) {
   if (!ids.length) return null
   async function run() {
     setMsg(null)
+    if (action === 'message') {
+      if (ids.length > 20) return setMsg({ ok: false, text: 'در هر بار حداکثر ۲۰ نفر (پیام یکسان به آدم‌های زیاد، به چشم اینستاگرام اسپم است)' })
+      if (!confirm(`این پیام برای ${fa(ids.length)} نفر (فقط آن‌هایی که پنجره‌ی ۲۴ ساعته‌شان باز است) با فاصله‌ی ۱ تا ۲ دقیقه فرستاده شود؟`)) return
+    }
     try {
       const r = await api.post('/api/customers/bulk', { ids, action, value })
       setMsg({ ok: true, text: action === 'message'
-        ? `${fa(r.queued)} پیام در صف ارسال (با فاصله‌ی چند ثانیه)` + (r.window_closed ? ` · ${fa(r.window_closed)} نفر پنجره‌ی ۲۴ ساعته‌شان بسته است` : '')
+        ? `${fa(r.queued)} پیام در صف ارسال (با فاصله‌ی ۱ تا ۲ دقیقه)` + (r.window_closed ? ` · ${fa(r.window_closed)} نفر پنجره‌ی ۲۴ ساعته‌شان بسته است` : '')
         : `${fa(r.changed)} پرونده به‌روز شد` })
       setValue(''); onDone()
     } catch (ex) { setMsg({ ok: false, text: ex.message }) }
@@ -32,7 +36,7 @@ function BulkBar({ ids, onDone }) {
       {action === 'message'
         ? <textarea rows={2} value={value} placeholder="مثلاً: سلام، هنوز دنبال ۱۳ پرو هستید؟ امروز موجود داریم 🙏" onChange={(e) => setValue(e.target.value)} />
         : <input type="text" value={value} placeholder="برچسب" onChange={(e) => setValue(e.target.value)} />}
-      {action === 'message' && <p className="hint muted">قانون اینستاگرام: فقط به کسانی می‌رسد که در ۲۴ ساعت گذشته پیام داده‌اند؛ بقیه خودکار کنار گذاشته می‌شوند.</p>}
+      {action === 'message' && <p className="hint muted">قانون اینستاگرام: فقط به کسانی می‌رسد که در ۲۴ ساعت گذشته پیام داده‌اند؛ بقیه خودکار کنار گذاشته می‌شوند. حداکثر ۲۰ نفر در هر بار، بی لینک کوتاه‌شده.</p>}
       <Msg m={msg} />
       <button className="btn primary" disabled={!value.trim()} onClick={run}>اجرا</button>
     </section>

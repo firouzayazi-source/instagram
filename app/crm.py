@@ -102,6 +102,9 @@ def search(c, q: str = "", tag: str = "", limit: int = 100, *, phone: str = "", 
     return out
 
 
+BULK_MAX = 20     # پیام گروهی در هر بار (قواعد ایمنی پیج)
+
+
 def bulk(c, keys: list[str], action: str, value: str = "") -> dict:
     """کار گروهی روی مخاطبین: tag_add | tag_remove | message (فقط برای کسانی که پنجره‌ی ۲۴ ساعته‌شان باز است،
     با فاصله‌ی چند ثانیه از صف پیگیری‌ها فرستاده می‌شود)."""
@@ -122,9 +125,17 @@ def bulk(c, keys: list[str], action: str, value: str = "") -> dict:
                 c.execute("UPDATE customers SET tags=? WHERE id=?", (json.dumps(new, ensure_ascii=False), k)); n += 1
         return {"changed": n}
     if action == "message":
+        from . import safety
         if not value:
             raise ValueError("متن پیام خالی است")
-        now, queued, closed = time.time(), 0, 0
+        if len(value) > 900:
+            raise ValueError("متن پیام حداکثر ۹۰۰ نویسه")
+        if safety.link_problems(value):
+            raise ValueError("لینک کوتاه‌شده (مثل bit.ly) ممنوع است؛ لینک اصلی را بگذارید")
+        if len(keys) > BULK_MAX:
+            raise ValueError(f"در هر بار حداکثر {BULK_MAX} نفر (پیام یکسان به آدم‌های زیاد الگوی اسپم است)")
+        import random
+        now, queued, closed, at = time.time(), 0, 0, time.time()
         for k in keys:
             r = c.execute(f"SELECT user_id, channel, {_LAST_IN} AS last_in FROM customers WHERE id=?", (k,)).fetchone()
             if not r or r["channel"] != "ig":
@@ -132,8 +143,9 @@ def bulk(c, keys: list[str], action: str, value: str = "") -> dict:
             if (r["last_in"] or 0) + WINDOW <= now + 60:
                 closed += 1
                 continue
+            at += random.uniform(40, 100) if queued else 0     # فاصله‌ی طبیعی، نه هر ۴ ثانیه
             c.execute("INSERT INTO followups(rule_id,user_id,text,due_at) VALUES (0,?,?,?)",
-                      (r["user_id"], value[:900], now + queued * 4))
+                      (r["user_id"], value, at))
             queued += 1
         return {"queued": queued, "window_closed": closed}
     raise ValueError("کار ناشناخته")

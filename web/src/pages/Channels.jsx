@@ -302,7 +302,8 @@ function IgPart({ parts }) {
           <h2>پاسخ هوش مصنوعی به کامنت</h2>
           {bridge && <div className="note info">تا اپ Meta وصل نیست، کامنت‌ها فقط با «دستورها» جواب می‌گیرند تا هوش مصنوعی خودسر زیر پست‌ها چیزی ننویسد. تنظیمات زیر بعد از اتصال کار می‌کند.</div>}
           <label className="check"><input type="checkbox" checked={s.comment_enabled} onChange={(e) => set({ comment_enabled: e.target.checked })} /> مغز مرکزی به کامنت‌ها جواب بدهد</label>
-          <label className="check"><input type="radio" checked={s.comment_mode === 'dm_and_public'} onChange={() => set({ comment_mode: 'dm_and_public' })} /> جواب کامل در دایرکت خصوصی، و یک متن کوتاه عمومی زیر کامنت (پیشنهادی)</label>
+          <label className="check"><input type="radio" checked={s.comment_mode === 'dm_only'} onChange={() => set({ comment_mode: 'dm_only' })} /> فقط جواب در دایرکت خصوصی (پیشنهادی و امن‌تر)</label>
+          <label className="check"><input type="radio" checked={s.comment_mode === 'dm_and_public'} onChange={() => set({ comment_mode: 'dm_and_public' })} /> جواب کامل در دایرکت، و یک متن کوتاه عمومی زیر کامنت (حداکثر ۲۵ در روز)</label>
           <label className="check"><input type="radio" checked={s.comment_mode === 'public_only'} onChange={() => set({ comment_mode: 'public_only' })} /> فقط جواب عمومی زیر کامنت</label>
           <label className="check"><input type="checkbox" checked={s.public_prices} onChange={(e) => set({ public_prices: e.target.checked })} /> قیمت را عمومی هم بگوید</label>
           <div className="field">

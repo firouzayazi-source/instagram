@@ -423,7 +423,7 @@ WINDOW = 23 * 3600     # پنجره‌ی پیام‌رسانی اینستاگر�
 async def process_followups(ig, c, now: float | None = None) -> int:
     """پیگیری‌های سررسیده را به دایرکت می‌فرستد. فقط اگر پنجره‌ی ۲۴ ساعت باز باشد موفق می‌شود."""
     n = 0
-    if safety.active(c):
+    if safety.active(c) or not channels.enabled("instagram"):
         return 0
     for f in db.due_followups(c, now):
         last_in = c.execute("SELECT MAX(created_at) FROM messages WHERE user_id=? AND direction='in'", (f["user_id"],)).fetchone()[0]
@@ -482,6 +482,15 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replie
     # قواعد ایمنی پیج (app/safety.py): لینک در جواب عمومی کامنت و لینک کوتاه‌شده در هر پیام خودکار نمی‌رود
     bad = ("جواب عمومی کامنت لینک ندارد (الگوی اسپم)؛ لینک فقط در دایرکت" if kind == "public" and safety.has_link(text) else
            "؛ ".join(safety.link_problems(text + " " + " ".join(b.get("url", "") for b in buttons or []))))
+    if kind == "public" and not bad:
+        # برای هر مسیر جواب عمومی (دستور، هوش مصنوعی، فالو، …): سقف روزانه، کوتاه، و هرگز دو جواب یکسان پیاپی
+        if public_replies_today(c) >= PUBLIC_DAILY_LIMIT:
+            return False                       # سقف روزانه: بی‌صدا فقط دایرکت می‌ماند
+        last = c.execute("SELECT text FROM replies WHERE kind='public' AND ok=1 ORDER BY id DESC LIMIT 1").fetchone()
+        if last and last[0] == text:
+            return False
+        if len(text) > PUBLIC_MAX:
+            bad = f"جواب عمومی حداکثر {PUBLIC_MAX} نویسه"
     if bad:
         db.log_reply(c, event_id, rule_id, kind, payload.get("id", "") or inc.user_id, text, ok=False, error="ایمنی: " + bad)
         return False
@@ -649,6 +658,7 @@ def comment_limit(c) -> int:
 
 
 PUBLIC_DAILY_LIMIT = 25      # جواب عمومی زیر کامنت در ۲۴ ساعت؛ بعد از آن کامنت‌گذار فقط دایرکت می‌گیرد
+PUBLIC_MAX = 150
 
 
 def public_replies_today(c, now: float | None = None) -> int:

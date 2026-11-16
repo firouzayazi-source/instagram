@@ -229,7 +229,7 @@ export default function RuleForm({ id }) {
           ...x,
           actions: { comment_mode: modeOf(x.actions), public_replies: x.actions.public_replies?.length ? x.actions.public_replies : [''], private_replies: x.actions.private_replies?.length ? x.actions.private_replies : [''], dm_replies: x.actions.dm_replies || [], quick_replies: x.actions.quick_replies || [], form_id: x.actions.form_id || 0, buttons: x.actions.buttons || [] },
           // پیش‌فرض «یک بار برای هر کاربر» فقط برای دستور تازه است؛ دستور واردشده‌ای که این کلید را ندارد خاموش می‌ماند
-          advanced: { ...EMPTY.advanced, once_per_user: false, ...x.advanced, cooldown_minutes: Math.round((x.advanced.cooldown_seconds || 0) / 60) },
+          advanced: { ...EMPTY.advanced, once_per_user: false, random_pick: false, ...x.advanced, cooldown_minutes: Math.round((x.advanced.cooldown_seconds || 0) / 60) },
         })
         setAdvOpen(true)
       }
@@ -265,8 +265,9 @@ export default function RuleForm({ id }) {
     const has = (k) => (r.actions[k] || []).some((t) => t.trim())
     if (hasC && cmode !== 'public' && !has('private_replies')) return setErr('متن دایرکت به کامنت‌گذار را بنویسید')
     if (hasC && cmode !== 'dm' && !has('public_replies')) return setErr('متن جواب زیر کامنت را بنویسید')
-    if (hasC && cmode !== 'dm' && r.actions.public_replies.some((t) => LINK_RX.test(t))) return setErr('جواب زیر کامنت نباید لینک داشته باشد؛ لینک را در دایرکت بفرستید')
+    if (hasC && cmode !== 'dm' && r.actions.public_replies.some((t) => LINK_RX.test(t) || t.includes('{bot}'))) return setErr('جواب زیر کامنت نباید لینک داشته باشد؛ لینک را در دایرکت بفرستید')
     if (['public_replies', 'private_replies', 'dm_replies'].some((k) => (r.actions[k] || []).some((t) => SHORT_RX.test(t))) || (r.actions.buttons || []).some((b) => SHORT_RX.test(b.url || ''))) return setErr('لینک کوتاه‌شده ممنوع است؛ لینک اصلی را بگذارید')
+    if (r.advanced.followup?.text && !(r.advanced.followup.after_seconds > 0)) return setErr('زمان پیام پیگیری را بنویسید (۱ تا ۱۳۸۰ دقیقه)')
     if (r.advanced.followup?.text && r.advanced.followup.after_seconds > 23 * 3600) return setErr('پیگیری حداکثر ۲۳ ساعت (۱۳۸۰ دقیقه) بعد؛ اینستاگرام بعد از ۲۴ ساعت پیام خودکار را ممنوع کرده')
     setBusy(true)
     const clean = (l) => (l || []).map((t) => t.trim()).filter(Boolean)
@@ -365,7 +366,7 @@ export default function RuleForm({ id }) {
               <b>جواب زیر کامنت <span className="tag">{r.actions.public_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} متن</span></b>
               <small className="muted">{cmode === 'both' ? 'بعد از فرستادن دایرکت، یکی از این متن‌ها به نوبت زیر همان کامنت می‌رود.' : 'یکی از این متن‌ها به نوبت زیر کامنت جواب داده می‌شود؛ همه آن را می‌بینند.'}</small>
               {!r.actions.public_replies.some((t) => t.trim()) && <div className="note warn">متن جواب لازم است.</div>}
-              {r.actions.public_replies.some((t) => LINK_RX.test(t)) && <div className="note warn">جواب زیر کامنت نباید لینک داشته باشد (اینستاگرام آن را اسپم می‌داند). لینک را در دایرکت بفرستید.</div>}
+              {r.actions.public_replies.some((t) => LINK_RX.test(t) || t.includes('{bot}')) && <div className="note warn">جواب زیر کامنت نباید لینک داشته باشد (اینستاگرام آن را اسپم می‌داند). لینک را در دایرکت بفرستید.</div>}
               {r.actions.public_replies.filter((t) => t.trim()).length > 0 && r.actions.public_replies.filter((t) => t.trim()).length < 5 && <div className="note">پیشنهاد: ۵ تا ۷ متن متفاوت و کوتاه (زیر ۱۰۰ نویسه) بنویسید تا به نوبت بروند. یک جواب یکسان زیر ده‌ها کامنت، به چشم اینستاگرام اسپم است.</div>}
               {r.actions.public_replies.some((t) => t.length > 150) && <div className="note warn">جواب زیر کامنت حداکثر ۱۵۰ نویسه؛ کوتاه و طبیعی بنویسید.</div>}
               <Messages list={r.actions.public_replies} onChange={(l) => setAct('public_replies', l)} saved={saved} placeholder={cmode === 'both' ? 'مثلاً: جزئیات رو برات دایرکت کردم 🌸' : 'مثلاً: ممنون از همراهیتون 🌸'} addLabel="متن جدید" />

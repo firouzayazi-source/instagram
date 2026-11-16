@@ -43,7 +43,8 @@ def env(tmp_path, monkeypatch):
 
 
 def enable(c, **kw):
-    ai.save_settings(c, {"enabled": True, **kw})
+    # آزمون‌های جواب عمومی کامنت با حالت «دایرکت و عمومی»؛ پیش‌فرض برنامه «فقط دایرکت» است (test_ai_comment_default_dm_only)
+    ai.save_settings(c, {"enabled": True, "comment_mode": "dm_and_public", **kw})
 
 
 # ---------- پایگاه دانش ----------
@@ -356,3 +357,11 @@ def test_api_flow(env):
         assert cl.get("/api/ai/handoffs").json() == []
         st = cl.get("/api/stats").json()
         assert st["ai"]["handoffs_open"] == 0 and "auto_answered_24h" in st
+
+
+@pytest.mark.asyncio
+async def test_ai_comment_default_dm_only(env):
+    with db.connect() as c:
+        ai.save_settings(c, {"enabled": True})
+        d = await ai.decide(c, channel="comment", text="قیمت ۱۳ پرومکس؟", user_id="u")
+        assert d.reply and d.public_reply == ""          # پیش‌فرض: هیچ جواب عمومی زیر کامنت

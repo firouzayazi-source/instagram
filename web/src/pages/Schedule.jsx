@@ -7,14 +7,18 @@ const STATUS = { scheduled: ['در نوبت', 'warn'], publishing: ['در حال
 const when = (ts) => new Date(ts * 1000).toLocaleString('fa-IR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tehran' })
 
 // هر عکسی (PNG، HEIC نمایش‌پذیر…) به JPG تبدیل می‌شود چون اینستاگرام فقط JPG می‌پذیرد
-function toJpeg(file) {
+// پست (نه استوری) باید بین ۴:۵ (عمودی) و ۱.۹۱:۱ (افقی) باشد وگرنه اینستاگرام سر وقت انتشار ردش می‌کند؛ از وسط بریده می‌شود
+function toJpeg(file, feed = false) {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => {
-      const k = Math.min(1, 1440 / img.width)
+      let sx = 0, sy = 0, sw = img.width, sh = img.height
+      if (feed && sh / sw > 1.25) { sh = Math.round(sw * 1.25); sy = Math.round((img.height - sh) / 2) }
+      if (feed && sw / sh > 1.91) { sw = Math.round(sh * 1.91); sx = Math.round((img.width - sw) / 2) }
+      const k = Math.min(1, 1440 / sw)
       const cv = document.createElement('canvas')
-      cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k)
-      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height)
+      cv.width = Math.round(sw * k); cv.height = Math.round(sh * k)
+      cv.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, cv.width, cv.height)
       cv.toBlob((b) => (b ? resolve(b) : reject(new Error('تبدیل عکس نشد'))), 'image/jpeg', 0.92)
     }
     img.onerror = () => reject(new Error('این عکس خوانده نشد'))
@@ -62,7 +66,7 @@ function WhenPicker({ value, onChange }) {
         </select>
       </div>
       <div className="actions" style={{ marginTop: 6 }}>
-        <button type="button" className="chip" onClick={() => { const t = new Date(now + 10 * 60000); onChange({ day: ymdTehran(t), h: hourTehran(t), m: Math.ceil(Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Tehran', minute: '2-digit' }).format(t)) / 5) * 5 % 60 }) }}>۱۰ دقیقه‌ی دیگر</button>
+        <button type="button" className="chip" onClick={() => { const t = new Date(Math.ceil((now + 10 * 60000) / 300000) * 300000); onChange({ day: ymdTehran(t), h: hourTehran(t), m: Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Tehran', minute: '2-digit' }).format(t)) }) }}>۱۰ دقیقه‌ی دیگر</button>
         <button type="button" className="chip" onClick={() => onChange({ day: ymdTehran(now + (hourTehran(now) >= 21 ? 86400000 : 0)), h: 21, m: 0 })}>ساعت ۲۱</button>
       </div>
       <p className="hint muted" style={{ marginTop: 4 }}>
@@ -89,7 +93,7 @@ export default function Schedule() {
     if (!file) return setMsg({ ok: false, text: 'فایل را انتخاب کنید' })
     setBusy(true)
     try {
-      const body = isVideo ? file : await toJpeg(file)
+      const body = isVideo ? file : await toJpeg(file, f.kind === 'post')
       const ext = isVideo ? (file.name.toLowerCase().endsWith('.mov') ? 'mov' : 'mp4') : 'jpg'
       const up = await api.upload(`/api/schedule/upload?name=file.${ext}`, body)
       await api.post('/api/schedule', { kind: f.kind, file: up.file, caption: f.caption, publish_at: toEpoch(f.at) })

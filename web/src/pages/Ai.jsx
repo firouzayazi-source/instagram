@@ -68,8 +68,8 @@ function Overview() {
 
   const load = () => {
     api.get('/api/ai/stats').then(setSt).catch(() => {})
-    Promise.all([api.get('/api/ai/faq'), api.get('/api/ai/products'), api.get('/api/ai/docs'), api.get('/api/ai/settings')])
-      .then(([f, p, d, s]) => setCounts({ faq: f.length, products: p.length, docs: d.length, info: !!s.settings.business_info.trim() }))
+    Promise.all([api.get('/api/ai/faq'), api.get('/api/ai/products'), api.get('/api/ai/docs'), api.get('/api/ai/settings'), api.get('/api/ai/kb').catch(() => ({}))])
+      .then(([f, p, d, s, k]) => setCounts({ faq: f.length + (k.ready ? (k.intents || []).length : 0), products: p.length, docs: d.length, info: !!s.settings.business_info.trim() }))
       .catch(() => {})
   }
   useEffect(load, [])
@@ -255,7 +255,7 @@ function Settings() {
   const [providers, setProviders] = useState([])
   const [msg, setMsg] = useState(null)
   const [busy, setBusy] = useState(false)
-  useEffect(() => { api.get('/api/ai/settings').then((r) => { setS(r.settings); setProviders(r.providers) }) }, [])
+  useEffect(() => { api.get('/api/ai/settings').then((r) => { setS(r.settings); setProviders(r.providers) }).catch((e) => setMsg({ ok: false, text: 'بارگذاری تنظیمات نشد: ' + e.message })) }, [])
   useEffect(() => {   // کلید تازه از بخش «کلید سرویس‌ها» → وضعیت سرویس‌ها به‌روز شود
     const on = () => api.get('/api/ai/settings').then((r) => setProviders(r.providers)).catch(() => {})
     window.addEventListener('ai:keys', on)

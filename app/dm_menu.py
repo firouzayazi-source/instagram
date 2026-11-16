@@ -33,6 +33,9 @@ def clean(items) -> list[dict]:
             raise ValueError("هر دکمه هم عنوان لازم دارد هم " + ("لینک" if kind == "url" else "متن جواب"))
         if kind == "url" and not value.startswith("https://"):
             raise ValueError(f"لینک دکمه‌ی «{title}» باید با https:// شروع شود")
+        from . import safety
+        if safety.link_problems(value):
+            raise ValueError(f"دکمه‌ی «{title}»: لینک کوتاه‌شده ممنوع است؛ لینک اصلی را بگذارید")
         out.append({"title": title, "type": kind, "value": value})
     return out
 

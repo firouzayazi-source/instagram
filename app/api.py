@@ -178,9 +178,17 @@ async def conversation_send(user_id: str, body: Text, request: Request):
 
 
 async def _send(request: Request, kind: str, target: str, text: str):
+    from . import safety
     text = text.strip()
     if not text:
         raise HTTPException(400, "متن خالی است")
+    # جواب دستی هم همان قواعد ایمنی پیج (docs/INSTAGRAM_SAFETY.md)
+    if kind == "public" and (safety.has_link(text) or "{bot}" in text):
+        raise HTTPException(422, "جواب عمومی زیر کامنت لینک نداشته باشد (اینستاگرام اسپم می‌داند)؛ لینک را دایرکت کنید")
+    if kind == "public" and len(text) > 150:
+        raise HTTPException(422, "جواب عمومی زیر کامنت حداکثر ۱۵۰ نویسه")
+    if safety.link_problems(text):
+        raise HTTPException(422, "لینک کوتاه‌شده (مثل bit.ly) ممنوع است؛ لینک اصلی را بگذارید")
     client = ig(request)
     try:
         if kind == "public":
@@ -548,13 +556,9 @@ def phone_status(key: str, body: dict):
 @protected.get("/rules-entries")
 def rules_entries(days: int = 30):
     """هر دستور چند نفر را از لینک خودش به ربات تلگرام آورد (ورود تازه)."""
-    from . import links
     since = time.time() - max(1, min(365, days)) * 86400
     e = leads.rule_entries(since)
-    with db.connect() as c:
-        clicks = links.rule_clicks(c, since)
-    return {"available": e is not None, "entries": {str(k): v for k, v in (e or {}).items()}, "bot": leads.bot_username(),
-            "clicks": {str(k): v for k, v in clicks.items()}}
+    return {"available": e is not None, "entries": {str(k): v for k, v in (e or {}).items()}, "bot": leads.bot_username()}
 
 
 @protected.get("/report/weekly")

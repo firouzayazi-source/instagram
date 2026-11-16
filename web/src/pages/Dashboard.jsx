@@ -96,7 +96,7 @@ function Health({ items, errors, tokenDays, weak, pending, brake }) {
     ...(errors ? [`${fa(errors)} رویداد با خطا`] : []),
     ...(tokenDays !== null && tokenDays < 10 ? [`${fa(tokenDays)} روز تا انقضای توکن`] : []),
     ...(pending ? [`${fa(pending)} دستگاه تازه منتظر تأیید ورود (بیشتر ← حساب و رمز)`] : []),
-    ...(brake?.on ? ['توقف اضطراری فعال است: هیچ ارسالی به اینستاگرام نمی‌رود (تنظیمات ← توقف اضطراری)'] : []),
+    ...(brake?.on ? ['توقف اضطراری فعال است: هیچ ارسالی به اینستاگرام نمی‌رود (بیشتر ← حساب، رمز و توقف اضطراری)'] : []),
     ...(weak ? ['رمز پنل کوتاه‌تر از ۸ نویسه است؛ در «بیشتر ← حساب و رمز» عوضش کنید'] : [])]
   return (
     <section className="card">
@@ -105,7 +105,7 @@ function Health({ items, errors, tokenDays, weak, pending, brake }) {
         <span className={`pill ${issues.length ? 'warn' : 'good'}`}>{issues.length ? `${fa(issues.length)} مشکل` : 'همه‌چیز درست است'}</span>
       </div>
       {issues.length > 0
-        ? <ul style={{ margin: '8px 0 0', paddingInlineStart: 18 }}>{issues.map((t) => <li key={t} className="err">{t}</li>)}</ul>
+        ? <ul style={{ margin: '8px 0 0', paddingInlineStart: 18 }}>{issues.map((t) => <li key={t} className="err">{t.startsWith('توقف اضطراری') ? <a href="#/settings" className="err">{t}</a> : t}</li>)}</ul>
         : <p className="muted" style={{ margin: '6px 0 0' }}>{items.map((x) => `${x.label} ${x.at ? timeAgo(x.at) : ''}`).join(' · ') || 'هنوز بررسی‌ای اجرا نشده'}</p>}
     </section>
   )

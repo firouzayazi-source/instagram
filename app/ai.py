@@ -27,8 +27,10 @@ DEFAULTS = {
     "business_info": "",
     "prompt_comment": "",
     "prompt_dm": "",
-    "comment_mode": "dm_and_public",   # dm_and_public | public_only
-    "public_ack": ["جوابت رو دایرکت فرستادیم ✅", "دایرکت رو چک کن 📩", "پیام دادیم، دایرکتت رو ببین 🙏"],
+    "comment_mode": "dm_only",   # dm_only (پیشنهادی، docs/INSTAGRAM_SAFETY.md) | dm_and_public | public_only
+    "public_ack": ["ممنون که کامنت گذاشتی 🌸 جزئیات رو برات دایرکت کردم", "سلام، جوابت رو توی دایرکت فرستادم 🙏",
+                   "مرسی از همراهیت 💙 یه نگاه به دایرکتت بنداز", "خوشحالیم که برات جالب بوده ✨ توضیحات تو دایرکته",
+                   "لطف داری 🙌 جواب رو تو دایرکت برات نوشتیم"],
     "public_prices": False,
     "min_confidence": 0.6,
     "handoff_message": "سوالت رو برای همکارم فرستادم، به‌زودی جوابت رو می‌ده 🙏",
@@ -174,6 +176,10 @@ def save_settings(c, patch: dict) -> dict:
             v = str(v or "").strip()[:500]
         if k in ("public_ack", "mention_replies"):
             v = [t.strip() for t in v if t and t.strip()][:10]
+        if k == "public_ack":
+            from . import safety
+            if any(safety.has_link(t) or len(t) > 150 for t in v):
+                raise ValueError("متن‌های عمومی زیر کامنت: بی لینک و حداکثر ۱۵۰ نویسه")
         if k == "dm_quick_replies":
             v = [t.strip()[:20] for t in v if t and t.strip()][:13]
         if k == "ice_breakers":
@@ -580,12 +586,14 @@ def _finish(c, d: Decision, s: dict, channel: str, text: str, is_test: bool, ctx
     if channel == "comment":
         if s["comment_mode"] == "public_only":
             d.public_reply, d.reply = (d.public_reply or d.reply), ""
+        elif s["comment_mode"] == "dm_only":
+            d.public_reply = ""
         elif d.reply and not d.public_reply and s["public_ack"]:
             n = c.execute("SELECT COUNT(*) FROM ai_log WHERE channel='comment'").fetchone()[0]
             d.public_reply = s["public_ack"][n % len(s["public_ack"])]
     else:
         d.public_reply = ""
-    d.reply, d.public_reply = d.reply[:900], d.public_reply[:290]
+    d.reply, d.public_reply = d.reply[:900], d.public_reply[:150]
     if not is_test:
         for fid in knowledge.matching_faq_ids(c, text):
             c.execute("UPDATE faq SET hits=hits+1 WHERE id=?", (fid,))

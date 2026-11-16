@@ -175,7 +175,7 @@ function Devices() {
 function Brake() {
   const [b, setB] = useState(null)
   const [busy, setBusy] = useState(false)
-  useEffect(() => { api.get('/api/safety/brake').then(setB).catch(() => setB({})) }, [])
+  useEffect(() => { api.get('/api/safety/brake').then(setB).catch(() => setB({ error: true })) }, [])
   async function set(on) {
     if (!confirm(on ? 'همه‌ی جواب‌ها، دایرکت‌ها و انتشارهای خودکار همین الان متوقف شود؟'
       : 'مطمئنید پیج سالم است (صفحه‌ی Account Status اینستاگرام مشکلی نشان نمی‌دهد) و ارسال خودکار دوباره شروع شود؟')) return
@@ -183,6 +183,7 @@ function Brake() {
     try { setB(await api.post('/api/safety/brake', { on })) } catch (ex) { alert(ex.message) } finally { setBusy(false) }
   }
   if (!b) return null
+  if (b.error) return <section className="card"><h2>⛔ توقف اضطراری</h2><p className="err">وضعیت توقف خوانده نشد؛ صفحه را تازه کنید.</p></section>
   return (
     <section className="card">
       <div className="row-between">

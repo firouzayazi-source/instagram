@@ -61,7 +61,7 @@ def validate(rule: dict) -> list[str]:
                         f"{len(t)} نویسه است. کوتاهش کنید یا فهرست بلند را با «دکمه‌ی لینک» بدهید")
             break
     from . import safety       # قواعد ایمنی پیج (بعد از قفل ۲۵ آبان ۱۴۰۵)
-    if any(safety.has_link(t) for t in (acts.get("public_replies") or []) + [adv.get("follow_prompt") or ""]):
+    if any(safety.has_link(t) or "{bot}" in t for t in (acts.get("public_replies") or []) + [adv.get("follow_prompt") or ""]):
         errs.append("جواب عمومی زیر کامنت نباید لینک داشته باشد (اینستاگرام آن را اسپم می‌داند)؛ لینک را در دایرکت بفرستید")
     texts = [t for k in ("public_replies", "private_replies", "dm_replies") for t in acts.get(k) or []]
     texts += [b.get("url", "") for b in acts.get("buttons") or [] if isinstance(b, dict)]
@@ -76,6 +76,8 @@ def validate(rule: dict) -> list[str]:
     if any(len(t) > 150 for t in acts.get("public_replies") or []):
         errs.append("جواب زیر کامنت حداکثر ۱۵۰ نویسه (جواب عمومی بلند ماشینی و اسپم دیده می‌شود)")
     fu = adv.get("followup") or {}
+    if fu and fu.get("text") and not (isinstance(fu.get("after_seconds"), (int, float)) and fu["after_seconds"] > 0):
+        errs.append("زمان پیام پیگیری را بنویسید (۱ تا ۱۳۸۰ دقیقه)")
     if fu and isinstance(fu.get("after_seconds"), (int, float)) and fu["after_seconds"] > 23 * 3600:
         errs.append("پیام پیگیری حداکثر ۲۳ ساعت بعد (اینستاگرام پیام خودکار بعد از ۲۴ ساعت از آخرین پیام مشتری را ممنوع کرده)")
     cm = acts.get("comment_mode")

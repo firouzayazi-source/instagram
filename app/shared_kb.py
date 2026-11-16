@@ -70,9 +70,10 @@ def _queue(op: dict) -> None:
     os.replace(tmp, d / name)   # ربات تلگرام فقط فایل کامل‌شده‌ی .json را می‌بیند
 
 
-def _lines(v) -> list[str]:
+def _lines(v, commas: bool = True) -> list[str]:
+    """کلیدواژه‌ها با خط یا ویرگول جدا می‌شوند؛ جمله‌های نمونه فقط با خط (جمله خودش ویرگول دارد)."""
     if isinstance(v, str):
-        v = re.split(r"[\n,،]+", v)
+        v = re.split(r"[\n,،]+" if commas else r"\n+", v)
     return [str(x).strip()[:300] for x in (v or []) if str(x).strip()][:80]
 
 
@@ -83,7 +84,7 @@ def save_intent(item: dict) -> None:
     action = str(item.get("action") or "")
     if action not in ACTIONS:
         raise ValueError("کار نامعتبر")
-    keys, examples = _lines(item.get("keys")), _lines(item.get("examples"))
+    keys, examples = _lines(item.get("keys")), _lines(item.get("examples"), commas=False)
     answer = str(item.get("answer") or "").strip()[:4000]
     if not keys and not examples:
         raise ValueError("دست‌کم یک کلیدواژه یا جمله‌ی نمونه لازم است")
