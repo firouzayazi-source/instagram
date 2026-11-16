@@ -82,7 +82,8 @@ def test_weekly_only_saturday_morning():
 
 
 @pytest.mark.asyncio
-async def test_worker_tags_bot_link_with_rule(tmp_path, monkeypatch):
+@pytest.mark.parametrize("track", [None, True])
+async def test_worker_tags_bot_link_with_rule(tmp_path, monkeypatch, track):
     from app import worker
     from tests.test_instagram_features import IG
     _tg(tmp_path, monkeypatch, [])
@@ -91,14 +92,20 @@ async def test_worker_tags_bot_link_with_rule(tmp_path, monkeypatch):
     db.init()
     ig = IG()
     with db.connect() as c:
-        rid = db.upsert_rule(c, {"name": "قیمت", "channels": ["comment"], "triggers": [{"match": "contains", "value": "قیمت"}],
-                                 "actions": {"private_replies": [f"لینک: https://t.me/{U}"]}})
+        rule = {"name": "قیمت", "channels": ["comment"], "triggers": [{"match": "contains", "value": "قیمت"}],
+                "actions": {"private_replies": [f"لینک: https://t.me/{U}"]}}
+        if track:
+            rule["advanced"] = {"track_clicks": True}
+        rid = db.upsert_rule(c, rule)
         db.add_event(c, "c:k1", "comment", {"id": "k1", "text": "قیمت", "from": {"id": "u1", "username": "a"}, "media": {"id": "m"}})
         assert await worker.handle_event(ig, db.pending_events(c)[0], c) == "done"
     sent = [t for k, tg, t in ig.calls if k == "private" and tg == "k1"][0]
-    assert sent.startswith(f"لینک: {config.PUBLIC_URL.rstrip('/')}/l/")          # لینک ردیابی‌شده (شمارش کلیک)
+    if not track:     # پیش‌فرض: لینک اصلی (نشانی کوتاه در دایرکت خودکار، پیج را قفل کرد)
+        assert sent == f"لینک: https://t.me/{U}?start=insta_r{rid}"
+        return
+    assert sent.startswith(f"لینک: {config.PUBLIC_URL.rstrip('/')}/l/")          # فقط با روشن کردن صریح
     with db.connect() as c:
-        assert c.execute("SELECT url FROM links").fetchone()[0] == f"https://t.me/{U}?start=insta_r{rid}"   # و نشانه‌ی دستور
+        assert c.execute("SELECT url FROM links").fetchone()[0] == f"https://t.me/{U}?start=insta_r{rid}"
 
 
 @pytest.mark.asyncio

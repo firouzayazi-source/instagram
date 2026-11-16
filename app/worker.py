@@ -190,7 +190,9 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         acts = {"private_replies": [alt], "public_replies": []} if inc.channel == "comment" else {"dm_replies": [alt]}
     sent = False
     username = (payload.get("from") or {}).get("username") if inc.channel == "comment" else db.conversation_username(c, inc.user_id)
-    track = adv.get("track_clicks", True)
+    # پیش‌فرض خاموش: لینک پنهان پشت نشانی کوتاه در دایرکت خودکار، الگوی پیج هک‌شده است و اینستاگرام بعد از
+    # ارسال چنین دایرکت‌هایی (۱۶ آبان ۱۴۰۵، ساعت ۲:۱۵) پیج را به خاطر «فعالیت مشکوک» قفل کرد. فقط با روشن کردن صریح.
+    track = adv.get("track_clicks") is True
 
     def prep(t):
         """لینک ربات با نشانه‌ی دستور، نام کاربر، و لینک ردیابی‌شده."""

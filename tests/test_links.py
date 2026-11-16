@@ -72,9 +72,9 @@ async def test_private_reply_with_buttons_and_fallback(monkeypatch, fail):
         assert await worker.handle_event(ig, db.pending_events(c)[0], c) == "done"
     text = ig.calls[-1][2]
     if fail:     # دکمه رد شد: همان پیام با لینک در متن
-        assert text.startswith("سلام ali") and "🌐 سایت: " in text and "/l/" in text and ig.btn == [None]
+        assert text.startswith("سلام ali") and "🌐 سایت: https://stland.ir" in text and "/l/" not in text and ig.btn == [None]
     else:
-        assert text == "سلام ali" and ig.btn[0][0]["title"] == "🌐 سایت" and "/l/" in ig.btn[0][0]["url"]
+        assert text == "سلام ali" and ig.btn[0][0]["title"] == "🌐 سایت" and ig.btn[0][0]["url"] == "https://stland.ir"   # لینک اصلی، نه نشانی کوتاه
 
 
 def test_fit_and_chunks():

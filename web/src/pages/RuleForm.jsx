@@ -244,7 +244,7 @@ export default function RuleForm({ id }) {
     if (!adv.pause_ai_minutes) delete adv.pause_ai_minutes
     if (!adv.handoff) delete adv.handoff
     if (!adv.random_pick) delete adv.random_pick
-    if (adv.track_clicks !== false) delete adv.track_clicks
+    if (adv.track_clicks !== true) delete adv.track_clicks
     adv.max_uses = toNum(adv.max_uses)
     if (!adv.max_uses) { delete adv.max_uses; delete adv.over_limit_reply }
     const body = {
@@ -383,8 +383,8 @@ export default function RuleForm({ id }) {
           {hasC && <div className="note info">برای کامنت، سؤال اول همراه همان دایرکت به کامنت‌گذار می‌رود و جواب‌ها در دایرکت ادامه پیدا می‌کند.</div>}
         </Adv>
 
-        <Adv on={a.track_clicks !== false} icon="link" title="شمارش کلیک لینک‌ها" desc="لینک‌های پیام و دکمه‌ها از نشانی کوتاه پنل رد می‌شوند تا معلوم شود چند نفر زدند (در فهرست دستورها). خاموش: لینک خام فرستاده می‌شود."
-          onToggle={() => setAdv({ track_clicks: a.track_clicks === false })} />
+        <Adv on={a.track_clicks === true} icon="link" title="شمارش کلیک لینک‌ها (توصیه نمی‌شود)" desc="⚠️ لینک‌ها از نشانی کوتاه پنل رد می‌شوند. اینستاگرام لینک کوتاه‌شده در دایرکت خودکار را مشکوک می‌داند و یک بار پیج را به همین خاطر قفل کرد. خاموش (پیشنهادی): لینک اصلی فرستاده می‌شود."
+          onToggle={() => setAdv({ track_clicks: a.track_clicks !== true })} />
 
         <Adv on={!!a.random_pick} icon="repeat" title="انتخاب تصادفی متن" desc="به‌جای به نوبت (۱، ۲، ۳…)، هر بار یکی از متن‌ها تصادفی فرستاده می‌شود؛ طبیعی‌تر دیده می‌شود."
           onToggle={() => setAdv({ random_pick: !a.random_pick })} />
