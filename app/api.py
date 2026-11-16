@@ -235,7 +235,8 @@ def comment_poll_status(request: Request):
         reply = comment_poll.dm_reply_enabled(c)
         from . import worker
         hour = {"count": worker.comment_replies_last_hour(c), "limit": worker.comment_limit(c),
-                "queued": len(db.pending_events(c, limit=1000, comments=True))}
+                "queued": len(db.pending_events(c, limit=1000, comments=True)),
+                "public_day": worker.public_replies_today(c), "public_day_limit": worker.PUBLIC_DAILY_LIMIT}
     return {"active": comment_poll.active(ig(request)), "status": st, "dm_status": dm, "dm_reply": reply,
             "interval": comment_poll.INTERVAL, "comment_hour": hour}
 

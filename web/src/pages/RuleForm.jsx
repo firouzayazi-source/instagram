@@ -322,7 +322,7 @@ export default function RuleForm({ id }) {
               <b>متن دایرکت به کامنت‌گذار <span className="tag">{r.actions.private_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام</span></b>
               {!r.actions.private_replies.some((t) => t.trim()) && <div className="note warn">متن دایرکت لازم است.</div>}
               <Messages limit={1000} list={r.actions.private_replies} onChange={(l) => setAct('private_replies', l)} saved={saved} placeholder="مثلاً: سلام! قیمت لحظه‌ای و اقساط اینجاست: https://t.me/…" />
-              <small className="muted"><code dir="ltr">{'{username}'}</code> = نام کاربری مخاطب · <code dir="ltr">{'{bot}'}</code> = لینک ربات پشتیبان. هر لینک خودکار شمرده می‌شود (چند نفر زدند) و لینک ربات نشانه‌ی همین دستور را می‌گیرد.</small>
+              <small className="muted"><code dir="ltr">{'{username}'}</code> = نام کاربری مخاطب · <code dir="ltr">{'{bot}'}</code> = لینک ربات پشتیبان (با نشانه‌ی همین دستور). لینک‌ها همان‌طور که نوشته‌اید فرستاده می‌شوند؛ لینک کوتاه‌شده (bit.ly و …) پذیرفته نمی‌شود.</small>
             </div>
             <LinkButtons list={r.actions.buttons || []} onChange={(l) => setAct('buttons', l)} />
           </>)}
@@ -343,7 +343,7 @@ export default function RuleForm({ id }) {
         <Sec icon="dm" title={`جواب به ${r.channels.filter((c) => c !== 'comment').map((c) => ({ dm: 'دایرکت', story_reply: 'جواب استوری', mention: 'منشن' })[c]).join('، ')}`} badge={`${r.actions.dm_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام`}
           desc={hasC ? 'این متن فقط برای پیام‌هایی است که مستقیم در دایرکت می‌آیند، نه برای کامنت‌ها. چند پیام یعنی هر بار یکی به نوبت.' : 'چند پیام یعنی هر بار یکی به نوبت.'}>
           <Messages list={r.actions.dm_replies} onChange={(l) => setAct('dm_replies', l)} saved={saved} placeholder="متن پاسخ" />
-          <small className="muted"><code dir="ltr">{'{username}'}</code> = نام کاربری مخاطب · <code dir="ltr">{'{bot}'}</code> = لینک ربات پشتیبان · هر لینک خودکار شمرده می‌شود.</small>
+          <small className="muted"><code dir="ltr">{'{username}'}</code> = نام کاربری مخاطب · <code dir="ltr">{'{bot}'}</code> = لینک ربات پشتیبان.</small>
           {!btnInComment && <LinkButtons list={r.actions.buttons || []} onChange={(l) => setAct('buttons', l)} />}
           <div className="sub-card">
             <b>دکمه‌های پاسخ سریع (اختیاری)</b>

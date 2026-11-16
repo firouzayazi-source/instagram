@@ -64,6 +64,8 @@ export default function Rules() {
               جواب کامنت در ساعت گذشته: <b className={poll.comment_hour.count >= poll.comment_hour.limit ? 'err' : ''}>{fa(poll.comment_hour.count)}</b> از سقف{' '}
               <button type="button" className="pill as-btn muted" onClick={setLimit}>{fa(poll.comment_hour.limit)} ✎</button>
               {poll.comment_hour.queued > 0 && <> · {fa(poll.comment_hour.queued)} کامنت در صف</>}
+              {poll.comment_hour.public_day_limit && <><br />جواب زیر کامنت در ۲۴ ساعت: <b className={poll.comment_hour.public_day >= poll.comment_hour.public_day_limit ? 'err' : ''}>{fa(poll.comment_hour.public_day)}</b> از {fa(poll.comment_hour.public_day_limit)}
+                {poll.comment_hour.public_day >= poll.comment_hour.public_day_limit && <> · پر شده؛ فعلاً فقط دایرکت می‌رود</>}</>}
             </p>}
           </div>
           {ig && <Switch checked={ig.enabled} onChange={setChannel} label="روشن و خاموش اینستاگرام" />}
