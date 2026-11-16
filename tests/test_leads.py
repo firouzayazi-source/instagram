@@ -100,12 +100,8 @@ async def test_worker_tags_bot_link_with_rule(tmp_path, monkeypatch, track):
         db.add_event(c, "c:k1", "comment", {"id": "k1", "text": "قیمت", "from": {"id": "u1", "username": "a"}, "media": {"id": "m"}})
         assert await worker.handle_event(ig, db.pending_events(c)[0], c) == "done"
     sent = [t for k, tg, t in ig.calls if k == "private" and tg == "k1"][0]
-    if not track:     # پیش‌فرض: لینک اصلی (نشانی کوتاه در دایرکت خودکار، پیج را قفل کرد)
-        assert sent == f"لینک: https://t.me/{U}?start=insta_r{rid}"
-        return
-    assert sent.startswith(f"لینک: {config.PUBLIC_URL.rstrip('/')}/l/")          # فقط با روشن کردن صریح
-    with db.connect() as c:
-        assert c.execute("SELECT url FROM links").fetchone()[0] == f"https://t.me/{U}?start=insta_r{rid}"
+    # همیشه لینک اصلی، حتی با تنظیم قدیمی track_clicks (نشانی کوتاه در دایرکت خودکار، پیج را قفل کرد)
+    assert sent == f"لینک: https://t.me/{U}?start=insta_r{rid}"
 
 
 @pytest.mark.asyncio

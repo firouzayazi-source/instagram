@@ -111,6 +111,8 @@ def stats(request: Request):
         st["leads_waiting"] = leads.waiting(c)
         st["leads_today"] = c.execute("SELECT COUNT(*) FROM customers WHERE phone<>'' AND phone_at>?", (day,)).fetchone()[0]
         st["health"] = monitor.health_summary(c, bool(getattr(ig(request), "via_composio", lambda: False)()))
+        from . import safety
+        st["brake"] = safety.state(c)
         return {**st, "incoming_24h": incoming, "auto_answered_24h": auto, "ai": ai.stats(c),
                 "recent": db.recent_replies(c, 20)}
 
@@ -238,16 +240,28 @@ def comment_poll_status(request: Request):
             "interval": comment_poll.INTERVAL, "comment_hour": hour}
 
 
+@protected.post("/safety/brake")
+def safety_brake(body: dict):
+    """توقف اضطراری: on=true همه‌ی ارسال‌ها به اینستاگرام را می‌بندد؛ on=false (فقط صاحب پیج) دوباره باز می‌کند."""
+    from . import safety
+    if body.get("on"):
+        safety.trip("صاحب پیج از پنل", manual=True)
+    else:
+        safety.release()
+    with db.connect() as c:
+        return safety.state(c)
+
+
 @protected.put("/comment-limit")
 def comment_limit_set(body: dict):
-    """سقف جواب خودکار به کامنت در ساعت (۱ تا ۱۰۰۰)."""
+    """سقف جواب خودکار به کامنت در ساعت (برای ایمنی پیج حداکثر COMMENT_LIMIT_MAX)."""
     from . import worker
     try:
         n = int(body.get("limit"))
     except (TypeError, ValueError):
         raise HTTPException(422, "عدد بنویسید")
-    if not 1 <= n <= 1000:
-        raise HTTPException(422, "سقف باید بین ۱ تا ۱۰۰۰ باشد")
+    if not 1 <= n <= worker.COMMENT_LIMIT_MAX:
+        raise HTTPException(422, f"سقف باید بین ۱ تا {worker.COMMENT_LIMIT_MAX} باشد (بیشتر از این، پیج را در خطر محدودیت می‌گذارد)")
     with db.connect() as c:
         db.kv_set(c, worker.COMMENT_LIMIT_KEY, str(n))
     return {"ok": True, "limit": n}

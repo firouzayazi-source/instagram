@@ -112,17 +112,23 @@ def plan(c, comments: list[dict], texts: dict, now: float | None = None) -> list
     return out
 
 
+MAX_APPLY = 40
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=30, help="پست‌های چند روز اخیر (پیش‌فرض ۳۰)")
     ap.add_argument("--post", help="فقط همین پست (شناسه)")
-    ap.add_argument("--comment-days", type=float, default=0,
-                    help="فقط کامنت‌های این چند روز اخیر (مثلاً ۷: همان‌هایی که هنوز می‌شود به صاحبشان دایرکت داد)")
+    ap.add_argument("--comment-days", type=float, default=3,
+                    help="فقط کامنت‌های این چند روز اخیر (پیش‌فرض ۳، حداکثر ۷)")
     ap.add_argument("--apply", action="store_true", help="گذاشتن در صف؛ بی آن فقط گزارش")
     ap.add_argument("--question-text", default=QUESTION)
     ap.add_argument("--greet-text", default=GREET)
     ap.add_argument("--old-text", default=OLD, help="به‌جای دایرکت، برای کامنت‌های قدیمی‌تر از ۷ روز")
     a = ap.parse_args(argv)
+    # قواعد ایمنی پیج (بعد از قفل ۲۵ آبان ۱۴۰۵): جواب انبوه به کامنت‌های قدیمی الگوی اسپم است. فقط کامنت‌های
+    # حداکثر ۷ روز اخیر و در هر اجرا حداکثر MAX_APPLY تا؛ با توقف اضطراری هیچ.
+    a.comment_days = min(a.comment_days or 7, 7)
     from app import db, worker
     from app.instagram import Instagram
     ig = Instagram()
@@ -144,7 +150,7 @@ def main(argv=None) -> int:
     for it in items:
         k = it["kind"] + ("-old" if it.get("old") and it["kind"] == "rule" else "")
         count[k] = count.get(k, 0) + 1
-    send = [it for it in items if it["kind"] not in ("skip", "queued")]
+    send = [it for it in items if it["kind"] not in ("skip", "queued")][:MAX_APPLY]
     fa = {"rule": "با دستور (دایرکت + جواب)", "rule-old": "با دستور، قدیمی‌تر از ۷ روز (فقط جواب زیر کامنت)",
           "question": "سؤال قیمت و خرید", "greet": "سلام", "thanks": "تشکر", "skip": "بی‌جواب (فقط تگ یا خالی)",
           "queued": "قبلاً در صف یا جواب‌داده"}
@@ -168,10 +174,13 @@ def main(argv=None) -> int:
                   "تنظیمات پیشرفته ← «محدود به پست» همان پست را انتخاب کنید و دوباره گزارش بگیرید.")
     rate = max(1, limit - worker.BACKLOG_RESERVE)
     print(f"\nمتن سؤال: {a.question_text}\nمتن سلام: {a.greet_text}\nمتن کامنت‌های قدیمی دستورها: {a.old_text}")
-    print(f"\nبا سقف {limit} در ساعت (۲۰ تا برای کامنت‌های تازه)، حدود {len(send) / rate:.1f} ساعت طول می‌کشد.")
+    print(f"\nبا سقف {limit} در ساعت (بخشی برای کامنت‌های تازه می‌ماند؛ حداکثر ۴۰ کامنت در هر اجرا)، حدود {len(send) / rate:.1f} ساعت طول می‌کشد.")
     if not a.apply:
         print("\nفقط گزارش بود؛ چیزی فرستاده نشد. برای گذاشتن در صف: --apply")
         return 0
+    from app import safety
+    if safety.active():
+        sys.exit("⛔ توقف اضطراری فعال است؛ چیزی در صف گذاشته نشد")
     with db.connect() as c:
         added = sum(db.add_event(c, it["eid"], "comment", it["payload"]) for it in send)
     print(f"\n✅ {added} کامنت در صف گذاشته شد. پیشرفت: پنل ← پاسخ هوشمند (جواب‌های ساعت گذشته و کامنت‌های در صف).")

@@ -12,6 +12,8 @@ from app import config
 def _isolate_data(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "DB_PATH", str(tmp_path / "isolated.db"))
     monkeypatch.setattr(config, "TG_DATA_DIR", str(tmp_path / "no-telegram-data"))
+    monkeypatch.setattr(config, "COMMENT_GAP_MIN", 0)
+    monkeypatch.setattr(config, "COMMENT_GAP_MAX", 0)
     monkeypatch.setenv("IGBOT_ENV_FILE", str(tmp_path / "isolated.env"))   # هیچ تستی در ‎.env‎ واقعی نمی‌نویسد
     for k in ("COMPOSIO_API_KEY", "COMPOSIO_ACCOUNT_ID", "COMPOSIO_USER_ID"):   # هیچ تستی به Composio واقعی وصل نمی‌شود
         monkeypatch.delenv(k, raising=False)

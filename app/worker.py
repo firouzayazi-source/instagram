@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from . import ai, channels, config, crm, db, dm_menu, forms, knowledge, leads, links, learning, memory, moderation, orders, push, tg_notify
+from . import ai, channels, config, crm, db, dm_menu, forms, knowledge, leads, links, learning, memory, moderation, orders, push, safety, tg_notify
 from .rules import Incoming, find_rule, pick
 
 MAX_RETRIES = 3
@@ -126,8 +126,8 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
             return "skipped"   # دایرکت خوانده‌شده با Composio: فقط صندوق، تا صاحب پیج جواب خودکار را روشن کند
     if extra_texts and inc.text:
         inc.text = "\n".join([*extra_texts, inc.text])
-    if not channels.enabled("instagram"):
-        return "ignored"   # کانال خاموش: پیام در صندوق ثبت می‌شود ولی پاسخ خودکار نمی‌رود
+    if not channels.enabled("instagram") or safety.active(c):
+        return "ignored"   # کانال خاموش یا توقف اضطراری: پیام در صندوق ثبت می‌شود ولی پاسخ خودکار نمی‌رود
     if knowledge.is_blocked(c, inc.user_id):
         return "ignored"
     s = ai.settings(c)
@@ -190,9 +190,9 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         acts = {"private_replies": [alt], "public_replies": []} if inc.channel == "comment" else {"dm_replies": [alt]}
     sent = False
     username = (payload.get("from") or {}).get("username") if inc.channel == "comment" else db.conversation_username(c, inc.user_id)
-    # پیش‌فرض خاموش: لینک پنهان پشت نشانی کوتاه در دایرکت خودکار، الگوی پیج هک‌شده است و اینستاگرام بعد از
-    # ارسال چنین دایرکت‌هایی (۱۶ آبان ۱۴۰۵، ساعت ۲:۱۵) پیج را به خاطر «فعالیت مشکوک» قفل کرد. فقط با روشن کردن صریح.
-    track = adv.get("track_clicks") is True
+    # شمارش کلیک با نشانی کوتاه (/l/) کنار گذاشته شد: لینک پنهان در دایرکت خودکار، الگوی پیج هک‌شده است و
+    # اینستاگرام یک ساعت بعد از چنین دایرکت‌هایی (۲۵ آبان ۱۴۰۵، ساعت ۲:۱۵) پیج را قفل کرد. همیشه لینک اصلی.
+    track = False
 
     def prep(t):
         """لینک ربات با نشانه‌ی دستور، نام کاربر، و لینک ردیابی‌شده."""
@@ -407,10 +407,20 @@ async def handle_ai(ig, row, c, payload, inc: Incoming) -> str:
     return "done"
 
 
+WINDOW = 23 * 3600     # پنجره‌ی پیام‌رسانی اینستاگرام ۲۴ ساعت است؛ یک ساعت حاشیه
+
+
 async def process_followups(ig, c, now: float | None = None) -> int:
     """پیگیری‌های سررسیده را به دایرکت می‌فرستد. فقط اگر پنجره‌ی ۲۴ ساعت باز باشد موفق می‌شود."""
     n = 0
+    if safety.active(c):
+        return 0
     for f in db.due_followups(c, now):
+        last_in = c.execute("SELECT MAX(created_at) FROM messages WHERE user_id=? AND direction='in'", (f["user_id"],)).fetchone()[0]
+        if not last_in or (now or time.time()) - last_in > WINDOW:
+            # قاعده‌ی اینستاگرام: پیام خودکار فقط تا ۲۴ ساعت بعد از آخرین پیام مشتری؛ تلاش بیرون از پنجره هم نشانه‌ی بد است
+            db.finish_followup(c, f["id"], "error", "پنجره‌ی ۲۴ ساعته بسته بود؛ فرستاده نشد")
+            continue
         try:
             ig_id = await ig.send_dm(f["user_id"], f["text"])
             db.log_reply(c, f"fu:{f['id']}", f["rule_id"], "dm", f["user_id"], f["text"], ig_id=ig_id, ok=True)
@@ -459,6 +469,12 @@ def _chunks(text: str, limit: int = DM_MAX) -> list[str]:
 
 
 async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replies=None, buttons=None) -> bool:
+    # قواعد ایمنی پیج (app/safety.py): لینک در جواب عمومی کامنت و لینک کوتاه‌شده در هر پیام خودکار نمی‌رود
+    bad = ("جواب عمومی کامنت لینک ندارد (الگوی اسپم)؛ لینک فقط در دایرکت" if kind == "public" and safety.has_link(text) else
+           "؛ ".join(safety.link_problems(text + " " + " ".join(b.get("url", "") for b in buttons or []))))
+    if bad:
+        db.log_reply(c, event_id, rule_id, kind, payload.get("id", "") or inc.user_id, text, ok=False, error="ایمنی: " + bad)
+        return False
     if kind == "private":
         text = _fit(text, 640 if buttons else DM_MAX)       # پیام دکمه‌دار اینستاگرام تا ۶۴۰ نویسه
     elif kind == "dm" and buttons and len(text) > 640:
@@ -553,7 +569,7 @@ def followup_candidates(c, s: dict, now: float | None = None) -> list[dict]:
 async def auto_followups(ig, c, now: float | None = None) -> int:
     """پیگیری خودکار (اگر در پنل روشن باشد): هر نفر فقط یک بار، با مدلی که درباره‌اش پرسیده بود."""
     s = ai.settings(c)
-    if not s["auto_followup_enabled"] or not channels.enabled("instagram"):
+    if not s["auto_followup_enabled"] or not channels.enabled("instagram") or safety.active(c):
         return 0
     n = 0
     for x in followup_candidates(c, s, now):
@@ -608,16 +624,24 @@ def plan_batches(rows, wait: float, now: float | None = None) -> list[tuple]:
     return out
 
 
-COMMENT_LIMIT_KEY = "comment_hourly_limit"   # سقف جواب خودکار به کامنت در ساعت؛ پیش‌فرض ۱۰۰ (مثل نوین‌هاب)
-COMMENT_LIMIT_DEFAULT = 100
-BACKLOG_RESERVE = 20          # از سقف ساعتی، این‌قدر همیشه برای کامنت‌های تازه می‌ماند
+COMMENT_LIMIT_KEY = "comment_hourly_limit"   # سقف جواب خودکار به کامنت در ساعت
+COMMENT_LIMIT_DEFAULT = 30    # بعد از قفل پیج (۲۵ آبان ۱۴۰۵) از ۱۰۰ پایین آمد
+COMMENT_LIMIT_MAX = 60        # بیشتر از این حتی با تنظیم پنل هم نه
+LINK_DM_LIMIT = 15            # دایرکت لینک‌دار به کامنت‌گذارها در ساعت (موج دایرکت لینک‌دار الگوی اسپم است)
+BACKLOG_RESERVE = 10          # از سقف ساعتی، این‌قدر همیشه برای کامنت‌های تازه می‌ماند
 
 
 def comment_limit(c) -> int:
     try:
-        return max(1, min(1000, int(db.kv_get(c, COMMENT_LIMIT_KEY) or COMMENT_LIMIT_DEFAULT)))
+        return max(1, min(COMMENT_LIMIT_MAX, int(db.kv_get(c, COMMENT_LIMIT_KEY) or COMMENT_LIMIT_DEFAULT)))
     except ValueError:
         return COMMENT_LIMIT_DEFAULT
+
+
+def link_dms_last_hour(c, now: float | None = None) -> int:
+    rows = c.execute("SELECT text FROM replies WHERE ok=1 AND kind='private' AND created_at>?",
+                     ((now or time.time()) - 3600,)).fetchall()
+    return sum(1 for (t,) in rows if safety.has_link(t))
 
 
 def comment_replies_last_hour(c, now: float | None = None) -> int:
@@ -642,15 +666,19 @@ async def run_forever(ig, stop: asyncio.Event, comments: bool | None = None) -> 
         try:
             with db.connect() as c:
                 rows = db.pending_events(c, limit=50, comments=comments)
-                if comments:
+                # با توقف اضطراری کامنت‌ها بی‌سقف خوانده و فقط در صندوق ثبت می‌شوند (handle_event ← ignored)، نه اینکه
+                # در صف بمانند و بعد از برداشتن توقف یک‌جا جواب بگیرند (موج جواب به کامنت‌های کهنه)
+                if comments and rows and not safety.active(c):
                     room = comment_limit(c) - comment_replies_last_hour(c)
+                    if link_dms_last_hour(c) >= LINK_DM_LIMIT:
+                        room = 0
                     if room <= 0 and rows:
                         _limit_alert(c)
                         rows = []
                         await asyncio.sleep(30)
                     # کامنت‌های قدیمی (صف عقب‌افتاده) فقط با ظرفیت اضافه؛ همیشه جا برای کامنت‌های تازه می‌ماند
                     rows = [r for i, r in enumerate(rows) if '"_backlog"' not in r["payload"] or i < room - BACKLOG_RESERVE]
-                    rows = rows[:max(room, 0)]
+                    rows = rows[:min(max(room, 0), 1)]      # کامنت‌ها یکی‌یکی و با فاصله‌ی طبیعی (پایین)
                 if comments is not True:
                     await process_followups(ig, c)
                 if comments is not True and time.time() >= next_afu:
@@ -684,6 +712,12 @@ async def run_forever(ig, stop: asyncio.Event, comments: bool | None = None) -> 
                 continue
             if status == "error" or mode == "all" or (mode == "unanswered" and status == "skipped"):
                 asyncio.create_task(_notify(row, status))
+            if comments and status == "done":
+                # فاصله‌ی تصادفی بین جواب کامنت‌ها: جواب‌های پشت‌سرهم ماشینی دیده می‌شوند
+                try:
+                    await asyncio.wait_for(stop.wait(), timeout=random.uniform(config.COMMENT_GAP_MIN, config.COMMENT_GAP_MAX))
+                except asyncio.TimeoutError:
+                    pass
 
 
 async def insights_loop(ig, stop: asyncio.Event) -> None:

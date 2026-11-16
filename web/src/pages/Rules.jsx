@@ -35,7 +35,7 @@ export default function Rules() {
     setIg(await api.put('/api/channels/instagram', { enabled: on }))
   }
   async function setLimit() {
-    const v = prompt('حداکثر چند کامنت در ساعت جواب خودکار بگیرند؟ (اینستاگرام جواب‌های پشت‌سرهم زیاد را شبیه اسپم می‌بیند؛ ۱۰۰ پیشنهادی است)', poll.comment_hour.limit)
+    const v = prompt('حداکثر چند کامنت در ساعت جواب خودکار بگیرند؟ (۱ تا ۶۰؛ ۳۰ پیشنهادی است. جواب‌ها یکی‌یکی و با فاصله‌ی ۴۰ تا ۱۰۰ ثانیه می‌روند تا ماشینی دیده نشوند)', poll.comment_hour.limit)
     if (v === null) return
     try { await api.put('/api/comment-limit', { limit: Number(String(v).replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) }); setPoll(await api.get('/api/comment-poll')) }
     catch (ex) { alert(ex.message) }

@@ -67,6 +67,10 @@ function Adv({ on, icon, title, desc, onToggle, children, disabled }) {
 }
 
 // پیام‌های شماره‌دار با جابه‌جایی؛ چند پیام یعنی هر بار یکی به نوبت (تا تکراری نباشد)
+// همان قواعد سرور (app/safety.py): لینک در جواب عمومی، و لینک کوتاه‌شده در هر پیام خودکار
+const LINK_RX = /(https?:\/\/|www\.)\S+|\b[a-z0-9-]+\.(ir|com|net|org|io|me|ly|gl|co|to|link|app)(\/\S*)?\b/i
+const SHORT_RX = /bit\.ly|tinyurl|goo\.gl|t\.co\/|ow\.ly|is\.gd|buff\.ly|cutt\.ly|rebrand\.ly|shorturl|tiny\.cc|rb\.gy|s\.id\/|\/l\//i
+
 function Messages({ list, onChange, saved, placeholder, addLabel = 'پیام جدید', limit }) {
   const [pick, setPick] = useState(false)
   return (
@@ -80,6 +84,7 @@ function Messages({ list, onChange, saved, placeholder, addLabel = 'پیام ج�
           {list.length > 1 && <button type="button" className="x" aria-label="حذف" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>}
         </div>
       )} />
+      {list.some((t) => SHORT_RX.test(t)) && <div className="note warn">لینک کوتاه‌شده (مثل bit.ly) ممنوع است؛ لینک اصلی را بگذارید. اینستاگرام لینک پنهان در پیام خودکار را نشانه‌ی پیج هک‌شده می‌داند.</div>}
       {limit && list.some((t) => t.length > limit) && <div className="note warn">اینستاگرام دایرکت بلندتر از {limit.toLocaleString('fa-IR')} نویسه را نمی‌پذیرد. متن را کوتاه کنید، یا فهرست بلند (مثل لیست قیمت) را در سایت یا ربات بگذارید و با «دکمه‌ی لینک» بدهید.</div>}
       <div className="msg-add">
         <button type="button" className="btn sm" onClick={() => onChange([...list, ''])}><Icon n="plus" /> {addLabel}</button>
@@ -232,6 +237,9 @@ export default function RuleForm({ id }) {
     const has = (k) => (r.actions[k] || []).some((t) => t.trim())
     if (hasC && cmode !== 'public' && !has('private_replies')) return setErr('متن دایرکت به کامنت‌گذار را بنویسید')
     if (hasC && cmode !== 'dm' && !has('public_replies')) return setErr('متن جواب زیر کامنت را بنویسید')
+    if (hasC && cmode !== 'dm' && r.actions.public_replies.some((t) => LINK_RX.test(t))) return setErr('جواب زیر کامنت نباید لینک داشته باشد؛ لینک را در دایرکت بفرستید')
+    if (['public_replies', 'private_replies', 'dm_replies'].some((k) => (r.actions[k] || []).some((t) => SHORT_RX.test(t))) || (r.actions.buttons || []).some((b) => SHORT_RX.test(b.url || ''))) return setErr('لینک کوتاه‌شده ممنوع است؛ لینک اصلی را بگذارید')
+    if (r.advanced.followup?.text && r.advanced.followup.after_seconds > 23 * 3600) return setErr('پیگیری حداکثر ۲۳ ساعت (۱۳۸۰ دقیقه) بعد؛ اینستاگرام بعد از ۲۴ ساعت پیام خودکار را ممنوع کرده')
     setBusy(true)
     const clean = (l) => (l || []).map((t) => t.trim()).filter(Boolean)
     const adv = { ...r.advanced }
@@ -244,7 +252,7 @@ export default function RuleForm({ id }) {
     if (!adv.pause_ai_minutes) delete adv.pause_ai_minutes
     if (!adv.handoff) delete adv.handoff
     if (!adv.random_pick) delete adv.random_pick
-    if (adv.track_clicks !== true) delete adv.track_clicks
+    delete adv.track_clicks
     adv.max_uses = toNum(adv.max_uses)
     if (!adv.max_uses) { delete adv.max_uses; delete adv.over_limit_reply }
     const body = {
@@ -323,6 +331,8 @@ export default function RuleForm({ id }) {
               <b>جواب زیر کامنت <span className="tag">{r.actions.public_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} متن</span></b>
               <small className="muted">{cmode === 'both' ? 'بعد از فرستادن دایرکت، یکی از این متن‌ها به نوبت زیر همان کامنت می‌رود.' : 'یکی از این متن‌ها به نوبت زیر کامنت جواب داده می‌شود؛ همه آن را می‌بینند.'}</small>
               {!r.actions.public_replies.some((t) => t.trim()) && <div className="note warn">متن جواب لازم است.</div>}
+              {r.actions.public_replies.some((t) => LINK_RX.test(t)) && <div className="note warn">جواب زیر کامنت نباید لینک داشته باشد (اینستاگرام آن را اسپم می‌داند). لینک را در دایرکت بفرستید.</div>}
+              {r.actions.public_replies.filter((t) => t.trim()).length > 0 && r.actions.public_replies.filter((t) => t.trim()).length < 3 && <div className="note">پیشنهاد: دست‌کم ۳ متن متفاوت بنویسید تا به نوبت بروند. یک جواب یکسان زیر ده‌ها کامنت، به چشم اینستاگرام اسپم است.</div>}
               <Messages list={r.actions.public_replies} onChange={(l) => setAct('public_replies', l)} saved={saved} placeholder={cmode === 'both' ? 'مثلاً: دایرکت رو ببین 📩' : 'مثلاً: ممنون از همراهیتون 🌸'} addLabel="متن جدید" />
             </div>
           )}
@@ -368,7 +378,7 @@ export default function RuleForm({ id }) {
         <Adv on={a.followup !== null && a.followup !== undefined} icon="bell" title="پیگیری خودکار" desc="بعد از زمان مشخص‌شده، پیام پیگیری در دایرکت فرستاده می‌شود (فقط تا ۲۴ ساعت بعد از پیام کاربر)."
           onToggle={() => setAdv({ followup: a.followup ? null : { after_seconds: 3600, text: '' } })}>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}><span>بعد از</span>
-            <input type="number" min="1" style={{ width: 110 }} value={a.followup ? Math.round(a.followup.after_seconds / 60) : ''} onChange={(e) => setAdv({ followup: { ...a.followup, after_seconds: Number(e.target.value) * 60 } })} /><span>دقیقه</span></div>
+            <input type="number" min="1" max="1380" style={{ width: 110 }} value={a.followup ? Math.round(a.followup.after_seconds / 60) : ''} onChange={(e) => setAdv({ followup: { ...a.followup, after_seconds: Number(e.target.value) * 60 } })} /><span>دقیقه</span></div>
           <textarea value={a.followup?.text || ''} placeholder="متن پیگیری، مثلاً: سؤالی بود در خدمتم 🙏" onChange={(e) => setAdv({ followup: { ...a.followup, text: e.target.value } })} />
         </Adv>
 
@@ -382,9 +392,6 @@ export default function RuleForm({ id }) {
           ) : <div className="note warn">هنوز فرمی نساخته‌اید. <a href="#/smart/forms/new">ساخت فرم</a></div>}
           {hasC && <div className="note info">برای کامنت، سؤال اول همراه همان دایرکت به کامنت‌گذار می‌رود و جواب‌ها در دایرکت ادامه پیدا می‌کند.</div>}
         </Adv>
-
-        <Adv on={a.track_clicks === true} icon="link" title="شمارش کلیک لینک‌ها (توصیه نمی‌شود)" desc="⚠️ لینک‌ها از نشانی کوتاه پنل رد می‌شوند. اینستاگرام لینک کوتاه‌شده در دایرکت خودکار را مشکوک می‌داند و یک بار پیج را به همین خاطر قفل کرد. خاموش (پیشنهادی): لینک اصلی فرستاده می‌شود."
-          onToggle={() => setAdv({ track_clicks: a.track_clicks !== true })} />
 
         <Adv on={!!a.random_pick} icon="repeat" title="انتخاب تصادفی متن" desc="به‌جای به نوبت (۱، ۲، ۳…)، هر بار یکی از متن‌ها تصادفی فرستاده می‌شود؛ طبیعی‌تر دیده می‌شود."
           onToggle={() => setAdv({ random_pick: !a.random_pick })} />

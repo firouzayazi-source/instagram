@@ -52,22 +52,36 @@ class Instagram:
         return data
 
     async def _post(self, path: str, **kw) -> dict:
-        if self.via_composio():
-            return await self._composio_call("POST", path, body=kw.get("json") or kw.get("data") or {})
-        r = await self.http.post(f"{self.base}/{path}", params={"access_token": self.token}, **kw)
-        data = r.json()
-        if r.status_code >= 400 or "error" in data:
-            raise RuntimeError(f"IG {r.status_code}: {data.get('error', data)}")
-        return data
+        """همه‌ی کارهای نوشتنی (جواب، دایرکت، انتشار، منو) از اینجا می‌روند: با ترمز اضطراری کشیده، هیچ درخواستی
+        فرستاده نمی‌شود؛ و خطای محدودیت یا مسدودی ترمز را می‌کشد (app/safety.py)."""
+        from . import safety
+        if safety.active():
+            raise RuntimeError("BRAKE: توقف اضطراری فعال است؛ چیزی به اینستاگرام فرستاده نشد")
+        try:
+            if self.via_composio():
+                return await self._composio_call("POST", path, body=kw.get("json") or kw.get("data") or {})
+            r = await self.http.post(f"{self.base}/{path}", params={"access_token": self.token}, **kw)
+            data = r.json()
+            if r.status_code >= 400 or "error" in data:
+                raise RuntimeError(f"IG {r.status_code}: {data.get('error', data)}")
+            return data
+        except RuntimeError as e:
+            safety.check_error(e)
+            raise
 
     async def _get(self, path: str, **params) -> dict:
-        if self.via_composio():
-            return await self._composio_call("GET", path, params=params)
-        r = await self.http.get(f"{self.base}/{path}", params={"access_token": self.token, **params})
-        data = r.json()
-        if r.status_code >= 400 or "error" in data:
-            raise RuntimeError(f"IG {r.status_code}: {data.get('error', data)}")
-        return data
+        from . import safety
+        try:
+            if self.via_composio():
+                return await self._composio_call("GET", path, params=params)
+            r = await self.http.get(f"{self.base}/{path}", params={"access_token": self.token, **params})
+            data = r.json()
+            if r.status_code >= 400 or "error" in data:
+                raise RuntimeError(f"IG {r.status_code}: {data.get('error', data)}")
+            return data
+        except RuntimeError as e:
+            safety.check_error(e)       # خواندن ادامه دارد، ولی دسترسی باطل یا مسدودی جلوی ارسال را می‌گیرد
+            raise
 
     async def reply_comment(self, comment_id: str, text: str) -> str:
         """پاسخ عمومی زیر کامنت."""

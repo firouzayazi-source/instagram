@@ -28,6 +28,8 @@ DB_PATH = os.environ.get("DB_PATH", str(ROOT / "data" / "bot.db"))
 # تأخیر تصادفی پیش از هر ارسال (ثانیه) برای طبیعی‌تر بودن و رعایت نرخ
 SEND_DELAY_MIN = float(os.environ.get("SEND_DELAY_MIN", "2"))
 SEND_DELAY_MAX = float(os.environ.get("SEND_DELAY_MAX", "8"))
+COMMENT_GAP_MIN = float(os.environ.get("COMMENT_GAP_MIN", "40"))    # فاصله‌ی بین جواب دو کامنت (ثانیه)
+COMMENT_GAP_MAX = float(os.environ.get("COMMENT_GAP_MAX", "100"))
 
 # پاسخ هوشمند
 # سرویس پیش‌فرض؛ از پنل هم عوض می‌شود. کلیدها فقط اینجا خوانده می‌شوند و هرگز به پنل نمی‌روند.

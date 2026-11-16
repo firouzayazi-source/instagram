@@ -60,6 +60,17 @@ def validate(rule: dict) -> list[str]:
             errs.append(f"متن دایرکت به کامنت‌گذار حداکثر {DM_MAX} نویسه است (اینستاگرام بیشتر را نمی‌پذیرد)؛ این متن "
                         f"{len(t)} نویسه است. کوتاهش کنید یا فهرست بلند را با «دکمه‌ی لینک» بدهید")
             break
+    from . import safety       # قواعد ایمنی پیج (بعد از قفل ۲۵ آبان ۱۴۰۵)
+    if any(safety.has_link(t) for t in (acts.get("public_replies") or []) + [adv.get("follow_prompt") or ""]):
+        errs.append("جواب عمومی زیر کامنت نباید لینک داشته باشد (اینستاگرام آن را اسپم می‌داند)؛ لینک را در دایرکت بفرستید")
+    texts = [t for k in ("public_replies", "private_replies", "dm_replies") for t in acts.get(k) or []]
+    texts += [b.get("url", "") for b in acts.get("buttons") or [] if isinstance(b, dict)]
+    texts += [(adv.get("followup") or {}).get("text") or "", adv.get("over_limit_reply") or ""]
+    if any(safety.link_problems(t) for t in texts):
+        errs.append("لینک کوتاه‌شده یا تغییر مسیر (مثل bit.ly) ممنوع است؛ لینک اصلی را بگذارید (اینستاگرام آن را نشانه‌ی پیج هک‌شده می‌داند)")
+    fu = adv.get("followup") or {}
+    if fu and isinstance(fu.get("after_seconds"), (int, float)) and fu["after_seconds"] > 23 * 3600:
+        errs.append("پیام پیگیری حداکثر ۲۳ ساعت بعد (اینستاگرام پیام خودکار بعد از ۲۴ ساعت از آخرین پیام مشتری را ممنوع کرده)")
     cm = acts.get("comment_mode")
     if cm not in (None, "", "public", "dm", "both"):
         errs.append("نوع جواب کامنت نامعتبر است")
