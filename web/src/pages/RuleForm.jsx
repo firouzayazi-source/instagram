@@ -332,7 +332,8 @@ export default function RuleForm({ id }) {
               <small className="muted">{cmode === 'both' ? 'بعد از فرستادن دایرکت، یکی از این متن‌ها به نوبت زیر همان کامنت می‌رود.' : 'یکی از این متن‌ها به نوبت زیر کامنت جواب داده می‌شود؛ همه آن را می‌بینند.'}</small>
               {!r.actions.public_replies.some((t) => t.trim()) && <div className="note warn">متن جواب لازم است.</div>}
               {r.actions.public_replies.some((t) => LINK_RX.test(t)) && <div className="note warn">جواب زیر کامنت نباید لینک داشته باشد (اینستاگرام آن را اسپم می‌داند). لینک را در دایرکت بفرستید.</div>}
-              {r.actions.public_replies.filter((t) => t.trim()).length > 0 && r.actions.public_replies.filter((t) => t.trim()).length < 3 && <div className="note">پیشنهاد: دست‌کم ۳ متن متفاوت بنویسید تا به نوبت بروند. یک جواب یکسان زیر ده‌ها کامنت، به چشم اینستاگرام اسپم است.</div>}
+              {r.actions.public_replies.filter((t) => t.trim()).length > 0 && r.actions.public_replies.filter((t) => t.trim()).length < 5 && <div className="note">پیشنهاد: ۵ تا ۷ متن متفاوت و کوتاه (زیر ۱۰۰ نویسه) بنویسید تا به نوبت بروند. یک جواب یکسان زیر ده‌ها کامنت، به چشم اینستاگرام اسپم است.</div>}
+              {r.actions.public_replies.some((t) => t.length > 150) && <div className="note warn">جواب زیر کامنت حداکثر ۱۵۰ نویسه؛ کوتاه و طبیعی بنویسید.</div>}
               <Messages list={r.actions.public_replies} onChange={(l) => setAct('public_replies', l)} saved={saved} placeholder={cmode === 'both' ? 'مثلاً: دایرکت رو ببین 📩' : 'مثلاً: ممنون از همراهیتون 🌸'} addLabel="متن جدید" />
             </div>
           )}

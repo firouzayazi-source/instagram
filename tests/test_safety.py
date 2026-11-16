@@ -79,7 +79,7 @@ async def test_public_reply_with_link_and_shortener_not_sent(monkeypatch):
 
 
 def test_validate_safety_rules():
-    base = {"name": "x", "channels": ["comment"]}
+    base = {"name": "x", "channels": ["comment"], "triggers": [{"match": "contains", "value": "قیمت"}]}
     assert validate({**base, "actions": {"comment_mode": "public", "public_replies": ["ببین https://stland.ir"]}})
     assert validate({**base, "actions": {"comment_mode": "dm", "private_replies": ["https://bit.ly/x"]}})
     assert validate({**base, "actions": {"comment_mode": "dm", "private_replies": ["x"],
@@ -168,3 +168,12 @@ async def test_public_replies_daily_cap_and_no_identical_in_a_row(monkeypatch):
     pub = [t for k, _, t in ig.calls if k == "public"]
     assert len(pub) == 3 and all(a != b for a, b in zip(pub, pub[1:]))       # سقف، و هیچ دو تای یکسان پیاپی
     assert len([1 for k, *_ in ig.calls if k == "private"]) == 5            # دایرکت‌ها همه رفتند
+
+
+def test_any_comment_only_for_specific_posts_and_short_public():
+    any_all = {"name": "x", "channels": ["comment"], "triggers": [{"match": "any"}],
+               "actions": {"comment_mode": "dm", "private_replies": ["سلام"]}}
+    assert validate(any_all)                                            # هر کامنتِ همه‌ی پست‌ها: نه
+    assert validate({**any_all, "post_scope": ["123"]}) == []           # هر کامنتِ یک پست: بله
+    assert validate({"name": "x", "channels": ["comment"], "triggers": [{"match": "contains", "value": "قیمت"}],
+                     "actions": {"comment_mode": "public", "public_replies": ["ا" * 151]}})

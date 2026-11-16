@@ -68,6 +68,13 @@ def validate(rule: dict) -> list[str]:
     texts += [(adv.get("followup") or {}).get("text") or "", adv.get("over_limit_reply") or ""]
     if any(safety.link_problems(t) for t in texts):
         errs.append("لینک کوتاه‌شده یا تغییر مسیر (مثل bit.ly) ممنوع است؛ لینک اصلی را بگذارید (اینستاگرام آن را نشانه‌ی پیج هک‌شده می‌داند)")
+    trig = rule.get("triggers") or [{"match": "any"}]
+    if "comment" in rule.get("channels", []) and any(t.get("match", "any") == "any" for t in trig) \
+            and rule.get("post_scope", "all") == "all":
+        # استاندارد ابزارهای بزرگ (ManyChat): «هر کامنتی» فقط برای پست مشخص؛ جواب به همه‌ی کامنت‌های همه‌ی پست‌ها اسپم است
+        errs.append("«هر کامنتی» فقط برای یک یا چند پست مشخص؛ برای همه‌ی پست‌ها کلمه‌ی کلیدی بگذارید")
+    if any(len(t) > 150 for t in acts.get("public_replies") or []):
+        errs.append("جواب زیر کامنت حداکثر ۱۵۰ نویسه (جواب عمومی بلند ماشینی و اسپم دیده می‌شود)")
     fu = adv.get("followup") or {}
     if fu and isinstance(fu.get("after_seconds"), (int, float)) and fu["after_seconds"] > 23 * 3600:
         errs.append("پیام پیگیری حداکثر ۲۳ ساعت بعد (اینستاگرام پیام خودکار بعد از ۲۴ ساعت از آخرین پیام مشتری را ممنوع کرده)")

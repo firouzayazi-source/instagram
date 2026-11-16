@@ -131,7 +131,7 @@ async def test_comment_reply_modes(tmp_path, monkeypatch, mode, expect):
 
 def test_validate_comment_mode():
     from app.importer import validate
-    base = {"name": "x", "channels": ["comment"]}
+    base = {"name": "x", "channels": ["comment"], "triggers": [{"match": "contains", "value": "قیمت"}]}
     assert validate({**base, "actions": {"comment_mode": "public", "public_replies": ["ممنون"]}}) == []
     assert validate({**base, "actions": {"comment_mode": "public", "private_replies": ["x"]}})
     assert validate({**base, "actions": {"comment_mode": "both", "private_replies": ["x"]}})
