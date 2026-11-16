@@ -31,7 +31,7 @@ export default function Rules() {
   const toggle = safe(async (r, on) => { await api.post(`/api/rules/${r.id}/enable`, { enabled: on }); load() })
   async function setChannel(on) {
     if (!on && !confirm('همه‌ی پاسخ‌های خودکار اینستاگرام خاموش شود؟ پیام‌ها همچنان در صندوق ثبت می‌شوند.')) return
-    setIg(await api.put('/api/channels/instagram', { enabled: on }))
+    try { setIg(await api.put('/api/channels/instagram', { enabled: on })) } catch (ex) { alert(ex.message) }
   }
   async function setLimit() {
     const v = prompt('حداکثر چند کامنت در ساعت جواب خودکار بگیرند؟ (۱ تا ۶۰؛ ۳۰ پیشنهادی است. جواب‌ها یکی‌یکی و با فاصله‌ی ۴۰ تا ۱۰۰ ثانیه می‌روند تا ماشینی دیده نشوند)', poll.comment_hour.limit)

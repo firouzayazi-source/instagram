@@ -124,20 +124,28 @@ def plan(new: str, tg_dir: Path, db_path: Path, ensure_support: bool = True):
     return out
 
 
-def write_all(items, tg_dir: Path, db_path: Path, backup_dir: Path, tag: str, no_service: bool) -> None:
-    """بکاپ فایل‌های ربات و پایگاه داده، توقف کوتاه ربات تلگرام (تنها نویسنده‌ی فایل‌هایش)، نوشتن، روشن کردن."""
+def write_all(items, tg_dir: Path, db_path: Path, backup_dir: Path, tag: str, no_service: bool, replan=None) -> None:
+    """توقف کوتاه ربات تلگرام (تنها نویسنده‌ی فایل‌هایش)، بکاپ، برنامه‌ریزی دوباره روی فایل‌های بعد از توقف
+    (ربات هنگام خاموشی فایل‌هایش را ذخیره می‌کند)، نوشتن، روشن کردن."""
     stamp = time.strftime("%Y%m%d-%H%M%S")
     bdir = backup_dir / f"{tag}-{stamp}"
-    bdir.mkdir(parents=True, exist_ok=True)
-    for name in TG_FILES:
-        if (tg_dir / name).exists():
-            shutil.copy2(tg_dir / name, bdir / name)
-    if db_path.exists():
-        shutil.copy2(db_path, bdir / "bot.db")
-    print(f"بکاپ: {bdir}")
+    bdir.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.chmod(bdir, 0o700)              # بکاپ شماره و تنظیمات: فقط root
     if not no_service:
         subprocess.run(["systemctl", "stop", "igbot-telegram"], check=False)
     try:
+        for name in TG_FILES:
+            if (tg_dir / name).exists():
+                shutil.copy2(tg_dir / name, bdir / name)
+        if db_path.exists():
+            src, dst = sqlite3.connect(db_path), sqlite3.connect(bdir / "bot.db")
+            try:
+                src.backup(dst)                 # کپی سازگار (با WAL)، نه کپی بایت‌به‌بایت فایل زنده
+            finally:
+                src.close(); dst.close()
+        print(f"بکاپ: {bdir}")
+        if replan:
+            items = replan()
         for target, nd, ch in items:
             if not ch:
                 continue
@@ -151,8 +159,19 @@ def write_all(items, tg_dir: Path, db_path: Path, backup_dir: Path, tag: str, no
                 except OSError:
                     pass
             else:
-                with sqlite3.connect(db_path) as c:
-                    c.execute("UPDATE kv SET value=? WHERE key='ai_settings'", (json.dumps(nd, ensure_ascii=False),))
+                c = sqlite3.connect(db_path)
+                try:
+                    with c:
+                        c.execute("UPDATE kv SET value=? WHERE key='ai_settings'", (json.dumps(nd, ensure_ascii=False),))
+                finally:
+                    c.close()
+                st = db_path.stat()              # اجرا با root: فایل‌های WAL/SHM مال root نمانند
+                for f in (db_path.with_name(db_path.name + "-wal"), db_path.with_name(db_path.name + "-shm")):
+                    try:
+                        if f.exists():
+                            os.chown(f, st.st_uid, st.st_gid)
+                    except OSError:
+                        pass
     finally:
         if not no_service:
             subprocess.run(["systemctl", "start", "igbot-telegram"], check=False)
@@ -189,7 +208,8 @@ def main(argv=None):
     if not a.apply or not total:
         print("فقط نمایش بود؛ برای اعمال: --apply" if total else "چیزی برای تغییر نیست.")
         return 0
-    write_all(items, tg_dir, db_path, Path(a.backup_dir), "contact-phone", a.no_service)
+    write_all(items, tg_dir, db_path, Path(a.backup_dir), "contact-phone", a.no_service,
+              replan=lambda: plan(new, tg_dir, db_path, ensure_support=not a.no_support))
     print("✅ اعمال شد")
     return 0
 

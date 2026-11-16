@@ -6,6 +6,7 @@
 """
 import os
 import re
+import threading
 from pathlib import Path
 
 from . import ai, config
@@ -82,7 +83,15 @@ def set_value(name: str, value: str) -> list[dict]:
     return status()
 
 
+_LOCK = threading.Lock()     # دو ذخیره‌ی هم‌زمان از پنل همدیگر را خراب نکنند
+
+
 def write_env(name: str, value: str) -> None:
+    with _LOCK:
+        _write_env(name, value)
+
+
+def _write_env(name: str, value: str) -> None:
     """فقط خط همین نام در ‎.env‎ عوض می‌شود و همان لحظه در برنامه هم فعال می‌شود. بی‌اعتبارسنجی؛
     صدازننده مسئول است (set_value برای کلیدها، auth.change_password برای رمز پنل)."""
     p = env_path()
@@ -104,10 +113,11 @@ def write_env(name: str, value: str) -> None:
     try:
         # درجا نوشته می‌شود، نه فایل موقت + جابه‌جایی: سرویس فقط اجازه‌ی نوشتن در خود این فایل را دارد
         # (پوشه‌ی برنامه فقط‌خواندنی است). فایل کوچک است و با fsync یکجا روی دیسک می‌رود.
+        # اول نوشتن، بعد بریدن دنباله: اگر وسط کار برنامه بمیرد، فایل خالی نمی‌ماند
         fd = os.open(str(p), os.O_RDWR | os.O_CREAT, 0o600)
         try:
-            os.ftruncate(fd, 0)
-            os.write(fd, data)
+            os.pwrite(fd, data, 0)
+            os.ftruncate(fd, len(data))
             os.fsync(fd)
         finally:
             os.close(fd)

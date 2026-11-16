@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # بکاپ شبانه؛ ۱۴ روز نگه می‌دارد. در cron: 0 4 * * * /opt/igbot/deploy/backup.sh
 set -euo pipefail
+umask 077                      # بکاپ‌ها رمز، نشست و شماره‌ی مشتری دارند: فقط root
 DST=/var/backups/igbot
-mkdir -p "$DST"
+mkdir -p "$DST"; chmod 700 "$DST"
 D=$(date +%F)
 
 # اینستاگرام و پنل
@@ -34,7 +35,10 @@ fi
 
 # نسخه‌ی بیرون از سرور (اختیاری): اگر BACKUP_COPY_DIR در .env باشد (مثلاً دیسک یا فضای ذخیره‌ی جدا که روی سرور
 # mount شده)، بکاپ امشب آنجا هم کپی می‌شود. مقصد را صاحب سرور تعیین می‌کند؛ این اسکریپت کلید یا اتصال تازه نمی‌سازد.
-COPY_DIR=$(grep -E '^BACKUP_COPY_DIR=' /opt/igbot/.env 2>/dev/null | tail -1 | cut -d= -f2- || true)
+COPY_DIR=$(grep -E '^BACKUP_COPY_DIR=' /opt/igbot/.env 2>/dev/null | tail -1 | cut -d= -f2- | tr -d "\"'" || true)
+if [ -n "${COPY_DIR:-}" ] && [ ! -d "$COPY_DIR" ]; then
+  echo "❌ مقصد کپی بیرونی ($COPY_DIR) پیدا نشد (mount نیست؟)؛ کپی بیرونی امشب انجام نشد"
+fi
 if [ -n "${COPY_DIR:-}" ] && [ -d "$COPY_DIR" ]; then
   for f in bot-"$D".db tg-users-"$D".db tg-json-"$D".tar.gz; do
     [ -f "$DST/$f" ] && { cp -p "$DST/$f" "$COPY_DIR"/ || echo "❌ کپی بیرونی $f ناموفق"; }

@@ -68,6 +68,13 @@ def _queue(op: dict) -> None:
     tmp = d / (name + ".tmp")
     tmp.write_text(json.dumps(op, ensure_ascii=False), encoding="utf-8")
     os.replace(tmp, d / name)   # ربات تلگرام فقط فایل کامل‌شده‌ی .json را می‌بیند
+    if os.geteuid() == 0:       # ابزاری که با root اجرا شده: پوشه و فایل مال صاحب پوشه‌ی داده (igbot) شوند تا ربات بتواند پاکشان کند
+        try:
+            st = d.parent.stat()
+            for f in (d, d / name):
+                os.chown(f, st.st_uid, st.st_gid)
+        except OSError:
+            pass
 
 
 def _lines(v, commas: bool = True) -> list[str]:

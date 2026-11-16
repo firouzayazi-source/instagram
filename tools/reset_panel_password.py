@@ -44,8 +44,9 @@ def write_env(path: Path, value: str) -> None:
     st = path.stat() if path.exists() else None
     fd = os.open(str(path), os.O_RDWR | os.O_CREAT, 0o600)
     try:
-        os.ftruncate(fd, 0)
-        os.write(fd, ("\n".join(out) + "\n").encode("utf-8"))
+        data = ("\n".join(out) + "\n").encode("utf-8")
+        os.pwrite(fd, data, 0)            # اول نوشتن، بعد بریدن: فایل هیچ‌وقت خالی نمی‌ماند
+        os.ftruncate(fd, len(data))
         os.fsync(fd)
     finally:
         os.close(fd)
@@ -55,6 +56,17 @@ def write_env(path: Path, value: str) -> None:
             os.chown(path, st.st_uid, st.st_gid)
         except OSError:
             pass
+
+
+def _fix_owner(db: Path) -> None:
+    """اجرا با root: فایل‌های WAL/SHM تازه مال root نمانند (سرویس igbot را از نوشتن باز می‌داشت)."""
+    try:
+        st = db.stat()
+        for f in (db, db.with_name(db.name + "-wal"), db.with_name(db.name + "-shm")):
+            if f.exists():
+                os.chown(f, st.st_uid, st.st_gid)
+    except OSError:
+        pass
 
 
 def main(argv=None):
@@ -74,8 +86,11 @@ def main(argv=None):
         return 0
     if a.ask:
         pw = getpass.getpass("رمز تازه (حداقل ۸ نویسه): ")
-        if len(pw) < 8 or pw != getpass.getpass("تکرار رمز: ") or re.search(r"\s", pw):
-            sys.exit("رمز کوتاه است، فاصله دارد یا دو بار یکی نبود؛ چیزی عوض نشد.")
+        sys.path.insert(0, str(ROOT))
+        from app.auth import PASSWORD_RX
+        if not re.match(PASSWORD_RX, pw) or pw != getpass.getpass("تکرار رمز: "):
+            sys.exit("رمز باید ۸ تا ۱۲۸ نویسه از حرف انگلیسی، عدد و ‎! @ % ^ * _ + = . , : / ? ~ -‎ باشد و دو بار یکی؛ "
+                     "چیزی عوض نشد.")
     else:
         pw = new_password()
     if env.exists():
@@ -87,11 +102,16 @@ def main(argv=None):
         print(f"بکاپ: {b}")
     write_env(env, pw)
     if Path(a.db).exists():
-        with sqlite3.connect(a.db) as c:
-            c.execute("DELETE FROM sessions")       # ورودهای قبلی (شاید روی دستگاه گم‌شده) باطل شوند
-            for t in ("devices", "login_fails"):    # فهرست دستگاه‌ها از نو: اولین ورود با رمز تازه، دستگاه شناخته‌شده می‌شود
-                if c.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (t,)).fetchone():
-                    c.execute(f"DELETE FROM {t}")
+        c = sqlite3.connect(a.db)
+        try:
+            with c:
+                c.execute("DELETE FROM sessions")       # ورودهای قبلی (شاید روی دستگاه گم‌شده) باطل شوند
+                for t in ("devices", "login_fails"):    # فهرست دستگاه‌ها از نو: اولین ورود با رمز تازه، دستگاه شناخته‌شده می‌شود
+                    if c.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (t,)).fetchone():
+                        c.execute(f"DELETE FROM {t}")
+        finally:
+            c.close()                                   # پیش از ری‌استارت بسته شود
+        _fix_owner(Path(a.db))
     if not a.no_service:
         subprocess.run(["systemctl", "restart", "igbot"], check=False)
     print("\n✅ رمز پنل عوض شد. همین الان جایی امن یادداشت کنید (این رمز دیگر نمایش داده نمی‌شود):\n")

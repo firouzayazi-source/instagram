@@ -140,6 +140,10 @@ def run(backup_dir: Path, live_db: Path, max_age_h: float = 30) -> dict:
         ok = False
         notes.append("بکاپ رازها (secrets-*.tar.gz) پیدا نشد")
     t = latest(backup_dir, "tg-users-*.db")
+    from app import config
+    if not t and (Path(config.TG_DATA_DIR) / "users.db").exists():
+        ok = False         # ربات تلگرام روی سرور هست ولی بکاپش ساخته نمی‌شود
+        notes.append("بکاپ کاربران ربات تلگرام (tg-users-*.db) پیدا نشد")
     if t:
         if time.time() - t.stat().st_mtime > max_age_h * 3600:
             ok = False
@@ -148,6 +152,9 @@ def run(backup_dir: Path, live_db: Path, max_age_h: float = 30) -> dict:
         ok &= r
         notes.append(msg)
         j = latest(backup_dir, "tg-json-*.tar.gz")
+        if j and time.time() - j.stat().st_mtime > max_age_h * 3600:
+            ok = False
+            notes.append(f"آخرین بکاپ فایل‌های ربات تلگرام ({j.name}) قدیمی است")
         if j:
             r, msg = check_tg_json(j)
             ok &= r

@@ -2367,6 +2367,16 @@ async def load_backup_registry():
 
 async def save_backup_registry(): await _wj(BACKUPS_FILE, _backup_registry)
 
+def _db_snapshot_bytes() -> bytes:
+    """کپی سازگار پایگاه داده (با تغییرهای فایل WAL) از راه sqlite backup API؛ کپی بایت‌به‌بایت فایل زنده ناقص یا خراب می‌شد."""
+    import sqlite3, tempfile
+    with tempfile.TemporaryDirectory() as d:
+        dst_path = os.path.join(d, "users.db")
+        src, dst = sqlite3.connect(DB_FILE), sqlite3.connect(dst_path)
+        try: src.backup(dst)
+        finally: src.close(); dst.close()
+        with open(dst_path, "rb") as f: return f.read()
+
 async def send_backup(bot,label="بک‌آپ"):
     global _backup_registry
     ts=shamsi_now().replace(" ","_").replace("—","-").replace(":","-")
@@ -2380,7 +2390,9 @@ async def send_backup(bot,label="بک‌آپ"):
     with zipfile.ZipFile(buf,"w",zipfile.ZIP_DEFLATED) as zf:
         for fp,name in files:
             try:
-                async with aiofiles.open(fp,"rb") as f: zf.writestr(name,await f.read())
+                if fp == DB_FILE: zf.writestr(name, _db_snapshot_bytes())   # کپی سازگار با WAL، نه بایت‌به‌بایت
+                else:
+                    async with aiofiles.open(fp,"rb") as f: zf.writestr(name,await f.read())
             except Exception as e: logger.warning(f"backup skip {fp}: {e}")
     buf.seek(0)
     msg=await bot.send_document(OWNER_ID,document=buf,filename=f"backup_{ts}.zip",
@@ -2495,7 +2507,9 @@ async def _safety_snapshot():
     try:
         with zipfile.ZipFile(path,"w",zipfile.ZIP_DEFLATED) as zf:
             for name,fp in BACKUP_MAP.items():
-                if os.path.exists(fp): zf.write(fp,name)
+                if not os.path.exists(fp): continue
+                if fp == DB_FILE: zf.writestr(name, _db_snapshot_bytes())
+                else: zf.write(fp,name)
         return path
     except Exception as e:
         logger.warning(f"safety snapshot ناموفق: {e}"); return None
@@ -6672,7 +6686,7 @@ async def document_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
                                                reply_markup=main_menu())
     ctx.user_data.pop("mode",None)
     doc=update.message.document
-    if not doc.file_name.endswith(".zip"):
+    if not (doc.file_name or "").endswith(".zip"):
         await update.message.reply_text("❌ فقط فایل ZIP قابل قبول است.",reply_markup=main_menu()); return
     await update.message.reply_text("⏳ در حال بازگردانی...")
     ok,result=await restore_backup(ctx.bot,doc.file_id)

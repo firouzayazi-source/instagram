@@ -113,7 +113,8 @@ def main(argv=None):
     if not a.apply or not total:
         print("فقط نمایش بود؛ برای اعمال: --apply" if total else "چیزی برای تغییر نیست.")
         return 0
-    phone.write_all(items, tg_dir, db_path, Path(a.backup_dir), "bot-link", a.no_service)
+    phone.write_all(items, tg_dir, db_path, Path(a.backup_dir), "bot-link", a.no_service,
+                    replan=lambda: plan(old, new, tg_dir, db_path))
     print("✅ اعمال شد")
     return 0
 

@@ -219,7 +219,7 @@ function IgPart({ parts }) {
   const bridge = !!poll?.active     // تا اپ Meta وصل نیست، کامنت و دایرکت با خوانش هر دقیقه می‌آیند
   async function toggleDmReply(on) {
     if (on && !window.confirm('از این لحظه ربات به دایرکت‌های تازه‌ی مشتری‌ها خودکار جواب می‌دهد (دستورها و مغز مرکزی طبق تنظیمات). اگر ابزار دیگری مثل وردست هم روشن است، ممکن است مشتری دو جواب بگیرد. روشن شود؟')) return
-    await api.post('/api/comment-poll', { dm_reply: on })
+    try { await api.post('/api/comment-poll', { dm_reply: on }) } catch (ex) { alert(ex.message) }
     loadPoll()
   }
   const set = (patch) => setS({ ...s, ...patch })

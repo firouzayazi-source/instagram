@@ -305,7 +305,7 @@ export default function RuleForm({ id }) {
 
   async function remove() {
     if (!confirm('این دستور حذف شود؟')) return
-    await api.del(`/api/rules/${id}`); location.hash = '#/rules'
+    try { await api.del(`/api/rules/${id}`); location.hash = '#/rules' } catch (ex) { alert(ex.message) }
   }
 
   return (
