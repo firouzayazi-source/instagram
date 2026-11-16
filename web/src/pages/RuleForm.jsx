@@ -3,12 +3,40 @@ import { api } from '../api.js'
 import Icon from '../icons.jsx'
 import Sortable, { AutoText } from '../sortable.jsx'
 
+// متن‌های پیش‌فرض جواب زیر کامنت (docs/INSTAGRAM_SAFETY.md): ۱۰ متن کوتاه و متفاوت، بی لینک، زیر ۱۰۰ نویسه.
+// «همراه دایرکت» فقط وقتی می‌رود که دایرکت رسیده (وگرنه برنامه خودش راهنمای دایرکت را می‌گذارد).
+export const DEFAULT_PUBLIC_DM = [
+  'ممنون که کامنت گذاشتی 🌸 جزئیات رو برات دایرکت کردم',
+  'سلام، جوابت رو توی دایرکت فرستادم 🙏',
+  'مرسی از همراهیت 💙 یه نگاه به دایرکتت بنداز',
+  'خوشحالیم که برات جالب بوده ✨ توضیحات تو دایرکته',
+  'چشم، برات پیام فرستادیم 📩',
+  'ممنون از توجهت؛ اطلاعات کامل رو دایرکت کردیم 🌷',
+  'سلام دوست خوبم، پیامت تو دایرکت منتظرته 😊',
+  'لطف داری 🙌 جواب رو تو دایرکت برات نوشتیم',
+  'مرسی که هستی 🌼 جزئیاتش رو تو پیام خصوصی فرستادیم',
+  'حتماً، توضیحات رو برات تو دایرکت گذاشتیم 👌',
+]
+// برای «فقط جواب زیر کامنت» (بی دایرکت): بی ادعای «فرستادم»
+export const DEFAULT_PUBLIC_ONLY = [
+  'ممنون از همراهیت 🌸',
+  'لطف داری، خوشحالیم که دوستش داشتی 💙',
+  'مرسی از کامنت قشنگت ✨',
+  'ممنون که دیدی 🙏',
+  'خیلی ممنون، انرژی دادی 🌼',
+  'سپاس از توجهت 🌷',
+  'مرسی که همیشه همراهمونی 😊',
+  'ممنون، نظرت برامون مهمه 🙌',
+  'قربونت، ممنون از حمایتت 💐',
+  'مرسی، خوشحالیم به دردت خورده 👌',
+]
+
 const EMPTY = {
   name: '', enabled: true, priority: 100, channels: ['comment'], post_scope: 'all',
   triggers: [{ match: 'contains', value: '' }],
-  actions: { comment_mode: 'dm', public_replies: [''], private_replies: [''], dm_replies: [''], quick_replies: [], buttons: [] },
+  actions: { comment_mode: 'dm', public_replies: [...DEFAULT_PUBLIC_DM], private_replies: [''], dm_replies: [''], quick_replies: [], buttons: [] },
   advanced: { require_follow: false, follow_prompt: '', once_per_user: true, cooldown_minutes: 0, active_hours: null, followup: null,
-    pause_ai_minutes: 0, handoff: false, max_uses: 0, over_limit_reply: '' },
+    pause_ai_minutes: 0, handoff: false, max_uses: 0, over_limit_reply: '', random_pick: true },
 }
 const WHERE = [
   ['comment', 'کامنت پست و ریلز', 'کامنت زیر پست‌ها و ریلزها', 'comment'],
@@ -316,7 +344,13 @@ export default function RuleForm({ id }) {
 
       {hasC && (
         <Sec icon="comment" title="جواب به کامنت" desc="کامنت چطور جواب بگیرد؟">
-          {CMODES.map(([k, t, d, ic]) => <Opt key={k} on={cmode === k} icon={ic} title={t} desc={d} onClick={() => setAct('comment_mode', k)} />)}
+          {CMODES.map(([k, t, d, ic]) => <Opt key={k} on={cmode === k} icon={ic} title={t} desc={d} onClick={() => {
+            setAct('comment_mode', k)
+            // متن‌های پیش‌فرض با حالت جور شوند: «فرستادم» فقط وقتی دایرکت هم می‌رود
+            const pr = r.actions.public_replies.join('|')
+            if (k === 'public' && pr === DEFAULT_PUBLIC_DM.join('|')) setAct('public_replies', [...DEFAULT_PUBLIC_ONLY])
+            if (k === 'both' && pr === DEFAULT_PUBLIC_ONLY.join('|')) setAct('public_replies', [...DEFAULT_PUBLIC_DM])
+          }} />)}
           {cmode !== 'public' && (<>
             <div className="sub-card">
               <b>متن دایرکت به کامنت‌گذار <span className="tag">{r.actions.private_replies.filter((t) => t.trim()).length.toLocaleString('fa-IR')} پیام</span></b>
@@ -334,7 +368,12 @@ export default function RuleForm({ id }) {
               {r.actions.public_replies.some((t) => LINK_RX.test(t)) && <div className="note warn">جواب زیر کامنت نباید لینک داشته باشد (اینستاگرام آن را اسپم می‌داند). لینک را در دایرکت بفرستید.</div>}
               {r.actions.public_replies.filter((t) => t.trim()).length > 0 && r.actions.public_replies.filter((t) => t.trim()).length < 5 && <div className="note">پیشنهاد: ۵ تا ۷ متن متفاوت و کوتاه (زیر ۱۰۰ نویسه) بنویسید تا به نوبت بروند. یک جواب یکسان زیر ده‌ها کامنت، به چشم اینستاگرام اسپم است.</div>}
               {r.actions.public_replies.some((t) => t.length > 150) && <div className="note warn">جواب زیر کامنت حداکثر ۱۵۰ نویسه؛ کوتاه و طبیعی بنویسید.</div>}
-              <Messages list={r.actions.public_replies} onChange={(l) => setAct('public_replies', l)} saved={saved} placeholder={cmode === 'both' ? 'مثلاً: دایرکت رو ببین 📩' : 'مثلاً: ممنون از همراهیتون 🌸'} addLabel="متن جدید" />
+              <Messages list={r.actions.public_replies} onChange={(l) => setAct('public_replies', l)} saved={saved} placeholder={cmode === 'both' ? 'مثلاً: جزئیات رو برات دایرکت کردم 🌸' : 'مثلاً: ممنون از همراهیتون 🌸'} addLabel="متن جدید" />
+              <button type="button" className="btn ghost" style={{ marginTop: 8 }}
+                onClick={() => { const d = cmode === 'both' ? DEFAULT_PUBLIC_DM : DEFAULT_PUBLIC_ONLY
+                  const has = r.actions.public_replies.some((t) => t.trim())
+                  if (!has || confirm('متن‌های فعلی جواب زیر کامنت با ۱۰ متن پیشنهادی عوض شود؟')) { setAct('public_replies', [...d]); if (!a.random_pick) setAdv({ random_pick: true }) } }}>
+                ✨ ۱۰ متن پیشنهادی (متفاوت و امن)</button>
             </div>
           )}
         </Sec>
