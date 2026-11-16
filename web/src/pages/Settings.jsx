@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { api } from '../api.js'
 import { ChannelList } from './Channels.jsx'
+import { Switch } from './Rules.jsx'
 
 function b64ToArray(b64) {
   const s = (b64 + '='.repeat((4 - (b64.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/')
@@ -45,6 +46,7 @@ export default function Settings({ onLogout }) {
   return (
     <>
       <header className="topbar"><h1>تنظیمات</h1></header>
+      <Brake />
       <section className="card">
         <h2>کانال‌ها و اتصال‌ها</h2>
         <p className="muted">هر شبکه جدا روشن و خاموش می‌شود. همه از مغز مرکزی و دانش مرکزی جواب می‌دهند.</p>
@@ -165,5 +167,31 @@ function Devices() {
       <label className="check" style={{ marginTop: 8 }}><input type="checkbox" checked={d.lock} onChange={(e) => lock(e.target.checked)} /> فقط دستگاه‌های شناخته‌شده وارد شوند (پیشنهادی)</label>
       {msg && <p className={msg.ok ? 'ok' : 'err'}>{msg.text}</p>}
     </div>
+  )
+}
+
+
+// توقف اضطراری (app/safety.py): با خطای محدودیت یا مسدودی از اینستاگرام خودکار روشن می‌شود؛ فقط صاحب پیج خاموشش می‌کند
+function Brake() {
+  const [b, setB] = useState(null)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => { api.get('/api/safety/brake').then(setB).catch(() => setB({})) }, [])
+  async function set(on) {
+    if (!confirm(on ? 'همه‌ی جواب‌ها، دایرکت‌ها و انتشارهای خودکار همین الان متوقف شود؟'
+      : 'مطمئنید پیج سالم است (صفحه‌ی Account Status اینستاگرام مشکلی نشان نمی‌دهد) و ارسال خودکار دوباره شروع شود؟')) return
+    setBusy(true)
+    try { setB(await api.post('/api/safety/brake', { on })) } catch (ex) { alert(ex.message) } finally { setBusy(false) }
+  }
+  if (!b) return null
+  return (
+    <section className="card">
+      <div className="row-between">
+        <h2 style={{ margin: 0 }}>⛔ توقف اضطراری</h2>
+        <Switch checked={!!b.on} onChange={(v) => !busy && set(v)} label="توقف اضطراری" />
+      </div>
+      {b.on
+        ? <p className="err" style={{ margin: '8px 0 0' }}>روشن است: هیچ جواب، دایرکت یا انتشاری از برنامه روی پیج نمی‌رود؛ پیام‌ها فقط در صندوق ثبت می‌شوند.{b.reason ? <><br /><small>علت: {b.reason}</small></> : null}</p>
+        : <p className="muted" style={{ margin: '8px 0 0' }}>خاموش: برنامه عادی کار می‌کند. اگر اینستاگرام محدودیت یا مسدودی نشان بدهد، خودش روشن می‌شود و به تلگرام خبر می‌دهد.</p>}
+    </section>
   )
 }

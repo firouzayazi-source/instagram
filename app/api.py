@@ -240,6 +240,13 @@ def comment_poll_status(request: Request):
             "interval": comment_poll.INTERVAL, "comment_hour": hour}
 
 
+@protected.get("/safety/brake")
+def safety_brake_get():
+    from . import safety
+    with db.connect() as c:
+        return safety.state(c)
+
+
 @protected.post("/safety/brake")
 def safety_brake(body: dict):
     """توقف اضطراری: on=true همه‌ی ارسال‌ها به اینستاگرام را می‌بندد؛ on=false (فقط صاحب پیج) دوباره باز می‌کند."""

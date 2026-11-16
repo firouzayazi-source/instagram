@@ -86,28 +86,6 @@ function Today({ s }) {
   )
 }
 
-// توقف اضطراری (app/safety.py): با خطای محدودیت یا مسدودی از اینستاگرام خودکار کشیده می‌شود؛ فقط صاحب پیج برمی‌دارد
-function Brake({ brake }) {
-  const [b, setB] = useState(brake || {})
-  const [busy, setBusy] = useState(false)
-  useEffect(() => { setB(brake || {}) }, [brake?.on, brake?.at])      // آمار پیشخوان بعد از اولین نمایش می‌رسد
-  async function set(on) {
-    if (!confirm(on ? 'همه‌ی جواب‌ها، دایرکت‌ها و انتشارهای خودکار همین الان متوقف شود؟'
-      : 'مطمئنید پیج سالم است (صفحه‌ی Account Status اینستاگرام مشکلی نشان نمی‌دهد) و ارسال خودکار دوباره شروع شود؟')) return
-    setBusy(true)
-    try { setB(await api.post('/api/safety/brake', { on })) } catch (ex) { alert(ex.message) } finally { setBusy(false) }
-  }
-  if (!b.on) return <button className="btn danger" disabled={busy} onClick={() => set(true)} style={{ marginTop: 10 }}>⛔ توقف اضطراری همه‌ی ارسال‌ها</button>
-  return (
-    <div className="note warn" style={{ marginTop: 10 }}>
-      <b>⛔ توقف اضطراری فعال است</b> {b.at ? `(${timeAgo(b.at)})` : ''}<br />
-      هیچ جواب، دایرکت یا انتشاری از برنامه روی پیج نمی‌رود؛ پیام‌ها فقط در صندوق ثبت می‌شوند.<br />
-      <small>علت: {b.reason}</small><br />
-      <button className="btn" disabled={busy} onClick={() => set(false)} style={{ marginTop: 8 }}>برداشتن توقف</button>
-    </div>
-  )
-}
-
 // سلامت سیستم: خوانش کامنت و دایرکت، آمار، بکاپ شبانه؛ فقط وقتی مشکلی هست جزئیات می‌آید
 function Health({ items, errors, tokenDays, weak, pending, brake }) {
   const bad = items.filter((x) => !x.ok)
@@ -118,7 +96,7 @@ function Health({ items, errors, tokenDays, weak, pending, brake }) {
     ...(errors ? [`${fa(errors)} رویداد با خطا`] : []),
     ...(tokenDays !== null && tokenDays < 10 ? [`${fa(tokenDays)} روز تا انقضای توکن`] : []),
     ...(pending ? [`${fa(pending)} دستگاه تازه منتظر تأیید ورود (بیشتر ← حساب و رمز)`] : []),
-    ...(brake?.on ? ['توقف اضطراری فعال است: هیچ ارسالی به اینستاگرام نمی‌رود'] : []),
+    ...(brake?.on ? ['توقف اضطراری فعال است: هیچ ارسالی به اینستاگرام نمی‌رود (تنظیمات ← توقف اضطراری)'] : []),
     ...(weak ? ['رمز پنل کوتاه‌تر از ۸ نویسه است؛ در «بیشتر ← حساب و رمز» عوضش کنید'] : [])]
   return (
     <section className="card">
@@ -129,7 +107,6 @@ function Health({ items, errors, tokenDays, weak, pending, brake }) {
       {issues.length > 0
         ? <ul style={{ margin: '8px 0 0', paddingInlineStart: 18 }}>{issues.map((t) => <li key={t} className="err">{t}</li>)}</ul>
         : <p className="muted" style={{ margin: '6px 0 0' }}>{items.map((x) => `${x.label} ${x.at ? timeAgo(x.at) : ''}`).join(' · ') || 'هنوز بررسی‌ای اجرا نشده'}</p>}
-      <Brake brake={brake} />
     </section>
   )
 }
