@@ -80,7 +80,7 @@ class Instagram:
                 raise RuntimeError(f"IG {r.status_code}: {data.get('error', data)}")
             return data
         except RuntimeError as e:
-            safety.check_error(e)       # خواندن ادامه دارد، ولی دسترسی باطل یا مسدودی جلوی ارسال را می‌گیرد
+            safety.check_error(e, read=True)   # خواندن ادامه دارد، ولی دسترسی باطل یا مسدودی جلوی ارسال را می‌گیرد
             raise
 
     async def reply_comment(self, comment_id: str, text: str) -> str:
@@ -145,6 +145,9 @@ class Instagram:
         await self._post(comment_id, data={"hide": "true" if hide else "false"})
 
     async def _delete_profile(self, field: str) -> None:
+        from . import safety
+        if safety.active():
+            raise RuntimeError("BRAKE: توقف اضطراری فعال است؛ چیزی به اینستاگرام فرستاده نشد")
         if self.via_composio():
             await self._composio_call("DELETE", f"{self.user_id}/messenger_profile", body={"fields": [field]})
             return

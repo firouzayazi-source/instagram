@@ -56,7 +56,7 @@ async def test_braked_events_go_to_inbox_only(monkeypatch):
         db.upsert_rule(c, {"name": "x", "channels": ["comment"], "triggers": [{"match": "any"}],
                            "actions": {"comment_mode": "public", "public_replies": ["ممنون"]}})
         db.add_event(c, "c:k1", "comment", {"id": "k1", "text": "سلام", "from": {"id": "u1"}, "media": {"id": "p"}})
-        assert await worker.handle_event(ig, db.pending_events(c)[0], c) == "ignored"
+        assert await worker.handle_event(ig, db.pending_events(c)[0], c) == "braked"
     assert ig.calls == []
 
 

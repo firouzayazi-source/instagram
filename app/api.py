@@ -192,7 +192,9 @@ async def _send(request: Request, kind: str, target: str, text: str):
     client = ig(request)
     try:
         if kind == "public":
-            ig_id = await client.reply_comment(target, text)
+            with db.connect() as c:      # اینستاگرام فقط به کامنت سطح اول جواب عمومی می‌دهد؛ ریپلای ← کامنت اصلی
+                row = c.execute("SELECT parent_id FROM comments WHERE id=?", (target,)).fetchone()
+            ig_id = await client.reply_comment((row and row["parent_id"]) or target, text)
         elif kind == "private":
             ig_id = await client.private_reply(target, text)
         else:

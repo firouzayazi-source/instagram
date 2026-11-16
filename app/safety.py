@@ -18,10 +18,14 @@ CODES = {4, 17, 32, 190, 368, 613, 80002}
 SUBCODES = {2207051, 2534040, 2207042, 458, 459, 460, 463, 464, 467}   # اسپم/محدودیت انتشار، سقف جواب خصوصی، نشست باطل
 WORDS = ("action blocked", "temporarily blocked", "checkpoint", "spam", "restricted", "suspicious",
          "we limit how often", "session has been invalidated", "account is locked", "has been locked")
-URL_RX = re.compile(r"(https?://|www\.)\S+|\b[a-z0-9-]+\.(ir|com|net|org|io|me|ly|gl|co|to|link|app)(/\S*)?\b", re.I)
-# نشانی کوتاه یا تغییر مسیر: اینستاگرام لینک پنهان در پیام خودکار را نشانه‌ی پیج هک‌شده می‌داند
-SHORTENERS = ("bit.ly", "tinyurl", "goo.gl", "t.co/", "ow.ly", "is.gd", "buff.ly", "cutt.ly", "rebrand.ly", "shorturl",
-              "tiny.cc", "rb.gy", "s.id/", "linktr.ee/s/", "/l/")
+# پایان دامنه با (?![a-z0-9]) نه \b: «stland.irرو» (چسبیده به حرف فارسی) هم لینک است
+URL_RX = re.compile(r"(https?://|www\.)\S+|(?<![a-z0-9@_])[a-z0-9-]+\.(ir|com|net|org|io|me|ly|gl|co|to|link|app)(?![a-z0-9_])(/\S*)?",
+                    re.I)
+# نشانی کوتاه یا تغییر مسیر: اینستاگرام لینک پنهان در پیام خودکار را نشانه‌ی پیج هک‌شده می‌داند (تطبیق دقیق دامنه)
+SHORTENERS = {"bit.ly", "tinyurl.com", "goo.gl", "t.co", "ow.ly", "is.gd", "buff.ly", "cutt.ly", "rebrand.ly",
+              "shorturl.at", "tiny.cc", "rb.gy", "s.id", "t.ly", "shorte.st", "lnkd.in", "trib.al"}
+OWN_HOSTS = {"ig.stland.ir"}       # نشانی کوتاه ‎/l/‎ خود پنل (کنار گذاشته شد)
+_HOST_RX = re.compile(r"(?:https?://)?(?:www\.)?((?:[a-z0-9-]+\.)+[a-z]{2,})(/[^\s]*)?", re.I)
 
 
 def _code(err: str, name: str) -> int | None:
@@ -33,27 +37,40 @@ def dangerous(err: str) -> bool:
     """خطایی که یعنی اینستاگرام پیج یا برنامه را محدود کرده (نه خطای عادی مثل «کامنت پاک شده»)."""
     e = str(err)
     low = e.lower()
-    if any(k in low for k in ("length of the message", "does not exist", "outside of allowed window", "brake:")):
+    if "brake:" in low:
         return False
-    return _code(e, "code") in CODES or _code(e, "error_subcode") in SUBCODES or any(w in low for w in WORDS)
+    if _code(e, "code") in CODES or _code(e, "error_subcode") in SUBCODES:
+        return True                    # کد صریح محدودیت یا دسترسی باطل، حتی اگر متن «does not exist» هم داشته باشد
+    if any(k in low for k in ("length of the message", "does not exist", "outside of allowed window")):
+        return False
+    return any(w in low for w in WORDS)
+
+
+def dangerous_read(err: str) -> bool:
+    """برای خواندن (کامنت، دایرکت، آمار): سقف نرخ خواندن (4/17/32/613) چیزی درباره‌ی سلامت پیج نمی‌گوید و ترمز
+    نمی‌کشد؛ فقط دسترسی باطل، مسدودی و قفل حساب."""
+    e = str(err)
+    low = e.lower()
+    return _code(e, "code") in (190, 368) or _code(e, "error_subcode") in SUBCODES or any(w in low for w in WORDS)
 
 
 def state(c) -> dict:
     try:
         return json.loads(db.kv_get(c, KEY) or "{}")
     except ValueError:
-        return {}
+        return {"on": True, "reason": "وضعیت توقف خوانده نشد (داده‌ی خراب)"}     # در شک: بسته
 
 
 def active(c=None) -> bool:
+    """در شک بسته است: هر خطای پایگاه داده جز «جدول هنوز ساخته نشده» یعنی توقف (ارسال نرود)."""
     import sqlite3
     try:
         if c is None:
             with db.connect() as c2:
                 return bool(state(c2).get("on"))
         return bool(state(c).get("on"))
-    except sqlite3.Error:       # پایگاه داده هنوز ساخته نشده (ابزارها، تست‌ها)
-        return False
+    except sqlite3.Error as e:
+        return "no such table" not in str(e)
 
 
 def trip(reason: str, manual: bool = False) -> bool:
@@ -80,16 +97,19 @@ def release() -> None:
                                      ensure_ascii=False))
 
 
-def check_error(err) -> None:
-    if dangerous(str(err)):
-        trip(str(err))
+def check_error(err, read: bool = False) -> None:
+    if (dangerous_read if read else dangerous)(str(err)):
+        try:
+            trip(str(err))
+        except Exception as e:  # noqa: BLE001   # ثبت نشد؛ خطای اصلی با نشانه‌ی BRAKE تا دوباره فرستاده نشود
+            raise RuntimeError(f"BRAKE: {err} (ثبت توقف نشد: {e})") from e
 
 
 def link_problems(text: str) -> list[str]:
     """مشکل‌های لینک در یک متن پیام خودکار."""
     out = []
-    low = (text or "").lower()
-    if any(s in low for s in SHORTENERS):
+    hosts = [(m.group(1).lower(), m.group(2) or "") for m in _HOST_RX.finditer(text or "")]
+    if any(h in SHORTENERS or (h in OWN_HOSTS and p.startswith("/l/")) for h, p in hosts):
         out.append("لینک کوتاه‌شده یا تغییر مسیر (مثل bit.ly) ممنوع است؛ لینک اصلی را بگذارید")
     return out
 

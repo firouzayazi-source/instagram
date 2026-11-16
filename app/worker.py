@@ -106,6 +106,9 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
     if inc is None or not inc.user_id or inc.user_id == config.IG_USER_ID:
         return "skipped"
     polled = payload.get("_via") == "poll"
+    if polled and row["kind"] == "message" and c.execute(
+            "SELECT 1 FROM messages WHERE id=?", (_message_id(row["kind"], payload),)).fetchone():
+        return "skipped"   # پیام قدیمی که خوانش دوباره آورده (رویدادش پاک شده بود): نه ثبت دوباره، نه جواب
     if polled and row["kind"] == "message" and payload.get("sender", {}).get("username") \
             and not db.conversation_username(c, inc.user_id):
         db.add_message(c, _message_id(row["kind"], payload), inc.user_id, "in", _shown_text(inc),
@@ -114,6 +117,11 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
     await store_incoming(ig, c, row["kind"], payload, inc)
     if store_only:
         return "merged"
+    if safety.active(c):
+        return "braked"    # توقف اضطراری: فقط صندوق (منو و فرم هم نه)؛ وضعیت جدا تا ابزار صف عقب‌افتاده سراغش نرود
+    ts = (payload.get("timestamp") or 0) / 1000
+    if polled and inc.channel == "dm" and ts and time.time() - ts > WINDOW:
+        return "ignored"   # پیام قدیمی‌تر از پنجره‌ی ۲۴ ساعته (مثلاً بعد از قطعی): جواب خودکار ممنوع است
     if inc.channel == "dm" and channels.enabled("instagram") and not knowledge.is_blocked(c, inc.user_id) \
             and not db.human_until(c, inc.user_id):
         # منوی ثابت و فرم در جریان: صاحب پیج خودش متن‌ها را تعیین کرده، پس حتی با جواب خودکار خاموش هم می‌روند
@@ -178,7 +186,7 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
     if adv.get("require_follow"):
         if inc.is_follower is None:
             inc.is_follower = await ig.is_follower(inc.user_id)
-        if not inc.is_follower:
+        if inc.is_follower is False:      # نامعلوم (خطای خواندن) یعنی «نه» نیست؛ دروازه رد می‌شود
             text = adv.get("follow_prompt") or "اول پیج رو فالو کن، بعد دوباره پیام بده 🙏"
             await _send(ig, c, row["id"], rule["id"], "public" if inc.channel == "comment" else "dm", payload, inc, text)
             return "done"
@@ -226,17 +234,15 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
             if kind == "private" and form_q:     # به هر کامنت فقط یک دایرکت می‌شود فرستاد: سؤال اول همراه همان پیام
                 text = "\n\n".join(x for x in (text, form_question_text(*form_q)) if x)
             if kind == "public" and private_failed:
-                text = "برای دریافت، یه پیام به دایرکت پیج بده 📩"     # دایرکت نرسید؛ «ارسال شد» دروغ می‌شد
+                # دایرکت نرسید؛ «ارسال شد» دروغ می‌شد. فقط اگر خود دستور جواب عمومی دارد، به‌جایش راهنمای دایرکت
+                text = "برای دریافت، یه پیام به دایرکت پیج بده 📩" if text else None
             if kind == "public" and text:
-                # قفل ۲۵ آبان: ده‌ها جواب کوتاه و تکراری («دایرکت چک کن»، «برات فرستادم») زیر کامنت‌ها الگوی پیج
-                # هک‌شده بود. سقف روزانه (بعدش فقط دایرکت می‌رود) و هرگز دو جواب یکسان پشت‌سرهم.
-                if public_replies_today(c) >= PUBLIC_DAILY_LIMIT:
-                    text = None
-                else:
-                    variants = [prep(t) for t in acts.get("public_replies") or [] if t]
-                    last = c.execute("SELECT text FROM replies WHERE kind='public' AND ok=1 ORDER BY id DESC LIMIT 1").fetchone()
-                    if last and last[0] == text and len(set(variants)) > 1:
-                        text = next(t for t in variants[variants.index(text) + 1:] + variants if t != text)
+                # قفل ۲۵ آبان: هرگز دو جواب یکسان پشت‌سرهم؛ اگر متن دیگری هست همان. سقف روزانه و بقیه در _send
+                variants = [prep(t) for t in acts.get("public_replies") or [] if t]
+                last = c.execute("SELECT text FROM replies WHERE kind='public' AND ok=1 ORDER BY id DESC LIMIT 1").fetchone()
+                others = [t for t in variants if t != text]
+                if last and last[0] == text and others:
+                    text = random.choice(others)
             if text:
                 ok = await _send(ig, c, row["id"], rule["id"], kind, payload, inc, text,
                                  buttons=(btns or None) if kind == "private" and not form_q else None)
@@ -418,6 +424,7 @@ async def handle_ai(ig, row, c, payload, inc: Incoming) -> str:
 
 
 WINDOW = 23 * 3600     # پنجره‌ی پیام‌رسانی اینستاگرام ۲۴ ساعت است؛ یک ساعت حاشیه
+FOLLOWUP_BATCH = 2     # پیگیری‌های سررسیده در هر دور؛ بعد از توقف یا قطعی یک‌جا نمی‌روند
 
 
 async def process_followups(ig, c, now: float | None = None) -> int:
@@ -425,15 +432,21 @@ async def process_followups(ig, c, now: float | None = None) -> int:
     n = 0
     if safety.active(c) or not channels.enabled("instagram"):
         return 0
-    for f in db.due_followups(c, now):
+    for f in db.due_followups(c, now)[:FOLLOWUP_BATCH]:
         last_in = c.execute("SELECT MAX(created_at) FROM messages WHERE user_id=? AND direction='in'", (f["user_id"],)).fetchone()[0]
         if not last_in or (now or time.time()) - last_in > WINDOW:
             # قاعده‌ی اینستاگرام: پیام خودکار فقط تا ۲۴ ساعت بعد از آخرین پیام مشتری؛ تلاش بیرون از پنجره هم نشانه‌ی بد است
             db.finish_followup(c, f["id"], "error", "پنجره‌ی ۲۴ ساعته بسته بود؛ فرستاده نشد")
             continue
+        if knowledge.is_blocked(c, f["user_id"]) or db.human_until(c, f["user_id"]) or safety.link_problems(f["text"]):
+            db.finish_followup(c, f["id"], "error", "مسدود، همکار در گفتگو، یا لینک کوتاه‌شده؛ فرستاده نشد")
+            continue
+        if n:
+            await asyncio.sleep(random.uniform(config.SEND_DELAY_MIN, config.SEND_DELAY_MAX))
         try:
             ig_id = await ig.send_dm(f["user_id"], f["text"])
             db.log_reply(c, f"fu:{f['id']}", f["rule_id"], "dm", f["user_id"], f["text"], ig_id=ig_id, ok=True)
+            db.add_message(c, ig_id or f"fu:{f['id']}", f["user_id"], "out", f["text"], sender="bot")   # پژواکش «همکار» حساب نشود
             db.finish_followup(c, f["id"], "done")
             n += 1
         except Exception as e:  # noqa: BLE001
@@ -525,7 +538,8 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replie
                 ig_id = await ig.send_dm(target, text, quick_replies=quick_replies)
             else:
                 ig_id = await ig.send_dm(target, text)
-            db.log_reply(c, event_id, rule_id, kind, target, text, ig_id=ig_id, ok=True)
+            logged = text + ("\n" + "\n".join(f"🔗 {b['title']}: {b['url']}" for b in buttons) if buttons else "")
+            db.log_reply(c, event_id, rule_id, kind, target, logged, ig_id=ig_id, ok=True)   # سقف دایرکت لینک‌دار دکمه را هم بشمارد
             if kind == "public":
                 db.mark_comment(c, target, answered=True)
             else:
@@ -535,7 +549,7 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replie
             return True
         except Exception as e:  # noqa: BLE001
             err = str(e)
-            if buttons and "2534022" not in err:
+            if buttons and "2534022" not in err and err.startswith("IG 4"):    # فقط ردِ صریح قالب دکمه، نه timeout
                 # دکمه پذیرفته نشد: همان پیام با لینک‌ها در متن (پیام مهم‌تر از شکل آن است)
                 text = text + "\n\n" + "\n".join(f"{b['title']}: {b['url']}" for b in buttons)
                 text = _fit(text) if kind == "private" else text
@@ -595,6 +609,10 @@ async def auto_followups(ig, c, now: float | None = None) -> int:
         uid = x["user_id"]
         product = memory.recall(c, uid, max_age=24 * 3600).get("product") or "گوشی"
         text = s["auto_followup_text"].replace("{product}", product)
+        if safety.link_problems(text):
+            return n
+        if n:
+            await asyncio.sleep(random.uniform(40, 100))       # فاصله‌ی طبیعی بین پیگیری‌ها
         ok, err, ig_id = True, None, None
         try:
             ig_id = await ig.send_dm(uid, text)

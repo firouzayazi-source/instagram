@@ -87,6 +87,7 @@ def plan(c, comments: list[dict], texts: dict, now: float | None = None) -> list
         ev = c.execute("SELECT status FROM events WHERE id=?", (eid,)).fetchone()
         if ev:
             replied = c.execute("SELECT 1 FROM replies WHERE target_id=? AND ok=1", (x["id"],)).fetchone()
+            # «braked» (دوره‌ی توقف اضطراری) عمداً نه: بعداً یک‌جا جواب نمی‌گیرد
             if replied or ev["status"] not in ("ignored", "skipped", "error"):
                 out.append({**x, "kind": "queued"})       # در صف است یا جواب گرفته
                 continue
