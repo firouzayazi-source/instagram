@@ -147,3 +147,24 @@ async def test_braked_comment_queue_drains_to_inbox_without_replies(monkeypatch)
     with db.connect() as c:
         assert db.pending_events(c, comments=True) == []
     assert ig.calls == []
+
+
+@pytest.mark.asyncio
+async def test_public_replies_daily_cap_and_no_identical_in_a_row(monkeypatch):
+    from tests.test_instagram_features import IG
+    monkeypatch.setattr(config, "SEND_DELAY_MIN", 0)
+    monkeypatch.setattr(config, "SEND_DELAY_MAX", 0)
+    monkeypatch.setattr(worker, "PUBLIC_DAILY_LIMIT", 3)
+    db.init()
+    ig = IG()
+    with db.connect() as c:
+        db.upsert_rule(c, {"name": "x", "channels": ["comment"], "triggers": [{"match": "any"}],
+                           "actions": {"comment_mode": "both", "public_replies": ["الف", "ب"], "private_replies": ["لینک"]},
+                           "advanced": {"random_pick": True, "once_per_user": False}})
+        for i in range(5):
+            db.add_event(c, f"c:q{i}", "comment", {"id": f"q{i}", "text": "x", "from": {"id": f"u{i}"}, "media": {"id": "p"}})
+        for row in db.pending_events(c, limit=10):
+            await worker.handle_event(ig, row, c)
+    pub = [t for k, _, t in ig.calls if k == "public"]
+    assert len(pub) == 3 and all(a != b for a, b in zip(pub, pub[1:]))       # سقف، و هیچ دو تای یکسان پیاپی
+    assert len([1 for k, *_ in ig.calls if k == "private"]) == 5            # دایرکت‌ها همه رفتند

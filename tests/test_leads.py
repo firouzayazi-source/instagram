@@ -188,6 +188,7 @@ async def test_random_pick_uses_all_texts(tmp_path, monkeypatch):
     from tests.test_instagram_features import IG
     monkeypatch.setattr(config, "SEND_DELAY_MIN", 0)
     monkeypatch.setattr(config, "SEND_DELAY_MAX", 0)
+    monkeypatch.setattr(worker, "PUBLIC_DAILY_LIMIT", 1000)     # سقف روزانه‌ی جواب عمومی جدا آزموده می‌شود (test_safety)
     db.init()
     ig = IG()
     texts = ["الف", "ب", "ج"]

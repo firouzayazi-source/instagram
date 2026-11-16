@@ -227,6 +227,16 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
                 text = "\n\n".join(x for x in (text, form_question_text(*form_q)) if x)
             if kind == "public" and private_failed:
                 text = "برای دریافت، یه پیام به دایرکت پیج بده 📩"     # دایرکت نرسید؛ «ارسال شد» دروغ می‌شد
+            if kind == "public" and text:
+                # قفل ۲۵ آبان: ده‌ها جواب کوتاه و تکراری («دایرکت چک کن»، «برات فرستادم») زیر کامنت‌ها الگوی پیج
+                # هک‌شده بود. سقف روزانه (بعدش فقط دایرکت می‌رود) و هرگز دو جواب یکسان پشت‌سرهم.
+                if public_replies_today(c) >= PUBLIC_DAILY_LIMIT:
+                    text = None
+                else:
+                    variants = [prep(t) for t in acts.get("public_replies") or [] if t]
+                    last = c.execute("SELECT text FROM replies WHERE kind='public' AND ok=1 ORDER BY id DESC LIMIT 1").fetchone()
+                    if last and last[0] == text and len(set(variants)) > 1:
+                        text = next(t for t in variants[variants.index(text) + 1:] + variants if t != text)
             if text:
                 ok = await _send(ig, c, row["id"], rule["id"], kind, payload, inc, text,
                                  buttons=(btns or None) if kind == "private" and not form_q else None)
@@ -636,6 +646,14 @@ def comment_limit(c) -> int:
         return max(1, min(COMMENT_LIMIT_MAX, int(db.kv_get(c, COMMENT_LIMIT_KEY) or COMMENT_LIMIT_DEFAULT)))
     except ValueError:
         return COMMENT_LIMIT_DEFAULT
+
+
+PUBLIC_DAILY_LIMIT = 25      # جواب عمومی زیر کامنت در ۲۴ ساعت؛ بعد از آن کامنت‌گذار فقط دایرکت می‌گیرد
+
+
+def public_replies_today(c, now: float | None = None) -> int:
+    return c.execute("SELECT COUNT(*) FROM replies WHERE ok=1 AND kind='public' AND created_at>?",
+                     ((now or time.time()) - 86400,)).fetchone()[0]
 
 
 def link_dms_last_hour(c, now: float | None = None) -> int:
