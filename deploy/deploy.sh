@@ -47,7 +47,9 @@ main() {
   $G pull --ff-only
   trap rollback ERR     # از اینجا هر خطا (نصب، ساخت، تست، سلامت) به نسخه‌ی قبلی برمی‌گردد
   umask 022
-  .venv/bin/pip install -q -r requirements.txt
+  .venv/bin/pip install -q -U "pip<27"
+  # eager: وابستگی‌های فرعی (pydantic، click، …) هم در محدوده‌ی سقف‌های requirements.txt به‌روز شوند؛ تست‌ها بعدش
+  .venv/bin/pip install -q -U --upgrade-strategy eager -r requirements.txt
   (cd web && npm ci --no-audit --no-fund --silent && npm run build --silent)
   # تست‌ها هرگز روی داده‌ی زنده: مسیرها به پوشه‌ی موقت (لایه‌ی دوم ایمنی کنار tests/conftest.py)
   T=$(mktemp -d)
