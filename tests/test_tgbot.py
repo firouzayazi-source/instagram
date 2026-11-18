@@ -123,8 +123,8 @@ async def run():
     await bot.tx_flush(FakeBot(), u)
 asyncio.run(run())
 assert 'اقساط ایکس اس' in posted[0] and 'پیش‌پرداخت یک‌سوم' in posted[0] and 'پیام گروه' not in posted[0], posted
-assert '&lt;b&gt;' not in posted[0] and '%%d8' not in posted[0] and 'ربات جواب داد' in posted[0], posted   # بی برچسب و لینک بلند
-assert 'با شما' in posted[1], posted
+assert '&lt;b&gt;' not in posted[0] and '%%d8' not in posted[0] and 'ربات جواب داد' in posted[0] and 'blockquote' in posted[0], posted   # بی برچسب و لینک بلند
+assert 'منتظر جواب شما' in posted[1], posted
 assert not bot.tx_active(55)
 print('OK')
 """ % str(TG)

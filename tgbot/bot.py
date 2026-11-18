@@ -859,11 +859,12 @@ def transcript_on():
 def tx_start(uid,text):
     if transcript_on(): _tx[uid]={"q":text,"ts":time.time(),"replies":[],"urgent":""}
 
-def _plain(t,limit=260):
-    """متن کوتاه و خوانا: بی برچسب HTML، بی لینک‌های بلند، بی خط خالی."""
+def _plain(t,limit=260,lines=False):
+    """متن کوتاه و خوانا: بی برچسب HTML، بی لینک‌های بلند، بی خط خالی و خط جداکننده (━━)؛ lines: خط‌ها حفظ شوند."""
     t=html.unescape(_TAG_RE.sub("",str(t or "")))
     t=_URL_RE.sub("🔗",t)
-    t=" ".join(x.strip() for x in t.splitlines() if x.strip())
+    rows=[x.strip() for x in t.splitlines() if x.strip() and not set(x.strip())<=set("━─—-_=·•. ")]
+    t=("\n" if lines else " ").join(rows)
     return t if len(t)<=limit else t[:limit].rsplit(" ",1)[0]+" …"
 
 def tx_capture(chat_id,text):
@@ -890,21 +891,27 @@ async def topic_head(user):
             r=await c.fetchone(); src=_src_label(r[0] if r else "")
     except Exception: pass
     uname=f" · @{esc(user.username)}" if user.username else ""
-    return (f"👤 <b>{esc(user.first_name or '—')}</b>{uname} · 🆔 <code>{user.id}</code>\n"
-            f"{(src+' · ') if src else ''}🕐 ورود {_hhmm()}\n"
-            "✍️ هر چه اینجا بنویسید برای مشتری می‌رود (یادداشت داخلی: با ! شروع کنید).")
+    return (f"🙋‍♂️ <b>مشتری تازه</b>\n"
+            f"👤 <b>{esc(user.first_name or '—')}</b>{uname}\n🆔 <code>{user.id}</code>\n"
+            f"{(src+'   ') if src else ''}🕐 {_hhmm()}\n"
+            "<i>✍️ جواب شما همین‌جا برای مشتری می‌رود · یادداشت داخلی با !</i>")
+
+_UNSURE = ("متوجه نشدم","مطمئن نیستم","منظورتون","بازتر بنویسید")
 
 async def tx_flush(bot,user):
-    """یک پیام کوتاه در تاپیک: ساعت و سؤال مشتری، و جواب ربات یا «با شما»."""
+    """یک کارت کوتاه در تاپیک: وضعیت با رنگ (🟢 جواب داده شد / 🟡 ربات مطمئن نبود / 🔴 منتظر شما)، ساعت،
+    سؤال مشتری درشت، و جواب ربات در یک نقل‌قول جمع‌شونده (سه خط؛ با لمس باز می‌شود)."""
     t=_tx.pop(user.id,None)
     if not t: return
-    head=("🔴 " if t["urgent"] else "")+f"🕐 {_hhmm(t['ts'])}   ❓ <b>{esc(_plain(t['q'],300))}</b>"
-    replies=[_plain(r) for r in t["replies"] if _plain(r)]
+    replies=[_plain(r,700,lines=True) for r in t["replies"] if _plain(r)]
+    if not replies: badge="🔴 <b>منتظر جواب شما</b>"
+    elif any(w in replies[0] for w in _UNSURE): badge="🟡 <b>ربات مطمئن نبود — نگاهی بیندازید</b>"
+    else: badge="🟢 <b>ربات جواب داد</b>"
+    if t["urgent"]: badge="🚨 <b>فوری</b> · "+badge
+    lines=[f"{badge}   <i>{_hhmm(t['ts'])}</i>", f"💬 <b>{esc(_plain(t['q'],300))}</b>"]
     if replies:
-        body="✅ ربات جواب داد: "+esc("  ·  ".join(replies[:3]))
-    else:
-        body="🙋 <b>ربات جواب نداد — با شما</b>"
-    text=f"{head}\n{body}"
+        lines.append("<blockquote expandable>🤖 "+esc("\n\n".join(replies[:3]))+"</blockquote>")
+    text="\n".join(lines)
     async def post(gid,tid): await bot.send_message(gid,text,parse_mode="HTML",message_thread_id=tid)
     try: await to_topic(bot,user,None,post)
     except Exception as e: logger.error(f"transcript {user.id}: {e}")
