@@ -130,3 +130,18 @@ print('OK')
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_site_pages_offline_search():
+    """ربات: سؤالی که نیتی ندارد ولی یکی از صفحه‌های سایت روشن به آن می‌خورد ← خلاصه‌ی همان صفحه با لینک."""
+    sys.path.insert(0, str(TG))
+    import sitepages
+    sitepages.set_items([
+        {"id": 1, "kind": "pages", "title": "شرایط مرجوعی و بازگشت کالا", "link": "https://stland.ir/return",
+         "text": "مشتری تا ۷ روز می‌تواند گوشی کارکرده را تست کند.\nدر صورت ایراد فنی، کالا مرجوع می‌شود."},
+        {"id": 2, "kind": "posts", "title": "راهنمای تشخیص آیفون اصل از تقلبی", "link": "https://stland.ir/blog/fake",
+         "text": "برای تشخیص آیفون اصل، شماره سریال را در سایت اپل چک کنید."}])
+    hit = sitepages.search("چطور آیفون اصل رو تشخیص بدم")
+    assert hit and hit["link"].endswith("/fake") and "سریال" in hit["snippet"]
+    assert sitepages.search("شرایط مرجوعی چیه")["link"].endswith("/return")
+    assert sitepages.search("سلام") is None and sitepages.search("قیمت ۱۳ پرو") is None

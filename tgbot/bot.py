@@ -6,6 +6,7 @@ import brain       # موتور فهم پیام — بدون هیچ API بیرو
 import specs       # مشخصات فنی آیفون‌ها (مقایسه)
 import profanity   # تشخیص فحش و توهین
 import catalog     # لیست کالای زنده از سایت (stland.ir)
+import sitepages   # صفحه‌ها و نوشته‌های سایت برای جواب آفلاین (به‌جز کالا)
 from telegram import (Update, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKeyboardMarkup,
                       InlineKeyboardButton, BotCommand, BotCommandScopeChat,
                       BotCommandScopeDefault, WebAppInfo)
@@ -54,6 +55,7 @@ SETTINGS_FILE = "settings.json"; STATS_FILE = "stats.json"
 ADMINS_FILE = "admins.json"; BROADCAST_FILE = "broadcast.json"
 FAQ_FILE = "faq.json"; UNMATCHED_FILE = "unmatched.json"
 PAGES_FILE = "pages.json"; TOPICS_FILE = "topics.json"
+SITE_PAGES_FILE = "site_pages.json"   # صفحه‌ها و نوشته‌های سایت (sitepages.py)
 CATALOG_FILE = "catalog.json"  # آخرین لیست کالای سایت — اگر سایت موقتاً در دسترس نبود
 LEARN_FILE = "learn.json"      # آنچه دستیار خودش یاد گرفته (با امکان پس‌گرفتن)
 
@@ -6017,6 +6019,17 @@ async def _catalog_loop(bot):
             if fails in (1,6): logger.warning(f"catalog: سایت در دسترس نیست ({fails}): {e}")
         await asyncio.sleep(600)
 
+async def _site_pages_loop():
+    """هر ۱۲ ساعت صفحه‌ها و نوشته‌های سایت (درباره‌ی ما، گارانتی، ارسال، راهنماها…) برای جواب آفلاین."""
+    while True:
+        try:
+            async with _site_client() as cl:
+                new=await sitepages.fetch(cl)
+            if new: sitepages.set_items(new,SITE_PAGES_FILE); logger.info(f"site pages: {len(new)}")
+        except Exception as e:
+            logger.warning(f"site pages: سایت در دسترس نیست: {e}")
+        await asyncio.sleep(12*3600)
+
 # ── «خبرم کن» خودکار: کالای منتظرها در سایت موجود شد → خبر با همان کالاها
 async def wl_auto(bot):
     if not catalog.fresh(): return
@@ -6344,6 +6357,9 @@ async def assistant_reply(update,ctx,text,user,dry=False):
     همکار سپردن."""
     msg=update.message; uid=user.id; now=time.time()
     intents=brain_intents()
+    try:                      # غلط تایپی پیش از هر چیز: «ساام»، «ایغون ۱۱»، «سفارس بدم»
+        text=brain.spell(text,intents) or text
+    except Exception as e: logger.debug(f"spell: {e}")
     a=brain.analyze(text,intents)
     tags=a["tags"]; c=brain_ctx.get(uid) or {}
     name=(user.first_name or "").strip()[:20]
@@ -6498,6 +6514,16 @@ async def assistant_reply(update,ctx,text,user,dry=False):
         await msg.reply_text(_join(*lines) or "🙂",
                              reply_markup=InlineKeyboardMarkup(quick) if quick else main_menu())
         return True
+
+    # ۵٫۵) جواب از متن خود سایت (درباره‌ی ما، گارانتی، ارسال، راهنماها…): فقط اگر یک صفحه روشن به سؤال می‌خورد
+    if mood!="issue":
+        hit=sitepages.search(text)
+        if hit:
+            brain_ctx[uid]={"ts":now,"product":prod}
+            await _typing(ctx.bot,msg.chat_id)
+            await msg.reply_text(_join(lead,f"📄 {hit['title']}\n\n{hit['snippet']}\n\n🔗 ادامه در سایت: {hit['link']}"),
+                                 reply_markup=main_menu())
+            return True
 
     # ۶) نزدیک بود ولی مطمئن نیستیم — از خودِ مشتری می‌پرسیم
     # مشکلِ دستگاه را با گزینه‌سازی معطل نمی‌کنیم — مستقیم به آدم
@@ -6816,7 +6842,7 @@ def _spawn(coro,name):
     return t
 
 async def post_init(app):
-    await init_db(); await load_human(); catalog.load(CATALOG_FILE); await load_pages(); await load_topics(); await load_data(); await load_banners()
+    await init_db(); await load_human(); catalog.load(CATALOG_FILE); sitepages.load(SITE_PAGES_FILE); await load_pages(); await load_topics(); await load_data(); await load_banners()
     await load_workhours(); await load_buttons(); await load_settings()
     await load_stats(); await load_menu(); await load_places(); await load_backup_registry()
     await load_admins(); await bc_load(); await load_faq(); await load_unmatched()
@@ -6828,6 +6854,7 @@ async def post_init(app):
     _spawn(_pending_loop(app.bot),"پیام‌های بی‌جواب")
     _spawn(_human_wait_loop(app.bot),"انتظار برای همکار")
     _spawn(_catalog_loop(app.bot),"لیست کالای سایت")
+    _spawn(_site_pages_loop(),"صفحه‌های سایت")
     _spawn(_panel_inbox_loop(),"تغییرهای پنل وب")
     _spawn(_status_loop(),"گزارش وضعیت")
     _spawn(_ig_notify_loop(app.bot),"خبرهای اینستاگرام")

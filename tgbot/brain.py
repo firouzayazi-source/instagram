@@ -95,6 +95,14 @@ SYNONYMS = {
     # برندهای غیر اپل
     "اندرویدی": "اندروید", "گلکسی": "سامسونگ", "galaxy": "سامسونگ", "redmi": "شیائومی",
     "ردمی": "شیائومی",
+    # اپل و محصولات با غلط رایج (۲۷ آبان ۱۴۰۵، به خواست صاحب پیج)
+    "ابل": "اپل", "apple": "اپل", "اپلی": "اپل", "ایفن": "ایفون", "ایفوون": "ایفون", "ایفونه": "ایفون",
+    "چیا": "چی", "چیارو": "چی", "چیایی": "چی", "دارین": "دارید", "داری": "دارید", "دارن": "دارید",
+    "محصول": "محصولات", "محصولاتتون": "محصولات", "محصولتون": "محصولات", "جنس": "محصولات", "اجناس": "محصولات",
+    "کالا": "محصولات", "کالاها": "محصولات",
+    "اکبند": "اک", "اکبنده": "اک", "پلمپ": "پلمب", "پلمبه": "پلمب", "نوو": "نو",
+    "قسطا": "قسط", "قصط": "قسط", "اقصاط": "قسط", "اغساط": "قسط",
+    "گرانتی": "گارانتی", "گارنتی": "گارانتی", "ادرسه": "ادرس", "ادرسو": "ادرس",
     # تخفیف
     "اف": "تخفیف", "حراج": "تخفیف", "off": "تخفیف", "تخفیفی": "تخفیف",
     # آدم
@@ -351,6 +359,33 @@ def sim(a, b):
 
 NEAR_FUZZY_FLOOR = 0.72     # کمترین شباهتی که جایی به کار می‌آید
 
+# ── غلط تایپی فارسی: هم‌آواها و کلیدهای کنار هم
+# حرف‌هایی که یک صدا دارند و مشتری‌ها جای هم می‌نویسند («اقصاط»، «محظول»، «گارانطی»)
+_PHON = str.maketrans({"ث": "س", "ص": "س", "ذ": "ز", "ض": "ز", "ظ": "ز", "ط": "ت", "ح": "ه", "غ": "ق"})
+
+
+@lru_cache(maxsize=50000)
+def phon(tok):
+    """شکل آوایی کلمه برای تطبیق غلط‌های هم‌آوا."""
+    return tok.translate(_PHON)
+
+
+# کیبورد استاندارد فارسی: کلیدهای کنار هم («محضول» به‌جای «محصول»: ض کنار ص است)
+_KB_ROWS = ("ضصثقفغعهخحجچ", "شسیبلاتنمکگ", "ظطزرذدپو")
+_KB_NEAR = {}
+for _r in _KB_ROWS:
+    for _i, _ch in enumerate(_r):
+        _KB_NEAR.setdefault(_ch, set()).update(_r[max(0, _i - 1):_i] + _r[_i + 1:_i + 2])
+
+
+@lru_cache(maxsize=50000)
+def keyboard_typo(a, b):
+    """دو کلمه‌ی هم‌طول که فقط در یک حرف فرق دارند و آن دو حرف روی کیبورد کنار هم‌اند (یا هم‌آوا)."""
+    if len(a) != len(b) or len(a) < 4 or a == b:
+        return False
+    diff = [(x, y) for x, y in zip(a, b) if x != y]
+    return len(diff) == 1 and (diff[0][1] in _KB_NEAR.get(diff[0][0], ()) or phon(diff[0][0]) == phon(diff[0][1]))
+
 
 @lru_cache(maxsize=20000)
 def _key_forms_cached(key):
@@ -358,6 +393,7 @@ def _key_forms_cached(key):
     for t in norm(key).split():
         f = {t}
         if t in SYNONYMS: f.add(SYNONYMS[t])
+        if len(t) >= 3: f.add("~" + phon(t))        # شکل آوایی، جدا (با ~) تا با کلمه‌ی واقعی قاطی نشود
         out.append(frozenset(f))
     return tuple(out)
 
@@ -379,6 +415,14 @@ def _msg_forms(tok):
     if len(s) >= 3 and s != tok:
         out.append((s, Q_STEM))
         if s in SYNONYMS: out.append((SYNONYMS[s], Q_STEM))
+    if tok not in SYNONYMS and len(tok) >= 4:
+        # غلط تایپی یک کلمه‌ی هم‌معنی («محضول» ← «محصول» ← «محصولات»)
+        for k, v in SYNONYMS.items():
+            if keyboard_typo(tok, k) or (len(k) >= 4 and phon(k) == phon(tok)):
+                out.append((v, Q_FUZZY)); break
+    if len(tok) >= 3:
+        out.append(("~" + phon(tok), Q_FUZZY))       # «اقصاط» ≈ «اقساط»
+        if len(s) >= 3 and s != tok: out.append(("~" + phon(s), Q_FUZZY))
     return tuple(out)          # در حافظه نگه داشته می‌شود؛ تغییرناپذیر
 
 
@@ -392,13 +436,85 @@ def _tok_hit(kforms, msg):
     if best:
         return best
     for kf in kforms:
-        if len(kf) < 4:
+        if len(kf) < 4 or kf[0] == "~":
             continue
         for forms in msg:
             for w, _ in forms:
-                if len(w) >= 4 and sim(kf, w) >= FUZZY_MIN:
+                if len(w) >= 4 and w[0] != "~" and (sim(kf, w) >= FUZZY_MIN or keyboard_typo(kf, w)):
                     return Q_FUZZY
     return 0.0
+
+
+# ── تصحیح غلط تایپی پیش از فهم (۲۷ آبان ۱۴۰۵): کلمه‌ای که ربات نمی‌شناسد با نزدیک‌ترین کلمه‌ی آشنا عوض می‌شود
+# («ساام»، «مذسی»، «ایغون»، «سفارس»، «هصتید»). فقط وقتی یک نامزد روشن هست؛ کلمه‌ی آشنا یا ریشه‌ی آشنا دست نمی‌خورد.
+BASE_VOCAB = set("""
+سلام سلامتی درود خسته نباشید نباشی خدا قوت مرسی ممنون ممنونم سپاس متشکرم تشکر خداحافظ خدافظ خدانگهدار
+افرین ایول دستخوش دسخوش دمت گرم دوستت دوستتون دارم عالی خوب بود قربونت فدات نوکرتم مخلصم
+هستید هستی هستین هست هستن الان کسی ادمین همکار کارتون چیکار میکنید میکنین کار چیه کی شما کجایید
+میخوام میخواستم میخوام بخرم خرید سفارش بدم ثبت میخرید میفروشید میفروشین داری دارید دارین دارن
+لیست قیمت قیمتا قیمتها موجودی موجودیاتون موجودیا بفرستید بفرست بفرس
+ایفون ایپد مکبوک ایرپاد اپل واچ ساعت گوشی گوشیا پرو مکس پرومکس نرمال پلاس مینی کارکرده نو اک پلمب استوک
+شارژر کابل قاب گلس هندزفری لوازم جانبی باتری سلامت حافظه گیگ رنگ مشکی سفید ابی طلایی بنفش قرمز سبز
+اقساط قسط چک طلا پیش پرداخت گارانتی ضمانت رجیستر ادرس لوکیشن فروشگاه مغازه ساعت کاری باز بسته تعطیل
+ارسال پست شهرستان تهران اینستاگرام سایت تلگرام شماره تماس تلفن تعویض معاوضه تخفیف تعمیر اپلایدی
+خوام خوای خواید خواین خواستم بخوام بابت پیگیری راهنمایی راهنماییتون زحمت لطف کمک بالای بالا زیر کمتر بیشتر
+تا حدود میلیون تومن تومان هزار ارزون ارزونترین گرون بهترین چند چنده چقدر داره کدوم فرق مقایسه
+""".split())
+
+# غلط‌های رایجی که شکل درستشان روشن است: پیش از هر چیز با همان عوض می‌شوند (تا جست‌وجوی محصول هم درست ببیند)
+TYPO_FIX = {"گرانتی": "گارانتی", "گارنتی": "گارانتی", "گارانطی": "گارانتی", "اقصاط": "اقساط", "اغساط": "اقساط",
+            "قصط": "قسط", "قصطی": "قسطی", "ابل": "اپل", "ایفن": "ایفون", "ایفوون": "ایفون", "ایغون": "ایفون",
+            "محضول": "محصول", "محصولت": "محصولات", "ادرص": "ادرس", "لیصت": "لیست", "قیمط": "قیمت"}
+
+_vocab_cache = {"key": None, "set": frozenset()}
+
+
+def vocab(intents):
+    """کلمه‌های آشنا: پایه، هم‌معنی‌ها، و کلیدواژه‌ها و جمله‌های نمونه‌ی نیت‌ها (با ویرایش مدیر به‌روز می‌شود)."""
+    key = tuple((x.get("id"), len(x.get("keys") or []), len(x.get("examples") or [])) for x in intents)
+    if _vocab_cache["key"] != key:
+        v = set(norm(" ".join(BASE_VOCAB)).split()) | set(SYNONYMS) | set(SYNONYMS.values())
+        for x in intents:
+            for t in (x.get("keys") or []) + (x.get("examples") or []):
+                v.update(norm(t).split())
+        _vocab_cache.update(key=key, set=frozenset(w for w in v if len(w) >= 2))
+    return _vocab_cache["set"]
+
+
+def _indel(a, b):
+    """یک حرف جاافتاده یا اضافه («قیت» ↔ «قیمت»، «سلاام» ↔ «سلام»)."""
+    if abs(len(a) - len(b)) != 1:
+        return False
+    s, l = (a, b) if len(a) < len(b) else (b, a)
+    for i in range(1, len(l)):          # حرف اول نه (غلط حرف اول نادر است و «وای» ↔ «خوای» را می‌ساخت)
+        if l[:i] + l[i + 1:] == s:
+            doubled = l[i] == l[i - 1] or (i + 1 < len(l) and l[i] == l[i + 1])
+            # جاافتادن مصوت‌نما (ا و ی) مبهم است: «کارتن» ≠ «کارتون»، «اصلیه» ≠ «اصله»؛ تکرار حرف اشکالی ندارد
+            if doubled or l[i] not in "اوی":
+                return True
+    return False
+
+
+def spell(text, intents):
+    """متن با غلط‌های تایپی تصحیح‌شده (شکل یکدست‌شده). کلمه‌ی ناآشنا فقط با یک نامزد روشن عوض می‌شود."""
+    v = vocab(intents)
+    out = []
+    for t in tokens(text):
+        if t in TYPO_FIX:
+            out.append(TYPO_FIX[t]); continue
+        if out and out[-1] in ("می", "نمی") and out[-1] + t in v:     # «می خوام» = «میخوام»
+            out.append(t); continue
+        if len(t) < 3 or t in v or stem(t) in v or not re.search(r"[آ-ی]", t) or re.search(r"\d", t):
+            out.append(t)
+            continue
+        cands = [w for w in v if abs(len(w) - len(t)) <= 1 and len(w) >= 4
+                 and (keyboard_typo(t, w) or (len(t) >= 4 and phon(t) == phon(w)) or _indel(t, w)
+                      or (len(t) >= 5 and sim(t, w) >= 0.86))]
+        if len(cands) > 1:     # چند نامزد: نزدیک‌ترین، فقط اگر روشن‌تر از بقیه باشد
+            best = sorted(cands, key=lambda w: (-(keyboard_typo(t, w) or phon(t) == phon(w) or _indel(t, w)), -sim(t, w)))
+            cands = best[:1] if sim(t, best[0]) > sim(t, best[1]) or keyboard_typo(t, best[0]) else []
+        out.append(cands[0] if cands else t)
+    return " ".join(out)
 
 
 def score_intent(item, msg_forms, msg_content):

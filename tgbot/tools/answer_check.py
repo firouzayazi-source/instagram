@@ -35,7 +35,8 @@ def _args():
         if k in a:
             i = a.index(k); opt[k] = os.path.abspath(a[i + 1]); del a[i:i + 2]
     mode = a[0] if a and a[0] == "scan" else "check"
-    target = a[1] if mode == "scan" and len(a) > 1 else os.path.join(ROOT, "tests", "phrases.tsv")
+    target = (a[1] if len(a) > 1 else None) if mode == "scan" else (a[0] if a else None)   # check FILE.tsv هم
+    target = target or os.path.join(ROOT, "tests", "phrases.tsv")
     return mode, os.path.abspath(target), opt
 
 

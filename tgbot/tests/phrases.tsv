@@ -151,3 +151,79 @@
 وام شرایطش چیه	i_install
 لپ تاپ اپل دارید	i_other
 ببخشید من گوشی میخواستم	i_advisor
+
+# ── غلط تایپی و محاوره (۲۷ آبان ۱۴۰۵): هم‌آوا، کلید کنار هم، حرف جاافتاده یا تکراری
+چیا دارین	i_products|catalog
+چی داری	i_products|catalog
+محصول چی	i_products|catalog
+ابل داری چی	i_products|catalog
+محضول دارین؟	i_products|catalog
+آیفون چیا دارین	i_products|catalog
+اقصاط دارین	i_install
+آکبند دارین	i_condition|catalog
+چی میفروشین	i_products|catalog
+قیت؟	catalog|i_price
+سلاام	smalltalk
+شما کی هسید	i_about
+ایغون ۱۱	catalog
+گرانتی دارن	i_warranty
+اساوک لند چیه	i_about
+با چک میشه خذید	i_install
+پرمکث سفید	catalog
+گوشیمو با ایفون جدید عوض میکمید	i_tradein
+۱۶ نرکال چقدر برمیدارید ازم	i_tradein
+مپسس استوک لند کیه	i_owner
+ابکلودم قفل شده	i_software
+تعمیز شده نیست؟	i_genuine
+لیست قیکت	catalog
+استوک تمیز دارسد	i_condition
+گلس ۱۳ دارسد	catalog
+التن موجود دارید	i_stock|catalog
+مدیرتپن کیه	i_owner
+الان هستبد	smalltalk
+یکی جوتب بده	i_human
+ایفون ۱۳ ۲۵۶ داذید؟	catalog
+مرسی بابن پیگیری	smalltalk
+آقا خرید هم دارسد	i_tradein
+بتتریش چند درصده	i_genuine
+قیمت گوشیاتوت چنده	i_price|catalog
+شبی چمد؟	dym|unknown
+گوشس زیر ۱۵۰ میلیون	catalog
+ببحشید من گوشی میخواستم	i_advisor
+میخوام خربد کنم	i_order
+کدپمش ارزش خرید داره	i_advisor
+گوشی قدیمیمو میهرید	i_tradein
+چجپری بیام فروشگاه	i_address
+فرق اک با اسنوک چیه	i_condition
+دوربین ۱۵ پرو چطورح	i_specs
+آیفون ۱۳ و ۱۲ استوک چه قیمتی داذید	catalog
+قیمت امرووز چنده	i_price|catalog
+الان موجود دارد	i_stock|catalog
+تعنیر شده نیست؟	i_genuine
+یه ۱۳ نرمال میوام	catalog
+لیست قیممتتون رو بفرستید	i_price|catalog
+ایفون ۱۳ ۲۵۶ داری؟	catalog
+پس کراسه میشه	i_shipping
+گوشمو با ایفون جدید عوض میکنید	i_tradein
+شارژر دارسد؟	catalog
+هسستید؟ قیمت ۱۳ پرو	catalog
+لپ تاپ اپل داارید	i_other
+ممون از راهنماییتون	smalltalk
+اپل ایدی مسسازید	i_appleid
+مدیرتوون کیه	i_owner
+لووازم جانبی دارید؟	catalog
+میخواام با یه آدم صحبت کنم	i_human|human
+۱۶ پروکس دارین؟	catalog
+برنامه نصب میکتید	i_software
+میخخوام با یکی حرف بزنم	i_human
+صاحب مغغازه کیه	i_owner
+شارر اصل دارید	catalog
+ایفپن ۱۱	catalog
+پرممکس سفید	catalog
+۱۶ پرو مکس چند ایینچه	i_specs
+ببخید من گوشی میخواستم	i_advisor
+آیفون نو چی دارد	catalog|i_products
+قیت؟	catalog|i_price
+جنواره دارید	i_notify
+استک تمیز دارید	i_condition
+برای تهران میفرستد	i_shipping

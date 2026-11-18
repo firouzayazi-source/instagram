@@ -260,6 +260,48 @@ async def fetch_rest_v3(http, base: str, currency: str) -> list[dict]:
 
 # ---------- اجرا ----------
 
+SITE_DOC_PREFIX = "🌐 سایت: "
+_SKIP_SLUGS = {"cart", "checkout", "my-account", "shop", "wishlist", "compare", "sample-page", "login", "register"}
+
+
+async def fetch_pages(http, base: str) -> list[tuple[str, str]]:
+    """صفحه‌ها و نوشته‌های عمومی وردپرس (درباره‌ی ما، گارانتی، ارسال، راهنماها…) ← [(عنوان، متن)]."""
+    out = []
+    for kind in ("pages", "posts"):
+        for page in range(1, 6):
+            r = await http.get(f"{base}/wp-json/wp/v2/{kind}",
+                               params={"per_page": 100, "page": page, "_fields": "id,slug,title,link,content"})
+            if r.status_code == 400 and page > 1:
+                break
+            r.raise_for_status()
+            for p in r.json():
+                if (p.get("slug") or "") in _SKIP_SLUGS:
+                    continue
+                title = _text((p.get("title") or {}).get("rendered", ""))
+                body = re.sub(r"(?i)<br\s*/?>|</p>|</li>|</h\d>", "\n", (p.get("content") or {}).get("rendered", ""))
+                body = "\n".join(x.strip() for x in html.unescape(_TAG.sub(" ", body)).splitlines() if x.strip())
+                if title and len(body) >= 40:
+                    out.append((title[:120], (body + ("\n\n" + p["link"] if p.get("link") else ""))[:20000]))
+            if page >= int(r.headers.get("x-wp-totalpages") or 1):
+                break
+    return out
+
+
+def store_pages(c, pages: list[tuple[str, str]]) -> int:
+    """صفحه‌های سایت جای نسخه‌ی قبلی‌شان در «اسناد» مغز مرکزی می‌نشینند (سند دستی دست نمی‌خورد)."""
+    from . import knowledge
+    for (did,) in c.execute("SELECT id FROM docs WHERE name LIKE ?", (SITE_DOC_PREFIX + "%",)).fetchall():
+        knowledge.delete_doc(c, did)
+    now = time.time()
+    for title, body in pages:
+        parts = knowledge.chunk(body)
+        did = c.execute("INSERT INTO docs(name,chars,created_at) VALUES (?,?,?)",
+                        (SITE_DOC_PREFIX + title, len(body), now)).lastrowid
+        c.executemany("INSERT INTO doc_chunks(doc_id,idx,text) VALUES (?,?,?)",
+                      [(did, i, f"{title}\n{p}") for i, p in enumerate(parts)])
+    return len(pages)
+
+
 async def sync(c, transport=None) -> dict:
     """همه‌ی محصولات سایت را می‌خواند و جایگزین محصولات همگام‌شده‌ی قبلی می‌کند. وضعیت را برمی‌گرداند."""
     s = get_settings(c)
@@ -279,6 +321,12 @@ async def sync(c, transport=None) -> dict:
                     rows, api, err = await fetch_rest_v3(http, s["url"], s["currency"]), "v3", ""
                 except Exception as e2:  # noqa: BLE001
                     err += f" | REST v3: {str(e2)[:200]}"
+        try:        # به‌جز کالا: متن صفحه‌ها و نوشته‌های سایت برای جواب مغز مرکزی (خطایش کالا را خراب نمی‌کند)
+            pages = await fetch_pages(http, s["url"])
+            if pages:
+                s["last_pages"] = store_pages(c, pages)
+        except Exception as e:  # noqa: BLE001
+            s["last_pages_error"] = str(e)[:200]
     if rows is not None and not rows:
         rows, err = None, "سایت هیچ محصولی برنگرداند؛ فهرست قبلی نگه داشته شد"
     if rows is not None:

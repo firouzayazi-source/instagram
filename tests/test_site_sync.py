@@ -160,3 +160,34 @@ def test_products_text_caps_sold_items(c):
     knowledge.save_product(c, {"name": "موجود", "price": "100"})
     text = knowledge.products_text(c)
     assert text.splitlines()[0].startswith("موجود") and "و ۲۰ مورد دیگر".replace("۲۰", "20") in text
+
+
+def test_site_pages_become_brain_docs():
+    """به‌جز کالا، صفحه‌ها و نوشته‌های سایت در «اسناد» مغز مرکزی؛ هر بار جای نسخه‌ی قبلی، سند دستی دست نمی‌خورد."""
+    import asyncio
+    import httpx
+    from app import db, knowledge, site_sync
+
+    def handler(req):
+        if "/wp/v2/pages" in req.url.path:
+            return httpx.Response(200, json=[
+                {"id": 1, "slug": "warranty", "title": {"rendered": "شرایط گارانتی"}, "link": "https://x.ir/warranty",
+                 "content": {"rendered": "<p>گوشی‌های کارکرده ۷ روز مهلت تست دارند و در صورت ایراد مرجوع می‌شوند.</p>"}},
+                {"id": 2, "slug": "cart", "title": {"rendered": "سبد"}, "content": {"rendered": "<p>" + "x" * 80 + "</p>"}}],
+                headers={"x-wp-totalpages": "1"})
+        return httpx.Response(200, json=[], headers={"x-wp-totalpages": "1"})
+    db.init()
+    with db.connect() as c:
+        knowledge.add_doc(c, "دستی.txt", "این سند دستی صاحب پیج است و نباید پاک شود.".encode())
+
+        async def run():
+            async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as h:
+                return await site_sync.fetch_pages(h, "https://x.ir")
+        pages = asyncio.run(run())
+        assert [t for t, _ in pages] == ["شرایط گارانتی"]               # سبد خرید کنار گذاشته شد
+        site_sync.store_pages(c, pages)
+        site_sync.store_pages(c, pages)                                   # دوباره: تکراری نمی‌شود
+        names = [d["name"] for d in knowledge.list_docs(c)]
+        assert names.count("🌐 سایت: شرایط گارانتی") == 1 and "دستی.txt" in names
+        hits = knowledge.relevant_chunks(c, "گارانتی گوشی کارکرده مرجوع")
+        assert hits and "۷ روز" in hits[0]["text"]
