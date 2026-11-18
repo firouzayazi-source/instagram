@@ -7,6 +7,7 @@
 """
 import asyncio
 import json
+import re
 import sqlite3
 import time
 from datetime import datetime, timedelta
@@ -26,6 +27,12 @@ CHECKS = {comment_poll.STATUS_KEY: ("خوانش کامنت‌ها", STALE_AFTER,
           comment_poll.DM_STATUS_KEY: ("خوانش دایرکت‌ها", STALE_AFTER, True),
           "insights_stories": ("ذخیره‌ی آمار استوری", None, True),
           "backup_check": ("بکاپ شبانه", 30 * 3600, False)}      # tools/backup_check.py بعد از هر بکاپ
+REMIND_AFTER = 2 * 3600             # یادآوری خرابی‌ای که هنوز برطرف نشده
+AUTH_RX = re.compile(r"\b190\b|session has been invalidated|validating access token|OAuthException", re.I)
+CONN_LOST = ("🔴 اتصال اینستاگرام قطع شد\n\nبرنامه الان نه کامنت‌ها و دایرکت‌ها را می‌بیند و نه جواب می‌دهد. "
+             "تا وصل شود، مشتری‌ها را خودتان در اپ اینستاگرام جواب بدهید تا کسی بی‌جواب نماند.\n\n"
+             "وصل کردن دوباره: dashboard.composio.dev از مرورگر کامپیوتر ← Instagram ← New ← ورود با stock_land.ir ← Allow "
+             "(معمولاً بعد از عوض شدن رمز پیج)")
 fa = lambda n: f"{int(n or 0):,}".translate(str.maketrans("0123456789,", "۰۱۲۳۴۵۶۷۸۹٬"))  # noqa: E731
 
 
@@ -34,7 +41,43 @@ def check_health(c, bridge_active: bool, now: float | None = None) -> list[str]:
     now = now or time.time()
     state = json.loads(db.kv_get(c, STATE_KEY) or "{}")
     out = []
+    # اتصال قطع (دسترسی باطل، مثلاً بعد از عوض شدن رمز): یک هشدار روشن همان لحظه و یادآوری هر ۲ ساعت تا وصل شود
+    polls = (comment_poll.STATUS_KEY, comment_poll.DM_STATUS_KEY)
+    conn = state.setdefault("conn", {})
+    lost = bridge_active and any(
+        (st := json.loads(db.kv_get(c, k) or "null")) and not st.get("ok") and AUTH_RX.search(str(st.get("error", "")))
+        for k in polls)
+    if lost:
+        conn.setdefault("since", now)
+        if now - conn.get("alert_at", 0) >= REMIND_AFTER:
+            first = "alert_at" not in conn
+            conn["alert_at"] = now
+            hrs = int((now - conn["since"]) // 3600)
+            out.append(CONN_LOST if first else f"⏰ یادآوری: اتصال اینستاگرام هنوز قطع است ({fa(hrs)} ساعت)\n\n" + CONN_LOST)
+    elif conn.get("alert_at"):
+        from . import safety
+        braked = safety.state(c).get("on")
+        out.append("✅ اتصال اینستاگرام برگشت؛ برنامه دوباره کامنت‌ها و دایرکت‌ها را می‌خواند"
+                   + ("، ولی توقف اضطراری (که با قطع اتصال خودکار روشن شد) هنوز روشن است و جوابی نمی‌رود. اگر پیج سالم "
+                      "است، از پنل ← بیشتر ← حساب، رمز و توقف اضطراری برش دارید." if braked else " و جواب می‌دهد.")
+                   + " پیام‌های این مدت را در پنل (کامنت‌ها و پیام‌ها) ببینید.")
+        conn.clear()
+    else:
+        conn.clear()
+    # توقف اضطراری روشن مانده: یادآوری هر ۳ ساعت تا مشتری‌ها فراموش نشوند
+    from . import safety
+    br, bs = safety.state(c), state.setdefault("brake", {})
+    if br.get("on"):
+        if now - bs.get("alert_at", br.get("at", now)) >= 3 * 3600:
+            bs["alert_at"] = now
+            out.append("⏰ توقف اضطراری هنوز روشن است: هیچ جواب خودکاری نمی‌رود. مشتری‌ها را خودتان جواب بدهید، یا اگر "
+                       "پیج سالم است توقف را بردارید (پنل ← بیشتر ← حساب، رمز و توقف اضطراری).")
+    else:
+        bs.clear()
     for key, (label, stale_after, bridge_only) in CHECKS.items():
+        if lost and key in polls:
+            state.get(key, {}).clear()      # همان هشدار «اتصال قطع شد» کافی است
+            continue
         st = json.loads(db.kv_get(c, key) or "null")
         s = state.setdefault(key, {})
         if st is None and not bridge_only and stale_after:
@@ -51,8 +94,10 @@ def check_health(c, bridge_active: bool, now: float | None = None) -> list[str]:
         bad = stale or not st.get("ok")
         if bad:
             s.setdefault("since", now)
-            if not s.get("alerted") and now - s["since"] >= (0 if stale else FAIL_AFTER):
+            remind = s.get("alerted") and key != "backup_check" and now - s.get("alert_at", now) >= REMIND_AFTER
+            if (not s.get("alerted") and now - s["since"] >= (0 if stale else FAIL_AFTER)) or remind:
                 s["alerted"] = True
+                s["alert_at"] = now
                 why = "چند دقیقه است اجرا نشده" if stale else str(st.get("error", ""))[:200]
                 where = "روی سرور: tools/backup_check.py" if key == "backup_check" else "پنل ← پیشخوان ← سلامت سیستم"
                 out.append(f"⚠️ {label} کار نمی‌کند\n{why}\n\n{where}")

@@ -91,3 +91,41 @@ def test_installment_caps():
     assert "از سقف چک بیشتر" in mid and "طلا" in mid
     big = catalog.installment_html({"name": "ج", "price": 330_000_000}, cfg)       # مانده ۲۲۰ م
     assert "از سقف بیشتر است" in big and "پیش‌پرداخت بیشتر" in big
+
+
+def test_topic_transcript_shows_question_and_bot_reply(tmp_path):
+    """تاپیک مشتری: پیام مشتری و جواب دقیق ربات کنار هم؛ بی جواب ← «منتظر شماست»."""
+    code = r"""
+import asyncio, os, sys, types
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+bot.settings['support_group'] = -100
+bot.settings['ai_cc_admin'] = True
+posted = []
+async def fake_to_topic(b, user, card, send=None, note=''):
+    class B:
+        async def send_message(self, gid, text, **k): posted.append(text)
+    await send(-100, 7) if send else None
+    return True
+bot.to_topic = fake_to_topic
+async def no_card(uid): return ''
+bot.customer_card = no_card
+u = types.SimpleNamespace(id=55, username='ali', first_name='Ali')
+class FakeBot:
+    async def send_message(self, gid, text, **k): posted.append(text)
+async def run():
+    bot.tx_start(55, 'اقساط ایکس اس')
+    bot.tx_capture(55, 'شرایط اقساط: پیش‌پرداخت یک‌سوم')
+    bot.tx_capture(-100, 'پیام گروه')            # پیام گروه جزو جواب نیست
+    await bot.tx_flush(FakeBot(), u)
+    bot.tx_start(55, 'سلام کسی هست؟')
+    await bot.tx_flush(FakeBot(), u)
+asyncio.run(run())
+assert 'اقساط ایکس اس' in posted[0] and 'پیش‌پرداخت یک‌سوم' in posted[0] and 'پیام گروه' not in posted[0], posted
+assert 'منتظر شماست' in posted[1], posted
+assert not bot.tx_active(55)
+print('OK')
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]

@@ -843,6 +843,65 @@ async def to_topic(bot,user,card,send=None,note=""):
             logger.error(f"topic {user.id}: {e}"); return False
     return False
 
+# ── رونوشت گفت‌وگو در تاپیک: «مشتری چه پرسید» و «ربات دقیقاً چه جواب داد» کنار هم
+# (به خواست صاحب پیج، ۲۷ آبان ۱۴۰۵). متن مشتری در text_handler ثبت می‌شود، هر پیامی که ربات تا چند ثانیه بعد
+# برای همان مشتری می‌فرستد (TxBot.send_message) جمع می‌شود و بعد از پایان پردازش یک‌جا در تاپیک می‌نشیند.
+TX_WINDOW = 90          # ثانیه: پیام ربات تا این مدت بعد از پیام مشتری «جواب همان» حساب می‌شود
+_tx: dict = {}          # uid ← {"q", "ts", "replies": [], "urgent": ""}
+
+def transcript_on():
+    return bool(support_group() and get_setting("ai_cc_admin"))
+
+def tx_start(uid,text):
+    if transcript_on(): _tx[uid]={"q":text,"ts":time.time(),"replies":[],"urgent":""}
+
+def tx_capture(chat_id,text):
+    t=_tx.get(chat_id)
+    if t and text and time.time()-t["ts"]<TX_WINDOW: t["replies"].append(str(text))
+
+def tx_active(uid):
+    t=_tx.get(uid); return bool(t and time.time()-t["ts"]<TX_WINDOW)
+
+async def tx_flush(bot,user):
+    """رونوشت پیام مشتری و جواب(های) ربات را در تاپیک خودش می‌گذارد (تاپیکِ تازه با کارت شناخت)."""
+    t=_tx.pop(user.id,None)
+    if not t: return
+    uname=f"@{user.username}" if user.username else "—"
+    card=(f"<b>💬 گفت‌وگوی مشتری</b>\n{HR}\n👤 {esc(user.first_name or '—')}  ·  {esc(uname)}\n"
+          f"🆔 <code>{user.id}</code>")
+    try:
+        cc=await customer_card(user.id)
+        if cc: card+=f"\n{HR}\n{cc}"
+    except Exception as e: logger.debug(f"customer_card: {e}")
+    lines=[f"<b>{esc(t['urgent'])}</b>"] if t["urgent"] else []
+    lines.append(f"👤 <b>مشتری:</b> {esc(_fit(t['q'],1500))}")
+    if t["replies"]:
+        body="\n┄┄┄\n".join(esc(_fit(r,900)) for r in t["replies"][:4])
+        lines.append(f"🤖 <b>ربات:</b> {body}")
+    else:
+        lines.append("🤖 <b>ربات جوابی نداد</b> — منتظر شماست 👇")
+    text="\n\n".join(lines)
+    async def post(gid,tid): await bot.send_message(gid,text,parse_mode="HTML",message_thread_id=tid)
+    try: await to_topic(bot,user,card,post)
+    except Exception as e: logger.error(f"transcript {user.id}: {e}")
+
+async def transcript_flush(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    """گروه ۵: بعد از text_handler (و همه‌ی جواب‌هایش) اجرا می‌شود."""
+    u=update.effective_user
+    if u and update.effective_chat and update.effective_chat.type=="private" and u.id in _tx:
+        await asyncio.sleep(1.5)      # جواب‌هایی که پشت‌سرهم و کمی دیرتر می‌روند هم برسند
+        await tx_flush(ctx.bot,u)
+
+from telegram.ext import ExtBot as _ExtBot
+class TxBot(_ExtBot):
+    """هر پیام ربات به چت خصوصی مشتری‌ای که همین الان پیام داده، در رونوشت تاپیک هم می‌آید."""
+    async def send_message(self,chat_id,text,*a,**k):
+        r=await super().send_message(chat_id,text,*a,**k)
+        try:
+            if isinstance(chat_id,int) and chat_id>0: tx_capture(chat_id,text)
+        except Exception: pass
+        return r
+
 # ── کارت شناخت مشتری
 async def customer_card(uid):
     """چند خط که مدیر را در جریان می‌گذارد طرف کیست.
@@ -4017,6 +4076,7 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         if _s=='block': return
         if _s=='warn': return await update.message.reply_text("🐢 لطفاً آرام‌تر پیام دهید.")
         if await is_blocked(user.id): return
+        if update.effective_chat.type=="private": tx_start(user.id,text)
     if text=="❌ لغو عملیات":
         ctx.user_data.clear(); return await update.message.reply_text("❌ لغو شد.",reply_markup=main_menu())
     mode=ctx.user_data.get("mode")
@@ -4344,6 +4404,7 @@ async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",a
     if is_admin(user.id) or not get_setting("forward_user_msgs"): return False
     msg=update.message
     if msg is None: return False
+    in_tx=bool(getattr(msg,"text",None)) and tx_active(user.id)   # پیش از هر انتظار: رونوشت ممکن است زود بسته شود
     if count:      # دستیار خودش یک‌بار شمرده؛ دوباره‌شماری آمار را دو برابر می‌کرد
         try: await record_event(user.id,EV_MSG)
         except Exception as e: logger.debug(f"record_event msg: {e}")
@@ -4369,7 +4430,12 @@ async def forward_to_admin(update:Update,ctx:ContextTypes.DEFAULT_TYPE,kind="",a
     note=""
     if auto: note=f"✅ پاسخ خودکار داده شد: «{esc(faq_title(auto))}»"
     elif urgent: note=f"<b>{esc(head)}</b>"
-    delivered=1 if await to_topic(ctx.bot,user,card,fwd_topic,note) else 0
+    if in_tx:
+        # رونوشت گفت‌وگو همین پیام را با جواب ربات در تاپیک می‌گذارد؛ فوروارد و یادداشت جدا تکراری می‌شد
+        if urgent and user.id in _tx: _tx[user.id]["urgent"]=head
+        delivered=1
+    else:
+        delivered=1 if await to_topic(ctx.bot,user,card,fwd_topic,note) else 0
     asg=await get_assignee(user.id)
     if asg: card += f"\n👮 مسئول: {esc(await admin_label(asg))}"
     card += "\n"+REPLY_HINT
@@ -6852,14 +6918,13 @@ def _fast_request(pool,read):
                         httpx_kwargs={"transport":httpx.AsyncHTTPTransport(**tkw)})
 
 def main():
-    app=(ApplicationBuilder().token(TOKEN)
+    app=(ApplicationBuilder()
+         .bot(TxBot(TOKEN,request=_fast_request(64,20.0),get_updates_request=_fast_request(4,35.0)))
          .post_init(post_init).post_shutdown(post_shutdown)
          # پیش‌فرض PTB آپدیت‌ها را «یکی‌یکی» پردازش می‌کند: اگر ارسال عکس یک
          # کاربر یک ثانیه طول بکشد، بقیه‌ی کاربران پشتش صف می‌کشند. با موازی
          # کردن، هر کاربر مستقل از بقیه پاسخ می‌گیرد.
          .concurrent_updates(32)
-         .request(_fast_request(64,20.0))
-         .get_updates_request(_fast_request(4,35.0))
          .build())
     # گروه ۱- : ریپلای مدیر روی پیام مشتری زودتر از هر هندلر دیگری دیده می‌شود.
     # اگر واقعاً پاسخ بود، ApplicationHandlerStop جلوی پردازش دوباره را می‌گیرد؛
@@ -6882,6 +6947,8 @@ def main():
     app.add_handler(MessageHandler(filters.Document.ZIP & ~filters.COMMAND,document_handler))
     app.add_handler(MessageHandler(filters.LOCATION | filters.VENUE,location_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND,text_handler))
+    # رونوشت گفت‌وگو در تاپیک، بعد از این‌که text_handler همه‌ی جواب‌هایش را فرستاد
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & filters.ChatType.PRIVATE,transcript_flush),group=5)
     # هر چیز دیگری که مشتری بفرستد — ویس، ویدیو، فایل، مخاطب، استیکر.
     # بدون این، پیام مشتری بی‌صدا دور ریخته می‌شد.
     app.add_handler(MessageHandler(

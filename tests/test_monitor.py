@@ -76,3 +76,37 @@ def test_db_writes_do_not_hold_lock_across_awaits(tmp_path):
         b.execute("PRAGMA busy_timeout=100")
         db.kv_set(b, "y", "2")                  # بدون انتظار و بدون خطای قفل
         assert db.kv_get(b, "x") == "1"
+
+
+def test_connection_lost_alert_now_reminds_and_recovers(monkeypatch):
+    from app import tg_notify
+    monkeypatch.setattr(tg_notify, "send", lambda *a, **k: True)
+    db.init()
+    err = "IG 401: {'message': 'Error validating access token: The session has been invalidated', 'code': 190}"
+    with db.connect() as c:
+        setst(c, comment_poll.STATUS_KEY, False, T0, err)
+        setst(c, comment_poll.DM_STATUS_KEY, False, T0, err)
+        out = monitor.check_health(c, True, T0)
+        assert len(out) == 1 and "اتصال اینستاگرام قطع شد" in out[0] and "خودتان" in out[0]   # همان لحظه، یک پیام
+        setst(c, comment_poll.STATUS_KEY, False, T0 + 3600, err)
+        setst(c, comment_poll.DM_STATUS_KEY, False, T0 + 3600, err)
+        assert monitor.check_health(c, True, T0 + 3600) == []
+        setst(c, comment_poll.STATUS_KEY, False, T0 + 7300, err)
+        setst(c, comment_poll.DM_STATUS_KEY, False, T0 + 7300, err)
+        out = monitor.check_health(c, True, T0 + 7300)
+        assert len(out) == 1 and "یادآوری" in out[0]
+        setst(c, comment_poll.STATUS_KEY, True, T0 + 7400)
+        setst(c, comment_poll.DM_STATUS_KEY, True, T0 + 7400)
+        out = monitor.check_health(c, True, T0 + 7400)
+        assert len(out) == 1 and "برگشت" in out[0]
+
+
+def test_brake_left_on_reminder(monkeypatch):
+    from app import safety, tg_notify
+    monkeypatch.setattr(tg_notify, "send", lambda *a, **k: True)
+    db.init()
+    with db.connect() as c:
+        db.kv_set(c, safety.KEY, json.dumps({"on": True, "at": T0, "reason": "x"}))
+        assert monitor.check_health(c, False, T0 + 60) == []
+        out = monitor.check_health(c, False, T0 + 3 * 3600 + 1)
+        assert len(out) == 1 and "توقف اضطراری هنوز روشن" in out[0]
