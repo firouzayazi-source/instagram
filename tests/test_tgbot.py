@@ -94,7 +94,7 @@ def test_installment_caps():
 
 
 def test_topic_transcript_shows_question_and_bot_reply(tmp_path):
-    """تاپیک مشتری: پیام مشتری و جواب دقیق ربات کنار هم؛ بی جواب ← «منتظر شماست»."""
+    """تاپیک مشتری: ساعت، سؤال مشتری و جواب کوتاه ربات در یک پیام؛ بی جواب ← «با شما»."""
     code = r"""
 import asyncio, os, sys, types
 os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
@@ -116,14 +116,15 @@ class FakeBot:
     async def send_message(self, gid, text, **k): posted.append(text)
 async def run():
     bot.tx_start(55, 'اقساط ایکس اس')
-    bot.tx_capture(55, 'شرایط اقساط: پیش‌پرداخت یک‌سوم')
+    bot.tx_capture(55, '<b>شرایط اقساط:</b> پیش‌پرداخت یک‌سوم https://stland.ir/product/%%d8%%a2%%db%%8c')
     bot.tx_capture(-100, 'پیام گروه')            # پیام گروه جزو جواب نیست
     await bot.tx_flush(FakeBot(), u)
     bot.tx_start(55, 'سلام کسی هست؟')
     await bot.tx_flush(FakeBot(), u)
 asyncio.run(run())
 assert 'اقساط ایکس اس' in posted[0] and 'پیش‌پرداخت یک‌سوم' in posted[0] and 'پیام گروه' not in posted[0], posted
-assert 'منتظر شماست' in posted[1], posted
+assert '&lt;b&gt;' not in posted[0] and '%%d8' not in posted[0] and 'ربات جواب داد' in posted[0], posted   # بی برچسب و لینک بلند
+assert 'با شما' in posted[1], posted
 assert not bot.tx_active(55)
 print('OK')
 """ % str(TG)

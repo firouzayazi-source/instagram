@@ -825,8 +825,7 @@ async def to_topic(bot,user,card,send=None,note=""):
                 name=" ".join(x for x in (user.first_name,f"@{user.username}" if user.username else "") if x)
                 t=await bot.create_forum_topic(gid,_fit(f"{name or '—'} · {user.id}",120))
                 tid=t.message_thread_id; await set_topic(user.id,tid)
-                await bot.send_message(gid,f"{card}\n{HR}\n{TOPIC_HINT}",parse_mode="HTML",
-                                       message_thread_id=tid)
+                await bot.send_message(gid,await topic_head(user),parse_mode="HTML",message_thread_id=tid)
             if send: await send(gid,tid)
             if note and not new:          # تاپیکِ تازه همین را در کارت اولش دارد
                 await bot.send_message(gid,note,parse_mode="HTML",message_thread_id=tid)
@@ -843,17 +842,29 @@ async def to_topic(bot,user,card,send=None,note=""):
             logger.error(f"topic {user.id}: {e}"); return False
     return False
 
-# ── رونوشت گفت‌وگو در تاپیک: «مشتری چه پرسید» و «ربات دقیقاً چه جواب داد» کنار هم
-# (به خواست صاحب پیج، ۲۷ آبان ۱۴۰۵). متن مشتری در text_handler ثبت می‌شود، هر پیامی که ربات تا چند ثانیه بعد
-# برای همان مشتری می‌فرستد (TxBot.send_message) جمع می‌شود و بعد از پایان پردازش یک‌جا در تاپیک می‌نشیند.
+# ── رونوشت گفت‌وگو در تاپیک: هر پیام مشتری یک خط کوتاه — ساعت، سؤال، و این‌که ربات چه جواب داد یا به شما سپرد
+# (به خواست صاحب پیج، ۲۷ آبان ۱۴۰۵). هر چیزی که ربات تا چند ثانیه بعد برای همان مشتری می‌فرستد (متن، کارت آدرس،
+# عکس، …) از راه TxBot._post جمع می‌شود و بعد از پایان پردازش یک‌جا در تاپیک می‌نشیند.
 TX_WINDOW = 90          # ثانیه: پیام ربات تا این مدت بعد از پیام مشتری «جواب همان» حساب می‌شود
 _tx: dict = {}          # uid ← {"q", "ts", "replies": [], "urgent": ""}
+_TAG_RE = re.compile(r"<[^>]+>")
+_URL_RE = re.compile(r"(https?://|www\.|t\.me/)\S+")
+_SENT_LABEL = {"sendLocation":"📍 موقعیت روی نقشه","sendDocument":"📎 فایل","sendMediaGroup":"🖼 چند عکس",
+               "sendVoice":"🎤 پیام صوتی","sendContact":"📞 کارت تماس","sendVideo":"🎬 ویدیو","sendPhoto":"🖼 عکس",
+               "sendAnimation":"🎞 تصویر متحرک","sendSticker":"🙂 استیکر"}
 
 def transcript_on():
     return bool(support_group() and get_setting("ai_cc_admin"))
 
 def tx_start(uid,text):
     if transcript_on(): _tx[uid]={"q":text,"ts":time.time(),"replies":[],"urgent":""}
+
+def _plain(t,limit=260):
+    """متن کوتاه و خوانا: بی برچسب HTML، بی لینک‌های بلند، بی خط خالی."""
+    t=html.unescape(_TAG_RE.sub("",str(t or "")))
+    t=_URL_RE.sub("🔗",t)
+    t=" ".join(x.strip() for x in t.splitlines() if x.strip())
+    return t if len(t)<=limit else t[:limit].rsplit(" ",1)[0]+" …"
 
 def tx_capture(chat_id,text):
     t=_tx.get(chat_id)
@@ -862,27 +873,40 @@ def tx_capture(chat_id,text):
 def tx_active(uid):
     t=_tx.get(uid); return bool(t and time.time()-t["ts"]<TX_WINDOW)
 
+def _hhmm(ts=None):
+    return to_fa(datetime.fromtimestamp(ts or time.time(),IRAN_TZ).strftime("%H:%M"))
+
+def _src_label(src):
+    src=(src or "").lower()
+    for k,v in SOURCE_LABELS.items():
+        if src==k or src.startswith(k+"_") or src.startswith(k+"-"): return v
+    return ""
+
+async def topic_head(user):
+    """کارت اول تاپیک: فقط کیست، از کجا آمد و کِی."""
+    src=""
+    try:
+        async with db.execute("SELECT source FROM users WHERE user_id=?",(user.id,)) as c:
+            r=await c.fetchone(); src=_src_label(r[0] if r else "")
+    except Exception: pass
+    uname=f" · @{esc(user.username)}" if user.username else ""
+    return (f"👤 <b>{esc(user.first_name or '—')}</b>{uname} · 🆔 <code>{user.id}</code>\n"
+            f"{(src+' · ') if src else ''}🕐 ورود {_hhmm()}\n"
+            "✍️ هر چه اینجا بنویسید برای مشتری می‌رود (یادداشت داخلی: با ! شروع کنید).")
+
 async def tx_flush(bot,user):
-    """رونوشت پیام مشتری و جواب(های) ربات را در تاپیک خودش می‌گذارد (تاپیکِ تازه با کارت شناخت)."""
+    """یک پیام کوتاه در تاپیک: ساعت و سؤال مشتری، و جواب ربات یا «با شما»."""
     t=_tx.pop(user.id,None)
     if not t: return
-    uname=f"@{user.username}" if user.username else "—"
-    card=(f"<b>💬 گفت‌وگوی مشتری</b>\n{HR}\n👤 {esc(user.first_name or '—')}  ·  {esc(uname)}\n"
-          f"🆔 <code>{user.id}</code>")
-    try:
-        cc=await customer_card(user.id)
-        if cc: card+=f"\n{HR}\n{cc}"
-    except Exception as e: logger.debug(f"customer_card: {e}")
-    lines=[f"<b>{esc(t['urgent'])}</b>"] if t["urgent"] else []
-    lines.append(f"👤 <b>مشتری:</b> {esc(_fit(t['q'],1500))}")
-    if t["replies"]:
-        body="\n┄┄┄\n".join(esc(_fit(r,900)) for r in t["replies"][:4])
-        lines.append(f"🤖 <b>ربات:</b> {body}")
+    head=("🔴 " if t["urgent"] else "")+f"🕐 {_hhmm(t['ts'])}   ❓ <b>{esc(_plain(t['q'],300))}</b>"
+    replies=[_plain(r) for r in t["replies"] if _plain(r)]
+    if replies:
+        body="✅ ربات جواب داد: "+esc("  ·  ".join(replies[:3]))
     else:
-        lines.append("🤖 <b>ربات جوابی نداد</b> — منتظر شماست 👇")
-    text="\n\n".join(lines)
+        body="🙋 <b>ربات جواب نداد — با شما</b>"
+    text=f"{head}\n{body}"
     async def post(gid,tid): await bot.send_message(gid,text,parse_mode="HTML",message_thread_id=tid)
-    try: await to_topic(bot,user,card,post)
+    try: await to_topic(bot,user,None,post)
     except Exception as e: logger.error(f"transcript {user.id}: {e}")
 
 async def transcript_flush(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
@@ -894,11 +918,17 @@ async def transcript_flush(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
 
 from telegram.ext import ExtBot as _ExtBot
 class TxBot(_ExtBot):
-    """هر پیام ربات به چت خصوصی مشتری‌ای که همین الان پیام داده، در رونوشت تاپیک هم می‌آید."""
-    async def send_message(self,chat_id,text,*a,**k):
-        r=await super().send_message(chat_id,text,*a,**k)
+    """هر چیزی که ربات به چت خصوصی مشتری‌ای که همین الان پیام داده می‌فرستد (متن، عکس، کارت آدرس، …)
+    در رونوشت تاپیک هم می‌آید. «در حال نوشتن…» و ویرایش‌ها شمرده نمی‌شوند."""
+    async def _post(self,endpoint,data=None,*a,**k):
+        r=await super()._post(endpoint,data,*a,**k)
         try:
-            if isinstance(chat_id,int) and chat_id>0: tx_capture(chat_id,text)
+            cid=(data or {}).get("chat_id")
+            if isinstance(cid,int) and cid>0 and cid in _tx and endpoint.startswith("send") and endpoint!="sendChatAction":
+                d=data or {}
+                if endpoint=="sendVenue": label=f"📍 {d.get('title','')} — {d.get('address','')}"
+                else: label=d.get("text") or d.get("caption") or _SENT_LABEL.get(endpoint,"")
+                tx_capture(cid,label)
         except Exception: pass
         return r
 
