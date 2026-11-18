@@ -330,6 +330,7 @@ _ERR_REPORT_GAP  = 60.0     # حداقل فاصله بین دو گزارش (ثا
 
 EV_MSG = "_msg"          # کلید ویژه: پیام آزادِ مشتری
 EV_ABUSE = "_abuse"      # پیام توهین‌آمیز (برای کارت مشتری)
+EV_MISS = "_miss"        # پیامی که دستیار نفهمید (برای درصد فهم در گزارش هفتگی)
 
 async def record_stat(k,uid=None):
     """شمارنده‌ی کلی (برای آمار) + رویداد شخصی (برای کارت شناخت مشتری)."""
@@ -898,6 +899,29 @@ async def topic_head(user):
             f"{(src+'   ') if src else ''}🕐 {_hhmm()}\n"
             "<i>✍️ جواب شما همین‌جا برای مشتری می‌رود · یادداشت داخلی با !</i>")
 
+_last_q: dict = {}       # uid ← (سؤالی که ربات جوابش را نداد، زمان)
+_learn_offers: dict = {} # نشانه ← {"q","a","uid","ts"}
+
+def learn_offer_kb(tok):
+    return InlineKeyboardMarkup([[InlineKeyboardButton("🧠 یاد بگیر",callback_data=f"lrnq_{tok}"),
+                                  InlineKeyboardButton("✖️ نه",callback_data=f"lrnx_{tok}")]])
+
+async def learn_from_reply(q,a):
+    """سؤال مشتری + جواب همکار ← نیت تازه (همان کاری که پنل «نیت بساز» می‌کند). خروجی: نیت یا None."""
+    words=brain.content_words(q,3)
+    if not words or not a.strip(): return None
+    keys=[" ".join(words[:2])] if len(words)>=2 else words
+    it={"id":new_btn_id(),"button":"💬 "+_fit(" ".join(words) or q,24),"keys":keys,"examples":[q.strip()[:200]],
+        "answer":a.strip()[:1500],"action":"","enabled":True,"hits":0}
+    faq.append(it)
+    learn_data["log"].insert(0,{"id":new_btn_id(),"text":q.strip()[:200],"intent":it["id"],
+                                "src":"admin-reply","ts":gregorian_now()})
+    del learn_data["log"][300:]
+    await save_faq(); await save_learn()
+    try: await unmatched_remove(q)
+    except Exception: pass
+    return it
+
 _UNSURE = ("متوجه نشدم","مطمئن نیستم","منظورتون","بازتر بنویسید")
 
 async def tx_flush(bot,user):
@@ -906,6 +930,8 @@ async def tx_flush(bot,user):
     t=_tx.pop(user.id,None)
     if not t: return
     replies=[_plain(r,700,lines=True) for r in t["replies"] if _plain(r)]
+    if not replies or any(w in replies[0] for w in _UNSURE):
+        _last_q[user.id]=(t["q"],time.time())       # تا جواب همکار پیشنهاد «یاد بگیر» بگیرد
     if not replies: badge="🔴 <b>منتظر جواب شما</b>"
     elif any(w in replies[0] for w in _UNSURE): badge="🟡 <b>ربات مطمئن نبود — نگاهی بیندازید</b>"
     else: badge="🟢 <b>ربات جواب داد</b>"
@@ -980,8 +1006,8 @@ async def customer_card(uid):
 
     # چه بخش‌هایی را پیش از نوشتن دیده — بدون تکرار، تازه‌ترین اول
     async with db.execute(
-        "SELECT key,MAX(ts) t FROM events WHERE user_id=? AND key NOT IN (?,?) "
-        "GROUP BY key ORDER BY t DESC LIMIT 4",(uid,EV_MSG,EV_ABUSE)) as c:
+        "SELECT key,MAX(ts) t FROM events WHERE user_id=? AND key NOT IN (?,?,?) "
+        "GROUP BY key ORDER BY t DESC LIMIT 4",(uid,EV_MSG,EV_ABUSE,EV_MISS)) as c:
         seen=[r[0] for r in await c.fetchall()]
     if seen:
         labels=[event_label(k) for k in seen]
@@ -2065,6 +2091,9 @@ async def log_unmatched(text,user=None):
                             "uid":getattr(user,"id",None)})
         del unmatched[UNMATCHED_MAX:]
     await save_unmatched()
+    if getattr(user,"id",None):
+        try: await record_event(user.id,EV_MISS)
+        except Exception as e: logger.debug(f"record miss: {e}")
 
 async def load_unmatched():
     global unmatched
@@ -2544,8 +2573,8 @@ async def weekly_digest():
          f"🆕 {to_fa(newu)} مشتری جدید  ·  📅 {to_fa(act)} فعال  ·  💬 {to_fa(msgs)} پیام"]
     if openn: out.append(f"⏳ {to_fa(openn)} پیام هنوز بی‌جواب")
     async with db.execute(
-        "SELECT key,COUNT(*) c FROM events WHERE key NOT IN (?,?) AND ts>=datetime('now',?,'localtime') "
-        "GROUP BY key ORDER BY c DESC LIMIT 3",(EV_MSG,EV_ABUSE,since)) as c:
+        "SELECT key,COUNT(*) c FROM events WHERE key NOT IN (?,?,?) AND ts>=datetime('now',?,'localtime') "
+        "GROUP BY key ORDER BY c DESC LIMIT 3",(EV_MSG,EV_ABUSE,EV_MISS,since)) as c:
         tops=await c.fetchall()
     if tops:
         out.append("👀 پربازدید: "+"، ".join(
@@ -2571,6 +2600,43 @@ async def weekly_digest():
                 "برایش یک سؤال آماده بنویسید تا از این به بعد خودکار جواب بگیرد."]
     return _fit("\n".join(out),TEXT_LIMIT)
 
+async def weekly_review():
+    """گزارش «سؤال‌های نفهمیده»: درصد فهم هفته و پرتکرارترین سؤال‌های بی‌جواب، هر کدام با پیشنهاد آماده
+    («یعنی همان اقساط؟») که با یک لمس تأیید می‌شود. خروجی: (متن، دکمه‌ها)."""
+    since="-7 days"
+    msgs=await _cnt("SELECT COUNT(*) FROM events WHERE key=? AND ts>=datetime('now',?,'localtime')",(EV_MSG,since))
+    miss=await _cnt("SELECT COUNT(*) FROM events WHERE key=? AND ts>=datetime('now',?,'localtime')",(EV_MISS,since))
+    pct=round(100*(1-miss/msgs)) if msgs else None
+    out=["<b>🧠 گزارش فهم ربات — هفته‌ی گذشته</b>",HR]
+    if pct is not None:
+        bar="🟩"*(pct//10)+"⬜️"*(10-pct//10)
+        out.append(f"{bar}  <b>{to_fa(pct)}٪</b>\n💬 {to_fa(msgs)} پیام · ✅ خودش جواب داد · ❓ {to_fa(miss)} بار نفهمید")
+    items=unmatched_sorted()[:8]
+    rows=[]
+    if not items:
+        out.append("🎉 سؤال نفهمیده‌ای نمانده.")
+    else:
+        out += ["","<b>سؤال‌هایی که نفهمید</b> (پرتکرارها اول):"]
+        intents=brain_intents()
+        for i,u in enumerate(items,1):
+            near=brain.near(u["text"],intents,limit=1)
+            sug=near[0][0] if near else None
+            out.append(f"{to_fa(i)}. «{esc(_fit(u['text'],70))}» ×{to_fa(u.get('count',1))}"
+                       +(f"\n    💡 شاید یعنی «{esc(faq_title(sug))}»" if sug else ""))
+            row=[]
+            if sug: row.append(InlineKeyboardButton(f"✅ {to_fa(i)} یعنی {_fit(faq_title(sug),18)}",
+                                                    callback_data=f"unm_at_{u['id']}_{sug['id']}"))
+            row.append(InlineKeyboardButton(f"✏️ {to_fa(i)}",callback_data=f"unm_{u['id']}"))
+            rows.append(row)
+        out += ["","✅ = تأیید پیشنهاد · ✏️ = نیت دیگر یا جواب تازه. از این به بعد خود ربات جواب می‌دهد."]
+    return _fit("\n".join(out),TEXT_LIMIT),(InlineKeyboardMarkup(rows) if rows else None)
+
+async def cmd_review(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    """/review — همین حالا گزارش سؤال‌های نفهمیده."""
+    if not is_admin(update.effective_user.id): return
+    txt,kb=await weekly_review()
+    await update.message.reply_text(txt,parse_mode="HTML",reply_markup=kb)
+
 async def _auto_backup_loop(bot):
     """هفته‌ای یک‌بار — جمعه ساعت ۳ بامداد به وقت تهران."""
     await asyncio.sleep(60)          # بگذار راه‌اندازی تمام شود
@@ -2586,6 +2652,10 @@ async def _auto_backup_loop(bot):
                         await bot.send_message(OWNER_ID,await weekly_digest(),
                                                parse_mode="HTML")
                     except Exception as e: logger.error(f"digest: {e}")
+                    try:
+                        txt,kb=await weekly_review()
+                        await bot.send_message(OWNER_ID,txt,parse_mode="HTML",reply_markup=kb)
+                    except Exception as e: logger.error(f"review: {e}")
         except Exception as e:
             logger.error(f"auto_backup: {e}")
         await asyncio.sleep(1800)
@@ -3163,6 +3233,19 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             human_until.pop(cu,None); set_human(cu,ctx.bot)   # pop تا خبرِ ورود در تاپیک بیاید
             await query.answer("🧑‍💼 گفتگو دست شماست")
         return
+    if data.startswith(("lrnq_","lrnx_")) and query.message and support_group() \
+            and query.message.chat.id==support_group():
+        o=_learn_offers.pop(data[5:],None)
+        if data.startswith("lrnx_") or not o:
+            await query.answer("باشه، یاد نگرفتم" if o or data.startswith("lrnx_") else "منقضی شده")
+            try: await query.message.delete()
+            except Exception: pass
+            return
+        it=await learn_from_reply(o["q"],o["a"])
+        await query.answer("🧠 یاد گرفتم" if it else "یاد گرفته نشد",show_alert=not it)
+        await safe_edit(query.message,(f"🧠 یاد گرفتم: «{_fit(o['q'],60)}»\nاز این به بعد خودم جواب می‌دهم. "
+                                       "(پس‌گرفتن: پنل دستیار ← 🎓 یادگیری)") if it else "❌ یاد گرفته نشد")
+        return
 
     # ── محافظت اسپم
     if not is_admin(uid):
@@ -3361,6 +3444,8 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             it=faq_item(x["intent"])
             if x["intent"]=="cat":
                 learn_data.get("aliases",{}).pop(x.get("alias",""),None)
+            elif it and x.get("src")=="admin-reply" and (it.get("examples") or [None])[0]==x["text"]:
+                faq[:]=[f for f in faq if f is not it]; await save_faq()     # نیتی که از جواب همکار ساخته شد
             elif it:
                 it["examples"]=[e for e in it.get("examples") or [] if e!=x["text"]]
                 await save_faq()
@@ -4649,6 +4734,16 @@ async def deliver_reply(ctx,msg,target,src):
         u=unmatched_find(lt[0])
         if u and not u.get("reply"):
             u["reply"]=msg.text[:500]; await save_unmatched()
+    # جواب همکار به سؤالی که ربات نتوانست: «🧠 یاد بگیر» تا از این به بعد خود ربات جواب بدهد
+    lq=_last_q.get(target)
+    if msg.text and lq and time.time()-lq[1]<6*3600 and get_setting("assistant") and _learnable(lq[0]):
+        tok=secrets.token_hex(4)
+        _learn_offers[tok]={"q":lq[0],"a":msg.text,"uid":target,"ts":time.time()}
+        for k in sorted(_learn_offers,key=lambda k:_learn_offers[k]["ts"])[:-200]: _learn_offers.pop(k,None)
+        _last_q.pop(target,None)
+        try: await msg.reply_text(f"🧠 این جواب را یاد بگیرم؟\nسؤال: «{_fit(lq[0],80)}»\n"
+                                  "از این به بعد خودم همین را جواب می‌دهم.",reply_markup=learn_offer_kb(tok))
+        except Exception as e: logger.debug(f"learn offer: {e}")
     raise ApplicationHandlerStop
 
 
@@ -5236,6 +5331,34 @@ async def core_think(text,user,dry=False):
         logger.warning(f"core think: {type(e).__name__}: {e}"); return None
     if d.get("action") in ("reply","handoff") and (d.get("reply") or "").strip(): return d
     return None
+
+async def core_transcribe(data,filename="voice.ogg"):
+    """ویس ← متن از هسته‌ی مرکزی (با کلید هوش مصنوعی پنل). None اگر کلید یا هسته نبود."""
+    try:
+        with open(INTERNAL_KEY_FILE,encoding="utf-8") as f: key=f.read().strip()
+    except OSError: return None
+    if not key: return None
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=70,trust_env=False) as cl:
+            r=await cl.post(CORE_URL+"/internal/transcribe",content=bytes(data),
+                            headers={"X-Internal-Key":key,"X-Filename":filename})
+        if r.status_code!=200: return None
+        return (r.json().get("text") or "").strip() or None
+    except Exception as e:
+        logger.warning(f"transcribe: {type(e).__name__}: {e}"); return None
+
+VOICE_MAX_SEC = 120
+
+async def voice_to_text(msg,bot):
+    v=msg.voice or msg.audio
+    if not v or (getattr(v,"duration",0) or 0)>VOICE_MAX_SEC: return None
+    try:
+        f=await bot.get_file(v.file_id)
+        data=await f.download_as_bytearray()
+    except Exception as e:
+        logger.warning(f"voice download: {e}"); return None
+    return await core_transcribe(data,"voice.ogg" if msg.voice else (getattr(v,"file_name",None) or "audio.mp3"))
 
 async def core_order(user,text="",image=False,product_id="",hint=""):
     """گفتگوی سفارش در هسته‌ی مرکزی (همان روند اینستاگرام؛ سفارش‌ها یکجا در پنل).
@@ -6668,6 +6791,15 @@ async def user_media_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if spam_check(user.id)!='ok': return
     if await check_abuse(update,ctx,msg.caption or "",user): return
     kind=next((lbl for attr,lbl in _KIND_BY_ATTR if getattr(msg,attr,None)),"پیام")
+    # ویس: به متن تبدیل و مثل پیام نوشتاری جواب داده می‌شود (اگر کلید هوش مصنوعی در پنل هست)
+    if (msg.voice or msg.audio) and get_setting("assistant") and get_setting("faq_auto") \
+            and not await human_active(user.id,ctx.bot):
+        text=await voice_to_text(msg,ctx.bot)
+        if text:
+            tx_start(user.id,"🎤 "+text)
+            ok=await assistant_reply(update,ctx,text,user)
+            await asyncio.sleep(1.5); await tx_flush(ctx.bot,user)
+            if ok: return
     if msg.photo:     # شاید رسید پرداختِ سفارشی باشد که در هسته ثبت شده
         r=await core_order(user,image=True)
         if r and r.get("receipt"):
@@ -6999,6 +7131,7 @@ def main():
     app.add_handler(MessageHandler(~filters.COMMAND,reply_relay),group=-1)
     app.add_handler(CommandHandler("setgroup",cmd_setgroup))
     app.add_handler(CommandHandler("demand",cmd_demand))
+    app.add_handler(CommandHandler("review",cmd_review))
     app.add_handler(CommandHandler("installment",cmd_installment))
     app.add_handler(CommandHandler("start",cmd_start))
     app.add_handler(CommandHandler("help",cmd_help))

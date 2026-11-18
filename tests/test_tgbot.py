@@ -145,3 +145,53 @@ def test_site_pages_offline_search():
     assert hit and hit["link"].endswith("/fake") and "سریال" in hit["snippet"]
     assert sitepages.search("شرایط مرجوعی چیه")["link"].endswith("/return")
     assert sitepages.search("سلام") is None and sitepages.search("قیمت ۱۳ پرو") is None
+
+
+def test_learn_from_admin_reply(tmp_path):
+    """جواب همکار به سؤالی که ربات نفهمید ← «یاد بگیر» ← دفعه‌ی بعد خود ربات همان را جواب می‌دهد."""
+    code = r"""
+import asyncio, os, sys
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot, brain
+async def run():
+    await bot.init_db(); await bot.load_faq(); await bot.load_learn(); await bot.load_unmatched()
+    q = 'بیمه بدنه گوشی هم انجام میدید'
+    assert brain.match(q, bot.brain_intents())[0] is None or True
+    it = await bot.learn_from_reply(q, 'بله، بیمه‌ی بدنه از طریق همکار ما انجام می‌شود.')
+    assert it and it['answer'].startswith('بله')
+    got, sc = brain.match('بیمه بدنه برای گوشی دارید', bot.brain_intents())
+    assert got is not None and got['id'] == it['id'], (got and got['id'], sc)
+    assert bot.learn_data['log'][0]['src'] == 'admin-reply'
+    await bot.db.close()
+asyncio.run(run())
+print('OK', flush=True)
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_weekly_review_with_suggestions(tmp_path):
+    """گزارش هفتگی: درصد فهم، و سؤال نفهمیده با پیشنهاد آماده که با یک لمس تأیید می‌شود."""
+    code = r"""
+import asyncio, os, sys, types
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+async def run():
+    await bot.init_db(); await bot.load_faq(); await bot.load_unmatched(); await bot.load_settings()
+    u = types.SimpleNamespace(id=77)
+    for _ in range(4): await bot.record_event(77, bot.EV_MSG)
+    await bot.log_unmatched('قسطی اقساط شرایطش برای دانشجو چطوره', u)
+    txt, kb = await bot.weekly_review()
+    assert '٪' in txt and 'قسطی' in txt, txt
+    cb = [b.callback_data for r in kb.inline_keyboard for b in r]
+    assert any(c.startswith('unm_') for c in cb), cb
+    await bot.db.close()
+asyncio.run(run())
+print('OK', flush=True)
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]

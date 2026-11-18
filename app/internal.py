@@ -118,3 +118,18 @@ def feedback(body: FeedbackIn, request: Request, x_internal_key: str | None = He
         raise HTTPException(422)
     with db.connect() as c:
         return learning.vote(c, body.log_id, body.vote, ai.settings(c), owner=f"tg:{body.user_id}")
+
+
+@router.post("/transcribe")
+async def transcribe(request: Request, x_internal_key: str | None = Header(None), x_filename: str | None = Header(None)):
+    """ویس مشتری ← متن (برای ربات تلگرام). بی کلید هوش مصنوعی: text خالی."""
+    _check(request, x_internal_key)
+    from . import voice
+    data = await request.body()
+    if len(data) > voice.MAX_BYTES:
+        raise HTTPException(413)
+    try:
+        text = await voice.transcribe(data, x_filename or "voice.ogg")
+    except Exception as e:  # noqa: BLE001
+        return {"text": "", "error": str(e)[:200]}
+    return {"text": text or "", "provider": voice.available()}
