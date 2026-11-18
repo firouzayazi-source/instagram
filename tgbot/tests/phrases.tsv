@@ -227,3 +227,131 @@
 جنواره دارید	i_notify
 استک تمیز دارید	i_condition
 برای تهران میفرستد	i_shipping
+
+# ── همان موضوع با کلمه‌های دیگر (۲۷ آبان ۱۴۰۵): مفهوم‌ها و جمله‌های تازه
+یه گوشی میخوام که عکسهاش خوب باشه	i_advisor|i_specs|catalog
+گوشی با دوربین خفن میخوام	i_advisor|i_specs|catalog
+شارژش زیاد بمونه کدوم خوبه	i_advisor|i_specs|i_compare
+بودجم کمه چی پیشنهاد میدی	i_advisor|catalog
+نمیدونم کدوم مدل به دردم میخوره	i_advisor
+چند میگیرین	i_price|catalog
+چند حساب میکنید	i_price|catalog
+نرختون چنده	i_price|catalog
+هزینش چقدر میشه	i_price|catalog
+این گوشیا رو چند میدین	i_price|catalog
+آخرش چند میدی	i_discount
+یکم ارزونتر حساب کن	i_discount|catalog
+جنس دارید الان	i_stock|i_products|catalog
+الان چیزی تو مغازه هست	i_stock|i_products|catalog
+مغازتون کجای شهره	i_address
+چطوری بیام پیشتون	i_address
+لوکیشن بفرست	i_address
+تا چند بازین	i_hours
+امروز میشه بیام	i_hours|i_address
+تا شب هستین	i_hours
+میتونم ماهیانه پرداخت کنم	i_install
+پولشو کم کم بدم میشه	i_install
+نصفشو الان بدم بقیشو بعدا	i_install
+کارت بکشم میشه	i_payment
+با کارت پرداخت کنم	i_payment
+برای شهر خودم میفرستید	i_shipping
+تا اصفهان میاد	i_shipping
+گوشی خودمو بدم یه نو بگیرم	i_tradein
+گوشیمو میخوام بفروشم	i_tradein
+اگه خراب شد چی	i_warranty|i_return
+اگه مشکل داشت پس میگیرین	i_return
+ضمانت داره	i_warranty
+از کجا بفهمم اصله	i_genuine
+دستکاری نشده باشه	i_genuine
+تعمیری نیست	i_genuine
+میخوام با یه نفر حرف بزنم	i_human
+یه آدم جواب بده	i_human
+شمارتونو بدید	i_phone
+زنگ بزنم کی جواب میده	i_phone
+خطش باز میشه	i_registry
+رو سیم کارت ایران کار میکنه	i_registry
+اطلاعات گوشی قبلیمو منتقل میکنید	i_software
+برنامه نصب میکنید	i_software
+اکانت اپل میسازید	i_appleid
+فرق ۱۳ و ۱۴ چیه	i_compare
+کدومش بهتره ۱۳ یا ۱۴	i_compare
+پیجتون کجاس	i_social
+کانال دارین	i_social
+وبسایتتون	i_site
+اینترنتی هم میفروشید	i_site
+موجود شد خبرم کن	i_notify
+هدفون دارید	i_accessory|catalog
+قاب گوشی میخوام	i_accessory|catalog
+محافظ صفحه دارین	i_accessory|catalog
+هزینه ۱۴ پرو چقدر میشه	i_price|catalog
+چند میفروشید این مدلو	i_price|catalog
+نمیشه یه کم کمتر حساب کنی	i_discount
+اگه نقد بخرم تخفیف داره	i_discount|i_payment
+مغازه رو چطوری پیدا کنم	i_address
+آدرس دقیقتون رو میدید	i_address
+جمعه ها هم هستید	i_hours
+فردا صبح بازه مغازه	i_hours
+میشه قسطی بخرم	i_install
+چک صیادی قبول میکنید	i_install
+با کارت عابر بانک میشه حساب کرد	i_payment
+به مشهد هم ارسال دارید	i_shipping
+پیک دارید برای تهران	i_shipping
+گوشی کهنمو با یه جدید عوض میکنید	i_tradein
+گوشیمو چند میخرید	i_tradein
+اگه بعد خرید ایراد پیدا کرد چی	i_return|i_warranty
+چند روز وقت دارم تست کنم	i_return
+گارانتیش چند وقته	i_warranty
+قطعاتش اصلیه	i_genuine
+گوشی تعمیر شده نباشه	i_genuine
+رو خط ایرانسل کار میکنه	i_registry
+!گوشیاتون ثبت شده هستن	i_registry
+از سایت میشه سفارش داد	i_site
+لینک سایتتون	i_site
+میخوام با فروشنده صحبت کنم	i_human
+یکی از همکارا جواب بده	i_human
+کدوم گوشی رو برای بازی پیشنهاد میدی	i_advisor|i_compare
+با ۳۰ میلیون چی بخرم	i_advisor|catalog
+پاوربانک دارید	i_accessory|catalog
+کابل شارژ اصل میخوام	i_accessory|catalog
+آیکلود گوشیم قفله	i_software
+اپل آیدی برام میسازی	i_appleid
+آیفون ۱۲ با ۱۳ چه فرقی داره	i_compare
+شماره مغازه	i_phone
+تلفنتون چنده	i_phone
+وقتی ۱۵ پرو اومد بهم بگو	i_notify
+قیمت آیفون ۱۵ رو بگید	i_price|catalog
+۱۳ پرومکس رو چند حساب میکنی	i_price|catalog
+اگه دوتا بخرم ارزونتر میدی	i_discount|catalog
+!قیمتش جای چونه زدن داره	i_discount
+لوکیشن مغازه رو بفرستید	i_address
+نزدیک کدوم مترو هستید	i_address
+یکشنبه بازید	i_hours
+ظهر تعطیلید	i_hours
+اقساطی هم میفروشید	i_install
+بدون چک هم قسط میدید	i_install
+پرداخت با کارت هست	i_payment
+میتونم نقدی بدم	i_payment
+شهرستان ارسال میکنید	i_shipping
+هزینه ارسال با کیه	i_shipping
+!گوشی ۱۱ مو میدم ۱۳ بگیرم	i_tradein
+گوشی دست دوم میخرید	i_tradein
+اگه گوشی عیب داشت چی میشه	i_return|i_warranty
+مهلت تست دارید	i_return
+گارانتی شرکتی داره	i_warranty
+باتریش تعویضی نیست	i_genuine|catalog
+مطمئنید که اصله	i_genuine
+روی همراه اول آنتن میده	i_registry
+رجیستر هست یا نه	i_registry
+آنلاین سفارش بدم میشه	i_site
+آدرس وبسایت	i_site
+یه کارشناس میخوام	i_human
+با پشتیبانی صحبت کنم	i_human|i_phone
+گوشی خوب برای عکاسی کدومه	i_advisor|i_compare|i_specs
+تا ۲۵ تومن چی داری	catalog|i_advisor
+شارژر فست دارید	i_accessory|catalog
+گلس سرامیکی دارید	i_accessory|catalog
+آیکلود رو باز میکنید	i_software
+اپل آیدی آمریکا دارید	i_appleid
+۱۴ بهتره یا ۱۵	i_compare
+شماره تلفن فروشگاه	i_phone
+موجود شد بهم پیام بدید	i_notify
