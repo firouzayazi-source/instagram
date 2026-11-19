@@ -201,3 +201,18 @@ async def test_random_pick_uses_all_texts(tmp_path, monkeypatch):
             await worker.handle_event(ig, row, c)
     got = [t for k, _, t in ig.calls if k == "public"]
     assert len(got) == 40 and set(got) == set(texts)
+
+
+def test_rule_orders_reel_to_order(tmp_path, monkeypatch):
+    """ردگیری فروش: کامنت پست ← لینک ربات با نشانه‌ی دستور ← سفارش."""
+    import time as _t
+    from app import orders
+    now = _t.time()
+    f = lambda t: datetime.fromtimestamp(t, TEH).strftime("%Y-%m-%d %H:%M:%S")  # noqa: E731
+    _tg(tmp_path, monkeypatch, [(11, f(now - 600), "insta_r4"), (12, f(now - 600), "insta_r4"), (13, f(now - 600), "insta")])
+    db.init()
+    with db.connect() as c:
+        orders.ensure(c) if hasattr(orders, "ensure") else None
+        for uid, st in (("11", "awaiting_payment"), ("12", "canceled"), ("13", "done")):
+            c.execute("INSERT INTO orders(channel,user_id,status,created_at,updated_at) VALUES ('tg',?,?,?,?)", (uid, st, now, now))
+        assert leads.rule_orders(c, now - 3600) == {4: 1}

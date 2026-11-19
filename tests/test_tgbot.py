@@ -296,3 +296,33 @@ print('OK')
 """ % (str(TG), str(db), str(db))
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=60)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_ab_report_counts_buy_signals(tmp_path):
+    """آزمایش متن‌ها: شکل ۱ به ۶ نفر، ۳ نفرشان بعدش اقساط پرسیدند؛ شکل ۲ به ۶ نفر، ۱ نفر."""
+    code = r"""
+import asyncio, os, sys
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+async def run():
+    await bot.init_db(); await bot.load_faq()
+    iid = bot.faq[0]['id']
+    for u in range(6):
+        await bot.db.execute("INSERT INTO events VALUES (?,?,datetime('now','-1 day','localtime'))", (u, f'v:{iid}:0'))
+        await bot.db.execute("INSERT INTO events VALUES (?,?,datetime('now','-1 day','localtime'))", (100+u, f'v:{iid}:1'))
+    for u in (0, 1, 2, 100):
+        await bot.db.execute("INSERT INTO events VALUES (?,?,datetime('now','localtime'))", (u, 'ai:i_install'))
+    await bot.db.commit()
+    rep = await bot.ab_report()
+    assert rep and '۳/۶' in rep[0] and '۱/۶' in rep[0], rep
+    assert 'v:' not in await bot.customer_card(0)
+    await bot.db.close()
+try:
+    asyncio.run(run()); print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]

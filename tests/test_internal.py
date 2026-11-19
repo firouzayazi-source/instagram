@@ -132,3 +132,24 @@ def test_telegram_core_handoff_goes_to_team(tmp_path):
 def test_telegram_falls_back_when_core_down(tmp_path):
     out = _run_bot(tmp_path, "down")
     assert out["seen"] == [] and len(out["replies"]) == 1 and "متوجه نشدم" in out["replies"][0]
+
+
+def test_touch_links_same_phone_across_channels(tmp_path, monkeypatch):
+    """پیام تلگرام با شماره ← پرونده؛ همان شماره در اینستاگرام ← «همین شخص در …»."""
+    from fastapi.testclient import TestClient
+    from app import config, crm, db, internal
+    from app.main import create_app
+    monkeypatch.setattr(config, "WEB_DIST", str(tmp_path / "nodist"))
+    db.init()
+    internal.ensure_key()
+    key = internal.key_path().read_text().strip()
+    with db.connect() as c:
+        crm.touch(c, "ig", "igu1", "sara.ig", "message", "شماره‌م ۰۹۱۲۱۱۱۲۲۳۳")
+    with TestClient(create_app(None)) as cl:
+        r = cl.post("/internal/touch", headers={"X-Internal-Key": key},
+                    json={"user_id": "5005", "username": "sara_tg", "name": "سارا", "text": "سلام 09121112233"})
+        assert r.status_code == 200
+    with db.connect() as c:
+        tg = crm.get(c, "tg:5005")
+        assert tg["phone"] == "09121112233" and tg["name"] == "سارا"
+        assert [x["id"] for x in tg["linked"]] == ["ig:igu1"]

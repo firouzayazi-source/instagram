@@ -18,12 +18,13 @@ export default function Rules() {
   const [q, setQ] = useState('')
   const [search, setSearch] = useState(false)
   const [entries, setEntries] = useState(null)
+  const [orders, setOrders] = useState({})
   const load = () => api.get('/api/rules').then(setRules).catch(() => setRules([]))
   useEffect(() => {
     load()
     api.get('/api/channels').then((xs) => setIg(xs.find((x) => x.id === 'instagram'))).catch(() => {})
     api.get('/api/comment-poll').then(setPoll).catch(() => {})
-    api.get('/api/rules-entries?days=30').then((d) => { if (d.available) setEntries(d.entries) }).catch(() => {})
+    api.get('/api/rules-entries?days=30').then((d) => { if (d.available) setEntries(d.entries); setOrders(d.orders || {}) }).catch(() => {})
   }, [])
 
   // کارهای سریع: خطا (نبود اینترنت، خطای سرور) پیام می‌دهد، نه بی‌صدا
@@ -106,7 +107,7 @@ export default function Rules() {
                   <a href={`#/rules/${r.id}`} className="btn sm"><Icon n="edit" /> ویرایش</a>
                   <button type="button" className="btn sm" onClick={() => duplicate(r)}><Icon n="copy" /> کپی</button>
                   <button type="button" className="iconbtn" style={{ width: 36, height: 36 }} aria-label="حذف" onClick={() => remove(r)}><Icon n="trash" /></button>
-                  <small className="muted" style={{ alignSelf: 'center', marginInlineStart: 'auto' }}>{fa(r.use_count)} بار اجرا{entries && <> · <span title="کاربر تازه‌ی ربات تلگرام از لینک همین دستور، ۳۰ روز اخیر">🤖 {fa(entries[r.id] || 0)} ورود به ربات</span></>}</small>
+                  <small className="muted" style={{ alignSelf: 'center', marginInlineStart: 'auto' }}>{fa(r.use_count)} بار اجرا{entries && <> · <span title="کاربر تازه‌ی ربات تلگرام از لینک همین دستور، ۳۰ روز اخیر">🤖 {fa(entries[r.id] || 0)} ورود به ربات</span></>}{orders[r.id] > 0 && <> · <b title="سفارش ثبت‌شده از همین کاربران، ۳۰ روز اخیر">🛒 {fa(orders[r.id])} سفارش</b></>}</small>
                 </div>
               </div>
             )

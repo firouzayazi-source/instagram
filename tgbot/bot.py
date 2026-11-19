@@ -1047,7 +1047,7 @@ async def customer_card(uid):
 
     # چه بخش‌هایی را پیش از نوشتن دیده — بدون تکرار، تازه‌ترین اول
     async with db.execute(
-        "SELECT key,MAX(ts) t FROM events WHERE user_id=? AND key NOT IN (?,?,?) AND key NOT LIKE '!_%' ESCAPE '!' "
+        "SELECT key,MAX(ts) t FROM events WHERE user_id=? AND key NOT IN (?,?,?) AND key NOT LIKE '!_%' ESCAPE '!' AND key NOT LIKE 'v:%' "
         "GROUP BY key ORDER BY t DESC LIMIT 4",(uid,EV_MSG,EV_ABUSE,EV_MISS)) as c:
         seen=[r[0] for r in await c.fetchall()]
     if seen:
@@ -2643,7 +2643,7 @@ async def weekly_digest():
          f"🆕 {to_fa(newu)} مشتری جدید  ·  📅 {to_fa(act)} فعال  ·  💬 {to_fa(msgs)} پیام"]
     if openn: out.append(f"⏳ {to_fa(openn)} پیام هنوز بی‌جواب")
     async with db.execute(
-        "SELECT key,COUNT(*) c FROM events WHERE key NOT IN (?,?,?) AND key NOT LIKE '!_%' ESCAPE '!' AND ts>=datetime('now',?,'localtime') "
+        "SELECT key,COUNT(*) c FROM events WHERE key NOT IN (?,?,?) AND key NOT LIKE '!_%' ESCAPE '!' AND key NOT LIKE 'v:%' AND ts>=datetime('now',?,'localtime') "
         "GROUP BY key ORDER BY c DESC LIMIT 3",(EV_MSG,EV_ABUSE,EV_MISS,since)) as c:
         tops=await c.fetchall()
     if tops:
@@ -2659,6 +2659,10 @@ async def weekly_digest():
             out.append("🔔 مشترک‌ها: "+"، ".join(f"{t} ({to_fa(n)})" for t,n in subs))
     nl=learned_this_week()
     if nl: out.append(f"🎓 دستیار این هفته {to_fa(nl)} جمله‌ی تازه یاد گرفت")
+    try:
+        ab=await ab_report()
+        if ab: out += [HR,"🧪 <b>آزمایش متن جواب‌ها</b> (بعد از کدام متن، مشتری بیشتر سراغ خرید رفت؛ ۱۴ روز):"]+ab
+    except Exception as e: logger.debug(f"digest ab: {e}")
     # ایده‌ی محتوا برای اینستاگرام: موضوع‌هایی که مشتری‌ها واقعاً بیشتر پرسیدند
     try:
         async with db.execute("SELECT key,COUNT(DISTINCT user_id) n FROM events WHERE key LIKE 'ai:%' "
@@ -2677,6 +2681,30 @@ async def weekly_digest():
                    f"×{to_fa(hot[0].get('count',1))}",
                 "برایش یک سؤال آماده بنویسید تا از این به بعد خودکار جواب بگیرد."]
     return _fit("\n".join(out),TEXT_LIMIT)
+
+async def ab_report(days=14):
+    """آزمایش متن‌ها: برای هر موضوعی که چند شکل جواب دارد، هر شکل به چند نفر رفت و چند نفرشان تا ۴۸ ساعت بعد
+    نشانه‌ی خرید داشتند (اقساط، سفارش، رزرو، پرداخت، مشتری داغ). فقط گزارش؛ تصمیم با صاحب پیج."""
+    since=(datetime.now(IRAN_TZ)-timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    buy=tuple(HOT_BUY)+(EV_HOT,)
+    ph=",".join("?"*len(buy))
+    async with db.execute(
+        f"SELECT v.key, COUNT(DISTINCT v.user_id), COUNT(DISTINCT CASE WHEN EXISTS (SELECT 1 FROM events b WHERE "
+        f"b.user_id=v.user_id AND b.key IN ({ph}) AND b.ts>v.ts AND b.ts<=datetime(v.ts,'+2 days')) THEN v.user_id END) "
+        f"FROM events v WHERE v.key LIKE 'v:%' AND v.ts>=? GROUP BY v.key",(*buy,since)) as c:
+        rows=await c.fetchall()
+    by={}
+    for key,n,won in rows:
+        _,iid,idx=key.split(":",2)
+        by.setdefault(iid,[]).append((int(idx) if idx.isdigit() else 0,n,won))
+    out=[]
+    for iid,vs in by.items():
+        it=faq_item(iid)
+        if not it or sum(n for _,n,_ in vs)<10: continue          # کمتر از ۱۰ نفر: هنوز قضاوت زود است
+        vs.sort()
+        parts=[f"متن {to_fa(i+1)}: {to_fa(won)}/{to_fa(n)} ({to_fa(round(100*won/n))}٪)" for i,n,won in vs if n]
+        out.append(f"• «{esc(faq_title(it))}»: "+" · ".join(parts))
+    return out
 
 async def weekly_review():
     """گزارش «سؤال‌های نفهمیده»: درصد فهم هفته و پرتکرارترین سؤال‌های بی‌جواب، هر کدام با پیشنهاد آماده
@@ -4390,7 +4418,8 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         if _s=='block': return
         if _s=='warn': return await update.message.reply_text("🐢 لطفاً آرام‌تر پیام دهید.")
         if await is_blocked(user.id): return
-        if update.effective_chat.type=="private": tx_start(user.id,text)
+        if update.effective_chat.type=="private":
+            tx_start(user.id,text); _bg(core_touch(user,text),"crm touch")
     if text=="❌ لغو عملیات":
         ctx.user_data.clear(); return await update.message.reply_text("❌ لغو شد.",reply_markup=main_menu())
     mode=ctx.user_data.get("mode")
@@ -5562,6 +5591,20 @@ async def core_think(text,user,dry=False):
     if d.get("action") in ("reply","handoff") and (d.get("reply") or "").strip(): return d
     return None
 
+async def core_touch(user,text=""):
+    """پیام مشتری ← پرونده‌ی مشتری در پنل (شماره‌ی داخل پیام هم ثبت می‌شود؛ همان شخص در اینستاگرام یکی دیده می‌شود)."""
+    try:
+        with open(INTERNAL_KEY_FILE,encoding="utf-8") as f: key=f.read().strip()
+    except OSError: return
+    if not key: return
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=10,trust_env=False) as cl:
+            await cl.post(CORE_URL+"/internal/touch",headers={"X-Internal-Key":key},
+                          json={"user_id":str(user.id),"username":user.username or "",
+                                "name":" ".join(x for x in (user.first_name,user.last_name) if x)[:100],"text":(text or "")[:2000]})
+    except Exception as e: logger.debug(f"core touch: {e}")
+
 async def core_transcribe(data,filename="voice.ogg"):
     """ویس ← متن از هسته‌ی مرکزی (با کلید هوش مصنوعی پنل). None اگر کلید یا هسته نبود."""
     try:
@@ -6591,8 +6634,13 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
     product=canon_product(product)
     values={"name":(user.first_name or "").strip()[:20],"product":product,
             "shop":SHOP_NAME,"status":status_line() or "","hours":wh_today_block() or ""}
-    answer=brain.fill(brain.pick_variant(item.get("answer",""),product=product),**values)
+    raw=brain.pick_variant(item.get("answer",""),product=product)
+    answer=brain.fill(raw,**values)
     action=item.get("action") or ""
+    # آزمایش متن‌ها: کدام شکلِ جواب فرستاده شد (گزارش هفتگی می‌سنجد بعد از کدام، مشتری بیشتر خرید کرد)
+    variants=[p.strip() for p in brain.VARIANT_SEP.split(item.get("answer","")) if p.strip()]
+    if not dry and len(variants)>1 and raw in variants:
+        _bg(record_event(uid,f"v:{item['id']}:{variants.index(raw)}"),"ev variant")
     rows=suggest_rows(item) if tail else []
     if not dry:
         item["hits"]=item.get("hits",0)+1; save_faq_soon()
@@ -6699,7 +6747,7 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
             if not chat_mode():
                 rows=rows+[[InlineKeyboardButton(f"🔔 وقتی {product} رسید خبرم کن",
                                                  callback_data="wl_add")]]
-        await send_faq(msg,item,chat=True,lead=lead,values=values,extra_rows=rows)
+        await send_faq(msg,{**item,"answer":raw},chat=True,lead=lead,values=values,extra_rows=rows)
         if wl_product and chat_mode():
             await msg.reply_text(f"اگه الان نبود، بنویسید «خبرم کن» تا هر وقت {wl_product} رسید "
                                  "همین‌جا خبرتون کنم 🔔",reply_markup=main_menu())
@@ -7065,6 +7113,8 @@ async def user_media_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if spam_check(user.id)!='ok': return
     if await check_abuse(update,ctx,msg.caption or "",user): return
     kind=next((lbl for attr,lbl in _KIND_BY_ATTR if getattr(msg,attr,None)),"پیام")
+    if msg.contact and msg.contact.phone_number:      # شماره‌ای که خود مشتری فرستاد ← پرونده‌اش در پنل
+        _bg(core_touch(user,msg.contact.phone_number.replace("+98","0")),"crm contact")
     # ویس: به متن تبدیل و مثل پیام نوشتاری جواب داده می‌شود (اگر کلید هوش مصنوعی در پنل هست)
     if (msg.voice or msg.audio) and get_setting("assistant") and get_setting("faq_auto") \
             and not await human_active(user.id,ctx.bot):

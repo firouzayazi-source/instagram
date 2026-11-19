@@ -133,3 +133,26 @@ async def transcribe(request: Request, x_internal_key: str | None = Header(None)
     except Exception as e:  # noqa: BLE001
         return {"text": "", "error": str(e)[:200]}
     return {"text": text or "", "provider": voice.available()}
+
+
+class TouchIn(BaseModel):
+    user_id: str
+    username: str = ""
+    name: str = ""
+    text: str = ""
+
+
+@router.post("/touch")
+def touch(body: TouchIn, request: Request, x_internal_key: str | None = Header(None)):
+    """پیام مشتری تلگرام ← پرونده‌ی مشتری در پنل (با شماره‌اش، تا با همان شخص در اینستاگرام یکی دیده شود)."""
+    _check(request, x_internal_key)
+    from . import crm
+    uid = body.user_id.strip()[:40]
+    if not uid.isdigit():
+        raise HTTPException(422)
+    with db.connect() as c:
+        key = crm.touch(c, "tg", uid, body.username.strip()[:64] or None, "message", body.text[:2000])
+        if body.name.strip():
+            c.execute("UPDATE customers SET name=? WHERE id=? AND COALESCE(name,'')=''", (body.name.strip()[:100], key))
+    return {"ok": True}
+

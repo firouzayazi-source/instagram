@@ -164,6 +164,10 @@ def get(c, key: str) -> dict | None:
     events += [{"at": x["created_at"], "kind": "handoff", "text": x["reason"] or x["text"]}
                for x in c.execute("SELECT * FROM handoffs WHERE user_id=? ORDER BY created_at DESC LIMIT 30", (uid,))]
     d["timeline"] = sorted(events, key=lambda e: e["at"], reverse=True)[:150]
+    # همان شخص در کانال دیگر (اینستاگرام ↔ تلگرام): با شماره‌ی موبایل یکسان
+    d["linked"] = [{"id": x["id"], "channel": x["channel"], "username": x["username"], "name": x["name"]}
+                   for x in c.execute("SELECT id,channel,username,name FROM customers WHERE phone<>'' AND phone=? AND id<>?",
+                                      (d.get("phone") or "", key))] if d.get("phone") else []
     return d
 
 

@@ -560,7 +560,10 @@ def rules_entries(days: int = 30):
     """هر دستور چند نفر را از لینک خودش به ربات تلگرام آورد (ورود تازه)."""
     since = time.time() - max(1, min(365, days)) * 86400
     e = leads.rule_entries(since)
-    return {"available": e is not None, "entries": {str(k): v for k, v in (e or {}).items()}, "bot": leads.bot_username()}
+    with db.connect() as c:
+        o = leads.rule_orders(c, since)
+    return {"available": e is not None, "entries": {str(k): v for k, v in (e or {}).items()}, "bot": leads.bot_username(),
+            "orders": {str(k): v for k, v in o.items()}}
 
 
 @protected.get("/report/weekly")

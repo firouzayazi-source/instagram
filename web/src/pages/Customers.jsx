@@ -188,7 +188,9 @@ function Profile({ id }) {
             {p.channel === 'ig' && <a className="btn sm" href={`#/messages/${p.user_id}`}>گفتگو</a>}
           </span>
         </div>
-        <p className="muted">اولین پیام {timeAgo(p.first_seen)} · آخرین {timeAgo(p.last_seen)} · {fa(p.messages)} دایرکت · {fa(p.comments)} کامنت</p>
+        <p className="muted">{p.channel === 'tg' ? '✈️ تلگرام · ' : '📸 اینستاگرام · '}اولین پیام {timeAgo(p.first_seen)} · آخرین {timeAgo(p.last_seen)} · {fa(p.messages)} پیام · {fa(p.comments)} کامنت</p>
+        {p.linked?.length > 0 && <div className="note info">🔗 همین شخص (با همین شماره) در {p.linked.map((x) => (
+          <a key={x.id} href={`#/customers/${encodeURIComponent(x.id)}`} style={{ marginInlineEnd: 8 }}>{x.channel === 'tg' ? '✈️ تلگرام' : '📸 اینستاگرام'}{x.username ? ` @${x.username}` : ''}</a>))}</div>}
         <div className="grid2">
           <div className="field"><label>نام</label><input type="text" value={p.name} onChange={(e) => set({ name: e.target.value })} /></div>
           <div className="field"><label>شماره‌ی موبایل</label><input type="text" dir="ltr" inputMode="tel" value={p.phone} placeholder="09…" onChange={(e) => set({ phone: e.target.value })} /></div>

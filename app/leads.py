@@ -65,6 +65,32 @@ def rule_entries(since: float = 0) -> dict[int, int] | None:
     return out
 
 
+def rule_orders(c, since: float = 0) -> dict[int, int]:
+    """ردگیری فروش: دستور (پست) ← تعداد سفارش (لغونشده) از کاربرانی که با لینک همان دستور وارد ربات شدند."""
+    p = Path(config.TG_DATA_DIR) / "users.db"
+    if not p.exists():
+        return {}
+    start = datetime.fromtimestamp(since, TEHRAN).strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        with sqlite3.connect(f"file:{p}?mode=ro", uri=True, timeout=3) as t:
+            rows = t.execute("SELECT user_id, source FROM users WHERE source LIKE 'insta_r%' AND joined_at>=?", (start,)).fetchall()
+    except sqlite3.Error:
+        return {}
+    by_user = {}
+    for uid, src in rows:
+        m = re.match(r"insta_r(\d+)", src or "")
+        if m:
+            by_user[str(uid)] = int(m.group(1))
+    out: dict[int, int] = {}
+    if not by_user:
+        return out
+    for (uid,) in c.execute("SELECT user_id FROM orders WHERE channel='tg' AND status<>'canceled' AND created_at>=?", (since,)):
+        rid = by_user.get(str(uid))
+        if rid:
+            out[rid] = out.get(rid, 0) + 1
+    return out
+
+
 # ---------- وضعیت سرنخ ----------
 
 def set_status(c, key: str, status: str) -> dict:
