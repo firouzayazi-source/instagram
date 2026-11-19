@@ -135,6 +135,24 @@ async def transcribe(request: Request, x_internal_key: str | None = Header(None)
     return {"text": text or "", "provider": voice.available()}
 
 
+@router.post("/vision")
+async def vision(request: Request, x_internal_key: str | None = Header(None), x_caption: str | None = Header(None)):
+    """عکس مشتری ← یک جمله‌ی کوتاه (برای ربات تلگرام). بی کلید هوش مصنوعی: provider خالی، یعنی خاموش."""
+    _check(request, x_internal_key)
+    from urllib.parse import unquote
+    from . import vision as vis
+    if not vis.available():
+        return {"text": "", "provider": ""}
+    data = await request.body()
+    if len(data) > vis.MAX_BYTES:
+        raise HTTPException(413)
+    try:
+        text = await vis.describe(data, unquote(x_caption or ""))
+    except Exception as e:  # noqa: BLE001
+        return {"text": "", "provider": vis.available(), "error": str(e)[:200]}
+    return {"text": text or "", "provider": vis.available()}
+
+
 class TouchIn(BaseModel):
     user_id: str
     username: str = ""

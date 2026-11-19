@@ -331,3 +331,53 @@ os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_visit_booking_and_reminder(tmp_path):
+    """رزرو بازدید: فقط ساعت‌های داخل شیفت، کارت برای همکار، یادآوری یک بار."""
+    code = r"""
+import asyncio, os, sys, types, re
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+from datetime import timedelta
+cards = []; said = []
+async def fake_handoff(b, user, why='', icon='', extra=''): cards.append((why, extra))
+bot.notify_handoff = fake_handoff
+bot.workhours = {'enabled': True, 'schedule': {str(d): {'open': True, 'shifts': [{'from': '10:00', 'to': '14:00'}]} for d in range(7)}}
+class Msg:
+    async def reply_text(self, t, **k): said.append((t, k.get('reply_markup')))
+    async def edit_text(self, t, **k): said.append((t, k.get('reply_markup')))
+    async def edit_reply_markup(self, **k): pass
+async def run():
+    await bot.init_db()
+    now = bot.datetime.now(bot.IRAN_TZ).replace(hour=12, minute=30)
+    days = bot.visit_days(now)
+    assert days and days[0][0] == 1 and days[0][2] == ['10:00','11:00','12:00','13:00'], days   # امروز دیگر دیر است
+    u = types.SimpleNamespace(id=41, username=None, first_name='S')
+    q = types.SimpleNamespace(from_user=u, message=Msg())
+    await bot.visit_callback(q, None, 'vis_go')
+    kb = said[-1][1].inline_keyboard
+    off = kb[0][0].callback_data
+    await bot.visit_callback(q, None, off)
+    t = said[-1][1].inline_keyboard[-1][-1].callback_data
+    await bot.visit_callback(q, None, t)
+    assert cards and 'رزرو بازدید' in cards[-1][0] and 'ساعت' in cards[-1][1]
+    cur = await bot.visit_upcoming(41); assert cur
+    at = bot.datetime.strptime(cur[1], '%%Y-%%m-%%d %%H:%%M').replace(tzinfo=bot.IRAN_TZ)
+    assert await bot.visits_due(at - timedelta(minutes=90)) == []
+    due = await bot.visits_due(at - timedelta(minutes=30)); assert [r[1] for r in due] == [41]
+    await bot.visit_callback(q, None, 'vis_x')
+    assert await bot.visit_upcoming(41) is None and 'لغو' in cards[-1][0]
+    bot.settings['visits'] = False
+    assert bot.visit_days(now) == []
+    await bot.db.close()
+try:
+    asyncio.run(run())
+    print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]

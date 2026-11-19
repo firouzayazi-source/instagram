@@ -164,6 +164,8 @@ DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs"
                     "log_unmatched":True,   # ثبت سؤال‌هایی که جوابی نداشتند
                     "track_visits":True,    # حافظه‌ی رفتار مشتری (کارت شناخت)
                     "aftersale":True,       # پیگیری یک هفته بعد از تحویل سفارش
+                    "visits":True,          # رزرو زمان بازدید حضوری از مغازه
+                    "vision":True,          # فهم عکس مشتری (فقط وقتی کلید هوش مصنوعی در پنل هست)
                     "morning_brief":True,   # گزارش صبحگاهی ساعت ۹
                     "weekly_digest":True,   # خلاصه‌ی هفته کنار بکاپ جمعه
                     "miniapp":True,         # لینک سایت داخل تلگرام باز شود
@@ -683,6 +685,10 @@ async def init_db():
             user_id INTEGER,product TEXT,ts TEXT,
             PRIMARY KEY(user_id,product));
         CREATE INDEX IF NOT EXISTS idx_wl_p ON waitlist(product);
+        CREATE TABLE IF NOT EXISTS visits(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,at TEXT,
+            status TEXT DEFAULT 'ok',reminded INTEGER DEFAULT 0,ts TEXT);
+        CREATE INDEX IF NOT EXISTS idx_vis_at ON visits(at);
     """)
     for sql in ["ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0",
                 "ALTER TABLE users ADD COLUMN has_left INTEGER DEFAULT 0",
@@ -927,7 +933,7 @@ async def learn_from_reply(q,a):
 
 # ── مشتری داغ (۲۸ آبان ۱۴۰۵): کسی که در ۲۴ ساعت هم محصول یا قیمت را دیده، هم سراغ شرایط خرید یا آمدن رفته
 HOT_BUY = {"ai:i_install","ai:i_order","ai:i_payment","ai:i_discount","ai:i_tradein","rsv"}
-HOT_VISIT = {"ai:i_address","ai:i_hours","ai:i_phone","ai:i_shipping","5","wh_page"}
+HOT_VISIT = {"vis","ai:i_address","ai:i_hours","ai:i_phone","ai:i_shipping","5","wh_page"}
 HOT_LOOK = {"ai:i_price","ai:i_stock","ai:i_compare","ai:i_advisor"}
 _hot_at: dict = {}      # uid ← آخرین هشدار
 
@@ -1817,6 +1823,8 @@ def menu_item_kb(key):
     rows.append([InlineKeyboardButton("🔙 بازگشت",callback_data="menu_mgr")])
     return InlineKeyboardMarkup(rows)
 
+def _dot(k): return "🟢" if get_setting(k) else "⚫️"
+
 def settings_kb(owner=False):
     notif="🟢" if get_setting("notify_new_user") else "⚫️"
     fwd="🟢" if get_setting("forward_user_msgs") else "⚫️"
@@ -1845,7 +1853,11 @@ def settings_kb(owner=False):
           [InlineKeyboardButton(f"{typ} «در حال نوشتن…»",callback_data="stg_typing_delay"),
            InlineKeyboardButton(f"{ccad} رونوشت برای مدیر",callback_data="stg_ai_cc_admin")],
           [InlineKeyboardButton(f"{prof} تذکر به توهین و فحش",callback_data="stg_profanity_filter")],
-          [InlineKeyboardButton(f"{chm} حالت چت (بدون منو و دکمه)",callback_data="stg_chat_mode")]]
+          [InlineKeyboardButton(f"{chm} حالت چت (بدون منو و دکمه)",callback_data="stg_chat_mode")],
+          [InlineKeyboardButton(f"{_dot('visits')} رزرو بازدید",callback_data="stg_visits"),
+           InlineKeyboardButton(f"{_dot('vision')} فهم عکس (با کلید AI)",callback_data="stg_vision")],
+          [InlineKeyboardButton(f"{_dot('morning_brief')} گزارش صبح",callback_data="stg_morning_brief"),
+           InlineKeyboardButton(f"{_dot('aftersale')} پیگیری بعد از خرید",callback_data="stg_aftersale")]]
     # مدیریت مدیرها و بازگردانی بک‌آپ فقط دستِ مالک است
     if owner:
         rows.append([InlineKeyboardButton(f"👮 مدیران ربات · {to_fa(len(_admins))}",
@@ -2802,6 +2814,10 @@ async def morning_brief():
             names=[(r[1] or "—")+(f" (@{r[2]})" if r[2] else "") for r in await c.fetchall()]
         out.append(f"🔥 {to_fa(hot)} مشتری داغ: "+esc("، ".join(names)))
     if openn: out.append(f"⏳ {to_fa(openn)} پیام منتظر جواب شما")
+    try:
+        vt=await visits_today()
+        if vt: out.append("🗓 بازدید امروز: "+esc("، ".join(f"{to_fa(a[11:])} {n or '—'}" for a,n in vt)))
+    except Exception: pass
     if learned: out.append(f"🎓 ربات {to_fa(learned)} چیز تازه یاد گرفت")
     try:
         async with db.execute("SELECT q,COUNT(DISTINCT user_id) n FROM searches WHERE found=0 AND ts>=? GROUP BY q ORDER BY n DESC LIMIT 3",(since,)) as c:
@@ -3398,6 +3414,11 @@ async def user_cb(query,ctx):
                 _bg(forward_to_admin(upd,ctx,auto=it,count=False),"cc admin")
         return
 
+    if data.startswith("vis_"):
+        try: await query.answer()
+        except Exception: pass
+        await visit_callback(query,ctx.bot,data)
+        return
     # مشاور خرید
     if data.startswith("ti_"):
         try: await query.answer()
@@ -5655,6 +5676,39 @@ async def core_transcribe(data,filename="voice.ogg"):
         logger.warning(f"transcribe: {type(e).__name__}: {e}"); return None
 
 VOICE_MAX_SEC = 120
+_vision_off_until = 0.0     # هسته گفت کلید هوش مصنوعی نیست: تا ده دقیقه دوباره نمی‌پرسیم
+
+async def core_vision(data,caption=""):
+    """عکس ← جمله‌ی کوتاه / RECEIPT / NONE از هسته. None یعنی قابلیت خاموش است (کلید نیست) یا نرسید."""
+    global _vision_off_until
+    if time.time()<_vision_off_until: return None
+    try:
+        with open(INTERNAL_KEY_FILE,encoding="utf-8") as f: key=f.read().strip()
+    except OSError: return None
+    if not key: return None
+    try:
+        import httpx
+        from urllib.parse import quote
+        async with httpx.AsyncClient(timeout=50,trust_env=False) as cl:
+            r=await cl.post(CORE_URL+"/internal/vision",content=bytes(data),
+                            headers={"X-Internal-Key":key,"X-Caption":quote((caption or "")[:300])})
+        if r.status_code!=200: return None
+        j=r.json()
+        if not j.get("provider"): _vision_off_until=time.time()+600; return None
+        return (j.get("text") or "").strip() or None
+    except Exception as e:
+        logger.warning(f"vision: {type(e).__name__}: {e}"); return None
+
+async def photo_to_text(msg,bot):
+    """عکس مشتری (نسخه‌ی متوسط، نه اصلی) ← جمله‌ی کوتاه. بی کلید: None و عکس مثل قبل برای همکار می‌رود."""
+    if not msg.photo or time.time()<_vision_off_until: return None
+    ph=next((p for p in reversed(msg.photo) if (p.width or 0)<=1280),msg.photo[-1])
+    try:
+        f=await bot.get_file(ph.file_id)
+        data=await f.download_as_bytearray()
+    except Exception as e:
+        logger.warning(f"photo download: {e}"); return None
+    return await core_vision(data,msg.caption or "")
 
 async def voice_to_text(msg,bot):
     v=msg.voice or msg.audio
@@ -5964,6 +6018,123 @@ ADV_TIPS = {
   "سایز جمع‌وجور":"اگه گوشی جمع‌وجور می‌خواید، مدل‌های ۶٫۱ اینچی و «مینی» راحت‌ترن 🤏",
   "سرعت و بازی":"برای بازی، مدل‌های «پرو» با صفحه‌ی ۱۲۰ هرتز و تراشه‌ی جدیدتر عالی‌ان 🎮",
 }
+# ── رزرو بازدید حضوری (۲۸ آبان ۱۴۰۵): روز و ساعت از برنامه‌ی کاری، کارت برای همکار، یادآوری یک ساعت قبل
+VISIT_DAYS = 3            # چند روزِ باز آینده پیشنهاد شود
+VISIT_LEAD = 3600         # امروز: دست‌کم یک ساعت بعد
+VISIT_REMIND = 3600       # یادآوری یک ساعت قبل
+
+def visit_slots(day,off,now):
+    """ساعت‌های رُند داخل شیفت‌های یک روز (آخرین ساعت شیفت پیشنهاد نمی‌شود)."""
+    out=[]
+    for sh in day.get("shifts",[]):
+        if not valid_shift(sh) or sh["from"]>sh["to"]: continue
+        h=int(sh["from"][:2])+(1 if sh["from"][3:]!="00" else 0)
+        end=int(sh["to"][:2])
+        while h<end:
+            t=(now+timedelta(days=off)).replace(hour=h,minute=0,second=0,microsecond=0)
+            if t.timestamp()-now.timestamp()>=VISIT_LEAD: out.append(f"{h:02d}:00")
+            h+=1
+    return sorted(set(out))[:10]
+
+def visit_days(now=None):
+    """[(off, برچسب, [ساعت‌ها])] برای نزدیک‌ترین روزهای باز. بی برنامه‌ی کاری یا با رزرو خاموش: []."""
+    if not get_setting("visits") or not get_setting("store_open") or not workhours.get("enabled",True): return []
+    now=now or datetime.now(IRAN_TZ); sched=workhours.get("schedule",{}); out=[]
+    for off in range(0,8):
+        j=jdatetime.datetime.fromgregorian(datetime=now+timedelta(days=off))
+        day=sched.get(str(j.weekday()),{})
+        if not day.get("open",False): continue
+        sl=visit_slots(day,off,now)
+        if not sl: continue
+        when="امروز" if off==0 else "فردا" if off==1 else DAY_FA.get(str(j.weekday()),"")
+        out.append((off,f"{when} {to_fa(j.day)} {MONTH_FA[j.month]}",sl))
+        if len(out)>=VISIT_DAYS: break
+    return out
+
+async def visit_upcoming(uid):
+    async with db.execute("SELECT id,at FROM visits WHERE user_id=? AND status='ok' AND at>=? ORDER BY at LIMIT 1",
+                          (uid,datetime.now(IRAN_TZ).strftime("%Y-%m-%d %H:%M"))) as c:
+        return await c.fetchone()
+
+def visit_label(at):
+    d=datetime.strptime(at,"%Y-%m-%d %H:%M"); j=jdatetime.datetime.fromgregorian(datetime=d)
+    return f"{DAY_FA.get(str(j.weekday()),'')} {to_fa(j.day)} {MONTH_FA[j.month]} ساعت {to_fa(at[11:])}"
+
+async def visit_callback(query,bot,data):
+    user=query.from_user; msg=query.message
+    if data=="vis_go":
+        days=visit_days()
+        if not days:
+            return await msg.reply_text("الان زمان آزادی برای رزرو نداریم؛ لطفاً بعداً دوباره سر بزنید 🙏",reply_markup=main_menu())
+        cur=await visit_upcoming(user.id)
+        head=(f"🗓 الان برای <b>{esc(visit_label(cur[1]))}</b> رزرو دارید. اگه روز دیگه‌ای رو انتخاب کنید، رزرو قبلی عوض می‌شه.\n\n"
+              if cur else "🗓 ")+"کدوم روز تشریف میارید؟"
+        kb=[[InlineKeyboardButton(lbl,callback_data=f"vis_d{off}")] for off,lbl,_ in days]
+        if cur: kb.append([InlineKeyboardButton("❌ لغو رزرو فعلی",callback_data="vis_x")])
+        return await msg.reply_text(head,parse_mode="HTML",reply_markup=InlineKeyboardMarkup(kb))
+    if data.startswith("vis_d") and data[5:].isdigit():
+        d=next((x for x in visit_days() if x[0]==int(data[5:])),None)
+        if not d: return await msg.reply_text("این روز دیگه وقت آزاد نداره؛ لطفاً روز دیگه‌ای انتخاب کنید.",reply_markup=main_menu())
+        btns=[InlineKeyboardButton(to_fa(t),callback_data=f"vis_t{d[0]}_{t.replace(':','')}") for t in d[2]]
+        kb=[btns[i:i+3] for i in range(0,len(btns),3)]
+        try: await msg.edit_text(f"🗓 {d[1]} — چه ساعتی؟",reply_markup=InlineKeyboardMarkup(kb))
+        except Exception: await msg.reply_text(f"🗓 {d[1]} — چه ساعتی؟",reply_markup=InlineKeyboardMarkup(kb))
+        return
+    m=re.fullmatch(r"vis_t(\d)_(\d{4})",data)
+    if m:
+        off,t=int(m.group(1)),m.group(2)[:2]+":"+m.group(2)[2:]
+        d=next((x for x in visit_days() if x[0]==off),None)
+        if not d or t not in d[2]:
+            return await msg.reply_text("این ساعت دیگه آزاد نیست؛ لطفاً دوباره انتخاب کنید 🙏",reply_markup=main_menu())
+        at=(datetime.now(IRAN_TZ)+timedelta(days=off)).strftime("%Y-%m-%d ")+t
+        old=await visit_upcoming(user.id)
+        await db.execute("UPDATE visits SET status='moved' WHERE user_id=? AND status='ok'",(user.id,))
+        await db.execute("INSERT INTO visits(user_id,at,ts) VALUES(?,?,datetime('now','localtime'))",(user.id,at))
+        await db.commit()
+        try: await msg.edit_reply_markup(reply_markup=None)
+        except Exception: pass
+        lbl=visit_label(at)
+        await msg.reply_text(f"✅ رزرو شد: <b>{esc(lbl)}</b>\nمنتظرتون هستیم 🌸 یک ساعت قبل یادآوری می‌کنم.\n"
+                             "اگه برنامه‌تون عوض شد، از «📍 آدرس و ساعت» ← «🗓 رزرو زمان بازدید» عوضش کنید.",
+                             parse_mode="HTML",reply_markup=main_menu())
+        _bg(record_event(user.id,"vis"),"ev visit")
+        await notify_handoff(bot,user,why="رزرو بازدید حضوری"+(" (تغییر زمان)" if old else ""),icon="🗓",
+                             extra=f"⏰ {lbl}"+(f"\n(قبلی: {visit_label(old[1])})" if old else ""))
+        return
+    if data=="vis_x":
+        cur=await visit_upcoming(user.id)
+        if not cur: return await msg.reply_text("رزرو فعالی ندارید 🙂",reply_markup=main_menu())
+        await db.execute("UPDATE visits SET status='cancel' WHERE id=?",(cur[0],)); await db.commit()
+        await msg.reply_text("رزروتون لغو شد. هر وقت خواستید دوباره رزرو کنید 🙏",reply_markup=main_menu())
+        await notify_handoff(bot,user,why="لغو رزرو بازدید",icon="🗓",extra=f"⏰ {visit_label(cur[1])}")
+
+async def visits_due(now=None):
+    """رزروهایی که تا یک ساعت دیگر می‌رسند و هنوز یادآوری نگرفته‌اند."""
+    now=now or datetime.now(IRAN_TZ)
+    lo=now.strftime("%Y-%m-%d %H:%M"); hi=(now+timedelta(seconds=VISIT_REMIND)).strftime("%Y-%m-%d %H:%M")
+    async with db.execute("SELECT id,user_id,at FROM visits WHERE status='ok' AND reminded=0 AND at>? AND at<=?",(lo,hi)) as c:
+        return await c.fetchall()
+
+async def visits_today(now=None):
+    now=now or datetime.now(IRAN_TZ); d=now.strftime("%Y-%m-%d")
+    async with db.execute("SELECT v.at,u.first_name FROM visits v LEFT JOIN users u ON u.user_id=v.user_id "
+                          "WHERE v.status='ok' AND v.at LIKE ? ORDER BY v.at",(d+"%",)) as c:
+        return await c.fetchall()
+
+async def _visit_loop(bot):
+    await asyncio.sleep(60)
+    while True:
+        try:
+            for vid,uid,at in await visits_due():
+                await db.execute("UPDATE visits SET reminded=1 WHERE id=?",(vid,)); await db.commit()
+                try:
+                    await bot.send_message(uid,f"⏰ یادآوری: امروز ساعت {to_fa(at[11:])} منتظرتون هستیم 🌸\n"
+                                               "آدرس و مسیر از «📍 آدرس و ساعت».",reply_markup=main_menu())
+                except Forbidden: await mark_left(uid)
+                except Exception as e: logger.warning(f"visit remind → {uid}: {e}")
+        except Exception as e: logger.error(f"visit loop: {e}")
+        await asyncio.sleep(300)
+
 # ── کارشناسی معاوضه (۲۸ آبان ۱۴۰۵): سه سؤال کوتاه، بعد یک کارت کامل برای همکار. ربات قیمت نمی‌دهد.
 ti_state: dict = {}      # uid → {"ts","step","a":[]}
 TI_TTL = 15*60
@@ -6695,6 +6866,8 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
             msg,text,"",lead,rows,uid=None if dry else uid,force={"acc":"لوازم جانبی"}):
         pass
     elif action.startswith("section:") and action[8:] in SECTION_NAMES:
+        if item.get("id")=="i_address" and not dry and visit_days():
+            rows=rows+[[InlineKeyboardButton("🗓 رزرو زمان بازدید",callback_data="vis_go")]]
         pre=_join(lead,answer)
         if pre: await msg.reply_text(pre,reply_markup=main_menu())
         await send_section(msg,action[8:],uid=None if dry else uid,extra_rows=rows)
@@ -6712,6 +6885,8 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
     elif action=="hours":
         body=_join(lead,answer,status_line() or "",wh_today_block() or "")
         rows=rows+[[InlineKeyboardButton("📆 برنامه‌ی هفتگی",callback_data="wh_weekly")]]
+        if not dry and visit_days():
+            rows=rows+[[InlineKeyboardButton("🗓 رزرو زمان بازدید",callback_data="vis_go")]]
         await msg.reply_text(body or "🕐",reply_markup=InlineKeyboardMarkup(rows))
     elif action=="prices":
         pic=item if item.get("photo") else next(
@@ -7127,6 +7302,7 @@ def event_label(k):
     """برچسب خوانای یک رویداد برای کارت شناخت و گزارش هفتگی."""
     if k=="wh_page": return "🕐 ساعت کاری"
     if k=="rsv": return "🛒 رزرو کالا"
+    if k=="vis": return "🗓 رزرو بازدید"
     if k.startswith("ai:"):
         it=faq_item(k[3:]); return f"💬 {faq_title(it)}" if it else "💬 پرسش"
     return SECTION_NAMES.get(k,k)
@@ -7163,6 +7339,22 @@ async def user_media_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             await msg.reply_text(r["reply"],reply_markup=main_menu())
             await forward_to_admin(update,ctx,"🧾 رسید پرداخت",ack=False)
             return
+        # فهم عکس (فقط با کلید هوش مصنوعی در پنل): عکس گوشی/محصول ← سؤال کوتاه ← همان جواب‌گوی ربات
+        if get_setting("assistant") and get_setting("faq_auto") and get_setting("vision") \
+                and not await human_active(user.id,ctx.bot):
+            seen=await photo_to_text(msg,ctx.bot)
+            if seen=="RECEIPT":
+                await forward_to_admin(update,ctx,"🧾 احتمالاً رسید پرداخت",ack=True)
+                return
+            if seen and seen!="NONE":
+                tx_start(user.id,"🖼 عکس"+(f" «{msg.caption[:80]}»" if msg.caption else "")+f" ← {seen}")
+                ok=await assistant_reply(update,ctx,seen,user)
+                try:          # خود عکس هم در تاپیک مشتری بنشیند تا همکار ببیند ربات درباره‌ی چه جواب داد
+                    gid=support_group(); tid=await topic_of(user.id) if gid else 0
+                    if tid: await ctx.bot.copy_message(gid,user.id,msg.message_id,message_thread_id=tid)
+                except Exception as e: logger.debug(f"photo → topic: {e}")
+                await asyncio.sleep(1.5); await tx_flush(ctx.bot,user)
+                if ok: return
     if not await forward_to_admin(update,ctx,kind,ack=not await human_active(user.id,ctx.bot)):
         await msg.reply_text(
             ("سؤالتون رو همین‌جا بنویسید 🙂" if chat_mode()
@@ -7346,6 +7538,7 @@ async def post_init(app):
     _spawn(_site_pages_loop(),"صفحه‌های سایت")
     _spawn(_morning_loop(app.bot),"گزارش صبحگاهی")
     _spawn(_aftersale_loop(app.bot),"پیگیری بعد از خرید")
+    _spawn(_visit_loop(app.bot),"یادآوری بازدید")
     _spawn(_panel_inbox_loop(),"تغییرهای پنل وب")
     _spawn(_status_loop(),"گزارش وضعیت")
     _spawn(_ig_notify_loop(app.bot),"خبرهای اینستاگرام")
