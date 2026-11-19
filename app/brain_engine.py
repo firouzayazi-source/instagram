@@ -263,6 +263,10 @@ def decide(text: str, username: str | None = None, product_hint: str = "", budge
     if not its:
         return None
     name = ""   # نام کوچک اینستاگرام در دسترس نیست؛ نام کاربری را در سلام نمی‌آوریم
+    try:        # فینگلیش و غلط تایپی، همان که ربات تلگرام می‌فهمد
+        text = brain.spell(text, its) or text
+    except Exception:  # noqa: BLE001
+        pass
     a = brain.analyze(text, its)
     if not a["product"] and product_hint:
         a["product"] = product_hint

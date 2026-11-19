@@ -508,11 +508,99 @@ def _indel(a, b):
     return False
 
 
+# ── فینگلیش ← فارسی (۲۸ آبان ۱۴۰۵): «gheymat 13 pro chande»، «aghsat darin»
+FINGLISH = {
+    "hello": "سلام", "hi": "سلام", "hey": "سلام", "thanks": "ممنون", "thx": "ممنون", "bye": "خداحافظ", "ok": "باشه",
+    "price": "قیمت", "warranty": "گارانتی", "salam": "سلام", "slm": "سلام", "mersi": "مرسی", "merci": "مرسی", "mamnon": "ممنون", "mamnoon": "ممنون",
+    "khodafez": "خداحافظ", "khobi": "خوبی", "chetori": "چطوری",
+    "gheymat": "قیمت", "gheimat": "قیمت", "qeymat": "قیمت", "geymat": "قیمت", "ghymat": "قیمت", "gheymatesh": "قیمتش",
+    "chand": "چند", "chande": "چنده", "chandeh": "چنده", "cheghadr": "چقدر", "cheqadr": "چقدر", "cheghad": "چقدر",
+    "darin": "دارین", "darid": "دارید", "dari": "داری", "dare": "داره", "daran": "دارن", "nadarin": "ندارین",
+    "hast": "هست", "hastin": "هستین", "hastid": "هستید", "nist": "نیست", "mojod": "موجود", "mojoud": "موجود",
+    "mojode": "موجوده", "mojodi": "موجودی",
+    "aghsat": "اقساط", "aqsat": "اقساط", "ghest": "قسط", "ghesti": "قسطی", "qesti": "قسطی", "aghsati": "اقساطی",
+    "check": "چک", "chek": "چک", "tala": "طلا", "pish": "پیش", "pardakht": "پرداخت", "naghd": "نقد", "naghdi": "نقدی",
+    "adres": "ادرس", "address": "ادرس", "adress": "ادرس", "koja": "کجا", "kojast": "کجاست", "kojas": "کجاس",
+    "kojaeen": "کجایین", "kojain": "کجایین", "location": "لوکیشن", "lokeyshen": "لوکیشن",
+    "saat": "ساعت", "kari": "کاری", "baz": "باز", "bazin": "بازین", "bazid": "بازید", "tatil": "تعطیل", "key": "کی",
+    "ersal": "ارسال", "post": "پست", "shahrestan": "شهرستان", "tehran": "تهران", "peyk": "پیک",
+    "garanti": "گارانتی", "guarantee": "گارانتی", "garanty": "گارانتی", "zemanat": "ضمانت",
+    "rejister": "رجیستر", "register": "رجیستر", "rejistery": "رجیستری", "registery": "رجیستری", "registry": "رجیستری",
+    "taviz": "تعویض", "moaveze": "معاوضه", "moavezeh": "معاوضه", "takhfif": "تخفیف", "kharid": "خرید",
+    "mikham": "میخوام", "mikhastam": "میخواستم", "bekharam": "بخرم", "sefaresh": "سفارش", "forosh": "فروش",
+    "mifroshin": "میفروشین", "mifroshid": "میفروشید", "mikharin": "میخرید", "mikharid": "میخرید",
+    "goshi": "گوشی", "gooshi": "گوشی", "gushi": "گوشی", "mobile": "موبایل", "mobail": "موبایل",
+    "iphone": "ایفون", "ayfon": "ایفون", "aifon": "ایفون", "ifon": "ایفون", "apple": "اپل", "apel": "اپل",
+    "pro": "پرو", "max": "مکس", "promax": "پرومکس", "plus": "پلاس", "mini": "مینی", "normal": "نرمال",
+    "ipad": "ایپد", "airpod": "ایرپاد", "airpods": "ایرپاد", "watch": "واچ", "macbook": "مکبوک",
+    "karkarde": "کارکرده", "karkardeh": "کارکرده", "dastdovom": "دست دوم", "no": "نو", "now": "نو", "ak": "اک",
+    "akband": "اکبند", "stock": "استوک", "estok": "استوک", "plomp": "پلمب",
+    "sharj": "شارژ", "sharjer": "شارژر", "charger": "شارژر", "kabl": "کابل", "cable": "کابل", "ghab": "قاب",
+    "glass": "گلس", "glas": "گلس", "handsfree": "هندزفری", "hanzfri": "هندزفری", "batri": "باتری", "battery": "باتری",
+    "hafeze": "حافظه", "gig": "گیگ", "rang": "رنگ", "meshki": "مشکی", "sefid": "سفید", "abi": "ابی", "talaei": "طلایی",
+    "list": "لیست", "mahsol": "محصول", "mahsool": "محصول", "mahsolat": "محصولات", "chi": "چی", "chia": "چیا",
+    "che": "چه", "kodom": "کدوم", "kodoom": "کدوم", "behtare": "بهتره", "fargh": "فرق", "moghayese": "مقایسه",
+    "site": "سایت", "sayt": "سایت", "insta": "اینستا", "instagram": "اینستاگرام", "kanal": "کانال", "channel": "کانال",
+    "shomare": "شماره", "tamas": "تماس", "telefon": "تلفن", "hamkar": "همکار", "admin": "ادمین",
+    "apple id": "اپل ایدی", "appleid": "اپلایدی", "id": "ایدی", "icloud": "ایکلود",
+    "man": "من", "ye": "یه", "yek": "یک", "ro": "رو", "ba": "با", "az": "از", "be": "به", "baraye": "برای", "vase": "واسه",
+    "ta": "تا", "va": "و", "ham": "هم", "in": "این", "on": "اون", "un": "اون", "lotfan": "لطفا", "mishe": "میشه",
+    "milion": "میلیون", "million": "میلیون", "toman": "تومن", "tomen": "تومن", "arzon": "ارزون", "arzoon": "ارزون",
+    "geron": "گرون", "behtarin": "بهترین", "arzontarin": "ارزونترین", "bedin": "بدین", "befrestin": "بفرستین",
+    "befrest": "بفرست", "mamnun": "ممنون", "khube": "خوبه", "bale": "بله", "are": "اره", "na": "نه",
+}
+_LAT = re.compile(r"[a-z]")
+_FG_DI = (("sh", "ش"), ("ch", "چ"), ("gh", "ق"), ("kh", "خ"), ("zh", "ژ"), ("oo", "و"), ("ee", "ی"), ("ou", "و"))
+_FG_CH = {"b": "ب", "p": "پ", "t": "ت", "j": "ج", "d": "د", "r": "ر", "z": "ز", "s": "س", "f": "ف", "k": "ک",
+          "g": "گ", "l": "ل", "m": "م", "n": "ن", "v": "و", "w": "و", "h": "ه", "y": "ی", "q": "ق", "c": "ک",
+          "x": "کس", "a": "ا", "i": "ی", "u": "و", "o": "", "e": ""}
+_FG_VOW = str.maketrans("", "", "اویعئ")
+
+
+def _fg_naive(w):
+    for a, b in _FG_DI:
+        w = w.replace(a, b)
+    return "".join(_FG_CH.get(ch, ch) for ch in w)
+
+
+def _fg_skel(fa):
+    return phon(fa).translate(_FG_VOW)
+
+
+def finglish(text, intents):
+    """پیامی که بیشترش با حروف لاتین است ← فارسی (شکل یکدست). عدد و نام مدل (13، pro) حفظ می‌شود.
+    اول واژه‌نامه، بعد تطبیق اسکلت صامت‌ها با کلمه‌های آشنا، و در آخر آوانویسی ساده."""
+    t = norm(text)
+    toks = t.split()
+    lat = [x for x in toks if _LAT.search(x)]
+    if not lat or len(lat) * 2 < len([x for x in toks if not x.isdigit()]):
+        return t
+    v = vocab(intents)
+    skel = {}
+    for w in v:
+        skel.setdefault(_fg_skel(w), []).append(w)
+    out = []
+    for x in toks:
+        if not _LAT.search(x) or re.search(r"\d", x):
+            out.append(x); continue
+        if x in FINGLISH:
+            out.append(FINGLISH[x]); continue
+        if x in SYNONYMS:                       # iphone، instagram، warranty…
+            out.append(SYNONYMS[x]); continue
+        nv = _fg_naive(x)
+        cands = skel.get(_fg_skel(nv)) if len(_fg_skel(nv)) >= 2 else None
+        if cands:
+            out.append(max(cands, key=lambda w: (difflib.SequenceMatcher(None, nv, w).ratio(), -len(w))))
+        else:
+            out.append(nv or x)
+    return " ".join(out)
+
+
 def spell(text, intents):
     """متن با غلط‌های تایپی تصحیح‌شده (شکل یکدست‌شده). کلمه‌ی ناآشنا فقط با یک نامزد روشن عوض می‌شود."""
     v = vocab(intents)
     out = []
-    for t in tokens(text):
+    for t in tokens(finglish(text, intents)):
         if t in TYPO_FIX:
             out.append(TYPO_FIX[t]); continue
         if out and out[-1] in ("می", "نمی") and out[-1] + t in v:     # «می خوام» = «میخوام»
