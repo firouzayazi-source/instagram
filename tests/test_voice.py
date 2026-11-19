@@ -33,3 +33,11 @@ def test_openai_then_gemini_then_none(monkeypatch):
 def test_too_big_is_skipped(monkeypatch):
     monkeypatch.setattr(config, "OPENAI_API_KEY", "sk-x", raising=False)
     assert asyncio.run(voice.transcribe(b"x" * (voice.MAX_BYTES + 1))) is None
+
+
+def test_local_llm_check_refuses_remote_url():
+    """ابزار سنجش مدل محلی فقط 127.0.0.1/localhost را می‌پذیرد."""
+    import importlib.util, pathlib
+    p = pathlib.Path(__file__).resolve().parent.parent / "tools" / "local_llm_check.py"
+    spec = importlib.util.spec_from_file_location("llc", p); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+    assert m.main(["--url", "https://example.com/v1"]) == 2
