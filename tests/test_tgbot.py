@@ -187,7 +187,12 @@ async def run():
     u = types.SimpleNamespace(id=77)
     for _ in range(4): await bot.record_event(77, bot.EV_MSG)
     await bot.log_unmatched('قسطی اقساط شرایطش برای دانشجو چطوره', u)
+    for t in ('بیمه بدنه گوشی دارید', 'بیمه گوشی هم میکنید', 'گوشی رو بیمه میکنید؟'):
+        await bot.log_unmatched(t, u)
+    cl = bot.unmatched_clusters()
+    assert cl and cl[0]['label'].startswith('بیمه') and cl[0]['count'] == 3, cl
     txt, kb = await bot.weekly_review()
+    assert '🧩' in txt, txt
     assert '٪' in txt and 'قسطی' in txt, txt
     cb = [b.callback_data for r in kb.inline_keyboard for b in r]
     assert any(c.startswith('unm_') for c in cb), cb

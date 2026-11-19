@@ -2706,6 +2706,29 @@ async def ab_report(days=14):
         out.append(f"• «{esc(faq_title(it))}»: "+" · ".join(parts))
     return out
 
+def unmatched_clusters(min_people=3):
+    """سؤال‌های نفهمیده‌ی هم‌موضوع کنار هم («۹ نفر درباره‌ی بیمه پرسیدند»).
+    خروجی: [{"label","count","items"}] — پرجمعیت‌ها اول؛ فقط خوشه‌های دست‌کم دو جمله‌ای با min_people نفر."""
+    sigs=[(u,{brain.stem(w) for w in brain.content_words(u["text"],6)}) for u in unmatched]
+    clusters=[]
+    for u,sg in sigs:
+        if not sg: continue
+        for cl in clusters:
+            if any(len(sg & o)/len(sg | o)>=0.34 for o in cl["sigs"]):
+                cl["items"].append(u); cl["sigs"].append(sg); break
+        else:
+            clusters.append({"items":[u],"sigs":[sg]})
+    out=[]
+    for cl in clusters:
+        n=sum(x.get("count",1) for x in cl["items"])
+        if len(cl["items"])<2 or n<min_people: continue
+        words={}
+        for x in cl["items"]:                 # برچسب از خود کلمه‌ها، نه ریشه («بیمه»، نه «بیم»)
+            for w in brain.content_words(x["text"],6): words[w]=words.get(w,0)+1
+        label=max(words,key=lambda w:(words[w],len(w)))
+        out.append({"label":label,"count":n,"items":sorted(cl["items"],key=lambda x:-x.get("count",1))})
+    return sorted(out,key=lambda c:-c["count"])
+
 async def weekly_review():
     """گزارش «سؤال‌های نفهمیده»: درصد فهم هفته و پرتکرارترین سؤال‌های بی‌جواب، هر کدام با پیشنهاد آماده
     («یعنی همان اقساط؟») که با یک لمس تأیید می‌شود. خروجی: (متن، دکمه‌ها)."""
@@ -2717,8 +2740,18 @@ async def weekly_review():
     if pct is not None:
         bar="🟩"*(pct//10)+"⬜️"*(10-pct//10)
         out.append(f"{bar}  <b>{to_fa(pct)}٪</b>\n💬 {to_fa(msgs)} پیام · ✅ خودش جواب داد · ❓ {to_fa(miss)} بار نفهمید")
-    items=unmatched_sorted()[:8]
     rows=[]
+    clusters=unmatched_clusters()[:3]
+    if clusters:
+        out += ["","<b>🧩 موضوع‌های تازه‌ای که مشتری‌ها پرسیدند</b>:"]
+        for k,cl in enumerate(clusters,1):
+            ex="، ".join(f"«{esc(_fit(x['text'],40))}»" for x in cl["items"][:2])
+            out.append(f"🧩 {to_fa(cl['count'])} نفر درباره‌ی «{esc(cl['label'])}» ({to_fa(len(cl['items']))} جمله‌ی مختلف): {ex}")
+            rep=next((x for x in cl["items"] if x.get("reply")),None)
+            rows.append([InlineKeyboardButton(f"✨ موضوع «{_fit(cl['label'],14)}» از جواب شما",callback_data=f"unm_mk_{rep['id']}")
+                         if rep else InlineKeyboardButton(f"🆕 موضوع تازه «{_fit(cl['label'],16)}»",
+                                                          callback_data=f"unm_new_{cl['items'][0]['id']}")])
+    items=unmatched_sorted()[:8]
     if not items:
         out.append("🎉 سؤال نفهمیده‌ای نمانده.")
     else:
