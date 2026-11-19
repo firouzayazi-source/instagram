@@ -65,6 +65,17 @@ PAGES_FILE = "pages.json"; TOPICS_FILE = "topics.json"
 SITE_PAGES_FILE = "site_pages.json"   # صفحه‌ها و نوشته‌های سایت (sitepages.py)
 CATALOG_FILE = "catalog.json"  # آخرین لیست کالای سایت — اگر سایت موقتاً در دسترس نبود
 LEARN_FILE = "learn.json"      # آنچه دستیار خودش یاد گرفته (با امکان پس‌گرفتن)
+# ── یک دانش برای همه‌ی ربات‌ها (۲۹ آبان ۱۴۰۵): ربات بله دانش و متن‌ها را از پوشه‌ی ربات تلگرام می‌خواند
+# (همان جایی که مغز اینستاگرام هم می‌خواند)، پس هر چه در تلگرام یا پنل وب اضافه شود یا ربات یاد بگیرد، هر سه
+# پلتفرم همان را جواب می‌دهند. بله فقط می‌خواند و هر دقیقه تغییرها را بار می‌کند؛ هرگز در آن فایل‌ها نمی‌نویسد
+# (دو برنامه که یک فایل JSON را بازنویسی کنند، تغییرهای هم را پاک می‌کنند). مشتری‌ها، مدیرها، تنظیمات و بنرها جدا می‌مانند.
+KNOWLEDGE_DIR = (os.environ.get("KNOWLEDGE_DIR") or (os.path.join("..","telegram") if IS_BALE else "")).strip()
+SHARED_FILES: set = set()
+if KNOWLEDGE_DIR:
+    FAQ_FILE, LEARN_FILE, DATA_FILE, WORKHOURS_FILE, MENU_FILE, PLACES_FILE, PAGES_FILE, BUTTONS_FILE = (
+        os.path.join(KNOWLEDGE_DIR, f) for f in (FAQ_FILE, LEARN_FILE, DATA_FILE, WORKHOURS_FILE, MENU_FILE,
+                                                 PLACES_FILE, PAGES_FILE, BUTTONS_FILE))
+    SHARED_FILES = {FAQ_FILE, LEARN_FILE, DATA_FILE, WORKHOURS_FILE, MENU_FILE, PLACES_FILE, PAGES_FILE, BUTTONS_FILE}
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -405,6 +416,8 @@ async def _rj(path,default):
     except FileNotFoundError:
         pass                      # اولین اجرا — طبیعی است
     except Exception as e:
+        if path in SHARED_FILES:          # فایل ربات دیگر است: قرنطینه‌اش کار ما نیست
+            logger.error(f"⚠️ {path} خوانده نشد ({e})"); return default() if callable(default) else default
         # فایل هست ولی خراب است. اگر کاری نکنیم، ذخیره‌ی بعدی محتوای
         # فروشگاه را با پیش‌فرض بازنویسی و برای همیشه نابود می‌کند.
         bad=f"{path}.corrupt"
@@ -419,6 +432,8 @@ _wj_locks: dict = {}   # path → قفل؛ دو نوشتن هم‌زمانِ ی�
 
 async def _wj(path,data):
     """نوشتن اتمیک. در صورت شکست False برمی‌گرداند تا فراخوان بتواند خبر بدهد."""
+    if path in SHARED_FILES:      # دانش مشترک فقط از ربات تلگرام و پنل وب نوشته می‌شود
+        logger.debug(f"shared (read-only here): {path}"); return True
     tmp=path+".tmp"
     try:
         async with _wj_locks.setdefault(path,asyncio.Lock()):
@@ -486,7 +501,16 @@ def page_item(key): return next((x for x in pages if x["key"]==key),None)
 async def load_data():
     global responses
     responses=await _rj(DATA_FILE,lambda:dict(MENU_ITEMS,welcome="✨ خوش آمدید به ربات استوک لند"))
-async def save_data(): return await _wj(DATA_FILE,responses)
+    if DATA_FILE in SHARED_FILES: _shared_snap["data"]=dict(responses or {})
+async def save_data():
+    if DATA_FILE in SHARED_FILES:       # ربات بله: متن بخش تغییرکرده از صف پنل به دانش مشترک
+        try:
+            for k,v in (responses or {}).items():
+                if _shared_snap["data"].get(k)!=v: shared_queue({"op":"section_set","key":k,"text":str(v or "")})
+        except OSError as e:
+            logger.error(f"shared push data: {e}"); return False
+        _shared_snap["data"]=dict(responses or {}); return True
+    return await _wj(DATA_FILE,responses)
 
 async def load_banners():
     global banners
@@ -1406,6 +1430,9 @@ async def admin_home_text():
     opened=is_open()
     sep="─"*20
     lines=[f"👑 پنل مدیریت — {shamsi_now()}", sep]
+    if SHARED_FILES:
+        lines.append("🧠 دانش با تلگرام و اینستاگرام مشترک است: سؤال‌های آماده، متن بخش‌ها و یادگرفته‌های اینجا به همه می‌رسد. "
+                     "ساعت کاری، منو، دکمه‌ها و آدرس را در ربات تلگرام ویرایش کنید.")
     if not get_setting("store_open"):
         lines.append("🔴 فروشگاه دستی بسته شده است")
     else:
@@ -2247,10 +2274,42 @@ async def load_faq():
     data=await _rj(FAQ_FILE,list)
     faq=[x for x in data if isinstance(x,dict) and (x.get("answer") or x.get("action"))] \
         if isinstance(data,list) else []
+    if FAQ_FILE in SHARED_FILES: _shared_snap["faq"]={x.get("id"):_fsig(x) for x in faq}
     await seed_intents()
+    if FAQ_FILE in SHARED_FILES: _shared_snap["faq"]={x.get("id"):_fsig(x) for x in faq}
     logger.info(f"faq: {len(faq)} نیت/سؤال آماده")
 
-async def save_faq(): return await _wj(FAQ_FILE,faq)
+async def save_faq():
+    if FAQ_FILE in SHARED_FILES: return shared_push_faq()
+    return await _wj(FAQ_FILE,faq)
+
+# ── ربات بله: هر چه در بله یاد گرفته یا اضافه شود، از صف پنل به ربات تلگرام می‌رود تا در دانش مشترک ثبت شود
+_shared_snap: dict = {"faq":{},"data":{}}
+_FSIG_KEYS = ("keys","examples","answer","action","enabled")
+
+def _fsig(x): return json.dumps({k:x.get(k) for k in _FSIG_KEYS},ensure_ascii=False,sort_keys=True)
+
+def shared_queue(op):
+    d=os.path.join(KNOWLEDGE_DIR,"inbox"); os.makedirs(d,exist_ok=True)
+    name=f"{time.time_ns()}-{secrets.token_hex(3)}.json"; tmp=os.path.join(d,name+".tmp")
+    with open(tmp,"w",encoding="utf-8") as f: json.dump(op,f,ensure_ascii=False)
+    os.replace(tmp,os.path.join(d,name))
+
+def shared_push_faq():
+    """تفاوت faq در حافظه با آخرین نسخه‌ی خوانده‌شده ← تغییرهای صف (شمارنده‌ی بازدید حساب نیست).
+    کلیدواژه و جمله‌ی نمونه «افزودنی» فرستاده می‌شوند تا یادگرفته‌های هم‌زمان تلگرام پاک نشوند."""
+    old=_shared_snap["faq"]; now={x.get("id"):x for x in faq if x.get("id")}
+    try:
+        for iid,x in now.items():
+            if old.get(iid)!=_fsig(x):
+                shared_queue({"op":"intent_upsert","merge":True,
+                              "item":{"id":iid,**{k:x.get(k) for k in _FSIG_KEYS if x.get(k) is not None}}})
+        for iid in set(old)-set(now):
+            if iid: shared_queue({"op":"intent_delete","id":iid})
+    except OSError as e:
+        logger.error(f"shared push: {e}"); return False
+    _shared_snap["faq"]={iid:_fsig(x) for iid,x in now.items()}
+    return True
 
 def faq_item(fid): return next((x for x in faq if x.get("id")==fid),None)
 
@@ -5597,7 +5656,11 @@ def apply_panel_op(op):
             it={"id":iid or "p_"+secrets.token_hex(4),"hits":0,"enabled":True}
             faq.append(it)
         for k in ("keys","examples"):
-            if k in src: it[k]=_panel_list(src[k])
+            if k not in src: continue
+            if op.get("merge"):      # از ربات بله: فقط افزودن، تا یادگرفته‌های همین‌جا پاک نشوند
+                have={brain.norm(x) for x in it.get(k) or []}
+                it[k]=_panel_list(list(it.get(k) or [])+[x for x in _panel_list(src[k]) if brain.norm(x) not in have])
+            else: it[k]=_panel_list(src[k])
         if "answer" in src: it["answer"]=str(src["answer"] or "")[:4000]
         if "action" in src:
             a=str(src["action"] or "")
@@ -5661,7 +5724,7 @@ def channel_enabled():
     if mt!=_ch_cache[0]:
         try:
             with open(CHANNELS_FILE,encoding="utf-8") as f: d=json.load(f)
-            _ch_cache[:]=[mt,bool((d.get("telegram") or {}).get("enabled",True))]
+            _ch_cache[:]=[mt,bool((d.get(PLATFORM) or {}).get("enabled",True))]   # بله: کلید جدا، پیش‌فرض روشن
         except Exception as e: logger.warning(f"channels.json: {e}")
     return _ch_cache[1]
 
@@ -6082,6 +6145,39 @@ ADV_TIPS = {
   "سایز جمع‌وجور":"اگه گوشی جمع‌وجور می‌خواید، مدل‌های ۶٫۱ اینچی و «مینی» راحت‌ترن 🤏",
   "سرعت و بازی":"برای بازی، مدل‌های «پرو» با صفحه‌ی ۱۲۰ هرتز و تراشه‌ی جدیدتر عالی‌ان 🎮",
 }
+# ── بار کردن دوباره‌ی دانش مشترک (فقط وقتی KNOWLEDGE_DIR هست، یعنی ربات بله)
+def _shared_loaders():
+    return {FAQ_FILE:load_faq, LEARN_FILE:load_learn, DATA_FILE:load_data, WORKHOURS_FILE:load_workhours,
+            MENU_FILE:load_menu, PLACES_FILE:load_places, PAGES_FILE:load_pages, BUTTONS_FILE:load_buttons}
+
+def _mtime(p):
+    try: return os.stat(p).st_mtime
+    except OSError: return 0
+
+async def shared_reload(seen):
+    """فایل‌های دانش مشترکی که از دفعه‌ی قبل عوض شده‌اند دوباره بار می‌شوند. JSON نیمه‌کاره یا خراب نادیده
+    گرفته می‌شود تا دانش فعلی پاک نشود. خروجی: فهرست فایل‌های بارشده."""
+    done=[]
+    for path,loader in _shared_loaders().items():
+        m=_mtime(path)
+        if not m or seen.get(path)==m: continue
+        try:
+            with open(path,encoding="utf-8") as f: json.load(f)
+        except Exception: continue
+        seen[path]=m
+        try: await loader(); done.append(os.path.basename(path))
+        except Exception as e: logger.error(f"shared reload {path}: {e}")
+    return done
+
+async def _shared_loop():
+    seen={p:_mtime(p) for p in _shared_loaders()}
+    while True:
+        await asyncio.sleep(60)
+        try:
+            d=await shared_reload(seen)
+            if d: logger.info("دانش مشترک تازه شد: "+"، ".join(d))
+        except Exception as e: logger.error(f"shared loop: {e}")
+
 # ── عملکرد تیم و هشدار انتظار (۲۸ آبان ۱۴۰۵)
 _sla_sent: set = set()      # (uid, open_msg_at) که هشدارش رفته
 
@@ -7750,6 +7846,7 @@ async def post_init(app):
     _spawn(_aftersale_loop(app.bot),"پیگیری بعد از خرید")
     _spawn(_visit_loop(app.bot),"یادآوری بازدید")
     _spawn(_sla_loop(app.bot),"هشدار انتظار")
+    if SHARED_FILES: _spawn(_shared_loop(),"دانش مشترک با تلگرام")
     _spawn(_panel_inbox_loop(),"تغییرهای پنل وب")
     _spawn(_status_loop(),"گزارش وضعیت")
     _spawn(_ig_notify_loop(app.bot),"خبرهای اینستاگرام")

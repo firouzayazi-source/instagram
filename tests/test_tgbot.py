@@ -484,3 +484,52 @@ print('OK')
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=60)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_bale_shares_telegram_knowledge(tmp_path):
+    """ربات بله دانش را از پوشه‌ی تلگرام می‌خواند، تغییرش را بار می‌کند و هرگز در آن نمی‌نویسد."""
+    import json
+    tg = tmp_path / "telegram"; bl = tmp_path / "bale"; tg.mkdir(); bl.mkdir()
+    item = {"id": "x_test", "button": "آزمون", "keys": ["کلمه‌ی آزمونی"], "answer": "جواب یک", "enabled": True}
+    (tg / "faq.json").write_text(json.dumps([item], ensure_ascii=False), encoding="utf-8")
+    code = r"""
+import asyncio, os, sys, json, time
+os.environ.pop('BOT_TOKEN', None)
+os.environ.update(BOT_PLATFORM='bale', BALE_BOT_TOKEN='1:b', BALE_ADMIN_ID='77')
+sys.path.insert(0, %r)
+import bot
+async def run():
+    assert bot.FAQ_FILE == os.path.join('..','telegram','faq.json') and bot.FAQ_FILE in bot.SHARED_FILES
+    await bot.init_db(); await bot.load_settings(); await bot.load_faq()
+    assert bot.faq_item('x_test')['answer'] == 'جواب یک'
+    before = open(bot.FAQ_FILE, encoding='utf-8').read()
+    bot.faq_item('x_test')['answer'] = 'دست‌کاری در بله'; await bot.save_faq()
+    assert open(bot.FAQ_FILE, encoding='utf-8').read() == before        # بله نمی‌نویسد
+    inbox = os.path.join('..', 'telegram', 'inbox')
+    ops = [json.load(open(os.path.join(inbox, f), encoding='utf-8')) for f in sorted(os.listdir(inbox))]
+    up = [o for o in ops if o['item']['id'] == 'x_test']
+    assert len(up) == 1 and up[0]['merge'] and up[0]['item']['answer'] == 'دست‌کاری در بله', ops
+    for f in os.listdir(inbox): os.remove(os.path.join(inbox, f))
+    await bot.save_faq(); assert os.listdir(inbox) == []                   # بی تغییر، چیزی نمی‌رود
+    it = bot.faq_item('x_test'); it['examples'] = ['الف']
+    bot.apply_panel_op({'op': 'intent_upsert', 'merge': True, 'item': {'id': 'x_test', 'examples': ['ب', 'الف']}})
+    assert it['examples'] == ['الف', 'ب'], it                              # افزودنی، نه جایگزین
+    seen = {p: bot._mtime(p) for p in bot._shared_loaders()}
+    d = json.loads(before); [x for x in d if x['id'] == 'x_test'][0]['answer'] = 'جواب دو'
+    time.sleep(0.05); open(bot.FAQ_FILE, 'w', encoding='utf-8').write(json.dumps(d, ensure_ascii=False))
+    os.utime(bot.FAQ_FILE, (time.time() + 5, time.time() + 5))
+    assert 'faq.json' in await bot.shared_reload(seen)
+    assert bot.faq_item('x_test')['answer'] == 'جواب دو'
+    open(bot.FAQ_FILE, 'w').write('{broken'); os.utime(bot.FAQ_FILE, (time.time() + 9, time.time() + 9))
+    assert await bot.shared_reload(seen) == [] and bot.faq_item('x_test')['answer'] == 'جواب دو'   # فایل نیمه‌کاره نادیده
+    assert os.path.exists(bot.FAQ_FILE) and not os.path.exists(bot.FAQ_FILE + '.corrupt')
+    await bot.db.close()
+try:
+    asyncio.run(run())
+    print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=bl, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
