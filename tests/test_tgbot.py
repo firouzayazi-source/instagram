@@ -381,3 +381,42 @@ os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_referral_link_and_record(tmp_path):
+    """دعوت دوست: لینک اختصاصی، ثبت یک‌باره‌ی معرف، خبر به معرف، نه خوددعوتی."""
+    code = r"""
+import asyncio, os, sys, types
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+sent = []
+class B:
+    username = 'Shop_bot'
+    async def send_message(self, chat, text, **k): sent.append((chat, text))
+async def run():
+    await bot.init_db(); await bot.load_faq()
+    a = types.SimpleNamespace(id=5001, username=None, first_name='A', last_name=None, language_code='fa', is_bot=False)
+    f = types.SimpleNamespace(id=5002, username=None, first_name='F', last_name=None, language_code='fa', is_bot=False)
+    await bot.save_user(a); await bot.save_user(f)
+    t = await bot.ref_text(5001, 'Shop_bot')
+    assert 'https://t.me/Shop_bot?start=ref_5001' in t and 'هنوز کسی' in t
+    assert await bot.ref_record(B(), a, 'ref_5001') is None          # خودش را دعوت نمی‌کند
+    assert await bot.ref_record(B(), f, 'ref_9999') is None          # معرف ناشناس
+    assert await bot.ref_record(B(), f, 'ref_5001') == 5001 and sent and sent[0][0] == 5001
+    assert await bot.ref_record(B(), f, 'ref_5001') is None          # فقط یک بار
+    assert await bot.ref_count(5001) == 1 and await bot.ref_of(5002) == 5001
+    bot.settings['ref_reward'] = 'جایزه‌ی آزمایشی'
+    assert 'جایزه‌ی آزمایشی' in await bot.ref_text(5001, 'Shop_bot') and '۱ نفر' in await bot.ref_text(5001, 'Shop_bot')
+    card = await bot.customer_card(5002); assert 'معرف' in card
+    it, sc = bot.brain.match('لینک دعوت میخوام', bot.brain_intents()); assert it and it['id'] == 'i_invite', it
+    await bot.db.close()
+try:
+    asyncio.run(run())
+    print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]

@@ -165,6 +165,7 @@ DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs"
                     "track_visits":True,    # حافظه‌ی رفتار مشتری (کارت شناخت)
                     "aftersale":True,       # پیگیری یک هفته بعد از تحویل سفارش
                     "visits":True,          # رزرو زمان بازدید حضوری از مغازه
+                    "referral":True,        # باشگاه مشتری: لینک دعوت اختصاصی
                     "vision":True,          # فهم عکس مشتری (فقط وقتی کلید هوش مصنوعی در پنل هست)
                     "morning_brief":True,   # گزارش صبحگاهی ساعت ۹
                     "weekly_digest":True,   # خلاصه‌ی هفته کنار بکاپ جمعه
@@ -689,6 +690,9 @@ async def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,at TEXT,
             status TEXT DEFAULT 'ok',reminded INTEGER DEFAULT 0,ts TEXT);
         CREATE INDEX IF NOT EXISTS idx_vis_at ON visits(at);
+        CREATE TABLE IF NOT EXISTS referrals(
+            user_id INTEGER PRIMARY KEY,referrer INTEGER,ts TEXT);
+        CREATE INDEX IF NOT EXISTS idx_ref_r ON referrals(referrer);
     """)
     for sql in ["ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0",
                 "ALTER TABLE users ADD COLUMN has_left INTEGER DEFAULT 0",
@@ -1037,6 +1041,12 @@ async def customer_card(uid):
         head.append("🆕 تازه‌وارد" if ("دقیقه" in a or a=="همین الان" or "ساعت" in a)
                     else f"از {a} اینجاست")
     if head: lines.append(" · ".join(head))
+    try:
+        rid=await ref_of(uid); nref=await ref_count(uid)
+        if rid or nref:
+            lines.append("  ·  ".join(([f"👥 معرف: {await user_label(rid)} ({rid})"] if rid else [])+
+                                      ([f"🎁 {to_fa(nref)} نفر رو دعوت کرده"] if nref else [])))
+    except Exception as e: logger.debug(f"ref card: {e}")
 
     async with db.execute(
         "SELECT COUNT(*) FROM events WHERE user_id=? AND key=?",(uid,EV_MSG)) as c:
@@ -1111,7 +1121,7 @@ async def prune_threads(days=60):
     await db.commit()
 
 # برچسب‌های خوانا برای منبع ورود (پارامتر deep-link)
-SOURCE_LABELS = {"insta":"📸 اینستاگرام","instagram":"📸 اینستاگرام","tg":"✈️ تلگرام",
+SOURCE_LABELS = {"ref":"👥 دعوت دوست","insta":"📸 اینستاگرام","instagram":"📸 اینستاگرام","tg":"✈️ تلگرام",
                  "telegram":"✈️ تلگرام","bale":"💬 بله","ble":"💬 بله","site":"🌐 سایت",
                  "web":"🌐 سایت","card":"🪧 کارت ویزیت","qr":"🔳 کد QR","shop":"🏪 حضوری"}
 _SRC_RE = __import__("re").compile(r"^[A-Za-z0-9_-]{1,32}$")
@@ -2675,6 +2685,10 @@ async def weekly_digest():
         ab=await ab_report()
         if ab: out += [HR,"🧪 <b>آزمایش متن جواب‌ها</b> (بعد از کدام متن، مشتری بیشتر سراغ خرید رفت؛ ۱۴ روز):"]+ab
     except Exception as e: logger.debug(f"digest ab: {e}")
+    try:
+        top=await ref_top(7,3)
+        if top: out.append("👥 دعوت دوستان: "+esc("، ".join(f"{name or '—'} ({to_fa(n)})" for _,name,n in top)))
+    except Exception as e: logger.debug(f"digest ref: {e}")
     # ایده‌ی محتوا برای اینستاگرام: موضوع‌هایی که مشتری‌ها واقعاً بیشتر پرسیدند
     try:
         async with db.execute("SELECT key,COUNT(DISTINCT user_id) n FROM events WHERE key LIKE 'ai:%' "
@@ -3081,14 +3095,17 @@ async def cmd_start(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     await mark_left(user.id,0)   # اگر قبلاً ربات را بلاک کرده بود و برگشته، دوباره فعالش کن
     # t.me/<bot>?start=insta      → می‌فهمیم مشتری از کجا آمده
     # t.me/<bot>?start=insta-3     → علاوه بر منبع، مستقیم همان بخش باز می‌شود
-    deep_sec=""
+    deep_sec=""; ref=None
     if getattr(ctx,"args",None):
         src,deep_sec=parse_start_arg(ctx.args[0])
+        ref=await ref_record(ctx.bot,user,src) if is_new else None
+        if ref: src="ref"
         if src: await set_source(user.id,src)
     if get_setting("notify_new_user") and is_new:
         await notify_admins(ctx.bot,
             f"🆕 کاربر جدید!\n👤 {user.first_name or'—'}\n"
-            f"{'@'+user.username if user.username else'—'}\n🆔 {user.id}")
+            f"{'@'+user.username if user.username else'—'}\n🆔 {user.id}"
+            +(f"\n👥 معرف: {await user_label(ref)} ({ref})" if is_new and getattr(ctx,"args",None) and ref else ""))
     name=(user.first_name or "").strip()
     if chat_mode():
         await chat_welcome(update.message,ctx.bot,user,is_new,deep_sec)
@@ -5246,6 +5263,10 @@ DEFAULT_INTENTS = [
   {"id":"i_phone","button":"📞 شماره تماس","action":"section:4",
    "keys":["شماره","شماره تماس","تلفن","زنگ","تماس","پشتیبانی","شمارتون","تلفن مغازه","شماره مغازه"],
    "answer":"","suggest":["i_human"]},
+  {"id":"i_invite","button":"🎁 دعوت از دوستان","action":"invite",
+   "keys":["لینک دعوت","باشگاه مشتری","کد معرف","معرفی دوست","دعوت دوست","لینک معرفی"],
+   "examples":["چطوری دوستمو معرفی کنم","لینک دعوت میخوام","باشگاه مشتریان دارید","کد معرف من چیه"],
+   "answer":"","suggest":[]},
   {"id":"i_human","button":"🧑‍💼 صحبت با همکار","action":"human",
    "keys":["همکار","صحبت کنم","کسی هست","حرف بزنم","ادم واقعی"],
    "examples":["میخوام با یکی حرف بزنم","یکی جواب بده","با خود فروشنده کار دارم"],
@@ -5260,7 +5281,7 @@ QUICK_INTENTS = ["i_price","i_install","i_advisor","i_human"]   # زیر سلا�
 # می‌شود؛ هر فیلدی که خودش نوشته دست‌نخورده می‌ماند. در کلیدواژه‌ها و
 # جمله‌های نمونه، فقط موردهای تازه اضافه می‌شوند — چیزی که ادمین پاک کرده
 # برنمی‌گردد. نیتی که ادمین حذف کرده هم دوباره ساخته نمی‌شود.
-SEED_VERSION = 11
+SEED_VERSION = 12
 
 # ── گسترش معنایی نیت‌ها (۲۷ آبان ۱۴۰۵): همان موضوع با کلمه‌های دیگر («چند میگیرین» = قیمت، «کم کم بدم» = اقساط).
 # فقط کلیدواژه و جمله‌ی نمونه؛ متن جواب‌ها دست نمی‌خورد. با SEED_VERSION تازه به faq.json سرور هم می‌رسد.
@@ -6018,6 +6039,71 @@ ADV_TIPS = {
   "سایز جمع‌وجور":"اگه گوشی جمع‌وجور می‌خواید، مدل‌های ۶٫۱ اینچی و «مینی» راحت‌ترن 🤏",
   "سرعت و بازی":"برای بازی، مدل‌های «پرو» با صفحه‌ی ۱۲۰ هرتز و تراشه‌ی جدیدتر عالی‌ان 🎮",
 }
+# ── باشگاه مشتری و دعوت از دوستان (۲۸ آبان ۱۴۰۵): لینک اختصاصی t.me/<bot>?start=ref_<uid>.
+# ربات جایزه‌ای نمی‌سازد؛ متن جایزه را فقط مالک با /refreward می‌نویسد (خالی = بی ذکر جایزه).
+_REF_RE = re.compile(r"^ref_?(\d{3,15})$")
+
+async def ref_record(bot,user,src):
+    """کاربر تازه با لینک دعوت آمد: معرف ثبت و به خودش خبر داده می‌شود. شناسه‌ی معرف یا None."""
+    m=_REF_RE.match(src or "")
+    if not m or not get_setting("referral"): return None
+    rid=int(m.group(1))
+    if rid==user.id: return None
+    async with db.execute("SELECT 1 FROM users WHERE user_id=?",(rid,)) as c:
+        if not await c.fetchone(): return None
+    cur=await db.execute("INSERT OR IGNORE INTO referrals(user_id,referrer,ts) VALUES(?,?,datetime('now','localtime'))",(user.id,rid))
+    await db.commit()
+    if not cur.rowcount: return None
+    n=await ref_count(rid)
+    try:
+        await bot.send_message(rid,f"🎉 {(user.first_name or 'یکی از دوستاتون')[:20]} با لینک دعوت شما به {SHOP_NAME} اومد!\n"
+                                   f"تا حالا {to_fa(n)} نفر رو آوردید 🙏",reply_markup=main_menu())
+    except Exception as e: logger.debug(f"ref notify {rid}: {e}")
+    return rid
+
+async def ref_count(uid):
+    return await _cnt("SELECT COUNT(*) FROM referrals WHERE referrer=?",(uid,))
+
+async def ref_of(uid):
+    async with db.execute("SELECT referrer FROM referrals WHERE user_id=?",(uid,)) as c:
+        r=await c.fetchone()
+    return r[0] if r else None
+
+async def ref_text(uid,username):
+    if not get_setting("referral") or not username:
+        return "برای معرفی دوستان، کافیه آیدی همین ربات رو براشون بفرستید 🙏"
+    n=await ref_count(uid); reward=(settings.get("ref_reward") or "").strip()
+    out=[f"🎁 <b>باشگاه مشتریان {esc(SHOP_NAME)}</b>",
+         "این لینک مخصوص شماست؛ برای دوستاتون بفرستید:",
+         f"https://t.me/{esc(username)}?start=ref_{uid}"]
+    if reward: out += ["",esc(reward)]
+    out += ["",f"👥 تا حالا {to_fa(n)} نفر با لینک شما اومدن." if n else "👥 هنوز کسی با لینک شما نیومده."]
+    return "\n".join(out)
+
+async def ref_top(days=30,limit=5):
+    async with db.execute("SELECT r.referrer,u.first_name,COUNT(*) n FROM referrals r LEFT JOIN users u ON u.user_id=r.referrer "
+                          "WHERE r.ts>=datetime('now',?,'localtime') GROUP BY r.referrer ORDER BY n DESC LIMIT ?",
+                          (f"-{days} days",limit)) as c:
+        return await c.fetchall()
+
+async def cmd_invite(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    await save_user(update.effective_user)
+    await update.message.reply_text(await ref_text(update.effective_user.id,ctx.bot.username or ""),
+                                    parse_mode="HTML",disable_web_page_preview=True,reply_markup=main_menu())
+
+async def cmd_refreward(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    """/refreward متن جایزه — فقط مالک. «/refreward -» پاکش می‌کند."""
+    if not is_owner(update.effective_user.id): return
+    t=" ".join(ctx.args or []).strip()
+    if not t:
+        cur=settings.get("ref_reward") or "— (بی ذکر جایزه)"
+        top=await ref_top()
+        lines=[f"{to_fa(n)} نفر — {esc(name or '—')} (<code>{rid}</code>)" for rid,name,n in top]
+        return await update.message.reply_text(f"🎁 متن جایزه‌ی فعلی:\n{esc(cur)}\n\nبرای تغییر: /refreward متن\nبرای پاک کردن: /refreward -"
+                                               +("\n\n🏆 بیشترین دعوت (۳۰ روز):\n"+"\n".join(lines) if lines else ""),parse_mode="HTML")
+    settings["ref_reward"]="" if t=="-" else t[:300]; await save_settings()
+    await update.message.reply_text("✅ ذخیره شد.")
+
 # ── رزرو بازدید حضوری (۲۸ آبان ۱۴۰۵): روز و ساعت از برنامه‌ی کاری، کارت برای همکار، یادآوری یک ساعت قبل
 VISIT_DAYS = 3            # چند روزِ باز آینده پیشنهاد شود
 VISIT_LEAD = 3600         # امروز: دست‌کم یک ساعت بعد
@@ -6944,6 +7030,10 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
             await msg.reply_text(_join(lead,ask),
                                  reply_markup=InlineKeyboardMarkup(ar) if ar else main_menu())
             tail=False
+    elif action=="invite":
+        await msg.reply_text(_join(esc(lead),await ref_text(uid,getattr(bot,"username","") or "")),
+                             parse_mode="HTML",disable_web_page_preview=True,reply_markup=main_menu())
+        tail=False
     elif action=="advisor":
         await adv_start(msg,user,dry=dry,lead=_join(lead,answer))
         tail=False
@@ -7685,6 +7775,8 @@ def main():
     app.add_handler(CommandHandler("demand",cmd_demand))
     app.add_handler(CommandHandler("review",cmd_review))
     app.add_handler(CommandHandler("brief",cmd_brief))
+    app.add_handler(CommandHandler("invite",cmd_invite))
+    app.add_handler(CommandHandler("refreward",cmd_refreward))
     app.add_handler(CommandHandler("installment",cmd_installment))
     app.add_handler(CommandHandler("start",cmd_start))
     app.add_handler(CommandHandler("help",cmd_help))
