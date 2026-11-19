@@ -164,8 +164,11 @@ async def run():
     assert got is not None and got['id'] == it['id'], (got and got['id'], sc)
     assert bot.learn_data['log'][0]['src'] == 'admin-reply'
     await bot.db.close()
-asyncio.run(run())
-print('OK', flush=True)
+try:
+    asyncio.run(run())
+    print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
 os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
@@ -189,8 +192,45 @@ async def run():
     cb = [b.callback_data for r in kb.inline_keyboard for b in r]
     assert any(c.startswith('unm_') for c in cb), cb
     await bot.db.close()
-asyncio.run(run())
-print('OK', flush=True)
+try:
+    asyncio.run(run())
+    print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_hot_lead_alert(tmp_path):
+    """مشتری داغ: قیمت دید و اقساط پرسید ← یک هشدار (نه دو بار در ۲۴ ساعت)."""
+    code = r"""
+import asyncio, os, sys, types
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+sent = []
+class FB:
+    async def send_message(self, cid, text, **k): sent.append(text)
+async def run():
+    await bot.init_db(); await bot.load_settings()
+    u = types.SimpleNamespace(id=91, username='x', first_name='Sara')
+    await bot.record_event(91, 'ai:i_price')
+    assert not await bot.hot_check(FB(), u)
+    await bot.record_event(91, 'ai:i_install')
+    assert await bot.hot_check(FB(), u) and 'مشتری داغ' in sent[0]
+    assert not await bot.hot_check(FB(), u)
+    await bot.load_learn(); await bot.record_event(91, bot.EV_MSG)
+    brief = await bot.morning_brief()
+    assert 'مشتری داغ' in brief, brief
+    assert '_hot' not in await bot.customer_card(91)
+    await bot.db.close()
+try:
+    asyncio.run(run())
+    print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
 os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)

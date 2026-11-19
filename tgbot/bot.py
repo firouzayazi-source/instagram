@@ -163,6 +163,7 @@ DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs"
                     "faq_shortcut":True,    # میان‌بر #کلیدواژه هنگام پاسخ مدیر
                     "log_unmatched":True,   # ثبت سؤال‌هایی که جوابی نداشتند
                     "track_visits":True,    # حافظه‌ی رفتار مشتری (کارت شناخت)
+                    "morning_brief":True,   # گزارش صبحگاهی ساعت ۹
                     "weekly_digest":True,   # خلاصه‌ی هفته کنار بکاپ جمعه
                     "miniapp":True,         # لینک سایت داخل تلگرام باز شود
                     "assistant":True,       # دستیار هوشمند (موتور داخلی، بدون API)
@@ -330,6 +331,7 @@ _ERR_REPORT_GAP  = 60.0     # حداقل فاصله بین دو گزارش (ثا
 
 EV_MSG = "_msg"          # کلید ویژه: پیام آزادِ مشتری
 EV_ABUSE = "_abuse"      # پیام توهین‌آمیز (برای کارت مشتری)
+EV_HOT = "_hot"          # مشتری داغ (برای گزارش صبحگاهی)
 EV_MISS = "_miss"        # پیامی که دستیار نفهمید (برای درصد فهم در گزارش هفتگی)
 
 async def record_stat(k,uid=None):
@@ -922,6 +924,42 @@ async def learn_from_reply(q,a):
     except Exception: pass
     return it
 
+# ── مشتری داغ (۲۸ آبان ۱۴۰۵): کسی که در ۲۴ ساعت هم محصول یا قیمت را دیده، هم سراغ شرایط خرید یا آمدن رفته
+HOT_BUY = {"ai:i_install","ai:i_order","ai:i_payment","ai:i_discount","ai:i_tradein","rsv"}
+HOT_VISIT = {"ai:i_address","ai:i_hours","ai:i_phone","ai:i_shipping","5","wh_page"}
+HOT_LOOK = {"ai:i_price","ai:i_stock","ai:i_compare","ai:i_advisor"}
+_hot_at: dict = {}      # uid ← آخرین هشدار
+
+async def hot_signals(uid):
+    since=(datetime.now(IRAN_TZ)-timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
+    async with db.execute("SELECT DISTINCT key FROM events WHERE user_id=? AND ts>=?",(uid,since)) as c:
+        keys={r[0] for r in await c.fetchall()}
+    try:
+        async with db.execute("SELECT q FROM searches WHERE user_id=? AND ts>=? ORDER BY ts DESC LIMIT 1",(uid,since)) as c:
+            q=await c.fetchone()
+    except Exception: q=None
+    look=bool(keys & HOT_LOOK) or bool(q)
+    return {"look":look,"buy":bool(keys & HOT_BUY),"visit":bool(keys & HOT_VISIT),"product":(q[0] if q else "")}
+
+async def hot_check(bot,user):
+    """اگر مشتری داغ شده و در ۲۴ ساعت اخیر خبر نداده‌ایم: یک خط در تاپیکش و یک پیام به مالک."""
+    if time.time()-_hot_at.get(user.id,0)<24*3600: return False
+    g=await hot_signals(user.id)
+    if sum((g["look"],g["buy"],g["visit"]))<2 or not (g["buy"] or g["visit"]): return False
+    _hot_at[user.id]=time.time()
+    try: await record_event(user.id,EV_HOT)
+    except Exception: pass
+    why="، ".join(x for x,ok in (("قیمت و محصول را دید",g["look"]),("شرایط خرید را پرسید",g["buy"]),
+                                 ("آدرس، ساعت یا تماس را خواست",g["visit"])) if ok)
+    text=(f"🔥 <b>مشتری داغ</b> — {esc(user.first_name or '—')}"+(f" · @{esc(user.username)}" if user.username else "")
+          +(f"\n📱 {esc(g['product'])}" if g["product"] else "")+f"\n{esc(why)}\n<i>الان بهترین وقت برای یک پیام شخصی است.</i>")
+    gid=support_group(); tid=await topic_of(user.id) if gid else 0
+    try:
+        if tid: await bot.send_message(gid,text,parse_mode="HTML",message_thread_id=tid)
+        await bot.send_message(OWNER_ID,text+f"\n🆔 <code>{user.id}</code>",parse_mode="HTML")
+    except Exception as e: logger.debug(f"hot: {e}")
+    return True
+
 _UNSURE = ("متوجه نشدم","مطمئن نیستم","منظورتون","بازتر بنویسید")
 
 async def tx_flush(bot,user):
@@ -943,6 +981,8 @@ async def tx_flush(bot,user):
     async def post(gid,tid): await bot.send_message(gid,text,parse_mode="HTML",message_thread_id=tid)
     try: await to_topic(bot,user,None,post)
     except Exception as e: logger.error(f"transcript {user.id}: {e}")
+    try: await hot_check(bot,user)
+    except Exception as e: logger.debug(f"hot check: {e}")
 
 async def transcript_flush(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     """گروه ۵: بعد از text_handler (و همه‌ی جواب‌هایش) اجرا می‌شود."""
@@ -1006,7 +1046,7 @@ async def customer_card(uid):
 
     # چه بخش‌هایی را پیش از نوشتن دیده — بدون تکرار، تازه‌ترین اول
     async with db.execute(
-        "SELECT key,MAX(ts) t FROM events WHERE user_id=? AND key NOT IN (?,?,?) "
+        "SELECT key,MAX(ts) t FROM events WHERE user_id=? AND key NOT IN (?,?,?) AND key NOT LIKE '!_%' ESCAPE '!' "
         "GROUP BY key ORDER BY t DESC LIMIT 4",(uid,EV_MSG,EV_ABUSE,EV_MISS)) as c:
         seen=[r[0] for r in await c.fetchall()]
     if seen:
@@ -2573,7 +2613,7 @@ async def weekly_digest():
          f"🆕 {to_fa(newu)} مشتری جدید  ·  📅 {to_fa(act)} فعال  ·  💬 {to_fa(msgs)} پیام"]
     if openn: out.append(f"⏳ {to_fa(openn)} پیام هنوز بی‌جواب")
     async with db.execute(
-        "SELECT key,COUNT(*) c FROM events WHERE key NOT IN (?,?,?) AND ts>=datetime('now',?,'localtime') "
+        "SELECT key,COUNT(*) c FROM events WHERE key NOT IN (?,?,?) AND key NOT LIKE '!_%' ESCAPE '!' AND ts>=datetime('now',?,'localtime') "
         "GROUP BY key ORDER BY c DESC LIMIT 3",(EV_MSG,EV_ABUSE,EV_MISS,since)) as c:
         tops=await c.fetchall()
     if tops:
@@ -2630,6 +2670,51 @@ async def weekly_review():
             rows.append(row)
         out += ["","✅ = تأیید پیشنهاد · ✏️ = نیت دیگر یا جواب تازه. از این به بعد خود ربات جواب می‌دهد."]
     return _fit("\n".join(out),TEXT_LIMIT),(InlineKeyboardMarkup(rows) if rows else None)
+
+async def morning_brief():
+    """گزارش صبحگاهی مالک: دیروز چه شد و امروز سراغ چه کسی برویم."""
+    d="-1 day"
+    q=lambda key: _cnt("SELECT COUNT(*) FROM events WHERE key=? AND ts>=datetime('now',?,'localtime')",(key,d))
+    newu=await _cnt("SELECT COUNT(*) FROM users WHERE joined_at>=datetime('now',?,'localtime')",(d,))
+    msgs,miss,hot=await q(EV_MSG),await q(EV_MISS),await q(EV_HOT)
+    openn=await open_count()
+    since=(datetime.now(IRAN_TZ)-timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
+    learned=sum(1 for x in learn_data["log"] if x.get("ts","")>=since)
+    out=[f"<b>☀️ صبح بخیر — گزارش ۲۴ ساعت گذشته</b>",HR,
+         f"🆕 {to_fa(newu)} مشتری تازه  ·  💬 {to_fa(msgs)} پیام"]
+    if msgs: out.append(f"🧠 ربات {to_fa(round(100*(1-miss/msgs)))}٪ را خودش جواب داد"+(f" · ❓ {to_fa(miss)} نفهمید (/review)" if miss else ""))
+    if hot:
+        async with db.execute("SELECT u.user_id,u.first_name,u.username FROM events e JOIN users u ON u.user_id=e.user_id "
+                              "WHERE e.key=? AND e.ts>=datetime('now',?,'localtime') GROUP BY u.user_id LIMIT 5",(EV_HOT,d)) as c:
+            names=[(r[1] or "—")+(f" (@{r[2]})" if r[2] else "") for r in await c.fetchall()]
+        out.append(f"🔥 {to_fa(hot)} مشتری داغ: "+esc("، ".join(names)))
+    if openn: out.append(f"⏳ {to_fa(openn)} پیام منتظر جواب شما")
+    if learned: out.append(f"🎓 ربات {to_fa(learned)} چیز تازه یاد گرفت")
+    try:
+        async with db.execute("SELECT q,COUNT(DISTINCT user_id) n FROM searches WHERE found=0 AND ts>=? GROUP BY q ORDER BY n DESC LIMIT 3",(since,)) as c:
+            lack=await c.fetchall()
+        if lack: out.append("📦 خواستند و نداشتیم: "+esc("، ".join(f"{q} ({to_fa(n)})" for q,n in lack)))
+    except Exception: pass
+    if len(out)==3 and not msgs and not newu: out.append("روز آرامی بود 🙂")
+    return "\n".join(out)
+
+BRIEF_HOUR = 9
+
+async def _morning_loop(bot):
+    await asyncio.sleep(90)
+    while True:
+        try:
+            now=datetime.now(IRAN_TZ); today=now.strftime("%Y-%m-%d")
+            if get_setting("morning_brief") and now.hour>=BRIEF_HOUR and settings.get("last_brief")!=today:
+                settings["last_brief"]=today; await save_settings()
+                if now.hour<BRIEF_HOUR+3:          # ربات اگر ظهر بالا آمد، گزارش صبح دیر را نمی‌فرستد
+                    await bot.send_message(OWNER_ID,await morning_brief(),parse_mode="HTML")
+        except Exception as e: logger.error(f"morning brief: {e}")
+        await asyncio.sleep(900)
+
+async def cmd_brief(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update.effective_user.id): return
+    await update.message.reply_text(await morning_brief(),parse_mode="HTML")
 
 async def cmd_review(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     """/review — همین حالا گزارش سؤال‌های نفهمیده."""
@@ -7027,6 +7112,7 @@ async def post_init(app):
     _spawn(_human_wait_loop(app.bot),"انتظار برای همکار")
     _spawn(_catalog_loop(app.bot),"لیست کالای سایت")
     _spawn(_site_pages_loop(),"صفحه‌های سایت")
+    _spawn(_morning_loop(app.bot),"گزارش صبحگاهی")
     _spawn(_panel_inbox_loop(),"تغییرهای پنل وب")
     _spawn(_status_loop(),"گزارش وضعیت")
     _spawn(_ig_notify_loop(app.bot),"خبرهای اینستاگرام")
@@ -7172,6 +7258,7 @@ def main():
     app.add_handler(CommandHandler("setgroup",cmd_setgroup))
     app.add_handler(CommandHandler("demand",cmd_demand))
     app.add_handler(CommandHandler("review",cmd_review))
+    app.add_handler(CommandHandler("brief",cmd_brief))
     app.add_handler(CommandHandler("installment",cmd_installment))
     app.add_handler(CommandHandler("start",cmd_start))
     app.add_handler(CommandHandler("help",cmd_help))
