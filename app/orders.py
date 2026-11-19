@@ -51,7 +51,7 @@ def _bg(coro) -> None:
         coro.close()
 
 
-CHANNEL_FA = {"ig": "اینستاگرام", "tg": "تلگرام"}
+CHANNEL_FA = {"ig": "اینستاگرام", "tg": "تلگرام", "bale": "بله"}
 
 
 def _fk(uid: str, channel: str) -> str:

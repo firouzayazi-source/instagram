@@ -456,3 +456,24 @@ os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_bale_mode_settings(tmp_path):
+    """BOT_PLATFORM=bale: توکن و مدیرهای جدا، سرور بله، لینک ble.ir، سفارش با کانال bale، بی مینی‌اپ."""
+    code = r"""
+import os, sys
+os.environ.pop('BOT_TOKEN', None)
+os.environ.update(BOT_PLATFORM='bale', BALE_BOT_TOKEN='1:b', BALE_ADMIN_ID='77')
+sys.path.insert(0, %r)
+import bot
+assert bot.IS_BALE and bot.OWNER_ID == 77 and bot.ORDER_CHANNEL == 'bale' and bot.CORE_CHANNEL == 'bale'
+bot.BOT_USERNAME = 'shop_bot'
+assert bot.deep_link('insta') == 'https://ble.ir/shop_bot?start=insta'
+b = bot.link_button('سایت', 'https://' + bot.SHOP_SITE + '/x')
+assert b.url and not b.web_app
+t = bot.TxBot('1:b', base_url='https://tapi.bale.ai/bot')
+assert 'tapi.bale.ai' in t.base_url
+print('OK')
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=60)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]

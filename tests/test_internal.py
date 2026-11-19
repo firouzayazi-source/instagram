@@ -153,3 +153,21 @@ def test_touch_links_same_phone_across_channels(tmp_path, monkeypatch):
         tg = crm.get(c, "tg:5005")
         assert tg["phone"] == "09121112233" and tg["name"] == "سارا"
         assert [x["id"] for x in tg["linked"]] == ["ig:igu1"]
+
+
+def test_bale_channel_is_separate(tmp_path, monkeypatch):
+    """ربات بله: پرونده‌ی مشتری با کلید bale:…، جدا از تلگرام؛ کانال ناشناس رد می‌شود."""
+    from fastapi.testclient import TestClient
+    from app import config, crm, db, internal
+    from app.main import create_app
+    monkeypatch.setattr(config, "WEB_DIST", str(tmp_path / "nodist"))
+    db.init()
+    internal.ensure_key()
+    key = internal.key_path().read_text().strip()
+    with TestClient(create_app(None)) as cl:
+        h = {"X-Internal-Key": key}
+        assert cl.post("/internal/touch", headers=h, json={"channel": "bale", "user_id": "5005", "text": "سلام"}).status_code == 200
+        assert cl.post("/internal/touch", headers=h, json={"channel": "xx", "user_id": "5005"}).status_code == 422
+        assert cl.post("/internal/order", headers=h, json={"channel": "xx", "user_id": "5005"}).status_code == 422
+    with db.connect() as c:
+        assert crm.get(c, "bale:5005") and not crm.get(c, "tg:5005")

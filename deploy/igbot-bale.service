@@ -1,0 +1,28 @@
+[Unit]
+Description=Bale bot of the igbot project (same code as the Telegram bot)
+After=network-online.target
+
+[Service]
+Type=simple
+User=igbot
+# همان کد ربات تلگرام با BOT_PLATFORM=bale؛ توکن BALE_BOT_TOKEN و مدیرها BALE_ADMIN_ID در /opt/igbot/.env؛ داده جدا در data/bale
+WorkingDirectory=/opt/igbot/data/bale
+EnvironmentFile=/opt/igbot/.env
+Environment=PYTHONUNBUFFERED=1
+Environment=BOT_PLATFORM=bale
+# زمان‌ها با وقت تهران ذخیره و در SQL با 'localtime' مقایسه می‌شوند؛ ساعت سرور UTC است (آمار امروز ۳.۵ ساعت جابه‌جا بود)
+Environment=TZ=Asia/Tehran
+UMask=0077
+ExecStart=/opt/igbot/.venv/bin/python /opt/igbot/tgbot/bot.py
+Restart=on-failure
+RestartSec=5
+# سریع بسته شود تا نسخه‌ی تازه با نسخه‌ی قبلی روی getUpdates تداخل (Conflict) پیدا نکند
+TimeoutStopSec=20
+KillMode=mixed
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/igbot/data
+
+[Install]
+WantedBy=multi-user.target

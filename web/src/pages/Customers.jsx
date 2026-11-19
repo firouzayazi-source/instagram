@@ -49,7 +49,7 @@ function Row({ p, sel, onSel, extra }) {
       <input type="checkbox" checked={sel} onChange={onSel} aria-label="انتخاب" />
       <a href={`#/customers/${p.id}`}>
         <div className="row">
-          <span className="who">{p.name || (p.username ? `@${p.username}` : p.user_id)} <span className="pill muted">{p.channel === 'tg' ? 'تلگرام' : 'اینستاگرام'}</span>
+          <span className="who">{p.name || (p.username ? `@${p.username}` : p.user_id)} <span className="pill muted">{({ tg: 'تلگرام', bale: 'بله' })[p.channel] || 'اینستاگرام'}</span>
             {p.window_left > 0 && <span className="pill good" title="هنوز می‌شود در دایرکت پیام داد">پنجره باز: {left(p.window_left)}</span>}</span>
           <span className="when">{timeAgo(p.last_seen)}</span>
         </div>
@@ -188,9 +188,9 @@ function Profile({ id }) {
             {p.channel === 'ig' && <a className="btn sm" href={`#/messages/${p.user_id}`}>گفتگو</a>}
           </span>
         </div>
-        <p className="muted">{p.channel === 'tg' ? '✈️ تلگرام · ' : '📸 اینستاگرام · '}اولین پیام {timeAgo(p.first_seen)} · آخرین {timeAgo(p.last_seen)} · {fa(p.messages)} پیام · {fa(p.comments)} کامنت</p>
+        <p className="muted">{({ tg: '✈️ تلگرام · ', bale: '💬 بله · ' })[p.channel] || '📸 اینستاگرام · '}اولین پیام {timeAgo(p.first_seen)} · آخرین {timeAgo(p.last_seen)} · {fa(p.messages)} پیام · {fa(p.comments)} کامنت</p>
         {p.linked?.length > 0 && <div className="note info">🔗 همین شخص (با همین شماره) در {p.linked.map((x) => (
-          <a key={x.id} href={`#/customers/${encodeURIComponent(x.id)}`} style={{ marginInlineEnd: 8 }}>{x.channel === 'tg' ? '✈️ تلگرام' : '📸 اینستاگرام'}{x.username ? ` @${x.username}` : ''}</a>))}</div>}
+          <a key={x.id} href={`#/customers/${encodeURIComponent(x.id)}`} style={{ marginInlineEnd: 8 }}>{({ tg: '✈️ تلگرام', bale: '💬 بله' })[x.channel] || '📸 اینستاگرام'}{x.username ? ` @${x.username}` : ''}</a>))}</div>}
         <div className="grid2">
           <div className="field"><label>نام</label><input type="text" value={p.name} onChange={(e) => set({ name: e.target.value })} /></div>
           <div className="field"><label>شماره‌ی موبایل</label><input type="text" dir="ltr" inputMode="tel" value={p.phone} placeholder="09…" onChange={(e) => set({ phone: e.target.value })} /></div>

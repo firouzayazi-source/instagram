@@ -28,12 +28,19 @@ def _env(name):
             f"   (در systemd باید EnvironmentFile=/opt/telegram-bot/.env باشد)")
     return v
 
-TOKEN = _env("BOT_TOKEN")
+# همین کد ربات «بله» هم هست (۲۸ آبان ۱۴۰۵): BOT_PLATFORM=bale، با توکن و مدیرهای جدا و پوشه‌ی داده‌ی جدا.
+# API بله همان شکل API تلگرام است؛ فقط نشانی سرورش فرق می‌کند. تاپیک ندارد، پس کارت‌ها به چت مدیرها می‌رود.
+PLATFORM = (os.environ.get("BOT_PLATFORM") or "telegram").strip().lower()
+IS_BALE = PLATFORM == "bale"
+CORE_CHANNEL = "bale" if IS_BALE else "telegram"     # برای /internal/* هسته
+ORDER_CHANNEL = "bale" if IS_BALE else "tg"          # ستون channel در سفارش‌ها و پرونده‌ی مشتری
+LINK_HOST = "ble.ir" if IS_BALE else "t.me"
+TOKEN = _env("BALE_BOT_TOKEN" if IS_BALE else "BOT_TOKEN")
 # ADMIN_ID می‌تواند یک آیدی باشد یا چند آیدی جداشده با کاما.
 # اولین آیدی «مالک» است: تنها کسی که مدیر اضافه/کم می‌کند و بک‌آپ را
 # بازمی‌گرداند. بقیه فقط به پنل دسترسی دارند.
 try:
-    _ADMIN_ENV = [int(x) for x in re.split(r"[,\s]+", _env("ADMIN_ID").strip()) if x]
+    _ADMIN_ENV = [int(x) for x in re.split(r"[,\s]+", _env("BALE_ADMIN_ID" if IS_BALE else "ADMIN_ID").strip()) if x]
 except ValueError:
     raise SystemExit("❌ ADMIN_ID باید عدد باشد (آیدی عددی تلگرام، نه یوزرنیم).\n"
                      "   برای چند مدیر با کاما جدا کنید:  ADMIN_ID=11111111,22222222")
@@ -1320,7 +1327,7 @@ def link_button(title,url):
     """دکمه‌ی لینک. لینک سایتِ خودِ فروشگاه به‌صورت «مینی‌اپ» باز می‌شود:
     سایت داخل خود تلگرام می‌آید، نه در مرورگر — مشتری از ربات جدا نمی‌شود.
     شرط تلگرام: فقط HTTPS و فقط در چت خصوصی."""
-    if (get_setting("miniapp") and url.lower().startswith("https://")
+    if (not IS_BALE and get_setting("miniapp") and url.lower().startswith("https://")
             and SHOP_SITE.lower() in url.lower()):
         try: return InlineKeyboardButton(title,web_app=WebAppInfo(url=url))
         except Exception: pass
@@ -2877,8 +2884,8 @@ def aftersale_due(now=None,path=None):
     now=now or time.time(); done=set(settings.get("aftersale_done") or [])
     try:
         with sqlite3.connect(f"file:{path or CORE_DB}?mode=ro",uri=True,timeout=3) as c:
-            rows=c.execute("SELECT id,user_id,name,product FROM orders WHERE channel='tg' AND status='done' "
-                           "AND updated_at BETWEEN ? AND ?",(now-10*86400,now-AFTERSALE_DAYS*86400)).fetchall()
+            rows=c.execute("SELECT id,user_id,name,product FROM orders WHERE channel=? AND status='done' "
+                           "AND updated_at BETWEEN ? AND ?",(ORDER_CHANNEL,now-10*86400,now-AFTERSALE_DAYS*86400)).fetchall()
     except Exception: return []
     return [r for r in rows if r[0] not in done and str(r[1]).isdigit()]
 
@@ -3096,7 +3103,7 @@ BOT_USERNAME = ""        # در post_init پر می‌شود
 def deep_link(src="",section=""):
     u=BOT_USERNAME or "<نام‌ربات>"
     arg=(src or "")+(f"-{section}" if section else "")
-    return f"https://t.me/{u}?start={arg}" if arg else f"https://t.me/{u}"
+    return f"https://{LINK_HOST}/{u}?start={arg}" if arg else f"https://{LINK_HOST}/{u}"
 
 def parse_start_arg(arg):
     """«insta» → فقط منبع.  «insta-3» → منبع + بخشی که باید باز شود.
@@ -5676,7 +5683,7 @@ async def core_think(text,user,dry=False):
         import httpx
         async with httpx.AsyncClient(timeout=40,trust_env=False) as cl:
             r=await cl.post(CORE_URL+"/internal/think",headers={"X-Internal-Key":key},
-                            json={"channel":"telegram","user_id":str(user.id),"username":user.username or "",
+                            json={"channel":CORE_CHANNEL,"user_id":str(user.id),"username":user.username or "",
                                   "text":(text or "")[:2000],"test":bool(dry)})
         if r.status_code!=200:
             logger.warning(f"core think: HTTP {r.status_code}"); return None
@@ -5696,7 +5703,7 @@ async def core_touch(user,text=""):
         import httpx
         async with httpx.AsyncClient(timeout=10,trust_env=False) as cl:
             await cl.post(CORE_URL+"/internal/touch",headers={"X-Internal-Key":key},
-                          json={"user_id":str(user.id),"username":user.username or "",
+                          json={"channel":ORDER_CHANNEL,"user_id":str(user.id),"username":user.username or "",
                                 "name":" ".join(x for x in (user.first_name,user.last_name) if x)[:100],"text":(text or "")[:2000]})
     except Exception as e: logger.debug(f"core touch: {e}")
 
@@ -5772,7 +5779,7 @@ async def core_order(user,text="",image=False,product_id="",hint=""):
         import httpx
         async with httpx.AsyncClient(timeout=15,trust_env=False) as cl:
             r=await cl.post(CORE_URL+"/internal/order",headers={"X-Internal-Key":key},
-                            json={"channel":"telegram","user_id":str(user.id),"username":user.username or "",
+                            json={"channel":CORE_CHANNEL,"user_id":str(user.id),"username":user.username or "",
                                   "text":(text or "")[:2000],"image":bool(image),"product_id":str(product_id or ""),
                                   "hint":(hint or "")[:60]})
         if r.status_code!=200:
@@ -5791,7 +5798,7 @@ async def core_feedback(user,log_id,vote):
         import httpx
         async with httpx.AsyncClient(timeout=15,trust_env=False) as cl:
             r=await cl.post(CORE_URL+"/internal/feedback",headers={"X-Internal-Key":key},
-                            json={"channel":"telegram","user_id":str(user.id),"log_id":int(log_id),"vote":vote})
+                            json={"channel":CORE_CHANNEL,"user_id":str(user.id),"log_id":int(log_id),"vote":vote})
         return r.json() if r.status_code==200 else None
     except Exception as e:
         logger.warning(f"core feedback: {type(e).__name__}: {e}"); return None
@@ -6172,7 +6179,7 @@ async def ref_text(uid,username):
     n=await ref_count(uid); reward=(settings.get("ref_reward") or "").strip()
     out=[f"🎁 <b>باشگاه مشتریان {esc(SHOP_NAME)}</b>",
          "این لینک مخصوص شماست؛ برای دوستاتون بفرستید:",
-         f"https://t.me/{esc(username)}?start=ref_{uid}"]
+         f"https://{LINK_HOST}/{esc(username)}?start=ref_{uid}"]
     if reward: out += ["",esc(reward)]
     out += ["",f"👥 تا حالا {to_fa(n)} نفر با لینک شما اومدن." if n else "👥 هنوز کسی با لینک شما نیومده."]
     return "\n".join(out)
@@ -7855,7 +7862,8 @@ def _fast_request(pool,read):
 
 def main():
     app=(ApplicationBuilder()
-         .bot(TxBot(TOKEN,request=_fast_request(64,20.0),get_updates_request=_fast_request(4,35.0)))
+         .bot(TxBot(TOKEN,request=_fast_request(64,20.0),get_updates_request=_fast_request(4,35.0),
+                    **({"base_url":"https://tapi.bale.ai/bot","base_file_url":"https://tapi.bale.ai/file/bot"} if IS_BALE else {})))
          .post_init(post_init).post_shutdown(post_shutdown)
          # پیش‌فرض PTB آپدیت‌ها را «یکی‌یکی» پردازش می‌کند: اگر ارسال عکس یک
          # کاربر یک ثانیه طول بکشد، بقیه‌ی کاربران پشتش صف می‌کشند. با موازی

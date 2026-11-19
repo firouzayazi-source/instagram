@@ -18,6 +18,13 @@ if [ -d "$TG" ]; then
     || echo "❌ بکاپ فایل‌های JSON ربات تلگرام ساخته نشد"
 fi
 
+# ربات بله (اگر راه افتاده باشد): همان شکل
+BL=/opt/igbot/data/bale
+if [ -f "$BL/users.db" ]; then
+  sqlite3 "$BL/users.db" ".backup '$DST/bale-users-$D.db'"
+  ( cd "$BL" && shopt -s nullglob && files=(*.json) && [ ${#files[@]} -gt 0 ] && tar -czf "$DST/bale-json-$D.tar.gz" "${files[@]}" ) || true
+fi
+
 # رازها و کلیدها (.env، کلید داخلی، کانال‌ها): بی این‌ها بعد از از دست رفتن سرور همه‌ی اتصال‌ها از صفر ساخته می‌شوند.
 # فقط root می‌خواند (۶۰۰).
 # فقط فایل‌هایی که هستند (نبودن یکی، بقیه را از بایگانی بیرون نیندازد)
@@ -25,7 +32,7 @@ fi
   tar -czf "$DST/secrets-$D.tar.gz" "${files[@]}" )
 chmod 600 "$DST/secrets-$D.tar.gz"
 
-find "$DST" \( -name 'bot-*.db' -o -name 'tg-users-*.db' -o -name 'tg-json-*.tar.gz' -o -name 'secrets-*.tar.gz' \) -mtime +14 -delete
+find "$DST" \( -name 'bot-*.db' -o -name 'tg-users-*.db' -o -name 'tg-json-*.tar.gz' -o -name 'bale-users-*.db' -o -name 'bale-json-*.tar.gz' -o -name 'secrets-*.tar.gz' \) -mtime +14 -delete
 
 # آزمون بازگردانی: آخرین بکاپ‌ها باز می‌شوند و داده دارند؟ نتیجه در پنل و هشدار تلگرام (tools/backup_check.py)
 if [ -x /opt/igbot/.venv/bin/python ]; then

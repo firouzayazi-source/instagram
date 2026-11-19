@@ -21,6 +21,7 @@ rollback() {
   if [ "${RESTARTED:-0}" = 1 ]; then
     systemctl restart igbot || true
     systemctl is-enabled --quiet igbot-telegram 2>/dev/null && systemctl restart igbot-telegram || true
+    systemctl is-enabled --quiet igbot-bale 2>/dev/null && systemctl restart igbot-bale || true
   fi
   [ -n "$BKFILE" ] && echo "اگر پایگاه داده هم باید برگردد: systemctl stop igbot && sudo -u igbot cp $BKFILE /opt/igbot/data/bot.db && rm -f /opt/igbot/data/bot.db-wal /opt/igbot/data/bot.db-shm && systemctl start igbot"
   exit 1
@@ -79,6 +80,13 @@ main() {
     echo "فایل سرویس تلگرام به‌روز شد"
   fi
 
+  # ربات بله: فقط اگر با deploy/enable-bale.sh راه افتاده باشد
+  if [ -f /etc/systemd/system/igbot-bale.service ] && ! cmp -s deploy/igbot-bale.service /etc/systemd/system/igbot-bale.service; then
+    cp deploy/igbot-bale.service /etc/systemd/system/igbot-bale.service
+    systemctl daemon-reload
+    echo "فایل سرویس بله به‌روز شد"
+  fi
+
   chown -R igbot:igbot /opt/igbot
   [ -f /opt/igbot/.env ] && chmod 600 /opt/igbot/.env   # رازها فقط برای کاربر igbot
   RESTARTED=1
@@ -88,6 +96,12 @@ main() {
     sleep 3
     if systemctl is-active --quiet igbot-telegram; then echo "ربات تلگرام فعال است"
     else echo "❌ ربات تلگرام بالا نیامد"; journalctl -u igbot-telegram -n 20 --no-pager; rollback; fi
+  fi
+  if systemctl is-enabled --quiet igbot-bale 2>/dev/null; then
+    systemctl restart igbot-bale
+    sleep 3
+    if systemctl is-active --quiet igbot-bale; then echo "ربات بله فعال است"
+    else echo "⚠️ ربات بله بالا نیامد (بقیه سالم است)"; journalctl -u igbot-bale -n 20 --no-pager; fi
   fi
   sleep 2
   if ! curl -fsS https://ig.stland.ir/health; then echo; echo "❌ پنل سالم بالا نیامد"; journalctl -u igbot -n 20 --no-pager; rollback; fi

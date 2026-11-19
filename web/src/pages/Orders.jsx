@@ -22,7 +22,7 @@ function List() {
       <div className="list">
         {d.items.map((o) => (
           <a key={o.id} href={`#/orders/${o.id}`} className="item">
-            <div className="row"><span className="who">#{fa(o.id)} · {o.name} <span className="pill muted">{o.channel === 'tg' ? 'تلگرام' : 'اینستاگرام'}</span> <span className={`pill ${CLS[o.status]}`}>{o.status_label}</span></span><span className="when">{timeAgo(o.created_at)}</span></div>
+            <div className="row"><span className="who">#{fa(o.id)} · {o.name} <span className="pill muted">{({ tg: 'تلگرام', bale: 'بله' })[o.channel] || 'اینستاگرام'}</span> <span className={`pill ${CLS[o.status]}`}>{o.status_label}</span></span><span className="when">{timeAgo(o.created_at)}</span></div>
             <div className="row" style={{ marginTop: 4 }}><span>{o.product || '—'}</span><span className="muted">{o.price ? money(o.price) : ''} · {o.city}</span></div>
           </a>
         ))}
@@ -63,7 +63,7 @@ function Detail({ id }) {
         </select>
         <p className="hint muted">«ارسال شد» و «تحویل شد» برچسب «خرید کرده» را به پرونده‌ی مشتری می‌زند. هر تغییر وضعیت به وبهوک هم می‌رود.</p>
       </div>
-      {o.channel === 'tg' && o.status === 'receipt' && !o.receipt_url && <p className="muted">🧾 عکس رسید در گفتگوی همین مشتری در گروه پشتیبانی تلگرام است.</p>}
+      {o.channel !== 'ig' && o.status === 'receipt' && !o.receipt_url && <p className="muted">🧾 عکس رسید در گفتگوی همین مشتری در گروه پشتیبانی تلگرام است.</p>}
       {o.receipt_url && (
         <div className="field">
           <label>رسید پرداخت</label>

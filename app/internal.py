@@ -43,6 +43,10 @@ def _check(request: Request, key: str | None) -> None:
         raise HTTPException(403)
 
 
+# کانال‌های ربات (همان کد ربات): تلگرام و بله. کلید پرونده و سفارش: tg:… یا bale:…
+BOT_CHANNELS = {"telegram": "tg", "bale": "bale"}
+
+
 class ThinkIn(BaseModel):
     channel: str
     user_id: str
@@ -55,10 +59,10 @@ class ThinkIn(BaseModel):
 async def think(body: ThinkIn, request: Request, x_internal_key: str | None = Header(None)):
     """هوش مصنوعی مرکزی برای کانالی که موتور فهم خودش را اجرا کرده و نفهمیده (فعلاً تلگرام)."""
     _check(request, x_internal_key)
-    if body.channel != "telegram" or not body.text.strip():
+    if body.channel not in BOT_CHANNELS or not body.text.strip():
         raise HTTPException(422)
     with db.connect() as c:
-        d = await ai.decide(c, channel="telegram", text=body.text.strip()[:2000], user_id=f"tg:{body.user_id}",
+        d = await ai.decide(c, channel="telegram", text=body.text.strip()[:2000], user_id=f"{BOT_CHANNELS[body.channel]}:{body.user_id}",
                             username=body.username or None, is_test=body.test, skip_brain=True)
         if d.log_id and d.action == "reply" and not body.test:
             ai.mark_log(c, d.log_id, "sent")
@@ -83,9 +87,9 @@ def order(body: OrderIn, request: Request, x_internal_key: str | None = Header(N
     خروجی: reply (متن برای مشتری یا null اگر پیام به سفارش ربطی نداشت)، order_id (سفارشی که همین الان
     ثبت شد یا رسیدش آمد) و receipt (این پیام رسید پرداخت بود)."""
     _check(request, x_internal_key)
-    if body.channel != "telegram":
+    if body.channel not in BOT_CHANNELS:
         raise HTTPException(422)
-    ch, uid = "tg", body.user_id.strip()[:40]
+    ch, uid = BOT_CHANNELS[body.channel], body.user_id.strip()[:40]
     with db.connect() as c:
         s = ai.settings(c)
         if not s["order_enabled"]:
@@ -114,10 +118,10 @@ class FeedbackIn(BaseModel):
 def feedback(body: FeedbackIn, request: Request, x_internal_key: str | None = Header(None)):
     """رأی مشتری به جواب هوش مصنوعی؛ جواب پسندیده به دانش آفلاین می‌رود. هر کس فقط به جواب خودش."""
     _check(request, x_internal_key)
-    if body.channel != "telegram":
+    if body.channel not in BOT_CHANNELS:
         raise HTTPException(422)
     with db.connect() as c:
-        return learning.vote(c, body.log_id, body.vote, ai.settings(c), owner=f"tg:{body.user_id}")
+        return learning.vote(c, body.log_id, body.vote, ai.settings(c), owner=f"{BOT_CHANNELS[body.channel]}:{body.user_id}")
 
 
 @router.post("/transcribe")
@@ -154,6 +158,7 @@ async def vision(request: Request, x_internal_key: str | None = Header(None), x_
 
 
 class TouchIn(BaseModel):
+    channel: str = "tg"
     user_id: str
     username: str = ""
     name: str = ""
@@ -166,10 +171,10 @@ def touch(body: TouchIn, request: Request, x_internal_key: str | None = Header(N
     _check(request, x_internal_key)
     from . import crm
     uid = body.user_id.strip()[:40]
-    if not uid.isdigit():
+    if not uid.isdigit() or body.channel not in ("tg", "bale"):
         raise HTTPException(422)
     with db.connect() as c:
-        key = crm.touch(c, "tg", uid, body.username.strip()[:64] or None, "message", body.text[:2000])
+        key = crm.touch(c, body.channel, uid, body.username.strip()[:64] or None, "message", body.text[:2000])
         if body.name.strip():
             c.execute("UPDATE customers SET name=? WHERE id=? AND COALESCE(name,'')=''", (body.name.strip()[:100], key))
     return {"ok": True}
