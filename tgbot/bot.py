@@ -2283,6 +2283,20 @@ BC_AUDIENCE = {
     "cold90":   ("💤 غایب‌های ۹۰ روز+", "AND last_seen<datetime('now','-90 days','localtime')"),
 }
 
+_bc_interest: dict = {}      # شماره ← عبارت جست‌وجو (داده‌ی دکمه کوتاه بماند)
+
+async def bc_interest_top(limit=5):
+    """پرتقاضاترین جست‌وجوهای ۳۰ روز اخیر: [(شماره، عبارت، تعداد نفر)]."""
+    since=(datetime.now(IRAN_TZ)-timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
+    async with db.execute("SELECT q,COUNT(DISTINCT user_id) n FROM searches WHERE ts>=? GROUP BY q "
+                          "HAVING n>=2 ORDER BY n DESC LIMIT ?",(since,limit)) as c:
+        rows=await c.fetchall()
+    _bc_interest.clear()
+    out=[]
+    for i,(q,n) in enumerate(rows):
+        _bc_interest[str(i)]=q; out.append((str(i),q,n))
+    return out
+
 async def bc_uids(aud):
     """فهرست مقصد. بلاک‌شده‌ها، کسانی که ربات را حذف کرده‌اند و خودِ مدیرها
     همیشه بیرون‌اند (مدیر پیش‌نمایش را دیده، لازم نیست دوباره بگیرد)."""
@@ -2292,6 +2306,16 @@ async def bc_uids(aud):
         async with db.execute(
             "SELECT s.user_id FROM subs s JOIN users u ON u.user_id=s.user_id "
             "WHERE s.topic=? AND u.is_blocked=0 AND u.has_left=0",(tid,)) as c:
+            rows=await c.fetchall()
+        return [r[0] for r in rows if not is_admin(r[0])]
+    if aud.startswith("int:"):
+        # علاقه‌مندان یک محصول: کسانی که در ۳۰ روز اخیر همان را جست‌وجو کرده‌اند (پیام هدفمند، نه به همه)
+        q=_bc_interest.get(aud[4:])
+        if not q: return []
+        since=(datetime.now(IRAN_TZ)-timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
+        async with db.execute(
+            "SELECT DISTINCT s.user_id FROM searches s JOIN users u ON u.user_id=s.user_id "
+            "WHERE s.q=? AND s.ts>=? AND u.is_blocked=0 AND u.has_left=0",(q,since)) as c:
             rows=await c.fetchall()
         return [r[0] for r in rows if not is_admin(r[0])]
     if aud.startswith("src:"):
@@ -2310,6 +2334,7 @@ async def bc_uids(aud):
 def bc_label(aud):
     if aud.startswith("sub:"):
         t=topic_item(aud[4:]); return "🔔 "+(t["title"] if t else aud[4:])
+    if aud.startswith("int:"): return "🔎 علاقه‌مندان «"+_bc_interest.get(aud[4:],"؟")+"»"
     if aud.startswith("src:"): return "🎯 "+SOURCE_LABELS.get(aud[4:],aud[4:])
     return BC_AUDIENCE.get(aud,BC_AUDIENCE["all"])[0]
 
@@ -2367,6 +2392,10 @@ async def bc_aud_kb():
         n=await sub_count(t["id"])
         if n: rows.append([InlineKeyboardButton(
             f"🔔 {t['title']} · {to_fa(n)}",callback_data=f"bc_aud_sub:{t['id']}")])
+    for i,q,_ in await bc_interest_top():
+        n=len(await bc_uids("int:"+i))
+        if n: rows.append([InlineKeyboardButton(f"🔎 علاقه‌مندان {_fit(q,26)} · {to_fa(n)}",
+                                                callback_data=f"bc_aud_int:{i}")])
     for src,cnt in await source_stats():
         if src and src!="—" and cnt:
             n=len(await bc_uids("src:"+src))
@@ -2630,6 +2659,14 @@ async def weekly_digest():
             out.append("🔔 مشترک‌ها: "+"، ".join(f"{t} ({to_fa(n)})" for t,n in subs))
     nl=learned_this_week()
     if nl: out.append(f"🎓 دستیار این هفته {to_fa(nl)} جمله‌ی تازه یاد گرفت")
+    # ایده‌ی محتوا برای اینستاگرام: موضوع‌هایی که مشتری‌ها واقعاً بیشتر پرسیدند
+    try:
+        async with db.execute("SELECT key,COUNT(DISTINCT user_id) n FROM events WHERE key LIKE 'ai:%' "
+                              "AND ts>=datetime('now',?,'localtime') GROUP BY key ORDER BY n DESC LIMIT 3",(since,)) as c:
+            hot_topics=[(faq_item(k[3:]),n) for k,n in await c.fetchall()]
+        ideas=[f"«{faq_title(it)}» ({to_fa(n)} نفر)" for it,n in hot_topics if it and n>=3]
+        if ideas: out += [HR,"💡 ایده‌ی ریلز و استوری (پرسیده‌ترین موضوع‌های هفته): "+esc("، ".join(ideas))]
+    except Exception as e: logger.debug(f"digest ideas: {e}")
     try:
         dem=await demand_text(7)
         if "هنوز جستجویی" not in dem: out += [HR]+dem.split("\n")[2:]
@@ -2672,6 +2709,20 @@ async def weekly_review():
         out += ["","✅ = تأیید پیشنهاد · ✏️ = نیت دیگر یا جواب تازه. از این به بعد خود ربات جواب می‌دهد."]
     return _fit("\n".join(out),TEXT_LIMIT),(InlineKeyboardMarkup(rows) if rows else None)
 
+def self_check(now=None):
+    """خودآزمایی: چیزهایی که اگر خراب باشند ربات بی‌صدا بد جواب می‌دهد. خروجی: فهرست هشدارها."""
+    now=now or time.time(); out=[]
+    if not catalog.items: out.append("لیست کالای سایت خالی است؛ ربات قیمت و موجودی ندارد")
+    elif now-catalog.updated>6*3600:
+        out.append(f"لیست کالا {to_fa(int((now-catalog.updated)//3600))} ساعت است از سایت به‌روز نشده")
+    if sitepages.updated and now-sitepages.updated>3*86400: out.append("صفحه‌های سایت چند روز است به‌روز نشده‌اند")
+    live=[x for x in faq if x.get("enabled",True)]
+    empty=[faq_title(x) for x in live if not (x.get("answer") or "").strip() and not x.get("action")]
+    if empty: out.append("جواب خالی: "+"، ".join(empty[:4]))
+    if len(live)<10: out.append(f"فقط {to_fa(len(live))} موضوع فعال است")
+    if not os.path.exists(INTERNAL_KEY_FILE): out.append("ارتباط با هسته (سفارش، هوش مصنوعی، ویس) برقرار نیست")
+    return out
+
 async def morning_brief():
     """گزارش صبحگاهی مالک: دیروز چه شد و امروز سراغ چه کسی برویم."""
     d="-1 day"
@@ -2697,6 +2748,10 @@ async def morning_brief():
         if lack: out.append("📦 خواستند و نداشتیم: "+esc("، ".join(f"{q} ({to_fa(n)})" for q,n in lack)))
     except Exception: pass
     if len(out)==3 and not msgs and not newu: out.append("روز آرامی بود 🙂")
+    try:
+        bad=self_check()
+        out += [HR]+[f"⚠️ {esc(x)}" for x in bad] if bad else [HR,"✅ خودآزمایی ربات: همه‌چیز سالم"]
+    except Exception as e: logger.debug(f"self check: {e}")
     return "\n".join(out)
 
 # ── پیگیری بعد از خرید (فقط تلگرام؛ اینستاگرام بعد از ۲۴ ساعت اجازه نمی‌دهد): یک هفته بعد از «تحویل شد»
