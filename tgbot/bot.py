@@ -1014,10 +1014,26 @@ async def transcript_flush(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
         await tx_flush(ctx.bot,u)
 
 from telegram.ext import ExtBot as _ExtBot
+_A_RE = re.compile(r'<a\s+href="([^"]*)"[^>]*>(.*?)</a>',re.S|re.I)
+
+def bale_plain(t):
+    """بله برچسب‌های HTML تلگرام را نمی‌فهمد و <b> را عیناً نشان می‌داد (۲۹ آبان ۱۴۰۵):
+    متن ساده می‌شود؛ لینک‌ها «متن (نشانی)»."""
+    t=str(t or "")
+    t=_A_RE.sub(lambda m: m.group(2) if html.unescape(m.group(1)) in (m.group(2),"") or m.group(1).startswith("tg:")
+                else f"{m.group(2)} ({html.unescape(m.group(1))})",t)
+    t=re.sub(r"<br\s*/?>","\n",t,flags=re.I)
+    return html.unescape(_TAG_RE.sub("",t))
+
 class TxBot(_ExtBot):
     """هر چیزی که ربات به چت خصوصی مشتری‌ای که همین الان پیام داده می‌فرستد (متن، عکس، کارت آدرس، …)
     در رونوشت تاپیک هم می‌آید. «در حال نوشتن…» و ویرایش‌ها شمرده نمی‌شوند."""
     async def _post(self,endpoint,data=None,*a,**k):
+        if IS_BALE and isinstance(data,dict) and data.get("parse_mode"):
+            data=dict(data); pm=str(data.pop("parse_mode")).upper()
+            if pm=="HTML":
+                for key in ("text","caption"):
+                    if isinstance(data.get(key),str): data[key]=bale_plain(data[key])
         r=await super()._post(endpoint,data,*a,**k)
         try:
             cid=(data or {}).get("chat_id")

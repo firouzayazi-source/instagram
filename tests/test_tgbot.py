@@ -473,6 +473,13 @@ b = bot.link_button('سایت', 'https://' + bot.SHOP_SITE + '/x')
 assert b.url and not b.web_app
 t = bot.TxBot('1:b', base_url='https://tapi.bale.ai/bot')
 assert 'tapi.bale.ai' in t.base_url
+assert bot.bale_plain('<b>سلام &amp; خوش</b> <a href="https://x.ir/a">سایت</a> <i>مثلاً</i>') == 'سلام & خوش سایت (https://x.ir/a) مثلاً'
+import asyncio
+seen = []
+async def fake(self, endpoint, data=None, *a, **k): seen.append(data); return True
+bot._ExtBot._post = fake
+asyncio.run(t._post('sendMessage', {'chat_id': 5, 'text': '<b>سلام</b>', 'parse_mode': 'HTML'}))
+assert seen[-1] == {'chat_id': 5, 'text': 'سلام'}, seen
 print('OK')
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=60)
