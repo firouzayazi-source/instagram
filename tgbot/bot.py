@@ -163,6 +163,7 @@ DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs"
                     "faq_shortcut":True,    # میان‌بر #کلیدواژه هنگام پاسخ مدیر
                     "log_unmatched":True,   # ثبت سؤال‌هایی که جوابی نداشتند
                     "track_visits":True,    # حافظه‌ی رفتار مشتری (کارت شناخت)
+                    "aftersale":True,       # پیگیری یک هفته بعد از تحویل سفارش
                     "morning_brief":True,   # گزارش صبحگاهی ساعت ۹
                     "weekly_digest":True,   # خلاصه‌ی هفته کنار بکاپ جمعه
                     "miniapp":True,         # لینک سایت داخل تلگرام باز شود
@@ -2697,6 +2698,42 @@ async def morning_brief():
     except Exception: pass
     if len(out)==3 and not msgs and not newu: out.append("روز آرامی بود 🙂")
     return "\n".join(out)
+
+# ── پیگیری بعد از خرید (فقط تلگرام؛ اینستاگرام بعد از ۲۴ ساعت اجازه نمی‌دهد): یک هفته بعد از «تحویل شد»
+AFTERSALE_DAYS = 7
+CORE_DB = os.path.join("..","bot.db")        # پایگاه داده‌ی هسته، فقط خواندنی
+AFTERSALE_TEXT = ("سلام {name} 🌸 یک هفته از خریدتون از استوک‌لند گذشته؛ از {product} راضی هستید؟\n"
+                  "اگه سؤالی یا مشکلی بود همین‌جا بنویسید، کنارتونیم 🙏")
+
+def aftersale_due(now=None,path=None):
+    """سفارش‌های تلگرام که ۷ تا ۱۰ روز پیش «تحویل شد» شده‌اند و هنوز پیگیری نگرفته‌اند: [(id, user_id, name, product)]."""
+    import sqlite3
+    now=now or time.time(); done=set(settings.get("aftersale_done") or [])
+    try:
+        with sqlite3.connect(f"file:{path or CORE_DB}?mode=ro",uri=True,timeout=3) as c:
+            rows=c.execute("SELECT id,user_id,name,product FROM orders WHERE channel='tg' AND status='done' "
+                           "AND updated_at BETWEEN ? AND ?",(now-10*86400,now-AFTERSALE_DAYS*86400)).fetchall()
+    except Exception: return []
+    return [r for r in rows if r[0] not in done and str(r[1]).isdigit()]
+
+async def _aftersale_loop(bot):
+    await asyncio.sleep(120)
+    while True:
+        try:
+            h=datetime.now(IRAN_TZ).hour
+            if get_setting("aftersale") and 11<=h<20:            # فقط در ساعت‌های روز
+                for oid,uid,name,product in aftersale_due()[:5]:
+                    settings.setdefault("aftersale_done",[]).append(oid)
+                    settings["aftersale_done"]=settings["aftersale_done"][-500:]; await save_settings()
+                    try:
+                        await bot.send_message(int(uid),AFTERSALE_TEXT.format(name=(name or "").split(" ")[0] or "دوست عزیز",
+                                                                             product=product or "خریدتون"),reply_markup=main_menu())
+                        await topic_note(bot,int(uid),f"💌 پیگیری بعد از خرید (سفارش #{oid}) برای مشتری رفت.")
+                    except Forbidden: await mark_left(int(uid))
+                    except Exception as e: logger.warning(f"aftersale → {uid}: {e}")
+                    await asyncio.sleep(5)
+        except Exception as e: logger.error(f"aftersale: {e}")
+        await asyncio.sleep(3600)
 
 BRIEF_HOUR = 9
 
@@ -6555,8 +6592,13 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
     elif action=="notify":
         wp=keep_product if (product or prev.get("intent")=="i_stock") else ""
         if wp:
+            # «هر وقت ۱۴ پرو زیر ۶۰ میلیون اومد»: سقف قیمت هم کنار مدل نگه داشته می‌شود (wl_auto با همان می‌سنجد)
+            try: cap=int((catalog.parse(text).get("max") or 0)//1_000_000)
+            except Exception: cap=0
+            if cap and "زیر" not in wp: wp=f"{wp} زیر {to_fa(cap)} میلیون"
             if not dry: await wl_add(uid,wp)
-            await msg.reply_text(_join(esc(lead),f"✅ حتماً! هر وقت <b>{esc(wp)}</b> رسید، همین‌جا "
+            when="با این قیمت موجود شد" if cap else "رسید"
+            await msg.reply_text(_join(esc(lead),f"✅ حتماً! هر وقت <b>{esc(wp)}</b> {when}، همین‌جا "
                                        "خبرتون می‌کنم 🔔"),parse_mode="HTML",reply_markup=main_menu())
         else:
             pre=_join(lead,answer)
@@ -7165,6 +7207,7 @@ async def post_init(app):
     _spawn(_catalog_loop(app.bot),"لیست کالای سایت")
     _spawn(_site_pages_loop(),"صفحه‌های سایت")
     _spawn(_morning_loop(app.bot),"گزارش صبحگاهی")
+    _spawn(_aftersale_loop(app.bot),"پیگیری بعد از خرید")
     _spawn(_panel_inbox_loop(),"تغییرهای پنل وب")
     _spawn(_status_loop(),"گزارش وضعیت")
     _spawn(_ig_notify_loop(app.bot),"خبرهای اینستاگرام")

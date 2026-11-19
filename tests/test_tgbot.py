@@ -269,3 +269,30 @@ os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_aftersale_due_once(tmp_path):
+    """پیگیری بعد از خرید: فقط سفارش تلگرامِ تحویل‌شده‌ی ۷ تا ۱۰ روز پیش، و فقط یک بار."""
+    import sqlite3, time
+    db = tmp_path / "core.db"
+    now = time.time()
+    with sqlite3.connect(db) as c:
+        c.execute("CREATE TABLE orders(id INTEGER PRIMARY KEY, channel TEXT, user_id TEXT, name TEXT, product TEXT, status TEXT, updated_at REAL)")
+        c.executemany("INSERT INTO orders VALUES (?,?,?,?,?,?,?)", [
+            (1, "tg", "500", "علی رضایی", "آیفون ۱۳", "done", now - 8 * 86400),
+            (2, "tg", "501", "x", "y", "done", now - 2 * 86400),          # هنوز زود است
+            (3, "ig", "777", "x", "y", "done", now - 8 * 86400),          # اینستاگرام: هرگز
+            (4, "tg", "502", "x", "y", "shipped", now - 8 * 86400)])
+    code = r"""
+import os, sys
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+due = bot.aftersale_due(path=%r)
+assert [r[0] for r in due] == [1], due
+bot.settings['aftersale_done'] = [1]
+assert bot.aftersale_due(path=%r) == []
+print('OK')
+""" % (str(TG), str(db), str(db))
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=60)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
