@@ -166,6 +166,7 @@ DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs"
                     "aftersale":True,       # پیگیری یک هفته بعد از تحویل سفارش
                     "visits":True,          # رزرو زمان بازدید حضوری از مغازه
                     "referral":True,        # باشگاه مشتری: لینک دعوت اختصاصی
+                    "sla_min":15,           # هشدار: پیام بی‌جواب بیش از این چند دقیقه در ساعت کاری (۰ = خاموش)
                     "vision":True,          # فهم عکس مشتری (فقط وقتی کلید هوش مصنوعی در پنل هست)
                     "morning_brief":True,   # گزارش صبحگاهی ساعت ۹
                     "weekly_digest":True,   # خلاصه‌ی هفته کنار بکاپ جمعه
@@ -693,6 +694,9 @@ async def init_db():
         CREATE TABLE IF NOT EXISTS referrals(
             user_id INTEGER PRIMARY KEY,referrer INTEGER,ts TEXT);
         CREATE INDEX IF NOT EXISTS idx_ref_r ON referrals(referrer);
+        CREATE TABLE IF NOT EXISTS staff_replies(
+            admin_id INTEGER,user_id INTEGER,wait_sec INTEGER,ts TEXT);
+        CREATE INDEX IF NOT EXISTS idx_staff_ts ON staff_replies(ts);
     """)
     for sql in ["ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0",
                 "ALTER TABLE users ADD COLUMN has_left INTEGER DEFAULT 0",
@@ -1084,7 +1088,19 @@ async def mark_open(uid):
         (gregorian_now(),uid))
     await db.commit()
 
-async def mark_answered(uid):
+async def mark_answered(uid,staff=None):
+    """staff: مدیری که جواب داد — زمان انتظار مشتری برای گزارش عملکرد تیم ثبت می‌شود."""
+    if staff:
+        try:
+            async with db.execute("SELECT open_msg_at FROM users WHERE user_id=?",(uid,)) as c:
+                r=await c.fetchone()
+            wait=None
+            if r and r[0]:
+                t=datetime.strptime(r[0],"%Y-%m-%d %H:%M:%S")      # ساعت ایران، بی منطقه (pytz با replace غلط می‌شود)
+                wait=max(0,int((datetime.now(IRAN_TZ).replace(tzinfo=None)-t).total_seconds()))
+            await db.execute("INSERT INTO staff_replies(admin_id,user_id,wait_sec,ts) VALUES(?,?,?,?)",
+                             (staff,uid,wait,gregorian_now()))
+        except Exception as e: logger.debug(f"staff log: {e}")
     await db.execute("UPDATE users SET open_msg_at='',reminded=0 WHERE user_id=?",(uid,))
     await db.commit()
 
@@ -2685,6 +2701,10 @@ async def weekly_digest():
         ab=await ab_report()
         if ab: out += [HR,"🧪 <b>آزمایش متن جواب‌ها</b> (بعد از کدام متن، مشتری بیشتر سراغ خرید رفت؛ ۱۴ روز):"]+ab
     except Exception as e: logger.debug(f"digest ab: {e}")
+    try:
+        st=await staff_report(7)
+        if st: out += [HR,"👥 <b>عملکرد تیم</b>"]+staff_lines(st)
+    except Exception as e: logger.debug(f"digest staff: {e}")
     try:
         top=await ref_top(7,3)
         if top: out.append("👥 دعوت دوستان: "+esc("، ".join(f"{name or '—'} ({to_fa(n)})" for _,name,n in top)))
@@ -4988,7 +5008,7 @@ async def deliver_reply(ctx,msg,target,src):
             await msg.reply_text(f"❌ ارسال نشد: {e}"); raise ApplicationHandlerStop
         it["hits"]=it.get("hits",0)+1; await save_faq()
         await link_thread(msg.chat_id,msg.message_id,target)
-        await mark_answered(target); set_human(target,ctx.bot)
+        await mark_answered(target,staff=getattr(msg.from_user,'id',None)); set_human(target,ctx.bot)
         await _ok_mark(ctx.bot,msg,f"✅ «{faq_title(it)}» ارسال شد")
         # جواب # یعنی «این سؤال همان نیت است» — دستیار همین را یاد می‌گیرد
         lt=_replied_text(src,target)
@@ -5015,7 +5035,7 @@ async def deliver_reply(ctx,msg,target,src):
         raise ApplicationHandlerStop
     # پاسخ خودِ مدیر هم به همین مشتری گره می‌خورد تا رشته ادامه پیدا کند
     await link_thread(msg.chat_id,msg.message_id,target)
-    await mark_answered(target); set_human(target,ctx.bot)
+    await mark_answered(target,staff=getattr(msg.from_user,'id',None)); set_human(target,ctx.bot)
     await _ok_mark(ctx.bot,msg)
     # جوابِ متنیِ مدیر به سؤالی که دستیار نفهمیده بود، کنار همان سؤال
     # می‌نشیند تا در پنل با یک تپ «نیت» شود
@@ -6039,6 +6059,83 @@ ADV_TIPS = {
   "سایز جمع‌وجور":"اگه گوشی جمع‌وجور می‌خواید، مدل‌های ۶٫۱ اینچی و «مینی» راحت‌ترن 🤏",
   "سرعت و بازی":"برای بازی، مدل‌های «پرو» با صفحه‌ی ۱۲۰ هرتز و تراشه‌ی جدیدتر عالی‌ان 🎮",
 }
+# ── عملکرد تیم و هشدار انتظار (۲۸ آبان ۱۴۰۵)
+_sla_sent: set = set()      # (uid, open_msg_at) که هشدارش رفته
+
+async def staff_report(days=7):
+    """[(برچسب مدیر, تعداد جواب, میانه‌ی انتظار به ثانیه یا None)] — پرکارترین اول."""
+    async with db.execute("SELECT admin_id,wait_sec FROM staff_replies WHERE ts>=?",
+                          ((datetime.now(IRAN_TZ)-timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S"),)) as c:
+        rows=await c.fetchall()
+    by={}
+    for aid,w in rows: by.setdefault(aid,[]).append(w)
+    out=[]
+    for aid,ws in sorted(by.items(),key=lambda x:-len(x[1])):
+        waits=sorted(w for w in ws if w is not None)
+        out.append((await admin_label(aid),len(ws),waits[len(waits)//2] if waits else None))
+    return out
+
+def wait_text(sec):
+    if sec is None: return "—"
+    if sec<90: return "زیر ۲ دقیقه"
+    if sec<3600: return f"{to_fa(round(sec/60))} دقیقه"
+    return f"{to_fa(round(sec/3600,1))} ساعت"
+
+def staff_lines(rep):
+    return [f"• {esc(lbl)}: {to_fa(n)} جواب · میانه‌ی انتظار {wait_text(w)}" for lbl,n,w in rep]
+
+async def sla_due(now=None):
+    """پیام‌های بی‌جوابی که از سقف انتظار گذشته‌اند و هشدارشان هنوز نرفته (فقط در ساعت کاری)."""
+    lim=int(get_setting("sla_min") or 0)
+    if lim<=0: return []
+    now=now or datetime.now(IRAN_TZ)
+    async with db.execute("SELECT user_id,first_name,open_msg_at FROM users WHERE COALESCE(open_msg_at,'')<>'' "
+                          "AND reminded=0 AND open_msg_at<? AND open_msg_at>?",
+                          ((now-timedelta(minutes=lim)).strftime("%Y-%m-%d %H:%M:%S"),
+                           (now-timedelta(hours=2)).strftime("%Y-%m-%d %H:%M:%S"))) as c:
+        rows=await c.fetchall()
+    return [r for r in rows if (r[0],r[2]) not in _sla_sent]
+
+async def _sla_loop(bot):
+    await asyncio.sleep(150)
+    while True:
+        try:
+            if is_open():
+                for uid,fn,at in await sla_due():
+                    _sla_sent.add((uid,at))
+                    txt=f"⏱ {fn or uid} {to_fa(get_setting('sla_min'))} دقیقه است منتظر جواب است."
+                    tid=await topic_of(uid) if support_group() else 0
+                    if tid:
+                        try: await bot.send_message(support_group(),txt,message_thread_id=tid)
+                        except Exception as e: logger.debug(f"sla topic {uid}: {e}")
+                    else:
+                        for aid in admin_ids():
+                            mid=await thread_last_msg(aid,uid)
+                            try: await bot.send_message(aid,txt,reply_to_message_id=mid)
+                            except Exception as e: logger.debug(f"sla {aid}: {e}")
+            if len(_sla_sent)>2000: _sla_sent.clear()
+        except Exception as e: logger.error(f"sla loop: {e}")
+        await asyncio.sleep(180)
+
+async def cmd_staff(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    """/staff — عملکرد تیم در ۷ روز. /sla ۲۰ — سقف انتظار (دقیقه؛ ۰ = خاموش)."""
+    if not is_admin(update.effective_user.id): return
+    rep=await staff_report(7)
+    lim=int(get_setting("sla_min") or 0)
+    head=f"<b>👥 عملکرد تیم — ۷ روز</b>\n{HR}\n"
+    body="\n".join(staff_lines(rep)) or "هنوز جوابی از تیم ثبت نشده."
+    await update.message.reply_text(head+body+f"\n{HR}\n⏱ هشدار انتظار: "+
+                                    (f"بعد از {to_fa(lim)} دقیقه در ساعت کاری" if lim else "خاموش")+
+                                    "\nتغییر: /sla ۲۰ (۰ = خاموش)",parse_mode="HTML")
+
+async def cmd_sla(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    if not is_owner(update.effective_user.id): return
+    a=" ".join(ctx.args or []).strip().translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹","0123456789"))
+    if not a.isdigit() or int(a)>600:
+        return await update.message.reply_text("مثال: /sla ۲۰  (دقیقه؛ ۰ یعنی خاموش)")
+    settings["sla_min"]=int(a); await save_settings()
+    await update.message.reply_text("✅ "+(f"هشدار بعد از {to_fa(int(a))} دقیقه انتظار" if int(a) else "هشدار انتظار خاموش شد"))
+
 # ── باشگاه مشتری و دعوت از دوستان (۲۸ آبان ۱۴۰۵): لینک اختصاصی t.me/<bot>?start=ref_<uid>.
 # ربات جایزه‌ای نمی‌سازد؛ متن جایزه را فقط مالک با /refreward می‌نویسد (خالی = بی ذکر جایزه).
 _REF_RE = re.compile(r"^ref_?(\d{3,15})$")
@@ -7629,6 +7726,7 @@ async def post_init(app):
     _spawn(_morning_loop(app.bot),"گزارش صبحگاهی")
     _spawn(_aftersale_loop(app.bot),"پیگیری بعد از خرید")
     _spawn(_visit_loop(app.bot),"یادآوری بازدید")
+    _spawn(_sla_loop(app.bot),"هشدار انتظار")
     _spawn(_panel_inbox_loop(),"تغییرهای پنل وب")
     _spawn(_status_loop(),"گزارش وضعیت")
     _spawn(_ig_notify_loop(app.bot),"خبرهای اینستاگرام")
@@ -7776,6 +7874,8 @@ def main():
     app.add_handler(CommandHandler("review",cmd_review))
     app.add_handler(CommandHandler("brief",cmd_brief))
     app.add_handler(CommandHandler("invite",cmd_invite))
+    app.add_handler(CommandHandler("staff",cmd_staff))
+    app.add_handler(CommandHandler("sla",cmd_sla))
     app.add_handler(CommandHandler("refreward",cmd_refreward))
     app.add_handler(CommandHandler("installment",cmd_installment))
     app.add_handler(CommandHandler("start",cmd_start))

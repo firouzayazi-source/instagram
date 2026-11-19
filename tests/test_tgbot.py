@@ -420,3 +420,39 @@ os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_staff_report_and_sla(tmp_path):
+    """عملکرد تیم: زمان انتظار هر جواب ثبت می‌شود؛ هشدار انتظار فقط یک بار و فقط بعد از سقف."""
+    code = r"""
+import asyncio, os, sys, types
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+from datetime import timedelta
+async def run():
+    await bot.init_db()
+    u = types.SimpleNamespace(id=6001, username=None, first_name='C', last_name=None, language_code='fa', is_bot=False)
+    await bot.save_user(u)
+    old = (bot.datetime.now(bot.IRAN_TZ) - timedelta(minutes=20)).strftime('%%Y-%%m-%%d %%H:%%M:%%S')
+    await bot.db.execute("UPDATE users SET open_msg_at=? WHERE user_id=6001", (old,)); await bot.db.commit()
+    bot.settings['sla_min'] = 30
+    assert await bot.sla_due() == []
+    bot.settings['sla_min'] = 15
+    due = await bot.sla_due(); assert [r[0] for r in due] == [6001]
+    bot._sla_sent.add((6001, old)); assert await bot.sla_due() == []
+    bot.settings['sla_min'] = 0; assert await bot.sla_due() == []
+    await bot.mark_answered(6001, staff=1)
+    rep = await bot.staff_report(7)
+    assert len(rep) == 1 and rep[0][1] == 1 and 1150 <= rep[0][2] <= 1300, rep
+    assert 'دقیقه' in bot.staff_lines(rep)[0]
+    await bot.db.close()
+try:
+    asyncio.run(run())
+    print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
