@@ -3246,6 +3246,19 @@ async def user_cb(query,ctx):
         return
 
     # مشاور خرید
+    if data.startswith("ti_"):
+        try: await query.answer()
+        except Exception: pass
+        if data=="ti_go":
+            ti_state[query.from_user.id]={"ts":time.time(),"step":0,"a":[]}
+            await query.message.reply_text(TI_STEPS[0][1],reply_markup=main_menu())
+        elif data.startswith("ti_c") and query.from_user.id in ti_state:
+            st=ti_state[query.from_user.id]
+            if st["step"]==2 and data[4:].isdigit() and int(data[4:])<len(TI_COND):
+                try: await query.message.edit_reply_markup(reply_markup=None)
+                except Exception: pass
+                await ti_answer(query.message,query.from_user,ctx.bot,st,TI_COND[int(data[4:])])
+        return
     if data.startswith("adv_"):
         parts=data.split("_")
         if len(parts)!=3: return
@@ -5783,6 +5796,38 @@ ADV_TIPS = {
   "سایز جمع‌وجور":"اگه گوشی جمع‌وجور می‌خواید، مدل‌های ۶٫۱ اینچی و «مینی» راحت‌ترن 🤏",
   "سرعت و بازی":"برای بازی، مدل‌های «پرو» با صفحه‌ی ۱۲۰ هرتز و تراشه‌ی جدیدتر عالی‌ان 🎮",
 }
+# ── کارشناسی معاوضه (۲۸ آبان ۱۴۰۵): سه سؤال کوتاه، بعد یک کارت کامل برای همکار. ربات قیمت نمی‌دهد.
+ti_state: dict = {}      # uid → {"ts","step","a":[]}
+TI_TTL = 15*60
+TI_STEPS = (("مدل و حافظه","📱 مدل و حافظه‌ی گوشی‌تون چیه؟ (مثلاً «۱۳ پرو ۲۵۶»)"),
+            ("سلامت باتری","🔋 سلامت باتری چند درصده؟ (تنظیمات ← باتری ← سلامت باتری؛ اگه نمی‌دونید بنویسید «نمی‌دونم»)"),
+            ("وضعیت ظاهری","✨ وضعیت ظاهری و فنی چطوره؟"))
+TI_COND = ("سالم و تمیز","خط و خش جزئی","شکستگی یا تعمیرشده")
+
+async def ti_answer(msg,user,bot,st,value):
+    st["a"].append(str(value).strip()[:120]); st["step"]+=1; st["ts"]=time.time()
+    if st["step"]<len(TI_STEPS):
+        kb=(InlineKeyboardMarkup([[InlineKeyboardButton(t,callback_data=f"ti_c{i}")] for i,t in enumerate(TI_COND)])
+            if st["step"]==2 else main_menu())
+        await msg.reply_text(TI_STEPS[st["step"]][1],reply_markup=kb)
+        return
+    ti_state.pop(user.id,None)
+    await msg.reply_text("ممنون 🙏 اطلاعات گوشی‌تون رو به همکارم دادم؛ قیمت رو بعد از بررسی همین‌جا بهتون می‌گه.",
+                         reply_markup=main_menu())
+    lines="\n".join(f"• {TI_STEPS[i][0]}: {a}" for i,a in enumerate(st["a"]))
+    await notify_handoff(bot,user,why="درخواست ارزیابی گوشی برای معاوضه یا فروش",icon="🔄",extra=lines)
+    try: await mark_open(user.id)
+    except Exception: pass
+    set_human(user.id,bot)
+
+async def ti_typed(msg,user,bot,st,text):
+    """جواب تایپی مشتری به سؤال کارشناسی. اگر سؤال دیگری پرسید (نیت روشن دیگر)، کارشناسی کنار می‌رود."""
+    it,sc=brain.match(text,brain_intents())
+    if it is not None and it.get("id")!="i_tradein" and sc>=1.0 and st["step"]!=0:
+        ti_state.pop(user.id,None); return False
+    await ti_answer(msg,user,bot,st,text)
+    return True
+
 adv_state: dict = {}     # uid → {"ts","dry","await",…جواب‌ها}
 ADV_TTL = 30*60
 
@@ -6550,6 +6595,8 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
         await adv_start(msg,user,dry=dry,lead=_join(lead,answer))
         tail=False
     else:
+        if item.get("id")=="i_tradein" and not dry:
+            rows=rows+[[InlineKeyboardButton("📝 ارزیابی سریع گوشی من",callback_data="ti_go")]]
         if item.get("id")=="i_stock" and product:
             wl_product=product
             if not chat_mode():
@@ -6616,6 +6663,11 @@ async def assistant_reply(update,ctx,text,user,dry=False):
     if "greet" in tags: lead=brain.greet_line(name,hour,text=text)
     if "tired" in tags: lead=_join(lead,brain.say("tired"))
     if not dry: _bg(record_event(uid,EV_MSG),"ev msg")
+
+    # ۰) کارشناسی معاوضه وسط کار است
+    ti=ti_state.get(uid)
+    if ti and now-ti["ts"]<TI_TTL and not dry:
+        if await ti_typed(msg,user,ctx.bot,ti,text): return True
 
     # ۰) مشاور خرید وسط کار است — جواب تایپی را می‌گیریم
     st=adv_state.get(uid)

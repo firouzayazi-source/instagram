@@ -235,3 +235,37 @@ os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_tradein_appraisal_card(tmp_path):
+    """کارشناسی معاوضه: سه جواب ← یک کارت کامل برای همکار، بی قیمت."""
+    code = r"""
+import asyncio, os, sys, types
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+cards = []; said = []
+async def fake_handoff(b, user, why='', icon='', extra=''): cards.append((why, extra))
+bot.notify_handoff = fake_handoff
+bot.set_human = lambda *a, **k: None
+class Msg:
+    async def reply_text(self, t, **k): said.append(t)
+async def run():
+    await bot.init_db(); await bot.load_faq()
+    u = types.SimpleNamespace(id=31, username=None, first_name='R')
+    st = bot.ti_state[31] = {'ts': bot.time.time(), 'step': 0, 'a': []}
+    assert await bot.ti_typed(Msg(), u, None, st, '۱۳ پرو ۲۵۶')
+    assert await bot.ti_typed(Msg(), u, None, st, '۸۷ درصد')
+    await bot.ti_answer(Msg(), u, None, st, bot.TI_COND[1])
+    assert 31 not in bot.ti_state and cards and '۱۳ پرو ۲۵۶' in cards[0][1] and '۸۷' in cards[0][1] and 'خط و خش' in cards[0][1]
+    assert not any('تومان' in x or 'میلیون' in x for x in said)
+    await bot.db.close()
+try:
+    asyncio.run(run())
+    print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
