@@ -522,6 +522,9 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
             if intent == "price" and channel == "dm":
                 d.cards = brain_engine.cards_for(text, product_hint, budget=budget)
             return _finish(c, d, s, channel, text, is_test, ctx, model="brain", cost=0.0, check_confidence=False)
+        if not is_test and channel in ("dm", "comment"):      # یک مغز: نفهمیده‌ی اینستاگرام به فهرست مشترک
+            from . import shared_kb
+            shared_kb.queue_unmatched(text, channel)
         if not s["enabled"] and not is_test:
             # هوش مصنوعی خاموش است و موتور فهم نفهمید: دایرکت به همکار، کامنت بی‌جواب
             if channel == "dm":

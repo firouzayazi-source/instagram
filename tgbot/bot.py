@@ -2206,20 +2206,36 @@ unmatched: list = []      # [{"text","count","last","uid"}]
 UNMATCHED_MAX = 200
 _UNM_MIN, _UNM_MAX = 3, 200   # کوتاه‌تر از این حرف نیست، بلندتر از این متن است
 
-async def log_unmatched(text,user=None):
+# یک مغز (۲۹ آبان ۱۴۰۵): سؤال نفهمیده‌ی هر سه پلتفرم در همین یک فهرست جمع می‌شود (بله و اینستاگرام از صف پنل)؛
+# بازبینی هفتگی، خوشه‌ها و «یاد بگیر» روی همه کار می‌کند و یادگرفته در دانش مشترک به هر سه می‌رسد.
+SRC_ICON = {"tg":"✈️","bale":"💬","ig":"📸"}
+MY_SRC = "bale" if IS_BALE else "tg"
+
+def unm_src(it):
+    """نشان پلتفرم‌هایی که این سؤال از آن‌ها آمده؛ برای سؤال فقط تلگرام خالی (مثل قبل)."""
+    ss=it.get("srcs") or ["tg"]
+    return "" if ss==["tg"] else " "+"".join(SRC_ICON.get(x,"") for x in ss)
+
+async def log_unmatched(text,user=None,src=None):
     if not get_setting("log_unmatched"): return
     t=(text or "").strip()
     if not (_UNM_MIN <= len(t) <= _UNM_MAX): return
-    n=faq_norm(t)
-    for it in unmatched:
-        if faq_norm(it["text"])==n:
-            it["count"]=it.get("count",1)+1; it["last"]=gregorian_now()
-            break
+    src=src if src in SRC_ICON else MY_SRC
+    if SHARED_FILES:          # ربات بله: به فهرست مشترک در ربات تلگرام
+        try: shared_queue({"op":"unmatched_add","text":t,"src":src})
+        except OSError as e: logger.error(f"shared unmatched: {e}")
     else:
-        unmatched.insert(0,{"id":new_btn_id(),"text":t,"count":1,"last":gregorian_now(),
-                            "uid":getattr(user,"id",None)})
-        del unmatched[UNMATCHED_MAX:]
-    await save_unmatched()
+        n=faq_norm(t)
+        for it in unmatched:
+            if faq_norm(it["text"])==n:
+                it["count"]=it.get("count",1)+1; it["last"]=gregorian_now()
+                if src not in (it.get("srcs") or ["tg"]): it["srcs"]=list(it.get("srcs") or ["tg"])+[src]
+                break
+        else:
+            unmatched.insert(0,{"id":new_btn_id(),"text":t,"count":1,"last":gregorian_now(),
+                                "uid":getattr(user,"id",None),"srcs":[src]})
+            del unmatched[UNMATCHED_MAX:]
+        await save_unmatched()
     if getattr(user,"id",None):
         try: await record_event(user.id,EV_MISS)
         except Exception as e: logger.debug(f"record miss: {e}")
@@ -2241,11 +2257,11 @@ def unmatched_text():
                 "\nهنوز سؤالی بدون جواب نمانده.")
     top=unmatched_sorted()
     out=["<b>❓ سؤال‌های بی‌پاسخ</b>",HR,
-         "پرسش‌هایی که هیچ سؤال آماده‌ای جوابشان را نداشت — "
+         "پرسش‌هایی که هیچ سؤال آماده‌ای جوابشان را نداشت، از هر سه پلتفرم (📸 اینستاگرام، 💬 بله) — "
          "پرتکرارها اول. روی هرکدام بزنید تا از رویش سؤال آماده بسازید.",HR]
     for it in top[:20]:
         c=it.get("count",1)
-        out.append(f"• {esc(_fit(it['text'],70))}"+(f"  ×{to_fa(c)}" if c>1 else ""))
+        out.append(f"• {esc(_fit(it['text'],70))}"+(f"  ×{to_fa(c)}" if c>1 else "")+unm_src(it))
     return _fit("\n".join(out),TEXT_LIMIT)
 
 def unmatched_kb():
@@ -2888,7 +2904,7 @@ async def weekly_review():
         for i,u in enumerate(items,1):
             near=brain.near(u["text"],intents,limit=1)
             sug=near[0][0] if near else None
-            out.append(f"{to_fa(i)}. «{esc(_fit(u['text'],70))}» ×{to_fa(u.get('count',1))}"
+            out.append(f"{to_fa(i)}. «{esc(_fit(u['text'],70))}» ×{to_fa(u.get('count',1))}{unm_src(u)}"
                        +(f"\n    💡 شاید یعنی «{esc(faq_title(sug))}»" if sug else ""))
             row=[]
             if sug: row.append(InlineKeyboardButton(f"✅ {to_fa(i)} یعنی {_fit(faq_title(sug),18)}",
@@ -5696,6 +5712,10 @@ async def process_panel_inbox():
         except OSError as e:
             logger.error(f"panel op {f}: پاک نشد، اعمال نمی‌شود: {e}"); continue
         if op is None: continue
+        if isinstance(op,dict) and op.get("op")=="unmatched_add":      # سؤال نفهمیده‌ی بله یا اینستاگرام
+            try: await log_unmatched(str(op.get("text") or "")[:_UNM_MAX],None,str(op.get("src") or ""))
+            except Exception as e: logger.warning(f"panel op {f}: {e}")
+            continue
         try:
             a,b=apply_panel_op(op); fc|=a; dc|=b
         except Exception as e: logger.warning(f"panel op {f}: {e}")

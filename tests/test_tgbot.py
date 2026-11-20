@@ -514,6 +514,9 @@ async def run():
     it = bot.faq_item('x_test'); it['examples'] = ['الف']
     bot.apply_panel_op({'op': 'intent_upsert', 'merge': True, 'item': {'id': 'x_test', 'examples': ['ب', 'الف']}})
     assert it['examples'] == ['الف', 'ب'], it                              # افزودنی، نه جایگزین
+    await bot.log_unmatched('سؤال نفهمیده‌ی بله')                       # یک مغز: به فهرست مشترک تلگرام
+    ops = [json.load(open(os.path.join(inbox, f), encoding='utf-8')) for f in os.listdir(inbox)]
+    assert {'op': 'unmatched_add', 'text': 'سؤال نفهمیده‌ی بله', 'src': 'bale'} in ops and bot.unmatched == []
     seen = {p: bot._mtime(p) for p in bot._shared_loaders()}
     d = json.loads(before); [x for x in d if x['id'] == 'x_test'][0]['answer'] = 'جواب دو'
     time.sleep(0.05); open(bot.FAQ_FILE, 'w', encoding='utf-8').write(json.dumps(d, ensure_ascii=False))

@@ -418,7 +418,9 @@ GOOD = {"action": "reply", "reply": "برای سفرهای طولانی مدل�
 
 
 def _queued(d):
-    return [json.loads(f.read_text(encoding="utf-8")) for f in sorted((d / "inbox").glob("*.json"))]
+    """تغییرهای دانش در صف (سؤال نفهمیده‌ی «یک مغز» جداست و اینجا شمرده نمی‌شود)."""
+    ops = [json.loads(f.read_text(encoding="utf-8")) for f in sorted((d / "inbox").glob("*.json"))]
+    return [o for o in ops if o.get("op") != "unmatched_add"]
 
 
 @pytest.mark.asyncio

@@ -121,3 +121,28 @@ def test_unremovable_op_is_not_applied_again(env):
     assert r.returncode == 0, r.stderr[-2000:]
     assert len(shared_kb.intents()) == n0 and shared_kb.pending()["count"] == 1
     assert tg_apply(tg) == 1 and len(shared_kb.intents()) == n0 + 1   # وقتی پاک شد، یک بار اعمال می‌شود
+
+
+def test_one_brain_unmatched_from_instagram(env):
+    """یک مغز: سؤال نفهمیده‌ی اینستاگرام در فهرست «بی‌پاسخ» ربات تلگرام می‌نشیند (با نشان 📸)؛ تعریف کامنتی نه."""
+    tg = env
+    assert shared_kb.queue_unmatched("گلس سرامیکی هم دارید برای ۱۵", "dm")
+    assert not shared_kb.queue_unmatched("خیلی قشنگه عالی", "comment")
+    assert shared_kb.queue_unmatched("گلس سرامیکی هم دارید برای ۱۵", "comment")
+    assert tg_apply(tg) == 2
+    u = json.loads((tg / "unmatched.json").read_text(encoding="utf-8"))
+    assert len(u) == 1 and u[0]["count"] == 2 and u[0]["srcs"] == ["ig"]
+
+
+def test_instagram_miss_is_queued_by_decide(env, monkeypatch):
+    """موتور فهم در دایرکت نفهمید ← به فهرست مشترک می‌رود؛ آزمایش پنل (is_test) نه."""
+    import asyncio
+    tg = env
+    tg_apply(tg)
+    monkeypatch.setattr(brain_engine, "decide", lambda *a, **k: None)      # «نفهمید»، مستقل از فهرست کالای تست‌های دیگر
+    with db.connect() as c:
+        s = {**ai.settings(c), "brain_enabled": True, "enabled": False, "dm_enabled": True}
+        asyncio.run(ai.decide(c, channel="dm", text="زلزلاخ پیمونک قرمز", user_id="u1", s=s))
+        asyncio.run(ai.decide(c, channel="dm", text="زلزلاخ دومی", user_id="u1", s=s, is_test=True))
+    files = [json.loads(f.read_text(encoding="utf-8")) for f in (tg / "inbox").glob("*.json")]
+    assert [f["text"] for f in files if f.get("op") == "unmatched_add"] == ["زلزلاخ پیمونک قرمز"]

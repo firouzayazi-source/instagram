@@ -77,6 +77,23 @@ def _queue(op: dict) -> None:
             pass
 
 
+_QUESTION = re.compile(r"[؟?]|چند|چطور|چجوری|کجا|کی |دارید|دارین|میشه|می‌شه|هست|موجود|قیمت|قسط")
+
+
+def queue_unmatched(text: str, channel: str = "dm") -> bool:
+    """یک مغز: سؤالی که موتور فهم در اینستاگرام نفهمید به همان فهرست «سؤال‌های بی‌پاسخ» ربات تلگرام می‌رود
+    (بازبینی هفتگی و یاد دادن، برای هر سه پلتفرم). کامنت فقط وقتی سؤال است، تا تعریف و ایموجی فهرست را پر نکند.
+    خطا بی‌صدا: جواب مشتری نباید به خاطر این ثبت گیر کند."""
+    t = (text or "").strip()
+    if not (3 <= len(t) <= 200) or (channel == "comment" and not _QUESTION.search(t)):
+        return False
+    try:
+        _queue({"op": "unmatched_add", "text": t, "src": "ig"})
+        return True
+    except (OSError, ValueError):
+        return False
+
+
 def _lines(v, commas: bool = True) -> list[str]:
     """کلیدواژه‌ها با خط یا ویرگول جدا می‌شوند؛ جمله‌های نمونه فقط با خط (جمله خودش ویرگول دارد)."""
     if isinstance(v, str):
