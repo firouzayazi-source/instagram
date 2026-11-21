@@ -2216,13 +2216,20 @@ def unm_src(it):
     ss=it.get("srcs") or ["tg"]
     return "" if ss==["tg"] else " "+"".join(SRC_ICON.get(x,"") for x in ss)
 
-async def log_unmatched(text,user=None,src=None):
+def _who(user):
+    if not user: return ""
+    return ((getattr(user,"first_name","") or "")+(f" @{user.username}" if getattr(user,"username",None) else "")).strip()[:60]
+
+async def log_unmatched(text,user=None,src=None,who="",ext_uid=None):
+    """who/ext_uid: چه کسی پرسید (برای کارت جزئیات در بازبینی). uid فقط برای مشتری همین ربات تلگرام است
+    تا «فرستادن جواب» هرگز به آیدی پلتفرم دیگری نرود؛ آیدی بله و نام کاربری اینستاگرام در ext_uid/who."""
     if not get_setting("log_unmatched"): return
     t=(text or "").strip()
     if not (_UNM_MIN <= len(t) <= _UNM_MAX): return
     src=src if src in SRC_ICON else MY_SRC
+    who=who or _who(user)
     if SHARED_FILES:          # ربات بله: به فهرست مشترک در ربات تلگرام
-        try: shared_queue({"op":"unmatched_add","text":t,"src":src})
+        try: shared_queue({"op":"unmatched_add","text":t,"src":src,"who":who,"ext_uid":getattr(user,"id",None)})
         except OSError as e: logger.error(f"shared unmatched: {e}")
     else:
         n=faq_norm(t)
@@ -2230,10 +2237,14 @@ async def log_unmatched(text,user=None,src=None):
             if faq_norm(it["text"])==n:
                 it["count"]=it.get("count",1)+1; it["last"]=gregorian_now()
                 if src not in (it.get("srcs") or ["tg"]): it["srcs"]=list(it.get("srcs") or ["tg"])+[src]
+                if user and src=="tg": it["uid"]=user.id            # آخرین پرسنده
+                if who: it["who"]=who; it["who_src"]=src
+                if ext_uid: it["ext_uid"]=ext_uid
                 break
         else:
             unmatched.insert(0,{"id":new_btn_id(),"text":t,"count":1,"last":gregorian_now(),
-                                "uid":getattr(user,"id",None),"srcs":[src]})
+                                "uid":getattr(user,"id",None) if src=="tg" else None,"srcs":[src],
+                                "who":who,"who_src":src,"ext_uid":ext_uid})
             del unmatched[UNMATCHED_MAX:]
         await save_unmatched()
     if getattr(user,"id",None):
@@ -2272,7 +2283,7 @@ def unmatched_kb():
         # برسد، ترتیب عوض می‌شود و ردیف اشتباه باز می‌شد
         rows.append([InlineKeyboardButton(
             f"➕ {_fit(it['text'],28)}"+(f" ×{to_fa(c)}" if c>1 else ""),
-            callback_data=f"unm_{it.get('id','?')}")])
+            callback_data=f"unm_v_{it.get('id','?')}")])
     if unmatched:
         rows.append([InlineKeyboardButton("🗑 پاک کردن فهرست",callback_data="unm_clear")])
     return InlineKeyboardMarkup(_nav(*rows,back="faq_menu"))
@@ -2894,7 +2905,7 @@ async def weekly_review():
             rep=next((x for x in cl["items"] if x.get("reply")),None)
             rows.append([InlineKeyboardButton(f"✨ موضوع «{_fit(cl['label'],14)}» از جواب شما",callback_data=f"unm_mk_{rep['id']}")
                          if rep else InlineKeyboardButton(f"🆕 موضوع تازه «{_fit(cl['label'],16)}»",
-                                                          callback_data=f"unm_new_{cl['items'][0]['id']}")])
+                                                          callback_data=f"unm_w_{cl['items'][0]['id']}")])
     items=unmatched_sorted()[:8]
     if not items:
         out.append("🎉 سؤال نفهمیده‌ای نمانده.")
@@ -2909,10 +2920,104 @@ async def weekly_review():
             row=[]
             if sug: row.append(InlineKeyboardButton(f"✅ {to_fa(i)} یعنی {_fit(faq_title(sug),18)}",
                                                     callback_data=f"unm_at_{u['id']}_{sug['id']}"))
-            row.append(InlineKeyboardButton(f"✏️ {to_fa(i)}",callback_data=f"unm_{u['id']}"))
+            row.append(InlineKeyboardButton(f"🔎 {to_fa(i)} باز کن",callback_data=f"unm_v_{u['id']}"))
             rows.append(row)
-        out += ["","✅ = تأیید پیشنهاد · ✏️ = نیت دیگر یا جواب تازه. از این به بعد خود ربات جواب می‌دهد."]
+        out += ["","✅ = تأیید پیشنهاد · 🔎 = دیدن کامل سؤال و گفتگو، نوشتن جواب استاندارد یا نوشتن استاندارد سؤال."]
     return _fit("\n".join(out),TEXT_LIMIT),(InlineKeyboardMarkup(rows) if rows else None)
+
+# ── کارت جزئیات سؤال نفهمیده (۳۰ آبان ۱۴۰۵، به خواست صاحب پیج): متن کامل، پرسنده و لینک گفتگو،
+# «جواب استاندارد بنویسم» (نیت تازه با همین سؤال)، «سؤال را استاندارد بنویسم» (جمله‌ی روشن؛ اگر ربات با آن
+# فهمید، هر دو جمله به همان نیت یاد داده می‌شوند، وگرنه نوبت جواب)، «یعنی موضوع موجود»، «مهم نیست».
+def _topic_link(tid):
+    g=str(support_group() or "")
+    return f"https://t.me/c/{g[4:]}/{tid}" if g.startswith("-100") and tid else ""
+
+async def unm_card(u):
+    """(متن، دکمه‌ها) برای یک سؤال نفهمیده."""
+    srcs="، ".join({"tg":"✈️ تلگرام","bale":"💬 بله","ig":"📸 اینستاگرام"}.get(x,x) for x in (u.get("srcs") or ["tg"]))
+    lines=[f"<b>❓ سؤال مشتری</b>",HR,esc(u["text"]),HR,
+           f"🔁 {to_fa(u.get('count',1))} بار · {srcs}"+(f" · آخرین بار {esc(ago_text(u['last']))}" if u.get("last") else "")]
+    link=""; uid=u.get("uid")
+    if uid:
+        lines.append(f"👤 {esc(await user_label(uid))} · <code>{uid}</code>")
+        tid=await topic_of(uid); link=_topic_link(tid)
+        tl=trail_line(uid)
+        if tl: lines.append(esc(tl))
+    elif u.get("who") or u.get("ext_uid"):
+        src={"ig":"📸","bale":"💬"}.get(u.get("who_src"),"👤")
+        lines.append(f"{src} {esc(u.get('who') or '')}"+(f" · <code>{esc(u.get('ext_uid'))}</code>" if u.get("ext_uid") else ""))
+        un=re.search(r"@([A-Za-z0-9_.]{1,30})",u.get("who") or "")
+        if u.get("who_src")=="ig" and un: link=f"https://ig.me/m/{un.group(1)}"
+    if u.get("reply"): lines.append(f"💬 جواب همکار: «{esc(_fit(u['reply'],200))}»")
+    rows=[[InlineKeyboardButton("✍️ جواب استاندارد بنویسم",callback_data=f"unm_w_{u['id']}")],
+          [InlineKeyboardButton("📝 سؤال را استاندارد بنویسم",callback_data=f"unm_q_{u['id']}")],
+          [InlineKeyboardButton("🔗 یعنی یکی از موضوع‌های موجود",callback_data=f"unm_{u['id']}")]]
+    if u.get("reply"):
+        rows.insert(0,[InlineKeyboardButton("✨ همان جواب همکار، جواب استاندارد شود",callback_data=f"unm_mk_{u['id']}")])
+    if link: rows.append([InlineKeyboardButton("💬 دیدن گفتگو",url=link)])
+    rows.append([InlineKeyboardButton("🗑 مهم نیست، پاکش کن",callback_data=f"unm_x_{u['id']}")])
+    return "\n".join(lines),InlineKeyboardMarkup(rows)
+
+def unm_group(u):
+    """سؤال‌های هم‌خوشه با u (برای «جواب برای همه‌ی این دسته»)؛ تنها، خودش."""
+    for cl in unmatched_clusters():
+        if any(x.get("id")==u.get("id") for x in cl["items"]): return cl["items"]
+    return [u]
+
+async def unm_make_intent(texts,answer,uid_list=()):
+    """نیت تازه از جمله‌های مشتری و جواب مدیر؛ جمله‌ها از فهرست بی‌پاسخ برداشته می‌شوند."""
+    texts=[t for i,t in enumerate(texts) if t and t not in texts[:i]]
+    words=brain.content_words(texts[0],3)
+    keys=[" ".join(words[:2])] if len(words)>=2 else words
+    it={"id":new_btn_id(),"button":"💬 "+_fit(" ".join(words) or texts[0],24),"keys":keys,
+        "examples":texts[:20],"answer":answer[:4000],"action":"","enabled":True,"hits":0}
+    faq.append(it)
+    norms={faq_norm(t) for t in texts}
+    unmatched[:]=[x for x in unmatched if faq_norm(x["text"]) not in norms]
+    for t in texts:
+        learn_data["log"].insert(0,{"id":new_btn_id(),"text":t,"intent":it["id"],"src":"admin-review","ts":gregorian_now()})
+    del learn_data["log"][300:]
+    await save_faq(); await save_unmatched(); await save_learn()
+    return it
+
+async def unm_typed(update,ctx,mode,text):
+    """متن مدیر در دو حالت کارت جزئیات. True یعنی همین‌جا رسیدگی شد."""
+    msg=update.message
+    u=unmatched_by_id(ctx.user_data.get("unm_id",""))
+    if not u:
+        ctx.user_data.pop("mode",None)
+        await msg.reply_text("❌ این سؤال دیگر در فهرست نیست.",reply_markup=main_menu()); return True
+    if mode=="unm_std":
+        std=text.strip()[:200]
+        it,sc=brain.match(std,brain_intents())
+        if it is not None and sc>=1.0:
+            for t in (u["text"],std):
+                if t not in (it.get("examples") or []): it.setdefault("examples",[]).append(t)
+            unmatched[:]=[x for x in unmatched if x.get("id")!=u["id"]]
+            await save_faq(); await save_unmatched()
+            ctx.user_data.pop("mode",None); ctx.user_data.pop("unm_id",None)
+            await msg.reply_text(f"✅ با این جمله فهمیدم: یعنی «{faq_title(it)}».\n"
+                                 f"هر دو جمله («{_fit(u['text'],50)}» و «{_fit(std,50)}») را یاد گرفتم؛ از این به بعد خودم جواب می‌دهم.",
+                                 reply_markup=main_menu())
+            return True
+        ctx.user_data.update({"mode":"unm_ans","unm_std":std})
+        await msg.reply_text(f"📝 «{std}»\nبا این جمله هم موضوع آماده‌ای پیدا نکردم.\n\n✍️ حالا جواب استاندارد را بنویسید "
+                             "(همان که می‌خواهید ربات از این به بعد بدهد):",reply_markup=cancel_menu())
+        return True
+    if mode=="unm_ans":
+        group=[unmatched_by_id(i) for i in ctx.user_data.get("unm_group") or []]
+        texts=[u["text"]]+[ctx.user_data.get("unm_std","")]+[x["text"] for x in group if x]
+        it=await unm_make_intent(texts,text.strip())
+        for k in ("mode","unm_id","unm_std","unm_group"): ctx.user_data.pop(k,None)
+        await msg.reply_text("✅ نیت تازه ساخته شد؛ از این به بعد ربات در تلگرام، بله و اینستاگرام همین را جواب می‌دهد.\n"
+                             "کلیدواژه‌ها را اگر خواستید از همین کارت ویرایش کنید 👇",reply_markup=main_menu())
+        kb=faq_view_kb(it)
+        if u.get("uid"):
+            kb=InlineKeyboardMarkup([[InlineKeyboardButton("📤 همین جواب را برای همان مشتری هم بفرست",
+                                                           callback_data=f"unm_send_{it['id']}_{u['uid']}")]]+list(kb.inline_keyboard))
+        await msg.reply_text(faq_view_text(it),parse_mode="HTML",reply_markup=kb)
+        return True
+    return False
 
 def self_check(now=None):
     """خودآزمایی: چیزهایی که اگر خراب باشند ربات بی‌صدا بد جواب می‌دهد. خروجی: فهرست هشدارها."""
@@ -3893,6 +3998,46 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
                             parse_mode="HTML",
                             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 برگشت",callback_data="wait_menu")]]))
 
+        elif data.startswith("unm_v_"):
+            u=unmatched_by_id(data[6:])
+            if not u: await query.answer("این سؤال دیگر در فهرست نیست",show_alert=True); return
+            await query.answer()
+            txt,kb=await unm_card(u)
+            await query.message.reply_text(txt,parse_mode="HTML",reply_markup=kb,disable_web_page_preview=True)
+
+        elif data.startswith(("unm_w_","unm_q_")):
+            u=unmatched_by_id(data[6:])
+            if not u: await query.answer("این سؤال دیگر در فهرست نیست",show_alert=True); return
+            await query.answer()
+            grp=[x["id"] for x in unm_group(u) if x.get("id")!=u["id"]] if data.startswith("unm_w_") else []
+            ctx.user_data.update({"mode":"unm_ans" if data.startswith("unm_w_") else "unm_std","unm_id":u["id"],
+                                  "unm_group":grp,"unm_std":""})
+            more=f"\n(همراه {to_fa(len(grp))} جمله‌ی هم‌موضوع دیگر)" if grp else ""
+            ask=("✍️ جواب استاندارد را بنویسید — همان که می‌خواهید ربات از این به بعد به این سؤال بدهد:"
+                 if data.startswith("unm_w_") else
+                 "📝 همین سؤال را روشن و استاندارد بنویسید (مثلاً «قیمت آیفون ۱۳ پرو چنده؟»):")
+            await query.message.reply_text(f"❓ «{u['text']}»{more}\n\n{ask}",reply_markup=cancel_menu())
+
+        elif data.startswith("unm_x_"):
+            u=unmatched_by_id(data[6:])
+            if u: unmatched[:]=[x for x in unmatched if x.get("id")!=u["id"]]; await save_unmatched()
+            await query.answer("🗑 پاک شد")
+            try: await query.message.delete()
+            except Exception: pass
+
+        elif data.startswith("unm_send_"):
+            iid,_,tu=data[9:].rpartition("_")
+            it=faq_item(iid)
+            if not it or not tu.isdigit(): await query.answer("یافت نشد!",show_alert=True); return
+            try:
+                await send_faq(_ProxyChat(ctx.bot,int(tu)),it,footer=False)
+                await mark_answered(int(tu),staff=uid)
+                await query.answer("📤 برای مشتری فرستاده شد",show_alert=True)
+            except Forbidden:
+                await mark_left(int(tu)); await query.answer("🚪 مشتری ربات را بسته؛ نرسید",show_alert=True)
+            except Exception as e:
+                await query.answer(f"❌ نرسید: {_fit(str(e),80)}",show_alert=True)
+
         elif data.startswith("unm_mk_"):
             # سؤالِ مشتری + جوابی که مدیر داده = یک نیت تازه، با یک تپ
             u=unmatched_by_id(data[7:])
@@ -3925,14 +4070,12 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
                             reply_markup=unmatched_kb(),parse_mode="HTML")
 
         elif data.startswith("unm_new_"):
+            # قبلاً سؤال مشتری در نیت تازه نمی‌نشست و در فهرست می‌ماند؛ حالا همان «جواب استاندارد بنویسم»
             u=unmatched_by_id(data[8:])
             if not u: await query.answer("یافت نشد!",show_alert=True); return
             await query.answer()
-            ctx.user_data.update({"mode":"faq_keys","faq_id":None})
-            await query.message.reply_text(
-                f"❓ سؤال مشتری:\n«{u['text']}»\n\n"
-                f"🔑 کلیدواژه‌های نیت تازه را با کاما بنویسید — کلمه‌هایی که در "
-                f"پیام‌های مشابه تکرار می‌شوند:",reply_markup=cancel_menu())
+            ctx.user_data.update({"mode":"unm_ans","unm_id":u["id"],"unm_group":[],"unm_std":""})
+            await query.message.reply_text(f"❓ «{u['text']}»\n\n✍️ جواب استاندارد را بنویسید:",reply_markup=cancel_menu())
 
         elif data.startswith("unm_"):
             u=unmatched_by_id(data[4:])
@@ -4706,6 +4849,9 @@ async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
                 f"حالا متن، بنر و لینک‌هایش را بگذارید 👇",reply_markup=main_menu())
             await update.message.reply_text(f"📋 بخش: {title}\n{'─'*14}",
                                             reply_markup=section_kb(key)); return
+
+        if mode in ("unm_ans","unm_std"):
+            if await unm_typed(update,ctx,mode,text): return
 
         if mode=="faq_keys":
             fid=ctx.user_data.get("faq_id")
@@ -5731,7 +5877,8 @@ async def process_panel_inbox():
             logger.error(f"panel op {f}: پاک نشد، اعمال نمی‌شود: {e}"); continue
         if op is None: continue
         if isinstance(op,dict) and op.get("op")=="unmatched_add":      # سؤال نفهمیده‌ی بله یا اینستاگرام
-            try: await log_unmatched(str(op.get("text") or "")[:_UNM_MAX],None,str(op.get("src") or ""))
+            try: await log_unmatched(str(op.get("text") or "")[:_UNM_MAX],None,str(op.get("src") or ""),
+                                     who=str(op.get("who") or "")[:60],ext_uid=op.get("ext_uid") if isinstance(op.get("ext_uid"),(int,str)) else None)
             except Exception as e: logger.warning(f"panel op {f}: {e}")
             continue
         try:

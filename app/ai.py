@@ -524,7 +524,7 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
             return _finish(c, d, s, channel, text, is_test, ctx, model="brain", cost=0.0, check_confidence=False)
         if not is_test and channel in ("dm", "comment"):      # یک مغز: نفهمیده‌ی اینستاگرام به فهرست مشترک
             from . import shared_kb
-            shared_kb.queue_unmatched(text, channel)
+            shared_kb.queue_unmatched(text, channel, username)
         if not s["enabled"] and not is_test:
             # هوش مصنوعی خاموش است و موتور فهم نفهمید: دایرکت به همکار، کامنت بی‌جواب
             if channel == "dm":

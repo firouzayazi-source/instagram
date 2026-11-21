@@ -516,7 +516,7 @@ async def run():
     assert it['examples'] == ['الف', 'ب'], it                              # افزودنی، نه جایگزین
     await bot.log_unmatched('سؤال نفهمیده‌ی بله')                       # یک مغز: به فهرست مشترک تلگرام
     ops = [json.load(open(os.path.join(inbox, f), encoding='utf-8')) for f in os.listdir(inbox)]
-    assert {'op': 'unmatched_add', 'text': 'سؤال نفهمیده‌ی بله', 'src': 'bale'} in ops and bot.unmatched == []
+    assert any(o.get('op') == 'unmatched_add' and o['text'] == 'سؤال نفهمیده‌ی بله' and o['src'] == 'bale' for o in ops) and bot.unmatched == []
     seen = {p: bot._mtime(p) for p in bot._shared_loaders()}
     d = json.loads(before); [x for x in d if x['id'] == 'x_test'][0]['answer'] = 'جواب دو'
     time.sleep(0.05); open(bot.FAQ_FILE, 'w', encoding='utf-8').write(json.dumps(d, ensure_ascii=False))
@@ -554,3 +554,54 @@ print('OK')
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=60)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_review_detail_card_and_standard_answer(tmp_path):
+    """بازبینی: کارت جزئیات (متن کامل، پرسنده، لینک گفتگو)، «جواب استاندارد» نیت تازه با همان سؤال می‌سازد،
+    «سؤال استاندارد» اگر ربات فهمید هر دو جمله را به همان نیت یاد می‌دهد."""
+    code = r"""
+import asyncio, os, sys, types
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+said = []
+class Msg:
+    async def reply_text(self, t, **k): said.append((t, k.get('reply_markup')))
+async def run():
+    await bot.init_db(); await bot.load_settings(); await bot.load_faq()
+    u = types.SimpleNamespace(id=7001, username='cust', first_name='Ali', last_name=None, language_code='fa', is_bot=False)
+    await bot.save_user(u)
+    bot.settings['support_group'] = -1001234567890
+    await bot.db.execute("UPDATE users SET topic_id=55 WHERE user_id=7001"); await bot.db.commit()
+    await bot.log_unmatched('زلزلاخ پیمونک ارغوانی دارین', u)
+    await bot.log_unmatched('ایرپاد فیکس رو تعمیر میکنید', None, 'ig', who='@sara.ig')
+    a = next(x for x in bot.unmatched if x['text'].startswith('زلزلاخ'))
+    txt, kb = await bot.unm_card(a)
+    urls = [b.url for r in kb.inline_keyboard for b in r if b.url]
+    assert 'زلزلاخ پیمونک ارغوانی دارین' in txt and 'Ali' in txt and urls == ['https://t.me/c/1234567890/55'], (txt, urls)
+    ig = next(x for x in bot.unmatched if x['text'].startswith('ایرپاد'))
+    txt, kb = await bot.unm_card(ig)
+    assert '@sara.ig' in txt and [b.url for r in kb.inline_keyboard for b in r if b.url] == ['https://ig.me/m/sara.ig']
+    # جواب استاندارد
+    upd = types.SimpleNamespace(message=Msg()); ctx = types.SimpleNamespace(user_data={'mode': 'unm_ans', 'unm_id': a['id'], 'unm_group': [], 'unm_std': ''})
+    assert await bot.unm_typed(upd, ctx, 'unm_ans', 'نداریم، ولی مدل مشابهش هست 🙏')
+    it = bot.faq[-1]
+    assert it['answer'].startswith('نداریم') and 'زلزلاخ پیمونک ارغوانی دارین' in it['examples']
+    assert not any(x['text'].startswith('زلزلاخ') for x in bot.unmatched) and 'mode' not in ctx.user_data
+    assert any(b.callback_data == f"unm_send_{it['id']}_7001" for r in said[-1][1].inline_keyboard for b in r)
+    hit, sc = bot.brain.match('زلزلاخ پیمونک ارغوانی دارین', bot.brain_intents()); assert hit is it
+    # سؤال استاندارد ← نیت موجود
+    ctx = types.SimpleNamespace(user_data={'mode': 'unm_std', 'unm_id': ig['id']})
+    assert await bot.unm_typed(upd, ctx, 'unm_std', 'قسطی میفروشید؟')
+    inst = next(x for x in bot.faq if 'قسطی میفروشید؟' in (x.get('examples') or []))
+    assert ig['text'] in inst['examples'] and not any(x['text'].startswith('ایرپاد') for x in bot.unmatched)
+    await bot.db.close()
+try:
+    asyncio.run(run())
+    print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-3000:]

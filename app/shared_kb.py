@@ -80,7 +80,7 @@ def _queue(op: dict) -> None:
 _QUESTION = re.compile(r"[؟?]|چند|چطور|چجوری|کجا|کی |دارید|دارین|میشه|می‌شه|هست|موجود|قیمت|قسط")
 
 
-def queue_unmatched(text: str, channel: str = "dm") -> bool:
+def queue_unmatched(text: str, channel: str = "dm", username: str | None = None) -> bool:
     """یک مغز: سؤالی که موتور فهم در اینستاگرام نفهمید به همان فهرست «سؤال‌های بی‌پاسخ» ربات تلگرام می‌رود
     (بازبینی هفتگی و یاد دادن، برای هر سه پلتفرم). کامنت فقط وقتی سؤال است، تا تعریف و ایموجی فهرست را پر نکند.
     خطا بی‌صدا: جواب مشتری نباید به خاطر این ثبت گیر کند."""
@@ -88,7 +88,8 @@ def queue_unmatched(text: str, channel: str = "dm") -> bool:
     if not (3 <= len(t) <= 200) or (channel == "comment" and not _QUESTION.search(t)):
         return False
     try:
-        _queue({"op": "unmatched_add", "text": t, "src": "ig"})
+        who = f"@{username}" if username and re.fullmatch(r"[A-Za-z0-9_.]{1,30}", username) else ""
+        _queue({"op": "unmatched_add", "text": t, "src": "ig", "who": who})
         return True
     except (OSError, ValueError):
         return False
