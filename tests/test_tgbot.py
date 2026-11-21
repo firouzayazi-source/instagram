@@ -536,3 +536,21 @@ os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=bl, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]
+
+
+def test_admin_command_with_invisible_mark():
+    """«‏/review» (با نشان نامرئی جهت از کیبورد فارسی) دستور است، نه پیام مشتری."""
+    code = r"""
+import os, sys
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+assert bot.text_command('‏/review') == ('review', [])
+assert bot.text_command('‫/sla ۲۰‬') == ('sla', ['۲۰'])
+assert bot.text_command('/review@Poshtibani_stland_bot') == ('review', [])
+assert bot.text_command('ریویو') is None and bot.text_command('قیمت / اقساط') is None
+assert all(callable(getattr(bot, f)) for f in bot.ADMIN_TEXT_CMDS.values())
+print('OK')
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=60)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]

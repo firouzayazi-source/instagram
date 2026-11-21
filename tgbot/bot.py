@@ -4599,8 +4599,26 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
 # ════════════════════════════════════════════════
 #  TEXT HANDLER
 # ════════════════════════════════════════════════
+# دستور مدیر که تلگرام دستور نشناخته (۳۰ آبان ۱۴۰۵): با کیبورد فارسی گوشی، پیش از «/review» نشان نامرئی جهت
+# متن (RLM و…) می‌نشیند و تلگرام آن را متن عادی می‌فرستد؛ دستیار هم جوابش را مثل پیام مشتری می‌داد.
+_INVIS_RE = re.compile("[\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]")
+ADMIN_TEXT_CMDS = {"review":"cmd_review","brief":"cmd_brief","staff":"cmd_staff","sla":"cmd_sla","demand":"cmd_demand",
+                   "refreward":"cmd_refreward","admin":"cmd_admin","test":"cmd_test","ask":"cmd_ask",
+                   "installment":"cmd_installment","setgroup":"cmd_setgroup","badword":"cmd_badword"}
+
+def text_command(text):
+    """«‏/review ۲» ← ("review", ["۲"])؛ متن عادی ← None."""
+    t=_INVIS_RE.sub("",text or "").strip()
+    m=re.match(r"^/([A-Za-z_]+)(?:@\w+)?(?:\s+(.*))?$",t,re.S)
+    return (m.group(1).lower(),(m.group(2) or "").split()) if m else None
+
 async def text_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     user=update.effective_user; text=update.message.text.strip()
+    if is_admin(user.id):
+        tc=text_command(text)
+        if tc and tc[0] in ADMIN_TEXT_CMDS:
+            ctx.args=tc[1]
+            return await globals()[ADMIN_TEXT_CMDS[tc[0]]](update,ctx)
     await save_user(user)
     if not is_admin(user.id):
         _s=spam_check(user.id)
@@ -7878,16 +7896,19 @@ async def post_init(app):
         if chat_mode():
             # مشتری حتی دکمه‌ی Menu تلگرام را هم نمی‌بیند؛ فقط مدیرها فهرست دستور دارند
             await app.bot.set_my_commands([],scope=BotCommandScopeDefault())
-            for aid in admin_ids():
-                try:
-                    await app.bot.set_my_commands(
-                        [BotCommand("admin","پنل مدیریت"),BotCommand("test","امتحان مثل مشتری"),
-                         BotCommand("ask","فهم دستیار از یک جمله"),BotCommand("start","صفحه‌ی مشتری")],
-                        scope=BotCommandScopeChat(aid))
-                except Exception as e: logger.debug(f"admin commands {aid}: {e}")
         else:
             await app.bot.set_my_commands([BotCommand("start","شروع و نمایش منو"),
                                            BotCommand("help","راهنما")])
+        # مدیرها: دستورهای گزارش هم در دکمه‌ی Menu، تا لازم به تایپ نباشد
+        for aid in admin_ids():
+            try:
+                await app.bot.set_my_commands(
+                    [BotCommand("admin","پنل مدیریت"),BotCommand("review","سؤال‌های نفهمیده و درصد فهم"),
+                     BotCommand("brief","گزارش امروز"),BotCommand("staff","عملکرد تیم"),
+                     BotCommand("test","امتحان مثل مشتری"),BotCommand("ask","فهم دستیار از یک جمله"),
+                     BotCommand("start","صفحه‌ی مشتری")],
+                    scope=BotCommandScopeChat(aid))
+            except Exception as e: logger.debug(f"admin commands {aid}: {e}")
         # چیزی که کاربر پیش از زدن Start می‌بیند
         if get_setting("assistant"):
             short=(f"🤖 دستیار هوشمند {SHOP_NAME} — قیمت، اقساط، گارانتی، معاوضه و آدرس؛ "
