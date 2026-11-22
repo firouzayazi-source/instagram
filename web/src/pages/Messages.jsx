@@ -45,6 +45,10 @@ function Thread({ userId }) {
   const end = useRef(null)
   const loadHuman = () => api.get(`/api/conversations/${userId}/human`).then((r) => setHuman(r.until)).catch(() => {})
 
+  const [fixed, setFixed] = useState({})
+  const fix = (id) => api.post(`/api/conversations/${userId}/fix`, { message_id: id })
+    .then(() => setFixed((f) => ({ ...f, [id]: '✅ به فهرست اصلاح رفت؛ در ربات تلگرام با ‎/review‎ درستش کنید' })))
+    .catch((e) => setFixed((f) => ({ ...f, [id]: '❌ ' + (e.message || 'ثبت نشد') })))
   const load = () => api.get(`/api/conversations/${userId}/messages`).then((m) => { setMsgs(m); setTimeout(() => end.current?.scrollIntoView(), 50) }).catch(() => {})
   useEffect(() => {
     load(); loadHuman()
@@ -77,7 +81,9 @@ function Thread({ userId }) {
       )}
       <div className="thread">
         {msgs.map((m) => (
-          <div key={m.id} className={`bubble ${m.direction}`}>{m.text}<span className="when">{m.sender === 'admin' ? '🧑‍💼 ' : m.sender === 'bot' ? '🤖 ' : ''}{timeAgo(m.created_at)}</span></div>
+          <div key={m.id} className={`bubble ${m.direction}`}>{m.text}<span className="when">{m.sender === 'admin' ? '🧑‍💼 ' : m.sender === 'bot' ? '🤖 ' : ''}{timeAgo(m.created_at)}</span>
+            {m.sender === 'bot' && <button className="btn sm" style={{ marginTop: 4 }} onClick={() => fix(m.id)}>{fixed[m.id] || '✏️ جواب درست نبود'}</button>}
+          </div>
         ))}
         <div ref={end} />
       </div>

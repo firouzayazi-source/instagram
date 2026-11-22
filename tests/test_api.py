@@ -107,3 +107,20 @@ def test_media_and_settings(client):
     client.request("DELETE", "/api/push/subscribe", json={"endpoint": sub["endpoint"]})
     with db.connect() as c:
         assert db.push_subs(c) == []
+
+
+def test_conversation_fix_sends_question_to_shared_review(client, tmp_path, monkeypatch):
+    """«جواب ربات درست نبود» در گفتگوی اینستاگرام ← سؤال مشتری به فهرست بی‌پاسخ مشترک (صف ربات تلگرام)."""
+    import json
+    tg = tmp_path / "tg"; tg.mkdir(); (tg / "faq.json").write_text("[]", encoding="utf-8")
+    monkeypatch.setattr(config, "TG_DATA_DIR", str(tg))
+    login(client)
+    with db.connect() as c:
+        db.add_message(c, "m1", "u9", "in", "ایرپاد پرو تعمیر میکنید؟", created_at=100)
+        db.add_message(c, "m2", "u9", "out", "قیمت آیفون ۱۳ ...", created_at=101, sender="bot")
+        db.add_message(c, "m3", "u9", "out", "سلام از همکار", created_at=102, sender="admin")
+    assert client.post("/api/conversations/u9/fix", json={"message_id": "m3"}).status_code == 404   # جواب همکار، نه ربات
+    r = client.post("/api/conversations/u9/fix", json={"message_id": "m2"})
+    assert r.status_code == 200 and r.json()["question"] == "ایرپاد پرو تعمیر میکنید؟"
+    ops = [json.loads(f.read_text(encoding="utf-8")) for f in (tg / "inbox").glob("*.json")]
+    assert ops == [{"op": "unmatched_add", "text": "ایرپاد پرو تعمیر میکنید؟", "src": "ig", "who": ""}]

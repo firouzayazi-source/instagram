@@ -905,7 +905,9 @@ _SENT_LABEL = {"sendLocation":"📍 موقعیت روی نقشه","sendDocument"
                "sendAnimation":"🎞 تصویر متحرک","sendSticker":"🙂 استیکر"}
 
 def transcript_on():
-    return bool(support_group() and get_setting("ai_cc_admin"))
+    """کارت «مشتری نوشت / ربات جواب داد» با کلید «رونوشت برای مدیر». با گروه پشتیبانی در تاپیک مشتری؛
+    بی گروه (ربات بله، که تاپیک ندارد) همان کارت در چت خصوصی مدیرها (۱ آذر ۱۴۰۵)."""
+    return bool(get_setting("ai_cc_admin"))
 
 def tx_start(uid,text):
     if transcript_on(): _tx[uid]={"q":text,"ts":time.time(),"replies":[],"urgent":""}
@@ -1043,8 +1045,19 @@ async def tx_flush(bot,user):
                 kb=InlineKeyboardMarkup([[InlineKeyboardButton("✏️ جواب درست نبود، اصلاحش کنم",callback_data=f"txfix_{tok}")]])
         text="\n".join(lines)
     async def post(gid,tid): await bot.send_message(gid,text,parse_mode="HTML",message_thread_id=tid,reply_markup=kb)
-    try: await to_topic(bot,user,None,post)
+    in_topic=False
+    try: in_topic=await to_topic(bot,user,None,post)
     except Exception as e: logger.error(f"transcript {user.id}: {e}")
+    if not in_topic and not menu_tap:
+        # بی تاپیک: همان کارت در چت خصوصی مدیرها، با نام مشتری؛ ریپلای روی کارت = جواب به مشتری
+        head=(f"👤 <b>{esc(user.first_name or '—')}</b>"+(f" · @{esc(user.username)}" if user.username else "")+
+              f" · <code>{user.id}</code>\n")
+        rows=(list(kb.inline_keyboard) if kb else [])+list(reply_kb(user.id).inline_keyboard)
+        for aid in await card_targets(user.id):
+            try:
+                m=await bot.send_message(aid,head+text+"\n"+REPLY_HINT,parse_mode="HTML",reply_markup=InlineKeyboardMarkup(rows))
+                await link_thread(aid,m.message_id,user.id)
+            except Exception as e: logger.error(f"transcript dm → {aid}: {e}")
     try: await hot_check(bot,user)
     except Exception as e: logger.debug(f"hot check: {e}")
 

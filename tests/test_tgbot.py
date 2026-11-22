@@ -653,3 +653,40 @@ os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-3000:]
+
+
+def test_transcript_card_in_admin_dm_without_group(tmp_path):
+    """بی گروه پشتیبانی (مثل بله): همان کارت روشن با دکمه‌ی اصلاح در چت خصوصی مدیر؛ ریپلای روی کارت به مشتری می‌رسد."""
+    code = r"""
+import asyncio, os, sys, types
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+sent = []
+class FakeBot:
+    async def send_message(self, chat, text, **k):
+        sent.append((chat, text, k.get('reply_markup'))); return types.SimpleNamespace(message_id=900 + len(sent))
+async def nohot(b, u): pass
+bot.hot_check = nohot
+u = types.SimpleNamespace(id=57, username='bb', first_name='Bale', last_name=None, language_code='fa', is_bot=False)
+async def run():
+    await bot.init_db(); await bot.load_settings(); await bot.load_faq()
+    assert not bot.support_group() and bot.transcript_on()
+    bot.menu_cfg[:] = [{'key': '1', 'label': '🌐 شبکه‌های اجتماعی', 'enabled': True}]
+    bot.tx_start(57, '🌐 شبکه‌های اجتماعی'); bot.tx_capture(57, 'اینستاگرام ما'); await bot.tx_flush(FakeBot(), u)
+    assert sent == []                                     # دکمه‌ی منو در چت مدیر شلوغی نمی‌کند
+    bot.tx_start(57, 'گلس دارین'); bot.tx_capture(57, 'بله داریم'); await bot.tx_flush(FakeBot(), u)
+    chat, text, kb = sent[-1]
+    assert chat == 1 and 'مشتری نوشت' in text and 'Bale' in text and 'گلس دارین' in text
+    cbs = [b.callback_data for r in kb.inline_keyboard for b in r]
+    assert any(c.startswith('txfix_') for c in cbs) and 'chat_57' in cbs
+    assert await bot.thread_user(1, 900 + len(sent)) == 57
+    await bot.db.close()
+try:
+    asyncio.run(run()); print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-3000:]

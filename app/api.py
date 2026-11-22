@@ -172,6 +172,30 @@ def conversation_messages(user_id: str):
         return db.list_messages(c, user_id)
 
 
+class FixIn(BaseModel):
+    message_id: str
+
+
+@protected.post("/conversations/{user_id}/fix")
+def conversation_fix(user_id: str, body: FixIn):
+    """«جواب ربات درست نبود» در گفتگوی اینستاگرام: سؤال مشتری (آخرین پیام او پیش از همین جواب) به همان فهرست
+    «سؤال‌های بی‌پاسخ» ربات تلگرام می‌رود تا در بازبینی (یک مغز، برای هر سه پلتفرم) جواب درست گرفته شود."""
+    from . import shared_kb
+    with db.connect() as c:
+        bot = c.execute("SELECT * FROM messages WHERE id=? AND user_id=? AND direction='out' AND sender='bot'",
+                        (body.message_id, user_id)).fetchone()
+        if not bot:
+            raise HTTPException(404, "این پیام جواب ربات نیست")
+        q = c.execute("SELECT text FROM messages WHERE user_id=? AND direction='in' AND created_at<=? "
+                      "ORDER BY created_at DESC LIMIT 1", (user_id, bot["created_at"])).fetchone()
+        cust = c.execute("SELECT username FROM customers WHERE id=?", (f"ig:{user_id}",)).fetchone()
+    if not q:
+        raise HTTPException(404, "سؤال مشتری پیدا نشد")
+    if not shared_kb.queue_unmatched(q["text"], "dm", cust["username"] if cust else None):
+        raise HTTPException(422, "ثبت نشد (ربات تلگرام روی سرور در دسترس نیست یا متن خیلی کوتاه یا بلند است)")
+    return {"ok": True, "question": q["text"]}
+
+
 @protected.post("/conversations/{user_id}/send")
 async def conversation_send(user_id: str, body: Text, request: Request):
     return await _send(request, "dm", user_id, body.text)
