@@ -605,3 +605,51 @@ os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-3000:]
+
+
+def test_topic_card_menu_tap_and_fix_button(tmp_path):
+    """تاپیک: دکمه‌ی منو یک خط کم‌رنگ؛ پیام نوشتاری «مشتری نوشت / ربات جواب داد (موضوع)» با دکمه‌ی «جواب درست نبود»
+    که سؤال را از نیت اشتباه برمی‌دارد و کارت اصلاح را در چت خصوصی مدیر می‌فرستد."""
+    code = r"""
+import asyncio, os, sys, types
+os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+sys.path.insert(0, %r)
+import bot
+posted = []
+async def fake_to_topic(b, user, card, send=None, note=''):
+    await send(-100, 7); return True
+bot.to_topic = fake_to_topic
+async def nohot(b, u): pass
+bot.hot_check = nohot
+class FakeBot:
+    async def send_message(self, gid, text, **k): posted.append((gid, text, k.get('reply_markup')))
+u = types.SimpleNamespace(id=56, username=None, first_name='Sara', last_name=None, language_code='fa', is_bot=False)
+async def run():
+    await bot.init_db(); await bot.load_settings(); await bot.load_faq()
+    bot.settings['support_group'] = -100
+    bot.menu_cfg[:] = [{'key': 'appleid', 'label': '🍎 ربات فروش اپل آیدی', 'enabled': True}]
+    bot.tx_start(56, '🍎 ربات فروش اپل آیدی'); bot.tx_capture(56, 'ربات فروش اپل آیدی'); await bot.tx_flush(FakeBot(), u)
+    assert 'از منو' in posted[-1][1] and 'blockquote' not in posted[-1][1] and posted[-1][2] is None, posted[-1]
+    inst = bot.faq_item('i_install'); inst.setdefault('examples', []).append('ایکس اس مکس دارین')
+    bot.tx_start(56, 'ایکس اس مکس دارین')
+    bot.brain_ctx[56] = {'intent': 'i_install', 'ts': bot.time.time()}
+    bot.tx_capture(56, 'اقساط داریم'); await bot.tx_flush(FakeBot(), u)
+    gid, text, kb = posted[-1]
+    assert 'مشتری نوشت' in text and 'ایکس اس مکس دارین' in text and 'موضوع:' in text and kb, text
+    cb = kb.inline_keyboard[0][0].callback_data; assert cb.startswith('txfix_')
+    answered = []
+    async def ans(t='', show_alert=False): answered.append(t)
+    q = types.SimpleNamespace(from_user=types.SimpleNamespace(id=1), answer=ans)
+    ctx = types.SimpleNamespace(bot=FakeBot())
+    await bot.tx_fix_callback(q, ctx, cb[6:])
+    assert 'ایکس اس مکس دارین' not in inst['examples']
+    assert bot.unmatched_find('ایکس اس مکس دارین') and posted[-1][0] == 1 and 'به اشتباه' in posted[-1][1]
+    await bot.db.close()
+try:
+    asyncio.run(run()); print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-3000:]

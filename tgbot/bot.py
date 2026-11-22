@@ -948,6 +948,7 @@ async def topic_head(user):
             "<i>✍️ جواب شما همین‌جا برای مشتری می‌رود · یادداشت داخلی با !</i>")
 
 _last_q: dict = {}       # uid ← (سؤالی که ربات جوابش را نداد، زمان)
+_tx_fix: dict = {}       # نشانه ← {"q","uid","intent","ts"} برای «جواب درست نبود» زیر کارت تاپیک
 _learn_offers: dict = {} # نشانه ← {"q","a","uid","ts"}
 
 def learn_offer_kb(tok):
@@ -1016,19 +1017,58 @@ async def tx_flush(bot,user):
     replies=[_plain(r,700,lines=True) for r in t["replies"] if _plain(r)]
     if not replies or any(w in replies[0] for w in _UNSURE):
         _last_q[user.id]=(t["q"],time.time())       # تا جواب همکار پیشنهاد «یاد بگیر» بگیرد
-    if not replies: badge="🔴 <b>منتظر جواب شما</b>"
-    elif any(w in replies[0] for w in _UNSURE): badge="🟡 <b>ربات مطمئن نبود — نگاهی بیندازید</b>"
-    else: badge="🟢 <b>ربات جواب داد</b>"
-    if t["urgent"]: badge="🚨 <b>فوری</b> · "+badge
-    lines=[f"{badge}   <i>{_hhmm(t['ts'])}</i>", f"💬 <b>{esc(_plain(t['q'],300))}</b>"]
-    if replies:
-        lines.append("<blockquote expandable>🤖 "+esc("\n\n".join(replies[:3]))+"</blockquote>")
-    text="\n".join(lines)
-    async def post(gid,tid): await bot.send_message(gid,text,parse_mode="HTML",message_thread_id=tid)
+    menu_tap=any(m.get("label")==t["q"] for m in menu_cfg)
+    kb=None
+    if menu_tap and replies and not t["urgent"]:
+        # دکمه‌ی منو: یک خط کم‌رنگ، نه کارت «سؤال و جواب» (متن بخش همان متن ثابت منوست)
+        text=f"👆 <i>{_hhmm(t['ts'])}</i>  مشتری از منو <b>«{esc(_plain(t['q'],60))}»</b> را باز کرد"
+    else:
+        if not replies: badge="🔴 <b>منتظر جواب شما</b>"
+        elif any(w in replies[0] for w in _UNSURE): badge="🟡 <b>ربات مطمئن نبود — نگاهی بیندازید</b>"
+        else: badge="🟢 <b>ربات جواب داد</b>"
+        if t["urgent"]: badge="🚨 <b>فوری</b> · "+badge
+        lines=[f"{badge}   <i>{_hhmm(t['ts'])}</i>","",
+               ("👆 <b>مشتری از منو زد:</b>" if menu_tap else "👤 <b>مشتری نوشت:</b>"),
+               f"<b>«{esc(_plain(t['q'],300))}»</b>"]
+        if replies:
+            c=brain_ctx.get(user.id) or {}
+            it=faq_item(c.get("intent")) if c.get("ts",0)>=t["ts"]-1 else None
+            lines += ["",f"🤖 <b>ربات جواب داد</b>"+(f" <i>(موضوع: {esc(faq_title(it))})</i>" if it else "")+":",
+                      "<blockquote expandable>"+esc("\n\n".join(replies[:3]))+"</blockquote>"]
+            if not menu_tap:      # جواب اشتباه؟ همین‌جا اصلاح
+                tok=secrets.token_hex(4)
+                _tx_fix[tok]={"q":t["q"],"uid":user.id,"intent":(it or {}).get("id"),"ts":time.time()}
+                if len(_tx_fix)>500:
+                    for k in sorted(_tx_fix,key=lambda k:_tx_fix[k]["ts"])[:100]: _tx_fix.pop(k,None)
+                kb=InlineKeyboardMarkup([[InlineKeyboardButton("✏️ جواب درست نبود، اصلاحش کنم",callback_data=f"txfix_{tok}")]])
+        text="\n".join(lines)
+    async def post(gid,tid): await bot.send_message(gid,text,parse_mode="HTML",message_thread_id=tid,reply_markup=kb)
     try: await to_topic(bot,user,None,post)
     except Exception as e: logger.error(f"transcript {user.id}: {e}")
     try: await hot_check(bot,user)
     except Exception as e: logger.debug(f"hot check: {e}")
+
+async def tx_fix_callback(query,ctx,tok):
+    """«جواب درست نبود» زیر کارت تاپیک: سؤال به فهرست بی‌پاسخ می‌رود (اگر به اشتباه به نیتی یاد داده شده بود،
+    از آن نیت برداشته می‌شود) و کارت اصلاح در چت خصوصی مدیر می‌آید؛ نوشتن در تاپیک برای مشتری می‌رفت."""
+    f=_tx_fix.get(tok)
+    if not f: return await query.answer("منقضی شده؛ از ‎/review‎ اصلاح کنید",show_alert=True)
+    q=f["q"].strip()[:_UNM_MAX]
+    wrong=faq_item(f.get("intent")) if f.get("intent") else None
+    if wrong and q in (wrong.get("examples") or []):
+        wrong["examples"]=[x for x in wrong["examples"] if x!=q]; await save_faq()
+    u=unmatched_find(q)
+    if not u:
+        u={"id":new_btn_id(),"text":q,"count":1,"last":gregorian_now(),"uid":f["uid"],"srcs":[MY_SRC],
+           "who":"","who_src":MY_SRC,"ext_uid":None,"wrong":f.get("intent")}
+        unmatched.insert(0,u); del unmatched[UNMATCHED_MAX:]; await save_unmatched()
+    txt,kb=await unm_card(u)
+    if wrong: txt+=f"\n\n❌ ربات به اشتباه «{esc(faq_title(wrong))}» جواب داده بود."
+    try:
+        await ctx.bot.send_message(query.from_user.id,txt,parse_mode="HTML",reply_markup=kb,disable_web_page_preview=True)
+        await query.answer("✏️ کارت اصلاح در چت خصوصی ربات برایتان آمد",show_alert=True)
+    except Exception:
+        await query.answer("اول ربات را در چت خصوصی استارت کنید",show_alert=True)
 
 async def transcript_flush(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     """گروه ۵: بعد از text_handler (و همه‌ی جواب‌هایش) اجرا می‌شود."""
@@ -3745,6 +3785,8 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             human_until.pop(cu,None); set_human(cu,ctx.bot)   # pop تا خبرِ ورود در تاپیک بیاید
             await query.answer("🧑‍💼 گفتگو دست شماست")
         return
+    if data.startswith("txfix_") and is_admin(uid):
+        await tx_fix_callback(query,ctx,data[6:]); return
     if data.startswith(("lrnq_","lrnx_")) and query.message and support_group() \
             and query.message.chat.id==support_group():
         o=_learn_offers.pop(data[5:],None)
