@@ -177,8 +177,11 @@ async def handle_event(ig, row, c, extra_texts: list[str] | None = None, store_o
         ok = await _send(ig, c, row["id"], None, "public", payload, inc, bl["reply"])
         return "done" if ok else "skipped"
     if rule is None:
-        if payload.get("_via") == "poll":
+        if payload.get("_via") == "poll" and inc.channel == "comment":
             return "ignored"    # کامنت خوانده‌شده با Composio فقط با دستورها جواب می‌گیرد، نه هوش مصنوعی خودسر
+        # دایرکت خوانده‌شده (با «جواب خودکار دایرکت» روشن، داخل پنجره‌ی ۲۴ ساعته و بی ترمز؛ همه بالاتر وارسی شد):
+        # اگر دستوری نخورد، همان مغز مشترک جواب می‌دهد (۲ آذر ۱۴۰۵، با تأیید صاحب پیج). پیش از این، این شرط دایرکت را هم
+        # کنار می‌گذاشت و مغز هرگز به دایرکت اینستاگرام جواب نمی‌داد.
         if inc.source == "mention":
             return await handle_mention(ig, row, c, payload, inc, s)
         return await handle_ai(ig, row, c, payload, inc)

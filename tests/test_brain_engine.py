@@ -133,3 +133,34 @@ def test_apple_id_points_to_stockland_bot(env, tg_data):
     finally:
         for f in (menu, btns):
             f.unlink(missing_ok=True)
+
+
+@pytest.mark.asyncio
+async def test_polled_dm_gets_brain_reply_when_dm_reply_on(env, monkeypatch):
+    """دایرکت خوانده‌شده با Composio که به دستوری نخورد: با «جواب خودکار دایرکت» روشن، مغز مشترک جواب می‌دهد؛
+    خاموش یا ترمز کشیده: فقط صندوق. (پیش از ۲ آذر ۱۴۰۵ همیشه کنار گذاشته می‌شد.)"""
+    import time as _t
+    from app import comment_poll, safety, worker
+    from tests.test_instagram_features import IG
+    monkeypatch.setattr(config, "SEND_DELAY_MIN", 0)
+    monkeypatch.setattr(config, "SEND_DELAY_MAX", 0)
+    ig = IG()
+    now = _t.time()
+
+    def ev(mid, text):
+        return {"sender": {"id": "u7", "username": "sara"}, "timestamp": int(now * 1000),
+                "message": {"mid": mid, "text": text}, "_via": "poll"}
+    with db.connect() as c:
+        ai.save_settings(c, {"brain_enabled": True, "enabled": False, "dm_enabled": True})
+        db.add_event(c, "m:p1", "message", ev("p1", "آدرستون کجاست"))
+        assert await worker.handle_event(ig, db.pending_events(c)[0], c) == "skipped"      # جواب خودکار دایرکت خاموش
+        db.kv_set(c, comment_poll.DM_REPLY_KEY, "1")
+        db.add_event(c, "m:p2", "message", ev("p2", "آدرستون کجاست"))
+        row = [r for r in db.pending_events(c) if r["id"] == "m:p2"][0]
+        assert await worker.handle_event(ig, row, c) == "done"
+        dms = [x for x in ig.calls if x[0] == "dm"]
+        assert dms and dms[-1][1] == "u7" and "خیابان نمونه" in str(dms[-1])
+        db.kv_set(c, safety.KEY, json.dumps({"on": True, "reason": "test"}))
+        db.add_event(c, "m:p3", "message", ev("p3", "ساعت کاری"))
+        row = [r for r in db.pending_events(c) if r["id"] == "m:p3"][0]
+        assert await worker.handle_event(ig, row, c) == "braked"
