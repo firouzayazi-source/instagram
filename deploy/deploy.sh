@@ -54,7 +54,9 @@ main() {
   (cd web && npm ci --no-audit --no-fund --silent && npm run build --silent)
   # تست‌ها هرگز روی داده‌ی زنده: مسیرها به پوشه‌ی موقت (لایه‌ی دوم ایمنی کنار tests/conftest.py)
   T=$(mktemp -d)
-  if ! DB_PATH=$T/bot.db TG_DATA_DIR=$T/telegram .venv/bin/python -m pytest -q -p no:cacheprovider; then
+  # متغیرهای ربات در پوسته‌ی سرور (توکن، آیدی مدیر) به تست‌ها نرسند: تست با مقدار ساختگی خودش (۳ آذر ۱۴۰۵، یک تست با ADMIN_ID واقعی رد شد)
+  if ! env -u BOT_TOKEN -u ADMIN_ID -u BOT_PLATFORM -u BALE_BOT_TOKEN -u BALE_ADMIN_ID -u KNOWLEDGE_DIR \
+       DB_PATH=$T/bot.db TG_DATA_DIR=$T/telegram .venv/bin/python -m pytest -q -p no:cacheprovider; then
     rm -rf "$T"
     # کد تست‌نشده روی دیسک نماند (با ری‌استارت یا کرش بالا می‌آمد)
     echo "❌ تست‌ها رد شد"

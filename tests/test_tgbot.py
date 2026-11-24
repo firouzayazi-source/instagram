@@ -659,7 +659,7 @@ def test_transcript_card_in_admin_dm_without_group(tmp_path):
     """بی گروه پشتیبانی (مثل بله): همان کارت روشن با دکمه‌ی اصلاح در چت خصوصی مدیر؛ ریپلای روی کارت به مشتری می‌رسد."""
     code = r"""
 import asyncio, os, sys, types
-os.environ.setdefault('BOT_TOKEN','0:x'); os.environ.setdefault('ADMIN_ID','1')
+os.environ.update(BOT_TOKEN='0:x', ADMIN_ID='1'); os.environ.pop('BOT_PLATFORM', None)   # نه متغیرهای پوسته‌ی سرور
 sys.path.insert(0, %r)
 import bot
 sent = []
