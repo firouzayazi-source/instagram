@@ -225,6 +225,9 @@ async def monitor_loop(ig, stop: asyncio.Event, interval: float = 300, grace: fl
                 if leads.weekly_due(c):
                     if tg_notify.send(leads.weekly_text(c)):
                         db.kv_set(c, "weekly_last", today)
+                from . import review     # بازبینی شبانه‌ی مغز مرکزی (ساعت ۳)
+                if review.due(c):
+                    await review.run(c)
         except Exception as e:  # noqa: BLE001
             print("monitor failed:", e)
         try:

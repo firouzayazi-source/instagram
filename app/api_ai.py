@@ -34,8 +34,31 @@ def put_settings(body: dict):
 
 @router.get("/stats")
 def get_stats():
+    from . import facts
     with db.connect() as c:
-        return ai.stats(c)
+        return {**ai.stats(c), "truth": facts.health()}
+
+
+@router.get("/review")
+def get_review():
+    """آخرین بازبینی شبانه‌ی مغز مرکزی (app/review.py)."""
+    from . import review
+    with db.connect() as c:
+        return {"review": review.last(c)}
+
+
+@router.post("/review/run")
+async def run_review():
+    """بازبینی همین حالا (از پنل)؛ پیشنهادها مثل هر شب برای تأیید به تلگرام می‌روند."""
+    from . import review
+    with db.connect() as c:
+        s = ai.settings(c)
+        if not (s["enabled"] and ai._usable(s["provider"])):
+            raise HTTPException(422, "هوش مصنوعی روشن نیست یا کلیدش ثبت نشده")
+        rep = await review.run(c, force=True)
+    if rep is None:
+        raise HTTPException(422, "گفتگویی برای بازبینی نبود یا سرویس هوش مصنوعی جواب نداد")
+    return {"review": rep}
 
 
 class TestIn(BaseModel):

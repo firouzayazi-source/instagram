@@ -73,6 +73,10 @@ DEFAULTS = {
     "upsell": True,              # یک لوازم جانبی مرتبط و موجود پیشنهاد بدهد
     "ask_contact": False,        # برای سفارش، شماره‌ی تماس بخواهد
     "cta": "",                   # راه خرید، مثلاً «خرید آنلاین از stland.ir یا حضوری در فروشگاه»
+    # مغز مرکزی (۵ آذر ۱۴۰۵): فروشنده‌ی هوشمند با ابزار و وارسی داده (app/agent.py)، و بازبینی شبانه (app/review.py)
+    "agent_enabled": True,       # برای Claude: ابزار (کالا، اقساط، اطلاعات فروشگاه) و وارسی هر عدد پیش از ارسال
+    "agent_model": "claude-haiku-5-5",   # مدل سریع برای سؤال‌های معمولی؛ سؤال سخت و دور دوم با «مدل» اصلی
+    "night_review": True,        # هر شب ساعت ۳ گفتگوهای روز مرور و پیشنهاد اصلاح برای تأیید در تلگرام
 }
 
 # دلار به ازای یک میلیون توکن: (ورودی، خروجی، خواندن کش، نوشتن کش)
@@ -158,7 +162,7 @@ def save_settings(c, patch: dict) -> dict:
             raise ValueError(f"سرویس ناشناخته: {v}")
         if k == "fallback_provider" and v and v not in PROVIDERS:
             raise ValueError(f"سرویس ناشناخته: {v}")
-        if k in ("model", "fallback_model"):
+        if k in ("model", "fallback_model", "agent_model"):
             v = (v or "").strip()
             if v and not _MODEL_RE.match(v):
                 raise ValueError(f"نام مدل نامعتبر: {v}")
@@ -170,7 +174,8 @@ def save_settings(c, patch: dict) -> dict:
             v = max(0.0, float(v or 0))
         if k == "history_messages":
             v = min(30, max(0, int(v)))
-        if k in ("sales_mode", "send_links", "upsell", "ask_contact", "brain_enabled", "telegram_ai"):
+        if k in ("sales_mode", "send_links", "upsell", "ask_contact", "brain_enabled", "telegram_ai",
+                 "agent_enabled", "night_review"):
             v = bool(v)
         if k == "cta":
             v = str(v or "").strip()[:500]
@@ -251,6 +256,20 @@ class ClaudeClient:
         usage = resp.usage.model_dump() if resp.usage else {}
         text = next((b.text for b in resp.content if b.type == "text"), "")
         return text, usage, resp.stop_reason or ""
+
+
+    async def tool_turn(self, model: str, system: list, messages: list, tools: list, effort: str = "low",
+                        max_tokens: int = 4096) -> tuple[list, dict, str]:
+        """یک نوبت فروشنده‌ی هوشمند با ابزار (app/agent.py). tool_choice=auto: مدل‌های تازه فراخوانی اجباری را
+        نمی‌پذیرند؛ پایان کار با ابزار پایانی را پرامپت می‌خواهد. بلوک‌ها عیناً به نوبت بعد برمی‌گردند."""
+        kwargs = {}
+        if model in ("claude-opus-5-5", "claude-sonnet-5-5"):
+            kwargs = {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}
+        resp = await self._client.beta.messages.create(
+            model=model, max_tokens=max_tokens, system=system, messages=messages, tools=tools,
+            tool_choice={"type": "auto"}, output_config={"effort": effort}, **kwargs)
+        usage = resp.usage.model_dump() if resp.usage else {}
+        return list(resp.content), usage, resp.stop_reason or ""
 
 
 class OpenAICompatClient:
@@ -536,6 +555,12 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
     if s["monthly_budget_usd"] and month_cost(c) >= s["monthly_budget_usd"]:
         return _log(c, Decision("skip", skip_reason="budget"), **ctx)
 
+    if s.get("agent_enabled", True) and channel != "comment" and s["provider"] == "anthropic" \
+            and _usable("anthropic") and hasattr(get_client("anthropic"), "tool_turn"):
+        d = await _decide_agent(c, s, channel, text, user_id, username, note, is_test, ctx)
+        if d is not None:
+            return d
+
     attempts = [(s["provider"], s["model"])]
     if s["fallback_provider"]:
         attempts.append((s["fallback_provider"], s["fallback_model"]))
@@ -576,6 +601,99 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
         return _log(c, Decision("error", usage=usage), model=model, cost=cost, error=f"خروجی نامعتبر: {e}", **ctx)
 
     return _finish(c, d, s, channel, text, is_test, ctx, model=model, cost=cost, note=note)
+
+
+def _agent_context(c, channel: str, user_id: str) -> str:
+    """پرونده‌ی کوتاه مشتری و گفتگوی اخیر برای فروشنده: نام، برچسب‌ها، سفارش‌ها، محصول و بودجه‌ی یادشده."""
+    from . import memory
+    lines = []
+    try:
+        key = user_id if ":" in user_id else f"ig:{user_id}"
+        r = c.execute("SELECT name, tags, lead_status FROM customers WHERE id=?", (key,)).fetchone()
+        if r:
+            tags = json.loads(r["tags"] or "[]")
+            bits = [f"نام: {r['name']}" if r["name"] else "", f"برچسب‌ها: {'، '.join(tags)}" if tags else ""]
+            lines += [b for b in bits if b]
+        ch, _, uid = key.partition(":")
+        n = c.execute("SELECT COUNT(*) FROM orders WHERE channel=? AND user_id=? AND status<>'canceled'",
+                      (ch, uid)).fetchone()[0]
+        if n:
+            lines.append(f"سفارش‌های قبلی: {n}")
+        if channel == "dm":
+            m = memory.recall(c, user_id)
+            if m.get("product"):
+                lines.append(f"قبلاً درباره‌ی {m['product']} پرسیده")
+            if m.get("budget"):
+                lines.append(f"بودجه‌ی گفته‌شده: حدود {m['budget'] // 1_000_000} میلیون")
+    except Exception:  # noqa: BLE001
+        pass
+    hist = []
+    if channel != "dm":     # دایرکت از جدول پیام‌ها می‌آید (build_messages)؛ تلگرام و بله از لاگ همین مغز
+        rows = c.execute("SELECT input, reply FROM ai_log WHERE user_id=? AND is_test=0 AND created_at>? "
+                         "ORDER BY created_at DESC LIMIT 4", (user_id, time.time() - 86400)).fetchall()[::-1]
+        for r in rows:
+            hist.append(f"مشتری: {r['input'][:300]}")
+            if r["reply"]:
+                hist.append(f"فروشگاه: {r['reply'][:300]}")
+    out = ""
+    if lines:
+        out += "## پرونده‌ی مشتری\n" + "\n".join(lines)
+    if hist:
+        out += ("\n\n" if out else "") + "## گفتگوی اخیر با همین مشتری (مغز مرکزی)\n" + "\n".join(hist)
+    return out
+
+
+async def _decide_agent(c, s: dict, channel: str, text: str, user_id: str, username: str | None, note: str,
+                        is_test: bool, ctx: dict) -> Decision | None:
+    """مسیر فروشنده‌ی هوشمند. None یعنی خطای API پیش آمد و مسیر قدیمی امتحان شود."""
+    from . import agent
+    client = get_client("anthropic")
+    strong, fast = s["model"] or default_model("anthropic"), s.get("agent_model") or "claude-haiku-5-5"
+    content = build_messages(c, s, channel, text, user_id, username, note)[0]["content"]
+    extra = _agent_context(c, channel, user_id)
+    if extra:
+        content = extra + "\n\n" + content
+    order = [strong] if (agent.is_hard(text) or fast == strong) else [fast, strong]
+    cost, used, r, probs, err = 0.0, "", None, [], None
+    for i, mdl in enumerate(order):
+        msg = content if not probs else (content + "\n\n## وارسی دور قبل (جواب رد شد)\n" + "\n".join(probs) +
+                                          "\nفقط عدد و لینکی را بگو که از ابزارها آمده؛ اگر نداری، handoff_to_human.")
+        try:
+            r = await agent.run(client, mdl, s, msg)
+        except Exception as e:  # noqa: BLE001
+            err = f"{mdl}: {str(e)[:300]}"
+            r = None
+            continue
+        used = mdl
+        cost += cost_usd(mdl, r["usage"], s)
+        probs = agent.verify(r.get("reply", ""), r["trace"]) if r["action"] in ("reply", "handoff") else []
+        if r["action"] == "error":
+            probs = ["پایان کار با ابزار پایانی نبود"]
+        if not probs:
+            break
+    if r is None:
+        print("agent failed, falling back:", err)
+        return None
+    label = f"agent:{used}"
+    if probs:
+        d = Decision("handoff", reply=s["handoff_message"], intent="other", confidence=0.0,
+                     handoff_reason=("وارسی داده جواب را رد کرد: " + "؛ ".join(probs))[:300], usage=r["usage"])
+    else:
+        d = Decision(r["action"], reply=r.get("reply", ""), intent=r.get("intent") if r.get("intent") in INTENTS else "other",
+                     confidence=float(r.get("confidence") or 0), handoff_reason=r.get("handoff_reason", ""),
+                     usage=r["usage"])
+        if d.action == "handoff" and not d.handoff_reason:
+            d.handoff_reason = "فروشنده‌ی هوشمند به همکار سپرد"
+        searches = [t["input"].get("query", "") for t in r["trace"] if t["tool"] == "search_products"]
+        if channel == "dm" and d.action == "reply" and d.intent in ("price", "availability") and searches \
+                and s.get("showcase_cards", True):
+            d.cards = brain_engine.cards_for(searches[-1])
+    d = _finish(c, d, s, channel, text, is_test, ctx, model=label, cost=cost, note=err)
+    try:
+        c.execute("UPDATE ai_log SET trace=? WHERE id=?", (agent.short_trace(r["trace"]), d.log_id))
+    except Exception:  # noqa: BLE001
+        pass
+    return d
 
 
 def _finish(c, d: Decision, s: dict, channel: str, text: str, is_test: bool, ctx: dict, *, model: str, cost: float,

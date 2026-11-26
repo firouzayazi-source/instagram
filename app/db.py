@@ -314,7 +314,8 @@ _COLUMNS = {
     "messages": {"sender": "TEXT NOT NULL DEFAULT ''"},   # پیام بیرونی: bot | admin
     "sessions": {"device_id": "TEXT NOT NULL DEFAULT ''"},       # app/auth.py: دستگاه شناخته‌شده‌ی این ورود
     "customers": {"lead_status": "TEXT NOT NULL DEFAULT ''", "lead_at": "REAL", "phone_at": "REAL"},   # phone_at: زمان گرفتن شماره   # سرنخ: new | called | bought | lost
-    "ai_log": {"customer_vote": "TEXT NOT NULL DEFAULT ''", "voted_at": "REAL"},   # رضایت مشتری: up | down
+    "ai_log": {"customer_vote": "TEXT NOT NULL DEFAULT ''", "voted_at": "REAL",   # رضایت مشتری: up | down
+               "trace": "TEXT"},     # فروشنده‌ی هوشمند: کدام ابزارها با چه ورودی (app/agent.py)
 }
 
 

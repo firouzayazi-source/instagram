@@ -106,6 +106,8 @@ function Overview() {
         {st.enabled && !st.has_key && <p className="err">کلید API ثبت نشده؛ در «تنظیمات مغز ← کلید سرویس‌های هوش مصنوعی» بگذارید (یا سرویس دیگری انتخاب کنید).</p>}
       </section>
 
+      <CoreBrain st={st} />
+
       <section className="card">
         <h2>۲۴ ساعت گذشته</h2>
         <div className="tiles">
@@ -146,6 +148,39 @@ function Overview() {
 
 const INTENT_FA = { greeting: 'سلام', price: 'قیمت', availability: 'موجودی', installment: 'اقساط', purchase: 'قصد خرید',
   support: 'پشتیبانی', complaint: 'شکایت', thanks: 'تشکر', spam: 'اسپم', other: 'سایر' }
+
+// مغز مرکزی (۵ آذر ۱۴۰۵): سلامت هسته‌ی حقیقت و آخرین بازبینی شبانه
+function CoreBrain({ st }) {
+  const [rev, setRev] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  useEffect(() => { api.get('/api/ai/review').then((r) => setRev(r.review)).catch(() => {}) }, [])
+  async function runNow() {
+    setBusy(true); setErr('')
+    try { setRev((await api.post('/api/ai/review/run', {})).review) } catch (e) { setErr(e.message) }
+    setBusy(false)
+  }
+  const truth = st.truth || []
+  return (
+    <section className="card">
+      <h2>🧠 مغز مرکزی</h2>
+      {truth.length ? <div className="err">{truth.map((t) => <div key={t}>⚠️ {t}</div>)}</div>
+        : <p className="muted" style={{ margin: 0 }}>✅ هسته‌ی حقیقت سالم است: فهرست کالای زنده، اقساط، آدرس، تماس و ساعت کاری در دسترس‌اند.</p>}
+      <h3 style={{ marginBottom: 4 }}>🌙 بازبینی شبانه</h3>
+      {rev ? (
+        <div>
+          <p className="muted" style={{ margin: 0 }}>{new Date(rev.at * 1000).toLocaleString('fa-IR')} · {fa(rev.counts?.logs || 0)} گفتگو · {usd(rev.cost || 0)}</p>
+          {rev.summary && <p>{rev.summary}</p>}
+          {rev.suggestions?.length > 0 && <p>💡 {fa(rev.suggestions.length)} پیشنهاد برای تأیید در ربات تلگرام فرستاده شد.</p>}
+          {rev.leads?.length > 0 && <div><b>🔥 مشتری‌های رهاشده</b>{rev.leads.map((l, i) => <div key={i} className="muted">• {l.who} ({l.channel}): {l.why}</div>)}</div>}
+          {rev.gaps?.length > 0 && <div><b>📭 اطلاعات ثبت‌نشده</b>{rev.gaps.map((g) => <div key={g} className="muted">• {g}</div>)}</div>}
+        </div>
+      ) : <p className="muted">هنوز بازبینی‌ای انجام نشده. هر شب ساعت ۳ خودکار انجام می‌شود (هوش مصنوعی باید روشن باشد).</p>}
+      <button type="button" className="btn sm" disabled={busy} onClick={runNow}>{busy ? 'در حال بازبینی…' : 'بازبینی همین حالا'}</button>
+      {err && <p className="err">{err}</p>}
+    </section>
+  )
+}
 
 function IntentBars({ intents, max }) {
   return (
@@ -290,6 +325,20 @@ function Settings() {
         <label className="check"><input type="checkbox" checked={s.enabled} onChange={(e) => set({ enabled: e.target.checked })} /> هوش مصنوعی روشن باشد، برای همه‌ی کانال‌ها (برای سؤال‌هایی که موتور فهم جواب نداد؛ کلید API لازم است)</label>
         <p className="hint muted">روشن و خاموش هر کانال و تنظیم‌های مخصوص آن (مثل نحوه‌ی جواب به کامنت) در «کانال‌ها» است.</p>
         <label className="check"><input type="checkbox" checked={s.skip_emoji_only} onChange={(e) => set({ skip_emoji_only: e.target.checked })} /> پیام‌هایی که فقط ایموجی‌اند را نادیده بگیرد (بدون هزینه)</label>
+      </section>
+
+      <section className="card">
+        <h2>🧠 مغز مرکزی</h2>
+        <label className="check"><input type="checkbox" checked={s.agent_enabled} onChange={(e) => set({ agent_enabled: e.target.checked })} /> فروشنده‌ی هوشمند (فقط Claude): هوش مصنوعی با ابزار جستجوی زنده‌ی کالا، ماشین‌حساب اقساط و اطلاعات فروشگاه</label>
+        <p className="hint muted">هر مبلغ و لینکی که در جواب باشد پیش از ارسال با فهرست زنده‌ی کالا و اطلاعات فروشگاه تطبیق داده می‌شود؛ عدد ساختگی یعنی جواب نمی‌رود و گفتگو به شما سپرده می‌شود. برای تلگرام، بله و دایرکت اینستاگرام؛ کامنت‌ها مثل قبل.</p>
+        <div className="field">
+          <label>مدل سریع (سؤال‌های معمولی)</label>
+          <select value={s.agent_model} onChange={(e) => set({ agent_model: e.target.value })}>
+            {Object.entries(MODEL_FA).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+          <p className="hint muted">سؤال‌های چندبخشی و مقایسه‌ای، و هر جوابی که وارسی رد کند، با «مدل» اصلی پایین همین صفحه دوباره بررسی می‌شوند.</p>
+        </div>
+        <label className="check"><input type="checkbox" checked={s.night_review} onChange={(e) => set({ night_review: e.target.checked })} /> بازبینی شبانه: هر شب ساعت ۳ گفتگوهای روز هر سه پلتفرم مرور و پیشنهاد اصلاح برای تأیید یک‌لمسی به تلگرام فرستاده شود</label>
       </section>
 
       <section className="card">

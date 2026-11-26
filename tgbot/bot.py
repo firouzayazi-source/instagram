@@ -951,6 +951,7 @@ async def topic_head(user):
 
 _last_q: dict = {}       # uid ← (سؤالی که ربات جوابش را نداد، زمان)
 _tx_fix: dict = {}       # نشانه ← {"q","uid","intent","ts"} برای «جواب درست نبود» زیر کارت تاپیک
+_recent: dict = {}       # uid ← چند پیام اخیر گفتگو [("مشتری"|"ربات", متن)] برای زمینه‌ی مغز مرکزی
 _learn_offers: dict = {} # نشانه ← {"q","a","uid","ts"}
 
 def learn_offer_kb(tok):
@@ -969,6 +970,7 @@ async def learn_from_reply(q,a):
                                 "src":"admin-reply","ts":gregorian_now()})
     del learn_data["log"][300:]
     await save_faq(); await save_learn()
+    reg_add([(q.strip()[:200],it["id"])])
     try: await unmatched_remove(q)
     except Exception: pass
     return it
@@ -1020,6 +1022,10 @@ async def tx_flush(bot,user):
     if not replies or any(w in replies[0] for w in _UNSURE):
         _last_q[user.id]=(t["q"],time.time())       # تا جواب همکار پیشنهاد «یاد بگیر» بگیرد
     menu_tap=any(m.get("label")==t["q"] for m in menu_cfg)
+    r=_recent.setdefault(user.id,[]); r.append(("مشتری",_plain(t["q"],300)))
+    if replies: r.append(("ربات",_plain(replies[0],300)))
+    del r[:-8]
+    if len(_recent)>3000: _recent.pop(next(iter(_recent)))
     kb=None
     if menu_tap and replies and not t["urgent"]:
         # دکمه‌ی منو: یک خط کم‌رنگ، نه کارت «سؤال و جواب» (متن بخش همان متن ثابت منوست)
@@ -2948,6 +2954,10 @@ async def weekly_review():
     if pct is not None:
         bar="🟩"*(pct//10)+"⬜️"*(10-pct//10)
         out.append(f"{bar}  <b>{to_fa(pct)}٪</b>\n💬 {to_fa(msgs)} پیام · ✅ خودش جواب داد · ❓ {to_fa(miss)} بار نفهمید")
+    try:
+        _,rok,rtot=reg_check()
+        if rtot: out.append(f"🧪 آزمون یادگرفته‌ها: {to_fa(rok)} از {to_fa(rtot)} درست"+(" ✅" if rok==rtot else " — جمله‌های عوض‌شده را در «سؤال‌های بی‌پاسخ» دوباره وصل کنید"))
+    except Exception as e: logger.debug(f"reg in review: {e}")
     rows=[]
     clusters=unmatched_clusters()[:3]
     if clusters:
@@ -3017,6 +3027,129 @@ def unm_group(u):
         if any(x.get("id")==u.get("id") for x in cl["items"]): return cl["items"]
     return [u]
 
+# ── آزمون یادگرفته‌ها (۵ آذر ۱۴۰۵): هر چیزی که صاحب فروشگاه یاد می‌دهد («این جمله یعنی این موضوع») ثبت می‌شود و
+# بعد از هر یادگیری تازه دوباره سنجیده می‌شود؛ اگر یادگیری تازه جواب درست قبلی را عوض کرد، همان لحظه هشدار.
+REG_FILE = "regression.json"
+REG_MAX = 1500
+regression: list = []     # [{"q","iid","ok","ts"}]
+
+async def load_reg():
+    global regression
+    d=await _rj(REG_FILE,list)
+    regression=[x for x in d if isinstance(x,dict) and x.get("q") and x.get("iid")] if isinstance(d,list) else []
+
+def reg_add(pairs):
+    """(جمله، شناسه‌ی موضوع) های تأییدشده به آزمون؛ جمله‌ی تکراری با موضوع تازه جایگزین می‌شود."""
+    changed=False
+    for q,iid in pairs:
+        q=(q or "").strip()[:200]
+        if not q or not iid: continue
+        n=faq_norm(q)
+        regression[:]=[x for x in regression if faq_norm(x["q"])!=n]
+        regression.append({"q":q,"iid":iid,"ok":True,"ts":gregorian_now()}); changed=True
+    del regression[:-REG_MAX]
+    if changed: _bg(_wj(REG_FILE,regression),"save regression")
+
+def reg_check():
+    """(تازه‌خراب‌شده‌ها [(جمله، موضوع درست، موضوع فعلی)], درست, کل) — موضوع حذف‌شده شمرده نمی‌شود."""
+    broke=[]; ok=total=0; its=brain_intents()
+    for x in regression:
+        want=faq_item(x["iid"])
+        if not want or not want.get("enabled",True): continue
+        total+=1
+        got,_=brain.match(x["q"],its)
+        good=bool(got) and got.get("id")==x["iid"]
+        if good: ok+=1
+        elif x.get("ok",True): broke.append((x["q"],faq_title(want),faq_title(got) if got else "نفهمید"))
+        x["ok"]=good
+    if broke: _bg(_wj(REG_FILE,regression),"save regression")
+    return broke,ok,total
+
+def reg_warn():
+    """متن هشدار اگر یادگیری تازه جواب درست قبلی را عوض کرده باشد؛ وگرنه خالی."""
+    broke,_,_=reg_check()
+    if not broke: return ""
+    lines=[f"• «{_fit(q,50)}» قبلاً «{w}» بود، حالا «{g}»" for q,w,g in broke[:4]]
+    return ("\n\n⚠️ این یادگیری جواب درست قبلی را عوض کرد:\n"+"\n".join(lines)+
+            "\nاگر درست نیست، از ‎/review‎ همان جمله را دوباره به موضوع درست وصل کنید.")
+
+# ── پیشنهادهای بازبینی شبانه‌ی مغز مرکزی (app/review.py): برای صاحب فروشگاه با تأیید یک‌لمسی
+def review_store(op):
+    items=[]
+    for i,x in enumerate(op.get("items") or []):
+        if not isinstance(x,dict) or not x.get("q"): continue
+        if x.get("kind")=="example" and not faq_item(str(x.get("iid") or "")): continue
+        if x.get("kind")=="new_answer" and not str(x.get("answer") or "").strip(): continue
+        items.append({"id":f"{int(time.time())%100000}{i}","q":str(x["q"])[:200],"kind":x["kind"],
+                      "iid":str(x.get("iid") or ""),"answer":str(x.get("answer") or "")[:700],
+                      "why":str(x.get("why") or "")[:200],"st":"new"})
+    settings["ai_review"]={"at":op.get("at"),"summary":str(op.get("summary") or "")[:800],"items":items[:10],
+                           "leads":[x for x in (op.get("leads") or []) if isinstance(x,dict)][:5],
+                           "gaps":[str(g)[:200] for g in (op.get("gaps") or [])][:5]}
+    return settings["ai_review"]
+
+def review_text(r):
+    out=["<b>🌙 بازبینی شبانه‌ی مغز مرکزی</b>",HR]
+    if r.get("summary"): out.append(esc(r["summary"]))
+    pend=[x for x in r["items"] if x["st"]=="new"]
+    if pend:
+        out += ["","<b>💡 پیشنهاد برای هر سه پلتفرم</b> (تأیید = از امروز همین را جواب می‌دهد):"]
+        for k,x in enumerate(pend,1):
+            if x["kind"]=="example":
+                it=faq_item(x["iid"])
+                out.append(f"{to_fa(k)}. «{esc(_fit(x['q'],70))}» ← یعنی «{esc(faq_title(it) if it else '?')}»")
+            else:
+                out.append(f"{to_fa(k)}. «{esc(_fit(x['q'],70))}» ← جواب تازه:\n    «{esc(_fit(x['answer'],200))}»")
+            if x.get("why"): out.append(f"    <i>{esc(_fit(x['why'],90))}</i>")
+    done=[x for x in r["items"] if x["st"]!="new"]
+    if done: out.append(f"\n✔️ {to_fa(len(done))} پیشنهاد بررسی شد")
+    if r.get("leads"):
+        out += ["","<b>🔥 مشتری‌هایی که آماده‌ی خرید بودند و رها شدند</b>:"]
+        out += [f"• {esc(x.get('who') or '—')} ({esc(x.get('channel') or '')}): {esc(_fit(x.get('why') or '',90))}" for x in r["leads"]]
+    if r.get("gaps"):
+        out += ["","<b>📭 اطلاعاتی که مشتری‌ها خواستند و ثبت نیست</b>:"]+[f"• {esc(g)}" for g in r["gaps"]]
+    out += ["","<i>پیشنهادها را هوش مصنوعی داده؛ پیش از تأیید بخوانید.</i>"]
+    return _fit("\n".join(out),TEXT_LIMIT)
+
+def review_kb(r):
+    pend=[x for x in r["items"] if x["st"]=="new"]
+    rows=[[InlineKeyboardButton(f"✅ {to_fa(k)}",callback_data=f"sg_ok_{x['id']}"),
+           InlineKeyboardButton(f"✖️ {to_fa(k)}",callback_data=f"sg_no_{x['id']}")] for k,x in enumerate(pend,1)]
+    if len(pend)>1: rows.append([InlineKeyboardButton("✅ تأیید همه",callback_data="sg_all")])
+    return InlineKeyboardMarkup(rows) if rows else None
+
+async def review_apply(x):
+    """یک پیشنهاد تأییدشده را اعمال می‌کند. خروجی: متن کوتاه نتیجه."""
+    if x["kind"]=="example":
+        it=faq_item(x["iid"])
+        if not it: return "موضوع دیگر وجود ندارد"
+        if x["q"] not in (it.get("examples") or []): it.setdefault("examples",[]).append(x["q"])
+        await save_faq()
+        try: await unmatched_remove(x["q"])
+        except Exception: pass
+        reg_add([(x["q"],it["id"])])
+        return f"یاد گرفت: یعنی «{faq_title(it)}»"
+    it=await unm_make_intent([x["q"]],x["answer"])
+    return "جواب تازه ساخته شد"
+
+async def review_callback(query,data):
+    r=settings.get("ai_review")
+    if not r: return await query.answer("پیشنهادی نمانده",show_alert=True)
+    if data=="sg_all": sel=[x for x in r["items"] if x["st"]=="new"]
+    else:
+        sel=[x for x in r["items"] if x["id"]==data[6:] and x["st"]=="new"]
+    if not sel: return await query.answer("قبلاً بررسی شده")
+    res=[]
+    for x in sel:
+        if data.startswith("sg_no_"): x["st"]="no"; res.append("رد شد")
+        else:
+            res.append(await review_apply(x)); x["st"]="ok"
+    await save_settings()
+    warn=reg_warn() if not data.startswith("sg_no_") else ""
+    await query.answer(("✅ "+"؛ ".join(res[:3]))[:190],show_alert=bool(warn))
+    try: await query.message.edit_text(review_text(r)+(esc(warn) if warn else ""),parse_mode="HTML",reply_markup=review_kb(r))
+    except Exception as e: logger.debug(f"review edit: {e}")
+
 async def unm_make_intent(texts,answer,uid_list=()):
     """نیت تازه از جمله‌های مشتری و جواب مدیر؛ جمله‌ها از فهرست بی‌پاسخ برداشته می‌شوند."""
     texts=[t for i,t in enumerate(texts) if t and t not in texts[:i]]
@@ -3031,6 +3164,7 @@ async def unm_make_intent(texts,answer,uid_list=()):
         learn_data["log"].insert(0,{"id":new_btn_id(),"text":t,"intent":it["id"],"src":"admin-review","ts":gregorian_now()})
     del learn_data["log"][300:]
     await save_faq(); await save_unmatched(); await save_learn()
+    reg_add([(t,it["id"]) for t in texts])
     return it
 
 async def unm_typed(update,ctx,mode,text):
@@ -3048,10 +3182,11 @@ async def unm_typed(update,ctx,mode,text):
                 if t not in (it.get("examples") or []): it.setdefault("examples",[]).append(t)
             unmatched[:]=[x for x in unmatched if x.get("id")!=u["id"]]
             await save_faq(); await save_unmatched()
+            reg_add([(u["text"],it["id"]),(std,it["id"])])
             ctx.user_data.pop("mode",None); ctx.user_data.pop("unm_id",None)
             await msg.reply_text(f"✅ با این جمله فهمیدم: یعنی «{faq_title(it)}».\n"
-                                 f"هر دو جمله («{_fit(u['text'],50)}» و «{_fit(std,50)}») را یاد گرفتم؛ از این به بعد خودم جواب می‌دهم.",
-                                 reply_markup=main_menu())
+                                 f"هر دو جمله («{_fit(u['text'],50)}» و «{_fit(std,50)}») را یاد گرفتم؛ از این به بعد خودم جواب می‌دهم."
+                                 +reg_warn(),reply_markup=main_menu())
             return True
         ctx.user_data.update({"mode":"unm_ans","unm_std":std})
         await msg.reply_text(f"📝 «{std}»\nبا این جمله هم موضوع آماده‌ای پیدا نکردم.\n\n✍️ حالا جواب استاندارد را بنویسید "
@@ -3063,7 +3198,7 @@ async def unm_typed(update,ctx,mode,text):
         it=await unm_make_intent(texts,text.strip())
         for k in ("mode","unm_id","unm_std","unm_group"): ctx.user_data.pop(k,None)
         await msg.reply_text("✅ نیت تازه ساخته شد؛ از این به بعد ربات در تلگرام، بله و اینستاگرام همین را جواب می‌دهد.\n"
-                             "کلیدواژه‌ها را اگر خواستید از همین کارت ویرایش کنید 👇",reply_markup=main_menu())
+                             "کلیدواژه‌ها را اگر خواستید از همین کارت ویرایش کنید 👇"+reg_warn(),reply_markup=main_menu())
         kb=faq_view_kb(it)
         if u.get("uid"):
             kb=InlineKeyboardMarkup([[InlineKeyboardButton("📤 همین جواب را برای همان مشتری هم بفرست",
@@ -3798,6 +3933,8 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             human_until.pop(cu,None); set_human(cu,ctx.bot)   # pop تا خبرِ ورود در تاپیک بیاید
             await query.answer("🧑‍💼 گفتگو دست شماست")
         return
+    if data.startswith("sg_") and is_admin(uid):
+        await review_callback(query,data); return
     if data.startswith("txfix_") and is_admin(uid):
         await tx_fix_callback(query,ctx,data[6:]); return
     if data.startswith(("lrnq_","lrnx_")) and query.message and support_group() \
@@ -4120,7 +4257,9 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             if u["text"] not in it["examples"]: it["examples"].append(u["text"])
             unmatched[:] = [x for x in unmatched if x.get("id")!=uid_]
             await save_faq(); await save_unmatched()
-            await query.answer(f"✅ یاد گرفت: این یعنی «{faq_title(it)}»",show_alert=True)
+            reg_add([(u["text"],it["id"])])
+            warn=reg_warn()
+            await query.answer((f"✅ یاد گرفت: این یعنی «{faq_title(it)}»"+(" — ⚠️ یک جواب قبلی عوض شد؛ گزارش ‎/review‎" if warn else ""))[:190],show_alert=True)
             await safe_edit(query.message,unmatched_text(),
                             reply_markup=unmatched_kb(),parse_mode="HTML")
 
@@ -5914,7 +6053,7 @@ def apply_panel_op(op):
             responses[key]=str(op.get("text") or "")[:4000]; return False,True
     return False,False
 
-async def process_panel_inbox():
+async def process_panel_inbox(bot=None):
     """یک دور: همه‌ی تغییرهای در صف، به ترتیب زمان. فایل هر تغییر بعد از اعمال پاک می‌شود."""
     try: files=sorted(f for f in os.listdir(PANEL_INBOX) if f.endswith(".json"))
     except FileNotFoundError: return 0
@@ -5931,6 +6070,13 @@ async def process_panel_inbox():
         except OSError as e:
             logger.error(f"panel op {f}: پاک نشد، اعمال نمی‌شود: {e}"); continue
         if op is None: continue
+        if isinstance(op,dict) and op.get("op")=="review_suggest":     # بازبینی شبانه‌ی مغز مرکزی
+            try:
+                r=review_store(op); await save_settings()
+                if bot and (r["items"] or r["leads"] or r["gaps"] or r["summary"]):
+                    await bot.send_message(OWNER_ID,review_text(r),parse_mode="HTML",reply_markup=review_kb(r))
+            except Exception as e: logger.warning(f"panel op {f}: {e}")
+            continue
         if isinstance(op,dict) and op.get("op")=="unmatched_add":      # سؤال نفهمیده‌ی بله یا اینستاگرام
             try: await log_unmatched(str(op.get("text") or "")[:_UNM_MAX],None,str(op.get("src") or ""),
                                      who=str(op.get("who") or "")[:60],ext_uid=op.get("ext_uid") if isinstance(op.get("ext_uid"),(int,str)) else None)
@@ -5944,10 +6090,10 @@ async def process_panel_inbox():
     if files: logger.info(f"پنل وب: {len(files)} تغییر اعمال شد")
     return len(files)
 
-async def _panel_inbox_loop():
+async def _panel_inbox_loop(bot=None):
     while True:
         await asyncio.sleep(2)
-        try: await process_panel_inbox()
+        try: await process_panel_inbox(bot)
         except Exception as e: logger.error(f"panel inbox: {e}")
 
 # ════════════════════════════════════════════════
@@ -6000,10 +6146,12 @@ async def core_think(text,user,dry=False):
     if not key: return None
     try:
         import httpx
-        async with httpx.AsyncClient(timeout=40,trust_env=False) as cl:
+        # فروشنده‌ی هوشمند ممکن است چند نوبت ابزار بزند (و یک دور وارسی)، پس مهلت بیشتر
+        async with httpx.AsyncClient(timeout=90,trust_env=False) as cl:
             r=await cl.post(CORE_URL+"/internal/think",headers={"X-Internal-Key":key},
                             json={"channel":CORE_CHANNEL,"user_id":str(user.id),"username":user.username or "",
-                                  "text":(text or "")[:2000],"test":bool(dry)})
+                                  "text":(text or "")[:2000],"test":bool(dry),
+                                  "context":[list(x) for x in _recent.get(user.id,[])][-6:]})
         if r.status_code!=200:
             logger.warning(f"core think: HTTP {r.status_code}"); return None
         d=r.json()
@@ -6951,6 +7099,7 @@ async def learn_example(text,iid,src):
                                 "ts":gregorian_now()})
     del learn_data["log"][300:]
     await save_faq(); await save_learn()
+    if src in ("admin","admin-reply"): reg_add([(t,iid)])
     logger.info(f"learn: «{t}» → {iid} ({src})")
     return True
 
@@ -8073,7 +8222,7 @@ async def post_init(app):
     await load_workhours(); await load_buttons(); await load_settings()
     await load_stats(); await load_menu(); await load_places(); await load_backup_registry()
     await load_admins(); await bc_load(); await load_faq(); await load_unmatched()
-    await load_learn()
+    await load_learn(); await load_reg()
     _spawn(_spam_cleanup_loop(),"پاکسازی")
     _spawn(_stats_flush_loop(),"ذخیره‌ی آمار")
     _spawn(_auto_backup_loop(app.bot),"بکاپ هفتگی")
@@ -8087,7 +8236,7 @@ async def post_init(app):
     _spawn(_visit_loop(app.bot),"یادآوری بازدید")
     _spawn(_sla_loop(app.bot),"هشدار انتظار")
     if SHARED_FILES: _spawn(_shared_loop(),"دانش مشترک با تلگرام")
-    _spawn(_panel_inbox_loop(),"تغییرهای پنل وب")
+    _spawn(_panel_inbox_loop(app.bot),"تغییرهای پنل وب")
     _spawn(_status_loop(),"گزارش وضعیت")
     _spawn(_ig_notify_loop(app.bot),"خبرهای اینستاگرام")
     global BOT_USERNAME

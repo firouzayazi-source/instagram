@@ -690,3 +690,54 @@ os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-3000:]
+
+
+def test_night_review_approval_and_regression(tmp_path):
+    """پیشنهادهای بازبینی شبانه: تأیید یک‌لمسی (جمله‌ی نمونه یا جواب تازه)؛ آزمون یادگرفته‌ها عوض شدن جواب قبلی را می‌گیرد."""
+    code = r"""
+import asyncio, os, sys, types
+os.environ.update(BOT_TOKEN='0:x', ADMIN_ID='1'); os.environ.pop('BOT_PLATFORM', None)
+sys.path.insert(0, %r)
+import bot
+sent = []
+class FakeBot:
+    async def send_message(self, chat, text, **k): sent.append((chat, text, k.get('reply_markup')))
+async def run():
+    await bot.init_db(); await bot.load_settings(); await bot.load_faq(); await bot.load_reg()
+    os.makedirs('inbox', exist_ok=True)
+    import json
+    json.dump({'op': 'review_suggest', 'summary': 'دو سؤال اقساط بی‌جواب ماند', 'items': [
+        {'q': 'زلزلاخ قسطی', 'kind': 'example', 'iid': 'i_install', 'why': 'غلط تایپی'},
+        {'q': 'پیمونک ارغوانی تعمیر', 'kind': 'new_answer', 'answer': 'بله، گوشی رو بیارید فروشگاه 🔧', 'why': 'چند بار پرسیده شد'},
+        {'q': 'نامعتبر', 'kind': 'example', 'iid': 'ناموجود'}],
+        'leads': [{'channel': 'dm', 'who': '@sara', 'why': 'اقساط پرسید'}], 'gaps': ['هزینه‌ی ارسال']},
+        open('inbox/1-a.json', 'w', encoding='utf-8'), ensure_ascii=False)
+    assert await bot.process_panel_inbox(FakeBot()) == 1
+    chat, text, kb = sent[-1]
+    assert chat == bot.OWNER_ID and 'دو سؤال اقساط' in text and '@sara' in text and 'هزینه‌ی ارسال' in text
+    r = bot.settings['ai_review']; assert len(r['items']) == 2
+    answered = []
+    async def ans(t='', show_alert=False): answered.append(t)
+    async def edit(*a, **k): pass
+    q = types.SimpleNamespace(answer=ans, message=types.SimpleNamespace(edit_text=edit))
+    await bot.review_callback(q, 'sg_ok_' + r['items'][0]['id'])
+    hit, _ = bot.brain.match('زلزلاخ قسطی', bot.brain_intents()); assert hit['id'] == 'i_install'
+    await bot.review_callback(q, 'sg_all')
+    it = bot.faq[-1]; assert it['answer'].startswith('بله، گوشی') and 'پیمونک ارغوانی تعمیر' in it['examples']
+    assert all(x['st'] == 'ok' for x in r['items'])
+    # آزمون یادگرفته‌ها: هر دو ثبت شدند و درست‌اند
+    broke, ok, total = bot.reg_check(); assert broke == [] and ok == total == 2
+    # یادگیری تازه‌ای که جمله‌ی قبلی را به موضوع دیگری می‌برد ← هشدار
+    other = bot.faq_item('i_address'); other.setdefault('examples', []).append('زلزلاخ قسطی')
+    bot.faq_item('i_install')['examples'].remove('زلزلاخ قسطی')
+    w = bot.reg_warn(); assert 'زلزلاخ قسطی' in w and 'عوض کرد' in w
+    assert bot.reg_warn() == ''                          # همان خرابی دوباره هشدار نمی‌دهد
+    await bot.db.close()
+try:
+    asyncio.run(run()); print('OK', flush=True)
+except BaseException:
+    import traceback; traceback.print_exc(); sys.stderr.flush()
+os._exit(0)
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-3000:]

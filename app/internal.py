@@ -53,6 +53,7 @@ class ThinkIn(BaseModel):
     username: str = ""
     text: str
     test: bool = False
+    context: list[list[str]] = []     # چند پیام اخیر همین گفتگو در ربات: [["مشتری"|"ربات", متن], …]
 
 
 @router.post("/think")
@@ -61,9 +62,12 @@ async def think(body: ThinkIn, request: Request, x_internal_key: str | None = He
     _check(request, x_internal_key)
     if body.channel not in BOT_CHANNELS or not body.text.strip():
         raise HTTPException(422)
+    lines = [f"{'مشتری' if (x[0] if x else '') == 'مشتری' else 'ربات'}: {str(x[1])[:300]}"
+             for x in body.context[-6:] if isinstance(x, list) and len(x) == 2 and str(x[1]).strip()]
+    note = ("گفتگوی اخیر همین مشتری در ربات (جواب‌های آماده‌ی خود ربات):\n" + "\n".join(lines)) if lines else ""
     with db.connect() as c:
         d = await ai.decide(c, channel="telegram", text=body.text.strip()[:2000], user_id=f"{BOT_CHANNELS[body.channel]}:{body.user_id}",
-                            username=body.username or None, is_test=body.test, skip_brain=True)
+                            username=body.username or None, is_test=body.test, skip_brain=True, note=note)
         if d.log_id and d.action == "reply" and not body.test:
             ai.mark_log(c, d.log_id, "sent")
         ask = ai.settings(c)["ask_feedback"]
