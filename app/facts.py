@@ -169,7 +169,7 @@ def store_info(topic: str, question: str = "") -> dict:
             faqs = [dict(r) for r in c.execute(
                 f"SELECT question, answer FROM faq WHERE id IN ({','.join('?' * len(ids))})", ids)] if ids else []
         if info:
-            out["facts"].append("اطلاعات کسب‌وکار: " + info[:1500])
+            out["facts"].append("اطلاعات کسب‌وکار: " + info[:4000])
         for f in faqs[:3]:
             out["facts"].append(f"{f['question']}: {f['answer']}")
     if not out["facts"]:
