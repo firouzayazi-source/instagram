@@ -14,7 +14,7 @@
   "year": 2007,
   "announced": "2007-01-09",
   "chip": "Samsung ARM11 (412 MHz)",
-  "ram_gb": 0.125,
+  "ram_gb": null,
   "display": {
    "inch": 3.5,
    "type": "LCD",
@@ -37,14 +37,18 @@
   "water": null,
   "body": "aluminum",
   "weight_g": 135,
-  "battery_mah": 1400,
+  "battery_mah": null,
   "features": [
    "multi-touch",
    "EDGE"
   ],
   "max_ios": 3,
   "discontinued": 2008,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/112445",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2007/01/09Apple-Reinvents-the-Phone-with-iPhone/"
+  ]
  },
  {
   "key": "3g",
@@ -57,7 +61,7 @@
   "year": 2008,
   "announced": "2008-06-09",
   "chip": "Samsung ARM11 (412 MHz)",
-  "ram_gb": 0.125,
+  "ram_gb": null,
   "display": {
    "inch": 3.5,
    "type": "LCD",
@@ -88,14 +92,18 @@
   "water": null,
   "body": "plastic",
   "weight_g": 133,
-  "battery_mah": 1150,
+  "battery_mah": null,
   "features": [
    "GPS",
    "App Store"
   ],
   "max_ios": 4,
   "discontinued": 2010,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/112496",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2008/06/09Apple-Introduces-the-New-iPhone-3G/"
+  ]
  },
  {
   "key": "3gs",
@@ -108,7 +116,7 @@
   "year": 2009,
   "announced": "2009-06-08",
   "chip": "Samsung ARM Cortex-A8 (600 MHz)",
-  "ram_gb": 0.25,
+  "ram_gb": null,
   "display": {
    "inch": 3.5,
    "type": "LCD",
@@ -119,6 +127,7 @@
   "front_camera": "none",
   "optical_zoom": 0,
   "storage_gb": [
+   8,
    16,
    32
   ],
@@ -139,7 +148,7 @@
   "water": null,
   "body": "plastic",
   "weight_g": 135,
-  "battery_mah": 1219,
+  "battery_mah": null,
   "features": [
    "video recording",
    "Voice Control",
@@ -147,7 +156,11 @@
   ],
   "max_ios": 6,
   "discontinued": 2012,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/112307",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2009/06/08Apple-Announces-the-New-iPhone-3GS-The-Fastest-Most-Powerful-iPhone-Yet/"
+  ]
  },
  {
   "key": "4",
@@ -161,7 +174,7 @@
   "year": 2010,
   "announced": "2010-06-07",
   "chip": "A4",
-  "ram_gb": 0.5,
+  "ram_gb": null,
   "display": {
    "inch": 3.5,
    "type": "LCD",
@@ -172,6 +185,7 @@
   "front_camera": "0.3MP (VGA)",
   "optical_zoom": 0,
   "storage_gb": [
+   8,
    16,
    32
   ],
@@ -192,7 +206,7 @@
   "water": null,
   "body": "stainless steel",
   "weight_g": 137,
-  "battery_mah": 1420,
+  "battery_mah": null,
   "features": [
    "Retina display",
    "FaceTime",
@@ -201,7 +215,11 @@
   ],
   "max_ios": 7,
   "discontinued": 2013,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/112562",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2010/06/07Apple-Presents-iPhone-4/"
+  ]
  },
  {
   "key": "4s",
@@ -215,7 +233,7 @@
   "year": 2011,
   "announced": "2011-10-04",
   "chip": "A5",
-  "ram_gb": 0.5,
+  "ram_gb": null,
   "display": {
    "inch": 3.5,
    "type": "LCD",
@@ -226,6 +244,7 @@
   "front_camera": "0.3MP (VGA)",
   "optical_zoom": 0,
   "storage_gb": [
+   8,
    16,
    32,
    64
@@ -247,14 +266,18 @@
   "water": null,
   "body": "stainless steel",
   "weight_g": 140,
-  "battery_mah": 1432,
+  "battery_mah": null,
   "features": [
    "Siri",
    "1080p video"
   ],
   "max_ios": 9,
   "discontinued": 2014,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/112004",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2011/10/04Apple-Launches-iPhone-4S-iOS-5-iCloud/"
+  ]
  },
  {
   "key": "5",
@@ -268,7 +291,7 @@
   "year": 2012,
   "announced": "2012-09-12",
   "chip": "A6",
-  "ram_gb": 1,
+  "ram_gb": null,
   "display": {
    "inch": 4.0,
    "type": "LCD",
@@ -300,7 +323,7 @@
   "water": null,
   "body": "aluminum",
   "weight_g": 112,
-  "battery_mah": 1440,
+  "battery_mah": null,
   "features": [
    "4-inch display",
    "LTE",
@@ -308,7 +331,11 @@
   ],
   "max_ios": 10,
   "discontinued": 2013,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/112016",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2012/09/12Apple-Introduces-iPhone-5/"
+  ]
  },
  {
   "key": "5c",
@@ -321,7 +348,7 @@
   "year": 2013,
   "announced": "2013-09-10",
   "chip": "A6",
-  "ram_gb": 1,
+  "ram_gb": null,
   "display": {
    "inch": 4.0,
    "type": "LCD",
@@ -332,6 +359,7 @@
   "front_camera": "1.2MP",
   "optical_zoom": 0,
   "storage_gb": [
+   8,
    16,
    32
   ],
@@ -364,13 +392,17 @@
   "water": null,
   "body": "polycarbonate (plastic)",
   "weight_g": 132,
-  "battery_mah": 1510,
+  "battery_mah": null,
   "features": [
    "colorful polycarbonate body"
   ],
   "max_ios": 10,
   "discontinued": 2015,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111917",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2013/09/10Apple-Introduces-iPhone-5c-The-Most-Colorful-iPhone-Yet/"
+  ]
  },
  {
   "key": "5s",
@@ -383,7 +415,7 @@
   "year": 2013,
   "announced": "2013-09-10",
   "chip": "A7",
-  "ram_gb": 1,
+  "ram_gb": null,
   "display": {
    "inch": 4.0,
    "type": "LCD",
@@ -419,7 +451,7 @@
   "water": null,
   "body": "aluminum",
   "weight_g": 112,
-  "battery_mah": 1560,
+  "battery_mah": null,
   "features": [
    "Touch ID",
    "64-bit chip",
@@ -428,7 +460,11 @@
   ],
   "max_ios": 12,
   "discontinued": 2016,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111973",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2013/09/10Apple-Announces-iPhone-5s-The-Most-Forward-Thinking-Smartphone-in-the-World/"
+  ]
  },
  {
   "key": "6",
@@ -442,7 +478,7 @@
   "year": 2014,
   "announced": "2014-09-09",
   "chip": "A8",
-  "ram_gb": 1,
+  "ram_gb": null,
   "display": {
    "inch": 4.7,
    "type": "LCD",
@@ -454,6 +490,7 @@
   "optical_zoom": 0,
   "storage_gb": [
    16,
+   32,
    64,
    128
   ],
@@ -478,14 +515,18 @@
   "water": null,
   "body": "aluminum",
   "weight_g": 129,
-  "battery_mah": 1810,
+  "battery_mah": null,
   "features": [
    "Apple Pay (NFC)",
    "4.7-inch display"
   ],
   "max_ios": 12,
   "discontinued": 2016,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111954",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2014/09/09Apple-Announces-iPhone-6-iPhone-6-Plus-The-Biggest-Advancements-in-iPhone-History/"
+  ]
  },
  {
   "key": "6 plus",
@@ -499,7 +540,7 @@
   "year": 2014,
   "announced": "2014-09-09",
   "chip": "A8",
-  "ram_gb": 1,
+  "ram_gb": null,
   "display": {
    "inch": 5.5,
    "type": "LCD",
@@ -535,14 +576,18 @@
   "water": null,
   "body": "aluminum",
   "weight_g": 172,
-  "battery_mah": 2915,
+  "battery_mah": null,
   "features": [
    "Apple Pay (NFC)",
    "optical image stabilization"
   ],
   "max_ios": 12,
   "discontinued": 2016,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111940",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2014/09/09Apple-Announces-iPhone-6-iPhone-6-Plus-The-Biggest-Advancements-in-iPhone-History/"
+  ]
  },
  {
   "key": "6s",
@@ -555,7 +600,7 @@
   "year": 2015,
   "announced": "2015-09-09",
   "chip": "A9",
-  "ram_gb": 2,
+  "ram_gb": null,
   "display": {
    "inch": 4.7,
    "type": "LCD",
@@ -567,6 +612,7 @@
   "optical_zoom": 0,
   "storage_gb": [
    16,
+   32,
    64,
    128
   ],
@@ -595,7 +641,7 @@
   "water": null,
   "body": "aluminum",
   "weight_g": 143,
-  "battery_mah": 1715,
+  "battery_mah": null,
   "features": [
    "3D Touch",
    "Live Photos",
@@ -603,7 +649,11 @@
   ],
   "max_ios": 15,
   "discontinued": 2018,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111952",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2015/09/09Apple-Introduces-iPhone-6s-iPhone-6s-Plus/"
+  ]
  },
  {
   "key": "6s plus",
@@ -617,7 +667,7 @@
   "year": 2015,
   "announced": "2015-09-09",
   "chip": "A9",
-  "ram_gb": 2,
+  "ram_gb": null,
   "display": {
    "inch": 5.5,
    "type": "LCD",
@@ -629,6 +679,7 @@
   "optical_zoom": 0,
   "storage_gb": [
    16,
+   32,
    64,
    128
   ],
@@ -657,7 +708,7 @@
   "water": null,
   "body": "aluminum",
   "weight_g": 192,
-  "battery_mah": 2750,
+  "battery_mah": null,
   "features": [
    "3D Touch",
    "Live Photos",
@@ -665,7 +716,11 @@
   ],
   "max_ios": 15,
   "discontinued": 2018,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111996",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2015/09/09Apple-Introduces-iPhone-6s-iPhone-6s-Plus/"
+  ]
  },
  {
   "key": "se",
@@ -682,7 +737,7 @@
   "year": 2016,
   "announced": "2016-03-21",
   "chip": "A9",
-  "ram_gb": 2,
+  "ram_gb": null,
   "display": {
    "inch": 4.0,
    "type": "LCD",
@@ -694,7 +749,9 @@
   "optical_zoom": 0,
   "storage_gb": [
    16,
-   64
+   32,
+   64,
+   128
   ],
   "colors": [
    {
@@ -721,7 +778,7 @@
   "water": null,
   "body": "aluminum",
   "weight_g": 113,
-  "battery_mah": 1624,
+  "battery_mah": null,
   "features": [
    "4-inch display",
    "Live Photos",
@@ -729,7 +786,11 @@
   ],
   "max_ios": 15,
   "discontinued": 2018,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/112005",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2016/03/21Apple-Introduces-iPhone-SE-The-Most-Powerful-Phone-with-a-Four-inch-Display/"
+  ]
  },
  {
   "key": "7",
@@ -743,7 +804,7 @@
   "year": 2016,
   "announced": "2016-09-07",
   "chip": "A10 Fusion",
-  "ram_gb": 2,
+  "ram_gb": null,
   "display": {
    "inch": 4.7,
    "type": "LCD",
@@ -791,7 +852,7 @@
   "water": "IP67",
   "body": "aluminum",
   "weight_g": 138,
-  "battery_mah": 1960,
+  "battery_mah": null,
   "features": [
    "stereo speakers",
    "no headphone jack",
@@ -799,7 +860,11 @@
   ],
   "max_ios": 15,
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111943",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2016/09/apple-introduces-iphone-7-iphone-7-plus/"
+  ]
  },
  {
   "key": "7 plus",
@@ -813,7 +878,7 @@
   "year": 2016,
   "announced": "2016-09-07",
   "chip": "A10 Fusion",
-  "ram_gb": 3,
+  "ram_gb": null,
   "display": {
    "inch": 5.5,
    "type": "LCD",
@@ -861,7 +926,7 @@
   "water": "IP67",
   "body": "aluminum",
   "weight_g": 188,
-  "battery_mah": 2900,
+  "battery_mah": null,
   "features": [
    "dual camera",
    "Portrait mode",
@@ -870,7 +935,11 @@
   ],
   "max_ios": 15,
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111953",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2016/09/apple-introduces-iphone-7-iphone-7-plus/"
+  ]
  },
  {
   "key": "8",
@@ -884,7 +953,7 @@
   "year": 2017,
   "announced": "2017-09-12",
   "chip": "A11 Bionic",
-  "ram_gb": 2,
+  "ram_gb": null,
   "display": {
    "inch": 4.7,
    "type": "LCD",
@@ -896,6 +965,7 @@
   "optical_zoom": 0,
   "storage_gb": [
    64,
+   128,
    256
   ],
   "colors": [
@@ -923,7 +993,7 @@
   "water": "IP67",
   "body": "aluminum",
   "weight_g": 148,
-  "battery_mah": 1821,
+  "battery_mah": null,
   "features": [
    "wireless charging (Qi)",
    "glass back",
@@ -932,7 +1002,11 @@
   ],
   "max_ios": 16,
   "discontinued": 2020,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111976",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2017/09/iphone-8-and-iphone-8-plus-a-new-generation-of-iphone/"
+  ]
  },
  {
   "key": "8 plus",
@@ -946,7 +1020,7 @@
   "year": 2017,
   "announced": "2017-09-12",
   "chip": "A11 Bionic",
-  "ram_gb": 3,
+  "ram_gb": null,
   "display": {
    "inch": 5.5,
    "type": "LCD",
@@ -958,6 +1032,7 @@
   "optical_zoom": 2,
   "storage_gb": [
    64,
+   128,
    256
   ],
   "colors": [
@@ -985,7 +1060,7 @@
   "water": "IP67",
   "body": "aluminum",
   "weight_g": 202,
-  "battery_mah": 2691,
+  "battery_mah": null,
   "features": [
    "wireless charging (Qi)",
    "Portrait Lighting",
@@ -994,7 +1069,11 @@
   ],
   "max_ios": 16,
   "discontinued": 2020,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111950",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2017/09/iphone-8-and-iphone-8-plus-a-new-generation-of-iphone/"
+  ]
  },
  {
   "key": "x",
@@ -1010,7 +1089,7 @@
   "year": 2017,
   "announced": "2017-09-12",
   "chip": "A11 Bionic",
-  "ram_gb": 3,
+  "ram_gb": null,
   "display": {
    "inch": 5.8,
    "type": "OLED",
@@ -1041,7 +1120,7 @@
   "water": "IP67",
   "body": "stainless steel",
   "weight_g": 174,
-  "battery_mah": 2716,
+  "battery_mah": null,
   "features": [
    "Face ID",
    "notch display",
@@ -1051,7 +1130,11 @@
   ],
   "max_ios": 16,
   "discontinued": 2018,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111864",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2017/09/the-future-is-here-iphone-x/"
+  ]
  },
  {
   "key": "xs",
@@ -1066,7 +1149,7 @@
   "year": 2018,
   "announced": "2018-09-12",
   "chip": "A12 Bionic",
-  "ram_gb": 4,
+  "ram_gb": null,
   "display": {
    "inch": 5.8,
    "type": "OLED",
@@ -1102,7 +1185,7 @@
   "water": "IP68",
   "body": "stainless steel",
   "weight_g": 177,
-  "battery_mah": 2658,
+  "battery_mah": null,
   "features": [
    "Face ID",
    "eSIM (first iPhone with eSIM)",
@@ -1111,7 +1194,11 @@
   ],
   "max_ios": 18,
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111881",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2018/09/iphone-xs-and-iphone-xs-max-bring-the-best-and-biggest-displays-to-iphone/"
+  ]
  },
  {
   "key": "xs max",
@@ -1126,7 +1213,7 @@
   "year": 2018,
   "announced": "2018-09-12",
   "chip": "A12 Bionic",
-  "ram_gb": 4,
+  "ram_gb": null,
   "display": {
    "inch": 6.5,
    "type": "OLED",
@@ -1162,7 +1249,7 @@
   "water": "IP68",
   "body": "stainless steel",
   "weight_g": 208,
-  "battery_mah": 3174,
+  "battery_mah": null,
   "features": [
    "Face ID",
    "eSIM",
@@ -1171,7 +1258,11 @@
   ],
   "max_ios": 18,
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111880",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2018/09/iphone-xs-and-iphone-xs-max-bring-the-best-and-biggest-displays-to-iphone/"
+  ]
  },
  {
   "key": "xr",
@@ -1186,7 +1277,7 @@
   "year": 2018,
   "announced": "2018-09-12",
   "chip": "A12 Bionic",
-  "ram_gb": 3,
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "LCD",
@@ -1234,7 +1325,7 @@
   "water": "IP67",
   "body": "aluminum",
   "weight_g": 194,
-  "battery_mah": 2942,
+  "battery_mah": null,
   "features": [
    "Face ID",
    "Liquid Retina display",
@@ -1243,7 +1334,11 @@
   ],
   "max_ios": 18,
   "discontinued": 2021,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111868",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2018/09/apple-introduces-iphone-xr/"
+  ]
  },
  {
   "key": "11",
@@ -1257,7 +1352,7 @@
   "year": 2019,
   "announced": "2019-09-10",
   "chip": "A13 Bionic",
-  "ram_gb": 4,
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "LCD",
@@ -1305,7 +1400,7 @@
   "water": "IP68",
   "body": "aluminum",
   "weight_g": 194,
-  "battery_mah": 3110,
+  "battery_mah": null,
   "features": [
    "Night mode",
    "ultra-wide camera",
@@ -1314,7 +1409,11 @@
   ],
   "max_ios": null,
   "discontinued": 2022,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111865",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2019/09/apple-introduces-dual-camera-iphone-11/"
+  ]
  },
  {
   "key": "11 pro",
@@ -1328,7 +1427,7 @@
   "year": 2019,
   "announced": "2019-09-10",
   "chip": "A13 Bionic",
-  "ram_gb": 4,
+  "ram_gb": null,
   "display": {
    "inch": 5.8,
    "type": "OLED",
@@ -1368,7 +1467,7 @@
   "water": "IP68",
   "body": "stainless steel",
   "weight_g": 188,
-  "battery_mah": 3046,
+  "battery_mah": null,
   "features": [
    "triple camera",
    "Night mode",
@@ -1376,7 +1475,11 @@
   ],
   "max_ios": null,
   "discontinued": 2020,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111879",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2019/09/iphone-11-pro-and-iphone-11-pro-max-the-most-powerful-and-advanced-smartphones/"
+  ]
  },
  {
   "key": "11 pro max",
@@ -1390,7 +1493,7 @@
   "year": 2019,
   "announced": "2019-09-10",
   "chip": "A13 Bionic",
-  "ram_gb": 4,
+  "ram_gb": null,
   "display": {
    "inch": 6.5,
    "type": "OLED",
@@ -1430,7 +1533,7 @@
   "water": "IP68",
   "body": "stainless steel",
   "weight_g": 226,
-  "battery_mah": 3969,
+  "battery_mah": null,
   "features": [
    "triple camera",
    "Night mode",
@@ -1438,7 +1541,11 @@
   ],
   "max_ios": null,
   "discontinued": 2020,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111878",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2019/09/iphone-11-pro-and-iphone-11-pro-max-the-most-powerful-and-advanced-smartphones/"
+  ]
  },
  {
   "key": "se 2",
@@ -1455,7 +1562,7 @@
   "year": 2020,
   "announced": "2020-04-15",
   "chip": "A13 Bionic",
-  "ram_gb": 3,
+  "ram_gb": null,
   "display": {
    "inch": 4.7,
    "type": "LCD",
@@ -1491,7 +1598,7 @@
   "water": "IP67",
   "body": "aluminum",
   "weight_g": 148,
-  "battery_mah": 1821,
+  "battery_mah": null,
   "features": [
    "Touch ID Home button",
    "wireless charging (Qi)",
@@ -1499,7 +1606,11 @@
   ],
   "max_ios": null,
   "discontinued": 2022,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111882",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2020/04/iphone-se-a-powerful-new-smartphone-in-a-popular-design/"
+  ]
  },
  {
   "key": "12 mini",
@@ -1513,7 +1624,7 @@
   "year": 2020,
   "announced": "2020-10-13",
   "chip": "A14 Bionic",
-  "ram_gb": 4,
+  "ram_gb": null,
   "display": {
    "inch": 5.4,
    "type": "OLED",
@@ -1560,8 +1671,8 @@
   "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
   "water": "IP68",
   "body": "aluminum",
-  "weight_g": 133,
-  "battery_mah": 2227,
+  "weight_g": 135,
+  "battery_mah": null,
   "features": [
    "MagSafe",
    "Ceramic Shield",
@@ -1570,7 +1681,11 @@
   ],
   "max_ios": null,
   "discontinued": 2022,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111877",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2020/10/apple-announces-iphone-12-and-iphone-12-mini-a-new-era-for-iphone-with-5g/"
+  ]
  },
  {
   "key": "12",
@@ -1584,7 +1699,7 @@
   "year": 2020,
   "announced": "2020-10-13",
   "chip": "A14 Bionic",
-  "ram_gb": 4,
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "OLED",
@@ -1632,7 +1747,7 @@
   "water": "IP68",
   "body": "aluminum",
   "weight_g": 164,
-  "battery_mah": 2815,
+  "battery_mah": null,
   "features": [
    "MagSafe",
    "Ceramic Shield",
@@ -1641,7 +1756,11 @@
   ],
   "max_ios": null,
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111876",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2020/10/apple-announces-iphone-12-and-iphone-12-mini-a-new-era-for-iphone-with-5g/"
+  ]
  },
  {
   "key": "12 pro",
@@ -1655,7 +1774,7 @@
   "year": 2020,
   "announced": "2020-10-13",
   "chip": "A14 Bionic",
-  "ram_gb": 6,
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "OLED",
@@ -1694,8 +1813,8 @@
   "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
   "water": "IP68",
   "body": "stainless steel",
-  "weight_g": 187,
-  "battery_mah": 2815,
+  "weight_g": 189,
+  "battery_mah": null,
   "features": [
    "MagSafe",
    "LiDAR",
@@ -1705,7 +1824,11 @@
   ],
   "max_ios": null,
   "discontinued": 2021,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111875",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2020/10/apple-introduces-iphone-12-pro-and-iphone-12-pro-max-with-5g/"
+  ]
  },
  {
   "key": "12 pro max",
@@ -1719,7 +1842,7 @@
   "year": 2020,
   "announced": "2020-10-13",
   "chip": "A14 Bionic",
-  "ram_gb": 6,
+  "ram_gb": null,
   "display": {
    "inch": 6.7,
    "type": "OLED",
@@ -1758,8 +1881,8 @@
   "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
   "water": "IP68",
   "body": "stainless steel",
-  "weight_g": 226,
-  "battery_mah": 3687,
+  "weight_g": 228,
+  "battery_mah": null,
   "features": [
    "MagSafe",
    "LiDAR",
@@ -1770,7 +1893,11 @@
   ],
   "max_ios": null,
   "discontinued": 2021,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111874",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2020/10/apple-introduces-iphone-12-pro-and-iphone-12-pro-max-with-5g/"
+  ]
  },
  {
   "key": "13 mini",
@@ -1784,7 +1911,7 @@
   "year": 2021,
   "announced": "2021-09-14",
   "chip": "A15 Bionic",
-  "ram_gb": 4,
+  "ram_gb": null,
   "display": {
    "inch": 5.4,
    "type": "OLED",
@@ -1831,8 +1958,8 @@
   "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
   "water": "IP68",
   "body": "aluminum",
-  "weight_g": 140,
-  "battery_mah": 2406,
+  "weight_g": 141,
+  "battery_mah": null,
   "features": [
    "MagSafe",
    "Cinematic mode",
@@ -1841,7 +1968,11 @@
   ],
   "max_ios": null,
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111873",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2021/09/apple-introduces-iphone-13-and-iphone-13-mini/"
+  ]
  },
  {
   "key": "13",
@@ -1855,7 +1986,7 @@
   "year": 2021,
   "announced": "2021-09-14",
   "chip": "A15 Bionic",
-  "ram_gb": 4,
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "OLED",
@@ -1902,8 +2033,8 @@
   "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
   "water": "IP68",
   "body": "aluminum",
-  "weight_g": 173,
-  "battery_mah": 3227,
+  "weight_g": 174,
+  "battery_mah": null,
   "features": [
    "MagSafe",
    "Cinematic mode",
@@ -1912,7 +2043,11 @@
   ],
   "max_ios": null,
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111872",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2021/09/apple-introduces-iphone-13-and-iphone-13-mini/"
+  ]
  },
  {
   "key": "13 pro",
@@ -1926,7 +2061,7 @@
   "year": 2021,
   "announced": "2021-09-14",
   "chip": "A15 Bionic",
-  "ram_gb": 6,
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "OLED",
@@ -1970,8 +2105,8 @@
   "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
   "water": "IP68",
   "body": "stainless steel",
-  "weight_g": 203,
-  "battery_mah": 3095,
+  "weight_g": 204,
+  "battery_mah": null,
   "features": [
    "ProMotion 120Hz",
    "MagSafe",
@@ -1982,7 +2117,11 @@
   ],
   "max_ios": null,
   "discontinued": 2022,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111871",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2021/09/apple-unveils-iphone-13-pro-and-iphone-13-pro-max-more-pro-than-ever-before/"
+  ]
  },
  {
   "key": "13 pro max",
@@ -1996,7 +2135,7 @@
   "year": 2021,
   "announced": "2021-09-14",
   "chip": "A15 Bionic",
-  "ram_gb": 6,
+  "ram_gb": null,
   "display": {
    "inch": 6.7,
    "type": "OLED",
@@ -2040,8 +2179,8 @@
   "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
   "water": "IP68",
   "body": "stainless steel",
-  "weight_g": 238,
-  "battery_mah": 4352,
+  "weight_g": 240,
+  "battery_mah": null,
   "features": [
    "ProMotion 120Hz",
    "MagSafe",
@@ -2052,7 +2191,11 @@
   ],
   "max_ios": null,
   "discontinued": 2022,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111870",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2021/09/apple-unveils-iphone-13-pro-and-iphone-13-pro-max-more-pro-than-ever-before/"
+  ]
  },
  {
   "key": "se 3",
@@ -2069,7 +2212,7 @@
   "year": 2022,
   "announced": "2022-03-08",
   "chip": "A15 Bionic",
-  "ram_gb": 4,
+  "ram_gb": null,
   "display": {
    "inch": 4.7,
    "type": "LCD",
@@ -2105,7 +2248,7 @@
   "water": "IP67",
   "body": "aluminum",
   "weight_g": 144,
-  "battery_mah": 2018,
+  "battery_mah": null,
   "features": [
    "Touch ID Home button",
    "5G",
@@ -2113,7 +2256,11 @@
   ],
   "max_ios": null,
   "discontinued": 2025,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111866",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2022/03/apple-announces-the-new-iphone-se-a-powerful-smartphone-in-an-iconic-design/"
+  ]
  },
  {
   "key": "14",
@@ -2127,7 +2274,7 @@
   "year": 2022,
   "announced": "2022-09-07",
   "chip": "A15 Bionic (5-core GPU)",
-  "ram_gb": 6,
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "OLED",
@@ -2175,7 +2322,7 @@
   "water": "IP68",
   "body": "aluminum",
   "weight_g": 172,
-  "battery_mah": 3279,
+  "battery_mah": null,
   "features": [
    "MagSafe",
    "Crash Detection",
@@ -2184,7 +2331,11 @@
   ],
   "max_ios": null,
   "discontinued": 2025,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111850",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2022/09/apple-introduces-iphone-14-and-iphone-14-plus/"
+  ]
  },
  {
   "key": "14 plus",
@@ -2198,7 +2349,7 @@
   "year": 2022,
   "announced": "2022-09-07",
   "chip": "A15 Bionic (5-core GPU)",
-  "ram_gb": 6,
+  "ram_gb": null,
   "display": {
    "inch": 6.7,
    "type": "OLED",
@@ -2246,7 +2397,7 @@
   "water": "IP68",
   "body": "aluminum",
   "weight_g": 203,
-  "battery_mah": 4325,
+  "battery_mah": null,
   "features": [
    "MagSafe",
    "Crash Detection",
@@ -2255,7 +2406,11 @@
   ],
   "max_ios": null,
   "discontinued": 2025,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111854",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2022/09/apple-introduces-iphone-14-and-iphone-14-plus/"
+  ]
  },
  {
   "key": "14 pro",
@@ -2269,7 +2424,7 @@
   "year": 2022,
   "announced": "2022-09-07",
   "chip": "A16 Bionic",
-  "ram_gb": 6,
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "OLED",
@@ -2310,7 +2465,7 @@
   "water": "IP68",
   "body": "stainless steel",
   "weight_g": 206,
-  "battery_mah": 3200,
+  "battery_mah": null,
   "features": [
    "Dynamic Island",
    "Always-On display",
@@ -2322,7 +2477,11 @@
   ],
   "max_ios": null,
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111849",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2022/09/apple-debuts-iphone-14-pro-and-iphone-14-pro-max/"
+  ]
  },
  {
   "key": "14 pro max",
@@ -2336,7 +2495,7 @@
   "year": 2022,
   "announced": "2022-09-07",
   "chip": "A16 Bionic",
-  "ram_gb": 6,
+  "ram_gb": null,
   "display": {
    "inch": 6.7,
    "type": "OLED",
@@ -2377,7 +2536,7 @@
   "water": "IP68",
   "body": "stainless steel",
   "weight_g": 240,
-  "battery_mah": 4323,
+  "battery_mah": null,
   "features": [
    "Dynamic Island",
    "Always-On display",
@@ -2389,7 +2548,11 @@
   ],
   "max_ios": null,
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111846",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2022/09/apple-debuts-iphone-14-pro-and-iphone-14-pro-max/"
+  ]
  },
  {
   "key": "15",
@@ -2403,7 +2566,7 @@
   "year": 2023,
   "announced": "2023-09-12",
   "chip": "A16 Bionic",
-  "ram_gb": 6,
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "OLED",
@@ -2412,7 +2575,7 @@
   },
   "rear_cameras": "48MP main + 12MP ultra-wide",
   "front_camera": "12MP",
-  "optical_zoom": 0,
+  "optical_zoom": 2,
   "storage_gb": [
    128,
    256,
@@ -2447,7 +2610,7 @@
   "water": "IP68",
   "body": "aluminum",
   "weight_g": 171,
-  "battery_mah": 3349,
+  "battery_mah": null,
   "features": [
    "Dynamic Island",
    "USB-C",
@@ -2457,7 +2620,11 @@
   ],
   "max_ios": null,
   "discontinued": 2025,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111831",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2023/09/apple-debuts-iphone-15-and-iphone-15-plus/"
+  ]
  },
  {
   "key": "15 plus",
@@ -2471,7 +2638,7 @@
   "year": 2023,
   "announced": "2023-09-12",
   "chip": "A16 Bionic",
-  "ram_gb": 6,
+  "ram_gb": null,
   "display": {
    "inch": 6.7,
    "type": "OLED",
@@ -2480,7 +2647,7 @@
   },
   "rear_cameras": "48MP main + 12MP ultra-wide",
   "front_camera": "12MP",
-  "optical_zoom": 0,
+  "optical_zoom": 2,
   "storage_gb": [
    128,
    256,
@@ -2515,7 +2682,7 @@
   "water": "IP68",
   "body": "aluminum",
   "weight_g": 201,
-  "battery_mah": 4383,
+  "battery_mah": null,
   "features": [
    "Dynamic Island",
    "USB-C",
@@ -2525,7 +2692,11 @@
   ],
   "max_ios": null,
   "discontinued": 2025,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111830",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2023/09/apple-debuts-iphone-15-and-iphone-15-plus/"
+  ]
  },
  {
   "key": "15 pro",
@@ -2539,7 +2710,7 @@
   "year": 2023,
   "announced": "2023-09-12",
   "chip": "A17 Pro",
-  "ram_gb": 8,
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "OLED",
@@ -2580,7 +2751,7 @@
   "water": "IP68",
   "body": "titanium",
   "weight_g": 187,
-  "battery_mah": 3274,
+  "battery_mah": null,
   "features": [
    "Action button",
    "titanium design",
@@ -2595,7 +2766,11 @@
   ],
   "max_ios": null,
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111829",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2023/09/apple-unveils-iphone-15-pro-and-iphone-15-pro-max/"
+  ]
  },
  {
   "key": "15 pro max",
@@ -2609,7 +2784,7 @@
   "year": 2023,
   "announced": "2023-09-12",
   "chip": "A17 Pro",
-  "ram_gb": 8,
+  "ram_gb": null,
   "display": {
    "inch": 6.7,
    "type": "OLED",
@@ -2649,7 +2824,7 @@
   "water": "IP68",
   "body": "titanium",
   "weight_g": 221,
-  "battery_mah": 4422,
+  "battery_mah": null,
   "features": [
    "Action button",
    "5x tetraprism telephoto",
@@ -2665,7 +2840,11 @@
   ],
   "max_ios": null,
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111828",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2023/09/apple-unveils-iphone-15-pro-and-iphone-15-pro-max/"
+  ]
  },
  {
   "key": "16",
@@ -2679,7 +2858,7 @@
   "year": 2024,
   "announced": "2024-09-09",
   "chip": "A18",
-  "ram_gb": 8,
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "OLED",
@@ -2688,7 +2867,7 @@
   },
   "rear_cameras": "48MP Fusion main + 12MP ultra-wide",
   "front_camera": "12MP",
-  "optical_zoom": 0,
+  "optical_zoom": 2,
   "storage_gb": [
    128,
    256,
@@ -2723,7 +2902,7 @@
   "water": "IP68",
   "body": "aluminum",
   "weight_g": 170,
-  "battery_mah": 3561,
+  "battery_mah": null,
   "features": [
    "Camera Control",
    "Action button",
@@ -2736,9 +2915,9 @@
   "max_ios": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/newsroom/2024/09/apple-introduces-iphone-16-and-iphone-16-plus/",
-   "https://www.macrumors.com/roundup/iphone-16/",
-   "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/"
+   "https://support.apple.com/en-us/121029",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2024/09/apple-introduces-iphone-16-and-iphone-16-plus/"
   ]
  },
  {
@@ -2753,7 +2932,7 @@
   "year": 2024,
   "announced": "2024-09-09",
   "chip": "A18",
-  "ram_gb": 8,
+  "ram_gb": null,
   "display": {
    "inch": 6.7,
    "type": "OLED",
@@ -2762,7 +2941,7 @@
   },
   "rear_cameras": "48MP Fusion main + 12MP ultra-wide",
   "front_camera": "12MP",
-  "optical_zoom": 0,
+  "optical_zoom": 2,
   "storage_gb": [
    128,
    256,
@@ -2797,7 +2976,7 @@
   "water": "IP68",
   "body": "aluminum",
   "weight_g": 199,
-  "battery_mah": 4674,
+  "battery_mah": null,
   "features": [
    "Camera Control",
    "Action button",
@@ -2810,9 +2989,9 @@
   "max_ios": null,
   "discontinued": 2026,
   "sources": [
-   "https://www.apple.com/newsroom/2024/09/apple-introduces-iphone-16-and-iphone-16-plus/",
-   "https://www.macrumors.com/roundup/iphone-16/",
-   "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/"
+   "https://support.apple.com/en-us/121030",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2024/09/apple-introduces-iphone-16-and-iphone-16-plus/"
   ]
  },
  {
@@ -2827,7 +3006,7 @@
   "year": 2024,
   "announced": "2024-09-09",
   "chip": "A18 Pro",
-  "ram_gb": 8,
+  "ram_gb": null,
   "display": {
    "inch": 6.3,
    "type": "OLED",
@@ -2868,7 +3047,7 @@
   "water": "IP68",
   "body": "titanium",
   "weight_g": 199,
-  "battery_mah": 3582,
+  "battery_mah": null,
   "features": [
    "Camera Control",
    "Action button",
@@ -2884,8 +3063,9 @@
   "max_ios": null,
   "discontinued": 2025,
   "sources": [
-   "https://www.apple.com/newsroom/2024/09/apple-debuts-iphone-16-pro-and-iphone-16-pro-max/",
-   "https://www.macrumors.com/2025/12/24/apple-discontinued-25-products-this-year/"
+   "https://support.apple.com/en-us/121031",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2024/09/apple-debuts-iphone-16-pro-and-iphone-16-pro-max/"
   ]
  },
  {
@@ -2900,7 +3080,7 @@
   "year": 2024,
   "announced": "2024-09-09",
   "chip": "A18 Pro",
-  "ram_gb": 8,
+  "ram_gb": null,
   "display": {
    "inch": 6.9,
    "type": "OLED",
@@ -2940,7 +3120,7 @@
   "water": "IP68",
   "body": "titanium",
   "weight_g": 227,
-  "battery_mah": 4685,
+  "battery_mah": null,
   "features": [
    "Camera Control",
    "Action button",
@@ -2956,8 +3136,9 @@
   "max_ios": null,
   "discontinued": 2025,
   "sources": [
-   "https://www.apple.com/newsroom/2024/09/apple-debuts-iphone-16-pro-and-iphone-16-pro-max/",
-   "https://www.macrumors.com/2025/12/24/apple-discontinued-25-products-this-year/"
+   "https://support.apple.com/en-us/121032",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2024/09/apple-debuts-iphone-16-pro-and-iphone-16-pro-max/"
   ]
  },
  {
@@ -2973,7 +3154,7 @@
   "year": 2025,
   "announced": "2025-02-19",
   "chip": "A18 (4-core GPU)",
-  "ram_gb": 8,
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "OLED",
@@ -3005,7 +3186,7 @@
   "water": "IP68",
   "body": "aluminum",
   "weight_g": 167,
-  "battery_mah": 4005,
+  "battery_mah": null,
   "features": [
    "Apple C1 modem",
    "Action button",
@@ -3018,9 +3199,8 @@
   "discontinued": 2026,
   "sources": [
    "https://support.apple.com/en-us/122208",
-   "https://www.apple.com/newsroom/2025/02/apple-debuts-iphone-16e-a-powerful-new-member-of-the-iphone-16-family/",
-   "https://9to5mac.com/2026/03/03/apple-has-discontinued-seven-products-this-week-with-one-more-likely/",
-   "https://www.macrumors.com/2026/06/30/apple-refurbished-iphone-16e/"
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2025/02/apple-debuts-iphone-16e-a-powerful-new-member-of-the-iphone-16-family/"
   ]
  },
  {
@@ -3035,7 +3215,7 @@
   "year": 2025,
   "announced": "2025-09-09",
   "chip": "A19",
-  "ram_gb": 8,
+  "ram_gb": null,
   "display": {
    "inch": 6.3,
    "type": "OLED",
@@ -3044,7 +3224,7 @@
   },
   "rear_cameras": "48MP Fusion main + 48MP Fusion ultra-wide (2x optical-quality crop)",
   "front_camera": "18MP Center Stage",
-  "optical_zoom": 0,
+  "optical_zoom": 2,
   "storage_gb": [
    256,
    512
@@ -3094,8 +3274,9 @@
   "max_ios": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/iphone-17/specs/",
-   "https://support.apple.com/en-us/125089"
+   "https://support.apple.com/en-us/125089",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2025/09/apple-debuts-iphone-17/"
   ]
  },
  {
@@ -3111,8 +3292,8 @@
   ],
   "year": 2025,
   "announced": "2025-09-09",
-  "chip": "A19 Pro",
-  "ram_gb": 12,
+  "chip": "A19 Pro (5-core GPU)",
+  "ram_gb": null,
   "display": {
    "inch": 6.5,
    "type": "OLED",
@@ -3169,8 +3350,9 @@
   "max_ios": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/iphone-air/specs/",
-   "https://support.apple.com/en-us/125092"
+   "https://support.apple.com/en-us/125092",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2025/09/introducing-iphone-air-a-powerful-new-iphone-with-a-breakthrough-design/"
   ]
  },
  {
@@ -3185,7 +3367,7 @@
   "year": 2025,
   "announced": "2025-09-09",
   "chip": "A19 Pro",
-  "ram_gb": 12,
+  "ram_gb": null,
   "display": {
    "inch": 6.3,
    "type": "OLED",
@@ -3239,9 +3421,9 @@
   "max_ios": null,
   "discontinued": 2026,
   "sources": [
-   "https://www.apple.com/newsroom/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max/",
-   "https://www.macrumors.com/2026/09/09/apple-discontinues-iphone-17-pro-max/",
-   "https://support.apple.com/en-ph/125090"
+   "https://support.apple.com/en-us/125090",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max/"
   ]
  },
  {
@@ -3256,7 +3438,7 @@
   "year": 2025,
   "announced": "2025-09-09",
   "chip": "A19 Pro",
-  "ram_gb": 12,
+  "ram_gb": null,
   "display": {
    "inch": 6.9,
    "type": "OLED",
@@ -3312,9 +3494,9 @@
   "max_ios": null,
   "discontinued": 2026,
   "sources": [
-   "https://www.apple.com/newsroom/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max/",
-   "https://www.macrumors.com/2026/09/09/apple-discontinues-iphone-17-pro-max/",
-   "https://support.apple.com/en-ae/125091"
+   "https://support.apple.com/en-us/125091",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max/"
   ]
  },
  {
@@ -3329,8 +3511,8 @@
   ],
   "year": 2026,
   "announced": "2026-03-02",
-  "chip": "A19",
-  "ram_gb": 8,
+  "chip": "A19 (4-core GPU)",
+  "ram_gb": null,
   "display": {
    "inch": 6.1,
    "type": "OLED",
@@ -3365,7 +3547,7 @@
   "water": "IP68",
   "body": "aluminum",
   "weight_g": 169,
-  "battery_mah": 4005,
+  "battery_mah": null,
   "features": [
    "MagSafe (15W) and Qi2",
    "Apple C1X modem",
@@ -3377,13 +3559,9 @@
   "max_ios": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/newsroom/2026/03/apple-introduces-iphone-17e/",
-   "https://www.apple.com/iphone-17e/specs/",
    "https://support.apple.com/en-us/126470",
-   "https://www.macrumors.com/2026/03/02/apple-announces-iphone-17e-with-a19-chip-magsafe-and-more/",
-   "https://www.macrumors.com/2026/03/05/iphone-17e-has-8gb-of-ram/",
-   "https://www.gsmarena.com/apple_iphone_17e-14487.php",
-   "https://www.macrumors.com/2026/03/02/iphone-17e-smaller-details/"
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-iphone-17e/"
   ]
  },
  {
@@ -3398,7 +3576,7 @@
   "year": 2026,
   "announced": "2026-09-09",
   "chip": "A20 Pro",
-  "ram_gb": 12,
+  "ram_gb": null,
   "display": {
    "inch": 6.3,
    "type": "OLED",
@@ -3439,7 +3617,7 @@
   "water": "IP68",
   "body": "aluminum (unibody)",
   "weight_g": 211,
-  "battery_mah": 4056,
+  "battery_mah": null,
   "features": [
    "variable aperture main camera",
    "Apple C2 modem",
@@ -3457,13 +3635,9 @@
   "max_ios": null,
   "discontinued": null,
   "sources": [
-   "https://apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
-   "https://www.apple.com/iphone-18-pro/specs/",
-   "https://9to5mac.com/2026/09/09/iphone-18-pro-officially-announced-heres-whats-new/",
-   "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
-   "https://macrumors.com/2026/09/09/iphone-18-pro-esim-only-countries/",
-   "https://www.macrumors.com/2026/09/10/iphone-18-pro-max-battery-capacities-ram/",
-   "https://support.apple.com/en-us/148590"
+   "https://support.apple.com/en-us/148590",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/"
   ]
  },
  {
@@ -3478,7 +3652,7 @@
   "year": 2026,
   "announced": "2026-09-09",
   "chip": "A20 Pro",
-  "ram_gb": 12,
+  "ram_gb": null,
   "display": {
    "inch": 6.9,
    "type": "OLED",
@@ -3519,7 +3693,7 @@
   "water": "IP68",
   "body": "aluminum (unibody)",
   "weight_g": 249,
-  "battery_mah": 5391,
+  "battery_mah": null,
   "features": [
    "variable aperture main camera",
    "Apple C2 modem",
@@ -3537,14 +3711,9 @@
   "max_ios": null,
   "discontinued": null,
   "sources": [
-   "https://apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
-   "https://www.apple.com/iphone-18-pro/specs/",
-   "https://9to5mac.com/2026/09/09/iphone-18-pro-officially-announced-heres-whats-new/",
-   "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
-   "https://macrumors.com/2026/09/09/iphone-18-pro-esim-only-countries/",
-   "https://www.macrumors.com/2026/09/10/iphone-18-pro-max-battery-capacities-ram/",
-   "https://support.apple.com/148591",
-   "https://www.macrumors.com/2026/09/25/apple-sells-four-iphone-18-pro-max-models/"
+   "https://support.apple.com/en-us/148591",
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/"
   ]
  },
  {
@@ -3554,11 +3723,11 @@
   "aliases": [
    "iphone fold",
    "foldable iphone",
-   "ایفون دو",
    "ایفون دوئو",
    "آیفون تاشو",
    "ایفون فولد",
-   "آیفون Duo"
+   "آیفون Duo",
+   "آیفون دوئو"
   ],
   "year": 2026,
   "announced": "2026-09-09",
@@ -3606,18 +3775,19 @@
    "Apple C2 modem",
    "ProMotion 120Hz (both displays)",
    "released 2026-10-23",
+   "Dynamic Island",
+   "Always-On display",
+   "Camera Control",
+   "MagSafe",
    "Apple Intelligence"
   ],
   "max_ios": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
-   "https://www.apple.com/iphone-duo/specs/",
    "https://support.apple.com/en-us/148588",
-   "https://www.macrumors.com/2026/09/09/apple-announces-foldable-iphone-duo/",
-   "https://9to5mac.com/2026/10/16/iphone-duo-now-available-to-pre-order-prices-start-at-1999/",
-   "https://www.macrumors.com/roundup/iphone-duo/",
-   "https://www.gsmarena.com/apple_iphone_duo_fold-13804.php"
+   "https://support.apple.com/en-us/108044",
+   "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+   "https://www.apple.com/newsroom/2026/10/iphone-duo-arrives-at-apple-store-locations-worldwide/"
   ]
  }
 ]
