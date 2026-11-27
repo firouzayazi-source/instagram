@@ -271,7 +271,10 @@ def _support(r: dict) -> str:
     for k, name in (("max_ios", "iOS"), ("max_ipados", "iPadOS"), ("max_macos", "macOS")):
         if k in r:
             v = r.get(k)
-            return f"تا {name} {fa(v)}" if v else "آخرین نسخه را می‌گیرد"
+            if not v:
+                return "آخرین نسخه را می‌گیرد"
+            # «macOS 12 Monterey» و «OS X 10.11 El Capitan» نام سیستم را خودشان دارند
+            return f"تا {fa(v)}" if re.match(r"[A-Za-z]", str(v)) else f"تا {name} {fa(v)}"
     return ""
 
 
