@@ -1,5 +1,6940 @@
 [
  {
+  "key": "imac 17 2006 early",
+  "name": "iMac (17-inch, Early 2006)",
+  "name_fa": "آی‌مک ۱۷ اینچ (اوایل ۲۰۰۶)",
+  "aliases": [
+   "imac 17 early 2006",
+   "imac 17 2006 early",
+   "imac 17 inch early 2006",
+   "ایمک ۱۷ اوایل ۲۰۰۶",
+   "آیمک ۱۷ اینچ اوایل ۲۰۰۶",
+   "آی مک 17 اینچ اوایل 2006",
+   "first intel imac 17",
+   "اولین آیمک اینتلی ۱۷"
+  ],
+  "year": 2006,
+  "announced": "2006-01-10",
+  "chips": [
+   "Intel Core Duo 1.83GHz"
+  ],
+  "ram_gb": [
+   0.5,
+   2
+  ],
+  "storage_gb": [
+   160,
+   250
+  ],
+  "display": {
+   "inch": 17,
+   "type": "widescreen TFT LCD",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x FireWire 400",
+   "3x USB 2.0 (+2x USB 1.1 on keyboard)",
+   "mini-DVI out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 7.0,
+  "features": [
+   "first Intel iMac",
+   "ATI Radeon X1600 (128MB)",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11g, Bluetooth 2.0+EDR",
+   "Apple Remote / Front Row"
+  ],
+  "max_macos": "Mac OS X 10.6 Snow Leopard",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112469",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2006/01/10Apple-Unveils-New-iMac-with-Intel-Core-Duo-Processor/",
+   "https://support.apple.com/en-us/112591",
+   "https://support.apple.com/en-us/112027"
+  ]
+ },
+ {
+  "key": "imac 20 2006 early",
+  "name": "iMac (20-inch, Early 2006)",
+  "name_fa": "آی‌مک ۲۰ اینچ (اوایل ۲۰۰۶)",
+  "aliases": [
+   "imac 20 early 2006",
+   "imac 20 2006 early",
+   "imac 20 inch early 2006",
+   "ایمک ۲۰ اوایل ۲۰۰۶",
+   "آیمک ۲۰ اینچ اوایل ۲۰۰۶",
+   "آی مک 20 اینچ اوایل 2006"
+  ],
+  "year": 2006,
+  "announced": "2006-01-10",
+  "chips": [
+   "Intel Core Duo 2.0GHz"
+  ],
+  "ram_gb": [
+   0.5,
+   2
+  ],
+  "storage_gb": [
+   250,
+   500
+  ],
+  "display": {
+   "inch": 20,
+   "type": "widescreen TFT LCD",
+   "hz": 60,
+   "resolution": "1680x1050"
+  },
+  "ports": [
+   "2x FireWire 400",
+   "3x USB 2.0 (+2x USB 1.1 on keyboard)",
+   "mini-DVI out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 10.0,
+  "features": [
+   "first Intel iMac",
+   "ATI Radeon X1600 (128MB, 256MB optional)",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11g, Bluetooth 2.0+EDR",
+   "Apple Remote / Front Row"
+  ],
+  "max_macos": "Mac OS X 10.6 Snow Leopard",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112469",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2006/01/10Apple-Unveils-New-iMac-with-Intel-Core-Duo-Processor/",
+   "https://support.apple.com/en-us/112591",
+   "https://support.apple.com/en-us/112027"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2006 original",
+  "name": "MacBook Pro (original)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ نسل اول (۲۰۰۶)",
+  "aliases": [
+   "macbook pro original 15 2006",
+   "مکبوک پرو نسل اول ۱۵ ۲۰۰۶",
+   "مک بوک پرو نسل اول ۱۵ ۲۰۰۶",
+   "مک بوک پرو نسل اول 15 2006",
+   "macbook pro 15 2006 original",
+   "مکبوک پرو ۱۵ ۲۰۰۶ نسل اول",
+   "مک بوک پرو ۱۵ ۲۰۰۶ نسل اول",
+   "مک بوک پرو 15 2006 نسل اول",
+   "macbook pro 2006 core duo 15"
+  ],
+  "year": 2006,
+  "announced": "2006-01-10",
+  "chips": [
+   "Intel Core Duo 1.83GHz",
+   "Intel Core Duo 2.0GHz",
+   "Intel Core Duo 2.16GHz"
+  ],
+  "ram_gb": [
+   0.5,
+   1,
+   2
+  ],
+  "storage_gb": [
+   80,
+   100,
+   120
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "TFT widescreen",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "ExpressCard/34",
+   "DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 4.5,
+  "weight_kg": 2.54,
+  "features": [
+   "ATI Mobility Radeon X1600",
+   "SuperDrive (slot-loading)",
+   "Wi-Fi 802.11g"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112481",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2006/01/10Apple-Introduces-MacBook-Pro/"
+  ]
+ },
+ {
+  "key": "mac mini 2006 early",
+  "name": "Mac mini (Early 2006)",
+  "name_fa": "مک مینی (اوایل ۲۰۰۶)",
+  "aliases": [
+   "mac mini early 2006",
+   "mac mini 2006 early",
+   "مک مینی اوایل ۲۰۰۶",
+   "مکمینی اوایل ۲۰۰۶",
+   "first intel mac mini",
+   "اولین مک مینی اینتلی"
+  ],
+  "year": 2006,
+  "announced": "2006-02-28",
+  "chips": [
+   "Intel Core Solo 1.5GHz",
+   "Intel Core Duo 1.66GHz"
+  ],
+  "ram_gb": [
+   0.5,
+   2
+  ],
+  "storage_gb": [
+   60,
+   80,
+   100,
+   120
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "1x FireWire 400",
+   "4x USB 2.0",
+   "DVI out (VGA via adapter)",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": null,
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 1.31,
+  "features": [
+   "first Intel Mac mini",
+   "Intel GMA 950 graphics",
+   "Combo drive or SuperDrive",
+   "Apple Remote / Front Row"
+  ],
+  "max_macos": "Mac OS X 10.6 Snow Leopard",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112456",
+   "https://www.apple.com/newsroom/2006/02/28Apple-Unveils-Mac-mini-with-Intel-Core-Duo/",
+   "https://support.apple.com/en-us/112591",
+   "https://support.apple.com/en-us/112027"
+  ]
+ },
+ {
+  "key": "macbook pro 17 2006 original",
+  "name": "MacBook Pro (17-inch)",
+  "name_fa": "مک‌بوک پرو ۱۷ اینچ نسل اول (۲۰۰۶)",
+  "aliases": [
+   "macbook pro original 17 2006",
+   "مکبوک پرو نسل اول ۱۷ ۲۰۰۶",
+   "مک بوک پرو نسل اول ۱۷ ۲۰۰۶",
+   "مک بوک پرو نسل اول 17 2006",
+   "macbook pro 17 2006 original",
+   "مکبوک پرو ۱۷ ۲۰۰۶ نسل اول",
+   "مک بوک پرو ۱۷ ۲۰۰۶ نسل اول",
+   "مک بوک پرو 17 2006 نسل اول",
+   "macbook pro 17 2006 core duo"
+  ],
+  "year": 2006,
+  "announced": "2006-04-24",
+  "chips": [
+   "Intel Core Duo 2.16GHz"
+  ],
+  "ram_gb": [
+   1,
+   2
+  ],
+  "storage_gb": [
+   100,
+   120
+  ],
+  "display": {
+   "inch": 17,
+   "type": "TFT widescreen",
+   "hz": 60,
+   "resolution": "1680x1050"
+  },
+  "ports": [
+   "3x USB 2.0",
+   "FireWire 400",
+   "FireWire 800",
+   "ExpressCard/34",
+   "DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 5.5,
+  "weight_kg": 3.1,
+  "features": [
+   "ATI Mobility Radeon X1600 256MB",
+   "SuperDrive (slot-loading)",
+   "Wi-Fi 802.11g"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112536",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2006/04/24Apple-Introduces-17-inch-MacBook-Pro/"
+  ]
+ },
+ {
+  "key": "macbook 13 2006 original",
+  "name": "MacBook (13-inch)",
+  "name_fa": "مک‌بوک ۱۳ اینچ نسل اول (۲۰۰۶)",
+  "aliases": [
+   "macbook original 13 2006",
+   "مکبوک نسل اول ۱۳ ۲۰۰۶",
+   "مک بوک نسل اول ۱۳ ۲۰۰۶",
+   "مک بوک نسل اول 13 2006",
+   "macbook 13 2006 original",
+   "مکبوک ۱۳ ۲۰۰۶ نسل اول",
+   "مک بوک ۱۳ ۲۰۰۶ نسل اول",
+   "مک بوک 13 2006 نسل اول",
+   "macbook original 2006",
+   "macbookoriginal2006",
+   "مکبوک نسل اول ۲۰۰۶",
+   "مک بوک نسل اول ۲۰۰۶",
+   "مک بوک نسل اول 2006",
+   "macbook 2006 core duo",
+   "مکبوک سفید ۲۰۰۶ نسل اول"
+  ],
+  "year": 2006,
+  "announced": "2006-05-16",
+  "chips": [
+   "Intel Core Duo 1.83GHz",
+   "Intel Core Duo 2.0GHz"
+  ],
+  "ram_gb": [
+   0.5,
+   2
+  ],
+  "storage_gb": [
+   60,
+   80,
+   100,
+   120
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "glossy TFT widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "Mini-DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 2.36,
+  "features": [
+   "Intel GMA 950",
+   "Combo drive or SuperDrive",
+   "Wi-Fi 802.11g"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112511",
+   "https://support.apple.com/en-us/103257",
+   "https://www.apple.com/newsroom/2006/05/16Apple-Unveils-New-MacBook-Featuring-Intel-Core-Duo-Processors/"
+  ]
+ },
+ {
+  "key": "imac 17 2006 mid",
+  "name": "iMac (17-inch, Mid 2006)",
+  "name_fa": "آی‌مک ۱۷ اینچ (اواسط ۲۰۰۶)",
+  "aliases": [
+   "imac 17 mid 2006",
+   "imac 17 2006 mid",
+   "imac 17 inch mid 2006",
+   "ایمک ۱۷ اواسط ۲۰۰۶",
+   "آیمک ۱۷ اینچ اواسط ۲۰۰۶",
+   "آی مک 17 اینچ اواسط 2006",
+   "imac 17 education 2006",
+   "آیمک ۱۷ آموزشی ۲۰۰۶"
+  ],
+  "year": 2006,
+  "announced": "2006-07-05",
+  "chips": [
+   "Intel Core Duo 1.83GHz"
+  ],
+  "ram_gb": [
+   0.5,
+   2
+  ],
+  "storage_gb": [
+   80,
+   160
+  ],
+  "display": {
+   "inch": 17,
+   "type": "widescreen LCD",
+   "hz": 60,
+   "resolution": null
+  },
+  "ports": [
+   "mini-DVI out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": null,
+  "features": [
+   "education configuration",
+   "Intel GMA 950 graphics",
+   "24x Combo drive",
+   "AirPort Extreme 802.11g"
+  ],
+  "max_macos": "Mac OS X 10.6 Snow Leopard",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/docs/mac/131051",
+   "https://support.apple.com/en-us/108317",
+   "https://www.apple.com/newsroom/2006/07/05Apple-Introduces-899-Education-Configuration-for-17-inch-iMac/",
+   "https://support.apple.com/en-us/112591",
+   "https://support.apple.com/en-us/112027"
+  ]
+ },
+ {
+  "key": "mac pro 2006",
+  "name": "Mac Pro",
+  "name_fa": "مک پرو (۲۰۰۶)",
+  "aliases": [
+   "mac pro 2006",
+   "macpro2006",
+   "مک پرو ۲۰۰۶",
+   "مک‌پرو ۲۰۰۶",
+   "مکپرو ۲۰۰۶",
+   "first mac pro",
+   "اولین مک پرو"
+  ],
+  "year": 2006,
+  "announced": "2006-08-07",
+  "chips": [
+   "2x Intel Xeon 5100 dual-core 2.0, 2.66 or 3.0GHz",
+   "2x Intel Xeon 5300 quad-core 3.0GHz (8-core)"
+  ],
+  "ram_gb": [
+   1,
+   2,
+   4,
+   8,
+   16
+  ],
+  "storage_gb": [
+   250,
+   500,
+   750
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "2x FireWire 800",
+   "2x FireWire 400",
+   "5x USB 2.0",
+   "2x Gigabit Ethernet",
+   "optical digital audio in/out",
+   "analog audio in/out"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 19.2,
+  "features": [
+   "tower, 4 drive bays, 2 optical bays",
+   "NVIDIA GeForce 7300 GT, ATI Radeon X1900 XT or Quadro FX 4500",
+   "3 open PCI Express slots",
+   "FB-DIMM ECC memory up to 16GB"
+  ],
+  "max_macos": "OS X 10.7 Lion",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112520",
+   "https://www.apple.com/newsroom/2006/08/07Apple-Unveils-New-Mac-Pro-Featuring-Quad-64-bit-Xeon-Processors/",
+   "https://support.apple.com/en-us/112027",
+   "https://support.apple.com/en-us/112587"
+  ]
+ },
+ {
+  "key": "imac 17 2006 late",
+  "name": "iMac (17-inch, Late 2006)",
+  "name_fa": "آی‌مک ۱۷ اینچ (اواخر ۲۰۰۶)",
+  "aliases": [
+   "imac 17 late 2006",
+   "imac 17 2006 late",
+   "imac 17 inch late 2006",
+   "ایمک ۱۷ اواخر ۲۰۰۶",
+   "آیمک ۱۷ اینچ اواخر ۲۰۰۶",
+   "آی مک 17 اینچ اواخر 2006",
+   "imac 17 late 2006 cd",
+   "آیمک ۱۷ اواخر ۲۰۰۶ سی دی"
+  ],
+  "year": 2006,
+  "announced": "2006-09-06",
+  "chips": [
+   "Intel Core 2 Duo 1.83GHz",
+   "Intel Core 2 Duo 2.0GHz"
+  ],
+  "ram_gb": [
+   0.5,
+   1,
+   2,
+   3
+  ],
+  "storage_gb": [
+   160,
+   250,
+   500
+  ],
+  "display": {
+   "inch": 17,
+   "type": "widescreen TFT LCD",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x FireWire 400",
+   "3x USB 2.0 (+2x USB 1.1 on keyboard)",
+   "mini-DVI out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 7.0,
+  "features": [
+   "1.83GHz model (incl. Late 2006 CD): Intel GMA 950, 24x Combo drive, 512MB up to 2GB",
+   "2.0GHz model: ATI Radeon X1600 (128MB), 8x SuperDrive, 1GB up to 3GB",
+   "AirPort Extreme 802.11g"
+  ],
+  "max_macos": "OS X 10.7 Lion",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112523",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2006/09/06Apple-iMac-Line-Now-Features-Intel-Core-2-Duo-Processors-In-Every-Model/",
+   "https://support.apple.com/en-us/112027",
+   "https://support.apple.com/en-us/112587"
+  ]
+ },
+ {
+  "key": "imac 20 2006 late",
+  "name": "iMac (20-inch, Late 2006)",
+  "name_fa": "آی‌مک ۲۰ اینچ (اواخر ۲۰۰۶)",
+  "aliases": [
+   "imac 20 late 2006",
+   "imac 20 2006 late",
+   "imac 20 inch late 2006",
+   "ایمک ۲۰ اواخر ۲۰۰۶",
+   "آیمک ۲۰ اینچ اواخر ۲۰۰۶",
+   "آی مک 20 اینچ اواخر 2006"
+  ],
+  "year": 2006,
+  "announced": "2006-09-06",
+  "chips": [
+   "Intel Core 2 Duo 2.16GHz",
+   "Intel Core 2 Duo 2.33GHz (optional)"
+  ],
+  "ram_gb": [
+   1,
+   2,
+   3
+  ],
+  "storage_gb": [
+   250,
+   500
+  ],
+  "display": {
+   "inch": 20,
+   "type": "widescreen TFT LCD",
+   "hz": 60,
+   "resolution": "1680x1050"
+  },
+  "ports": [
+   "2x FireWire 400",
+   "3x USB 2.0 (+2x USB 1.1 on keyboard)",
+   "mini-DVI out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 10.0,
+  "features": [
+   "ATI Radeon X1600 (128MB, 256MB optional)",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11g, Bluetooth 2.0+EDR"
+  ],
+  "max_macos": "OS X 10.7 Lion",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112523",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2006/09/06Apple-iMac-Line-Now-Features-Intel-Core-2-Duo-Processors-In-Every-Model/",
+   "https://support.apple.com/en-us/112027",
+   "https://support.apple.com/en-us/112587"
+  ]
+ },
+ {
+  "key": "imac 24 2006 late",
+  "name": "iMac (24-inch, Late 2006)",
+  "name_fa": "آی‌مک ۲۴ اینچ (اواخر ۲۰۰۶)",
+  "aliases": [
+   "imac 24 2006",
+   "imac242006",
+   "ایمک ۲۴ ۲۰۰۶",
+   "آیمک ۲۴ اینچ ۲۰۰۶",
+   "آی مک 24 اینچ 2006",
+   "ای مک ۲۴ ۲۰۰۶",
+   "imac 24 late 2006",
+   "imac 24 2006 late",
+   "imac 24 inch late 2006",
+   "ایمک ۲۴ اواخر ۲۰۰۶",
+   "آیمک ۲۴ اینچ اواخر ۲۰۰۶",
+   "آی مک 24 اینچ اواخر 2006"
+  ],
+  "year": 2006,
+  "announced": "2006-09-06",
+  "chips": [
+   "Intel Core 2 Duo 2.16GHz",
+   "Intel Core 2 Duo 2.33GHz (optional)"
+  ],
+  "ram_gb": [
+   1,
+   2,
+   3
+  ],
+  "storage_gb": [
+   250,
+   500
+  ],
+  "display": {
+   "inch": 24,
+   "type": "widescreen TFT LCD",
+   "hz": 60,
+   "resolution": "1920x1200"
+  },
+  "ports": [
+   "1x FireWire 400 + 1x FireWire 800",
+   "3x USB 2.0 (+2x USB 1.1 on keyboard)",
+   "mini-DVI out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 11.2,
+  "features": [
+   "first 24-inch iMac",
+   "NVIDIA GeForce 7300 GT (128MB) or 7600 GT (256MB)",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11g, Bluetooth 2.0+EDR",
+   "VESA mount option"
+  ],
+  "max_macos": "OS X 10.7 Lion",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112523",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2006/09/06Apple-iMac-Line-Now-Features-Intel-Core-2-Duo-Processors-In-Every-Model/",
+   "https://support.apple.com/en-us/112027",
+   "https://support.apple.com/en-us/112587"
+  ]
+ },
+ {
+  "key": "mac mini 2006 late",
+  "name": "Mac mini (Late 2006)",
+  "name_fa": "مک مینی (اواخر ۲۰۰۶)",
+  "aliases": [
+   "mac mini late 2006",
+   "mac mini 2006 late",
+   "مک مینی اواخر ۲۰۰۶",
+   "مکمینی اواخر ۲۰۰۶"
+  ],
+  "year": 2006,
+  "announced": "2006-09-06",
+  "chips": [
+   "Intel Core Duo 1.66GHz",
+   "Intel Core Duo 1.83GHz"
+  ],
+  "ram_gb": [
+   0.5,
+   2
+  ],
+  "storage_gb": [
+   60,
+   80,
+   120,
+   160
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "1x FireWire 400",
+   "4x USB 2.0",
+   "DVI out (VGA via adapter)",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": null,
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 1.31,
+  "features": [
+   "Intel GMA 950 graphics",
+   "Combo drive or SuperDrive"
+  ],
+  "max_macos": "Mac OS X 10.6 Snow Leopard",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112468",
+   "https://www.apple.com/newsroom/2006/09/06Apple-iMac-Line-Now-Features-Intel-Core-2-Duo-Processors-In-Every-Model/",
+   "https://support.apple.com/en-us/112591",
+   "https://support.apple.com/en-us/112027"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2006 late",
+  "name": "MacBook Pro (15-inch Core 2 Duo)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (اواخر ۲۰۰۶)",
+  "aliases": [
+   "macbook pro 15 2006 late",
+   "مکبوک پرو ۱۵ ۲۰۰۶ اواخر",
+   "مک بوک پرو ۱۵ ۲۰۰۶ اواخر",
+   "مک بوک پرو 15 2006 اواخر",
+   "macbook pro 15 late 2006",
+   "مکبوک پرو ۱۵ اواخر ۲۰۰۶",
+   "مک بوک پرو ۱۵ اواخر ۲۰۰۶",
+   "مک بوک پرو 15 اواخر 2006",
+   "macbook pro 15 core 2 duo 2006",
+   "مکبوک پرو ۱۵ اینچ کور ۲ دو ۲۰۰۶"
+  ],
+  "year": 2006,
+  "announced": "2006-10-24",
+  "chips": [
+   "Intel Core 2 Duo 2.16GHz",
+   "Intel Core 2 Duo 2.33GHz"
+  ],
+  "ram_gb": [
+   1,
+   2,
+   3
+  ],
+  "storage_gb": [
+   120,
+   160,
+   200
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "TFT widescreen (optional glossy)",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "FireWire 800",
+   "ExpressCard/34",
+   "DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 5,
+  "weight_kg": 2.54,
+  "features": [
+   "ATI Mobility Radeon X1600",
+   "6x SuperDrive",
+   "Wi-Fi 802.11g (802.11n capable with enabler)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112489",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2006/10/24Apple-MacBook-Pro-Notebooks-Now-with-Intel-Core-2-Duo-Processors/"
+  ]
+ },
+ {
+  "key": "macbook pro 17 2006 late",
+  "name": "MacBook Pro (17-inch Core 2 Duo)",
+  "name_fa": "مک‌بوک پرو ۱۷ اینچ (اواخر ۲۰۰۶)",
+  "aliases": [
+   "macbook pro 17 2006 late",
+   "مکبوک پرو ۱۷ ۲۰۰۶ اواخر",
+   "مک بوک پرو ۱۷ ۲۰۰۶ اواخر",
+   "مک بوک پرو 17 2006 اواخر",
+   "macbook pro 17 late 2006",
+   "مکبوک پرو ۱۷ اواخر ۲۰۰۶",
+   "مک بوک پرو ۱۷ اواخر ۲۰۰۶",
+   "مک بوک پرو 17 اواخر 2006",
+   "macbook pro 17 core 2 duo 2006"
+  ],
+  "year": 2006,
+  "announced": "2006-10-24",
+  "chips": [
+   "Intel Core 2 Duo 2.33GHz"
+  ],
+  "ram_gb": [
+   2,
+   3
+  ],
+  "storage_gb": [
+   100,
+   160,
+   200
+  ],
+  "display": {
+   "inch": 17,
+   "type": "TFT widescreen (optional glossy)",
+   "hz": 60,
+   "resolution": "1680x1050"
+  },
+  "ports": [
+   "3x USB 2.0",
+   "FireWire 400",
+   "FireWire 800",
+   "ExpressCard/34",
+   "DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 5.5,
+  "weight_kg": 3.08,
+  "features": [
+   "ATI Mobility Radeon X1600 256MB",
+   "8x SuperDrive",
+   "Wi-Fi 802.11g (802.11n capable with enabler)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112489",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2006/10/24Apple-MacBook-Pro-Notebooks-Now-with-Intel-Core-2-Duo-Processors/"
+  ]
+ },
+ {
+  "key": "macbook 13 2006 late",
+  "name": "MacBook (13-inch, Late 2006)",
+  "name_fa": "مک‌بوک ۱۳ اینچ (اواخر ۲۰۰۶)",
+  "aliases": [
+   "macbook 13 2006 late",
+   "مکبوک ۱۳ ۲۰۰۶ اواخر",
+   "مک بوک ۱۳ ۲۰۰۶ اواخر",
+   "مک بوک 13 2006 اواخر",
+   "macbook 13 late 2006",
+   "مکبوک ۱۳ اواخر ۲۰۰۶",
+   "مک بوک ۱۳ اواخر ۲۰۰۶",
+   "مک بوک 13 اواخر 2006",
+   "macbook 2006 late",
+   "macbook2006late",
+   "مکبوک ۲۰۰۶ اواخر",
+   "مک بوک ۲۰۰۶ اواخر",
+   "مک بوک 2006 اواخر"
+  ],
+  "year": 2006,
+  "announced": "2006-11-08",
+  "chips": [
+   "Intel Core 2 Duo 1.83GHz",
+   "Intel Core 2 Duo 2.0GHz"
+  ],
+  "ram_gb": [
+   0.5,
+   1,
+   2
+  ],
+  "storage_gb": [
+   60,
+   80,
+   120,
+   160,
+   200
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "glossy TFT widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "Mini-DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "battery_hours": 6,
+  "weight_kg": 2.36,
+  "features": [
+   "Intel GMA 950",
+   "Combo drive or 6x SuperDrive",
+   "Wi-Fi 802.11g (802.11n capable with enabler)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112522",
+   "https://support.apple.com/en-us/103257",
+   "https://www.apple.com/newsroom/2006/11/08Apple-Unveils-New-MacBook-With-Intel-Core-2-Duo-Processors/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2006 glossy",
+  "name": "MacBook Pro (15-inch Glossy)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ گلاسی (۲۰۰۶)",
+  "aliases": [
+   "macbook pro glossy 15 2006",
+   "مکبوک پرو گلاسی ۱۵ ۲۰۰۶",
+   "مک بوک پرو گلاسی ۱۵ ۲۰۰۶",
+   "مک بوک پرو گلاسی 15 2006",
+   "macbook pro 15 2006 glossy",
+   "مکبوک پرو ۱۵ ۲۰۰۶ گلاسی",
+   "مک بوک پرو ۱۵ ۲۰۰۶ گلاسی",
+   "مک بوک پرو 15 2006 گلاسی"
+  ],
+  "year": 2006,
+  "announced": null,
+  "chips": [
+   "Intel Core Duo 2.0GHz",
+   "Intel Core Duo 2.16GHz"
+  ],
+  "ram_gb": [
+   0.5,
+   1,
+   2
+  ],
+  "storage_gb": [
+   80,
+   100,
+   120
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "TFT widescreen (optional glossy)",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "ExpressCard/34",
+   "DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 4.5,
+  "weight_kg": 2.54,
+  "features": [
+   "ATI Mobility Radeon X1600",
+   "SuperDrive (slot-loading)",
+   "Wi-Fi 802.11g"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112535",
+   "https://support.apple.com/en-us/108052"
+  ]
+ },
+ {
+  "key": "macbook 13 2007 mid",
+  "name": "MacBook (13-inch, Mid 2007)",
+  "name_fa": "مک‌بوک ۱۳ اینچ (اواسط ۲۰۰۷)",
+  "aliases": [
+   "macbook 13 2007 mid",
+   "مکبوک ۱۳ ۲۰۰۷ اواسط",
+   "مک بوک ۱۳ ۲۰۰۷ اواسط",
+   "مک بوک 13 2007 اواسط",
+   "macbook 13 mid 2007",
+   "مکبوک ۱۳ اواسط ۲۰۰۷",
+   "مک بوک ۱۳ اواسط ۲۰۰۷",
+   "مک بوک 13 اواسط 2007",
+   "macbook 2007 mid",
+   "macbook2007mid",
+   "مکبوک ۲۰۰۷ اواسط",
+   "مک بوک ۲۰۰۷ اواسط",
+   "مک بوک 2007 اواسط"
+  ],
+  "year": 2007,
+  "announced": "2007-05-15",
+  "chips": [
+   "Intel Core 2 Duo 2.0GHz",
+   "Intel Core 2 Duo 2.16GHz"
+  ],
+  "ram_gb": [
+   1,
+   2
+  ],
+  "storage_gb": [
+   80,
+   120,
+   160,
+   200
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "glossy TFT widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "Mini-DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "battery_hours": 6,
+  "weight_kg": 2.31,
+  "features": [
+   "Intel GMA 950",
+   "Combo drive or 8x SuperDrive",
+   "Wi-Fi 802.11n (draft)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112554",
+   "https://support.apple.com/en-us/103257",
+   "https://www.apple.com/newsroom/2007/05/15Apple-Updates-Popular-MacBook/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2007 mid",
+  "name": "MacBook Pro (15-inch, Mid 2007)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (اواسط ۲۰۰۷)",
+  "aliases": [
+   "macbook pro 15 2007 mid",
+   "مکبوک پرو ۱۵ ۲۰۰۷ اواسط",
+   "مک بوک پرو ۱۵ ۲۰۰۷ اواسط",
+   "مک بوک پرو 15 2007 اواسط",
+   "macbook pro 15 mid 2007",
+   "مکبوک پرو ۱۵ اواسط ۲۰۰۷",
+   "مک بوک پرو ۱۵ اواسط ۲۰۰۷",
+   "مک بوک پرو 15 اواسط 2007"
+  ],
+  "year": 2007,
+  "announced": "2007-06-05",
+  "chips": [
+   "Intel Core 2 Duo 2.2GHz",
+   "Intel Core 2 Duo 2.4GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   120,
+   160,
+   200
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "LED-backlit TFT widescreen (optional glossy)",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "FireWire 800",
+   "ExpressCard/34",
+   "DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 6,
+  "weight_kg": 2.45,
+  "features": [
+   "NVIDIA GeForce 8600M GT",
+   "8x SuperDrive",
+   "Wi-Fi 802.11n (draft)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112453",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2007/06/05Apple-Updates-MacBook-Pro/"
+  ]
+ },
+ {
+  "key": "macbook pro 17 2007 mid",
+  "name": "MacBook Pro (17-inch, Mid 2007)",
+  "name_fa": "مک‌بوک پرو ۱۷ اینچ (اواسط ۲۰۰۷)",
+  "aliases": [
+   "macbook pro 17 2007 mid",
+   "مکبوک پرو ۱۷ ۲۰۰۷ اواسط",
+   "مک بوک پرو ۱۷ ۲۰۰۷ اواسط",
+   "مک بوک پرو 17 2007 اواسط",
+   "macbook pro 17 mid 2007",
+   "مکبوک پرو ۱۷ اواسط ۲۰۰۷",
+   "مک بوک پرو ۱۷ اواسط ۲۰۰۷",
+   "مک بوک پرو 17 اواسط 2007"
+  ],
+  "year": 2007,
+  "announced": "2007-06-05",
+  "chips": [
+   "Intel Core 2 Duo 2.4GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   160,
+   250
+  ],
+  "display": {
+   "inch": 17,
+   "type": "TFT widescreen (optional glossy; optional 1920x1200)",
+   "hz": 60,
+   "resolution": "1680x1050"
+  },
+  "ports": [
+   "3x USB 2.0",
+   "FireWire 400",
+   "FireWire 800",
+   "ExpressCard/34",
+   "DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 5.75,
+  "weight_kg": 3.08,
+  "features": [
+   "NVIDIA GeForce 8600M GT 256MB",
+   "8x SuperDrive",
+   "Wi-Fi 802.11n (draft)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112453",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2007/06/05Apple-Updates-MacBook-Pro/"
+  ]
+ },
+ {
+  "key": "imac 20 2007",
+  "name": "iMac (20-inch, Mid 2007)",
+  "name_fa": "آی‌مک ۲۰ اینچ (اواسط ۲۰۰۷)",
+  "aliases": [
+   "imac 20 2007",
+   "imac202007",
+   "ایمک ۲۰ ۲۰۰۷",
+   "آیمک ۲۰ اینچ ۲۰۰۷",
+   "آی مک 20 اینچ 2007",
+   "ای مک ۲۰ ۲۰۰۷",
+   "imac 20 mid 2007",
+   "imac 20 2007 mid",
+   "imac 20 inch mid 2007",
+   "ایمک ۲۰ اواسط ۲۰۰۷",
+   "آیمک ۲۰ اینچ اواسط ۲۰۰۷",
+   "آی مک 20 اینچ اواسط 2007"
+  ],
+  "year": 2007,
+  "announced": "2007-08-07",
+  "chips": [
+   "Intel Core 2 Duo 2.0GHz",
+   "Intel Core 2 Duo 2.4GHz"
+  ],
+  "ram_gb": [
+   1,
+   2,
+   4
+  ],
+  "storage_gb": [
+   250,
+   320,
+   500,
+   750
+  ],
+  "display": {
+   "inch": 20,
+   "type": "glossy widescreen TFT LCD",
+   "hz": 60,
+   "resolution": "1680x1050"
+  },
+  "ports": [
+   "1x FireWire 400 + 1x FireWire 800",
+   "3x USB 2.0 (+2x USB 2.0 on keyboard)",
+   "mini-DVI out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.1,
+  "features": [
+   "aluminum and glass design",
+   "ATI Radeon HD 2400 XT (128MB) or HD 2600 PRO (256MB)",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11n, Bluetooth 2.0+EDR"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112553",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2007/08/07Apple-Unveils-New-iMac/",
+   "https://support.apple.com/en-us/111989",
+   "https://support.apple.com/en-us/111988"
+  ]
+ },
+ {
+  "key": "imac 24 2007",
+  "name": "iMac (24-inch, Mid 2007)",
+  "name_fa": "آی‌مک ۲۴ اینچ (اواسط ۲۰۰۷)",
+  "aliases": [
+   "imac 24 2007",
+   "imac242007",
+   "ایمک ۲۴ ۲۰۰۷",
+   "آیمک ۲۴ اینچ ۲۰۰۷",
+   "آی مک 24 اینچ 2007",
+   "ای مک ۲۴ ۲۰۰۷",
+   "imac 24 mid 2007",
+   "imac 24 2007 mid",
+   "imac 24 inch mid 2007",
+   "ایمک ۲۴ اواسط ۲۰۰۷",
+   "آیمک ۲۴ اینچ اواسط ۲۰۰۷",
+   "آی مک 24 اینچ اواسط 2007"
+  ],
+  "year": 2007,
+  "announced": "2007-08-07",
+  "chips": [
+   "Intel Core 2 Duo 2.4GHz",
+   "Intel Core 2 Extreme 2.8GHz (optional)"
+  ],
+  "ram_gb": [
+   1,
+   2,
+   4
+  ],
+  "storage_gb": [
+   320,
+   500,
+   750,
+   1024
+  ],
+  "display": {
+   "inch": 24,
+   "type": "glossy widescreen TFT LCD",
+   "hz": 60,
+   "resolution": "1920x1200"
+  },
+  "ports": [
+   "1x FireWire 400 + 1x FireWire 800",
+   "3x USB 2.0 (+2x USB 2.0 on keyboard)",
+   "mini-DVI out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 11.5,
+  "features": [
+   "aluminum and glass design",
+   "ATI Radeon HD 2600 PRO (256MB)",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11n, Bluetooth 2.0+EDR"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112553",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2007/08/07Apple-Unveils-New-iMac/",
+   "https://support.apple.com/en-us/111989",
+   "https://support.apple.com/en-us/111988"
+  ]
+ },
+ {
+  "key": "mac mini 2007",
+  "name": "Mac mini (Mid 2007)",
+  "name_fa": "مک مینی (اواسط ۲۰۰۷)",
+  "aliases": [
+   "mac mini 2007",
+   "macmini2007",
+   "مک مینی ۲۰۰۷",
+   "مک‌مینی ۲۰۰۷",
+   "مکمینی ۲۰۰۷",
+   "mac mini mid 2007",
+   "mac mini 2007 mid",
+   "مک مینی اواسط ۲۰۰۷",
+   "مکمینی اواسط ۲۰۰۷"
+  ],
+  "year": 2007,
+  "announced": null,
+  "chips": [
+   "Intel Core 2 Duo 1.83GHz",
+   "Intel Core 2 Duo 2.0GHz"
+  ],
+  "ram_gb": [
+   1,
+   2
+  ],
+  "storage_gb": [
+   80,
+   120,
+   160
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "1x FireWire 400",
+   "4x USB 2.0",
+   "DVI out (VGA via adapter)",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": null,
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 1.31,
+  "features": [
+   "Intel GMA 950 graphics",
+   "Combo drive or SuperDrive"
+  ],
+  "max_macos": "OS X 10.7 Lion",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112504",
+   "https://support.apple.com/en-us/112027",
+   "https://support.apple.com/en-us/112587"
+  ]
+ },
+ {
+  "key": "macbook 13 2007 late",
+  "name": "MacBook (13-inch, Late 2007)",
+  "name_fa": "مک‌بوک ۱۳ اینچ (اواخر ۲۰۰۷)",
+  "aliases": [
+   "macbook 13 2007 late",
+   "مکبوک ۱۳ ۲۰۰۷ اواخر",
+   "مک بوک ۱۳ ۲۰۰۷ اواخر",
+   "مک بوک 13 2007 اواخر",
+   "macbook 13 late 2007",
+   "مکبوک ۱۳ اواخر ۲۰۰۷",
+   "مک بوک ۱۳ اواخر ۲۰۰۷",
+   "مک بوک 13 اواخر 2007",
+   "macbook 2007 late",
+   "macbook2007late",
+   "مکبوک ۲۰۰۷ اواخر",
+   "مک بوک ۲۰۰۷ اواخر",
+   "مک بوک 2007 اواخر"
+  ],
+  "year": 2007,
+  "announced": null,
+  "chips": [
+   "Intel Core 2 Duo 2.0GHz",
+   "Intel Core 2 Duo 2.2GHz"
+  ],
+  "ram_gb": [
+   1,
+   4
+  ],
+  "storage_gb": [
+   80,
+   120,
+   160,
+   250
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "glossy TFT widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "Mini-DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "battery_hours": 6,
+  "weight_kg": 2.27,
+  "features": [
+   "Intel GMA X3100",
+   "Combo drive or 8x SuperDrive",
+   "Wi-Fi 802.11n (draft)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112488",
+   "https://support.apple.com/en-us/103257"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2007 late",
+  "name": "MacBook Pro (15-inch, Late 2007)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (اواخر ۲۰۰۷)",
+  "aliases": [
+   "macbook pro 15 2007 late",
+   "مکبوک پرو ۱۵ ۲۰۰۷ اواخر",
+   "مک بوک پرو ۱۵ ۲۰۰۷ اواخر",
+   "مک بوک پرو 15 2007 اواخر",
+   "macbook pro 15 late 2007",
+   "مکبوک پرو ۱۵ اواخر ۲۰۰۷",
+   "مک بوک پرو ۱۵ اواخر ۲۰۰۷",
+   "مک بوک پرو 15 اواخر 2007"
+  ],
+  "year": 2007,
+  "announced": null,
+  "chips": [
+   "Intel Core 2 Duo 2.2GHz",
+   "Intel Core 2 Duo 2.4GHz",
+   "Intel Core 2 Duo 2.6GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   120,
+   160,
+   200,
+   250
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "LED-backlit TFT widescreen (optional glossy)",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "FireWire 800",
+   "ExpressCard/34",
+   "DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 6,
+  "weight_kg": 2.45,
+  "features": [
+   "NVIDIA GeForce 8600M GT",
+   "8x SuperDrive",
+   "Wi-Fi 802.11n (draft)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112519",
+   "https://support.apple.com/en-us/108052"
+  ]
+ },
+ {
+  "key": "macbook pro 17 2007 late",
+  "name": "MacBook Pro (17-inch, Late 2007)",
+  "name_fa": "مک‌بوک پرو ۱۷ اینچ (اواخر ۲۰۰۷)",
+  "aliases": [
+   "macbook pro 17 2007 late",
+   "مکبوک پرو ۱۷ ۲۰۰۷ اواخر",
+   "مک بوک پرو ۱۷ ۲۰۰۷ اواخر",
+   "مک بوک پرو 17 2007 اواخر",
+   "macbook pro 17 late 2007",
+   "مکبوک پرو ۱۷ اواخر ۲۰۰۷",
+   "مک بوک پرو ۱۷ اواخر ۲۰۰۷",
+   "مک بوک پرو 17 اواخر 2007"
+  ],
+  "year": 2007,
+  "announced": null,
+  "chips": [
+   "Intel Core 2 Duo 2.4GHz",
+   "Intel Core 2 Duo 2.6GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   160,
+   200,
+   250
+  ],
+  "display": {
+   "inch": 17,
+   "type": "TFT widescreen (optional glossy; optional 1920x1200)",
+   "hz": 60,
+   "resolution": "1680x1050"
+  },
+  "ports": [
+   "3x USB 2.0",
+   "FireWire 400",
+   "FireWire 800",
+   "ExpressCard/34",
+   "DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 5.75,
+  "weight_kg": 3.08,
+  "features": [
+   "NVIDIA GeForce 8600M GT 256MB",
+   "8x SuperDrive",
+   "Wi-Fi 802.11n (draft)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112519",
+   "https://support.apple.com/en-us/108052"
+  ]
+ },
+ {
+  "key": "mac pro 2008",
+  "name": "Mac Pro (Early 2008)",
+  "name_fa": "مک پرو (اوایل ۲۰۰۸)",
+  "aliases": [
+   "mac pro 2008",
+   "macpro2008",
+   "مک پرو ۲۰۰۸",
+   "مک‌پرو ۲۰۰۸",
+   "مکپرو ۲۰۰۸"
+  ],
+  "year": 2008,
+  "announced": "2008-01-08",
+  "chips": [
+   "1x Intel Xeon 5400 quad-core 2.8GHz",
+   "2x Intel Xeon 5400 quad-core 2.8, 3.0 or 3.2GHz (8-core)"
+  ],
+  "ram_gb": [
+   2,
+   4,
+   8,
+   16,
+   32
+  ],
+  "storage_gb": [
+   300,
+   320,
+   500,
+   750,
+   1024
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "2x FireWire 800",
+   "2x FireWire 400",
+   "5x USB 2.0",
+   "2x Gigabit Ethernet",
+   "optical digital audio in/out",
+   "analog audio in/out"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 19.2,
+  "features": [
+   "tower, 4 drive bays",
+   "ATI Radeon HD 2600 XT, GeForce 8800 GT or Quadro FX 5600",
+   "PCI Express 2.0",
+   "FB-DIMM ECC memory up to 32GB"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112308",
+   "https://www.apple.com/newsroom/2008/01/08Apple-Introduces-New-Mac-Pro/",
+   "https://support.apple.com/en-us/111989",
+   "https://support.apple.com/en-us/111988"
+  ]
+ },
+ {
+  "key": "macbook air 2008 original",
+  "name": "MacBook Air (Original)",
+  "name_fa": "مک‌بوک ایر نسل اول (اوایل ۲۰۰۸)",
+  "aliases": [
+   "macbook air 13 2008 early",
+   "مکبوک ایر ۱۳ ۲۰۰۸ اوایل",
+   "مک بوک ایر ۱۳ ۲۰۰۸ اوایل",
+   "مک بوک ایر 13 2008 اوایل",
+   "macbook air 13 early 2008",
+   "مکبوک ایر ۱۳ اوایل ۲۰۰۸",
+   "مک بوک ایر ۱۳ اوایل ۲۰۰۸",
+   "مک بوک ایر 13 اوایل 2008",
+   "macbook air original 13 2008",
+   "مکبوک ایر نسل اول ۱۳ ۲۰۰۸",
+   "مک بوک ایر نسل اول ۱۳ ۲۰۰۸",
+   "مک بوک ایر نسل اول 13 2008",
+   "macbook air 13 2008 original",
+   "مکبوک ایر ۱۳ ۲۰۰۸ نسل اول",
+   "مک بوک ایر ۱۳ ۲۰۰۸ نسل اول",
+   "مک بوک ایر 13 2008 نسل اول",
+   "macbook air original 13 2008 early",
+   "مکبوک ایر نسل اول ۱۳ ۲۰۰۸ اوایل",
+   "مک بوک ایر نسل اول ۱۳ ۲۰۰۸ اوایل",
+   "مک بوک ایر نسل اول 13 2008 اوایل",
+   "macbook air 1st gen",
+   "macbook air first generation",
+   "مکبوک ایر نسل اول"
+  ],
+  "year": 2008,
+  "announced": "2008-01-15",
+  "chips": [
+   "Intel Core 2 Duo 1.6GHz",
+   "Intel Core 2 Duo 1.8GHz"
+  ],
+  "ram_gb": [
+   2
+  ],
+  "storage_gb": [
+   64,
+   80
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "USB 2.0",
+   "micro-DVI",
+   "headphone",
+   "MagSafe"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 5,
+  "weight_kg": 1.36,
+  "features": [
+   "Intel GMA X3100",
+   "no optical drive",
+   "Multi-Touch trackpad",
+   "Wi-Fi 802.11n (draft)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112533",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2008/01/15Apple-Introduces-MacBook-Air-The-Worlds-Thinnest-Notebook/"
+  ]
+ },
+ {
+  "key": "macbook 13 2008 early",
+  "name": "MacBook (13-inch, Early 2008)",
+  "name_fa": "مک‌بوک ۱۳ اینچ (اوایل ۲۰۰۸)",
+  "aliases": [
+   "macbook 13 2008 early",
+   "مکبوک ۱۳ ۲۰۰۸ اوایل",
+   "مک بوک ۱۳ ۲۰۰۸ اوایل",
+   "مک بوک 13 2008 اوایل",
+   "macbook 13 early 2008",
+   "مکبوک ۱۳ اوایل ۲۰۰۸",
+   "مک بوک ۱۳ اوایل ۲۰۰۸",
+   "مک بوک 13 اوایل 2008",
+   "macbook 2008 early",
+   "macbook2008early",
+   "مکبوک ۲۰۰۸ اوایل",
+   "مک بوک ۲۰۰۸ اوایل",
+   "مک بوک 2008 اوایل"
+  ],
+  "year": 2008,
+  "announced": "2008-02-26",
+  "chips": [
+   "Intel Core 2 Duo 2.1GHz",
+   "Intel Core 2 Duo 2.4GHz"
+  ],
+  "ram_gb": [
+   1,
+   2,
+   4
+  ],
+  "storage_gb": [
+   120,
+   160,
+   250
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "glossy TFT widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "Mini-DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 2.27,
+  "features": [
+   "Intel GMA X3100",
+   "Combo drive or 8x SuperDrive",
+   "Wi-Fi 802.11n (draft)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112467",
+   "https://support.apple.com/en-us/103257",
+   "https://www.apple.com/newsroom/2008/02/26Apple-Introduces-New-MacBook-and-MacBook-Pro-Models/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2008 early",
+  "name": "MacBook Pro (15-inch, Early 2008)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (اوایل ۲۰۰۸)",
+  "aliases": [
+   "macbook pro 15 2008 early",
+   "مکبوک پرو ۱۵ ۲۰۰۸ اوایل",
+   "مک بوک پرو ۱۵ ۲۰۰۸ اوایل",
+   "مک بوک پرو 15 2008 اوایل",
+   "macbook pro 15 early 2008",
+   "مکبوک پرو ۱۵ اوایل ۲۰۰۸",
+   "مک بوک پرو ۱۵ اوایل ۲۰۰۸",
+   "مک بوک پرو 15 اوایل 2008"
+  ],
+  "year": 2008,
+  "announced": "2008-02-26",
+  "chips": [
+   "Intel Core 2 Duo 2.4GHz",
+   "Intel Core 2 Duo 2.5GHz",
+   "Intel Core 2 Duo 2.6GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   200,
+   250,
+   300
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "LED-backlit widescreen (optional glossy)",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "FireWire 800",
+   "ExpressCard/34",
+   "DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": null,
+  "features": [
+   "NVIDIA GeForce 8600M GT",
+   "Multi-Touch trackpad",
+   "8x SuperDrive",
+   "Wi-Fi 802.11n"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2008/02/26Apple-Introduces-New-MacBook-and-MacBook-Pro-Models/"
+  ]
+ },
+ {
+  "key": "macbook pro 17 2008 early",
+  "name": "MacBook Pro (17-inch, Early 2008)",
+  "name_fa": "مک‌بوک پرو ۱۷ اینچ (اوایل ۲۰۰۸)",
+  "aliases": [
+   "macbook pro 17 2008 early",
+   "مکبوک پرو ۱۷ ۲۰۰۸ اوایل",
+   "مک بوک پرو ۱۷ ۲۰۰۸ اوایل",
+   "مک بوک پرو 17 2008 اوایل",
+   "macbook pro 17 early 2008",
+   "مکبوک پرو ۱۷ اوایل ۲۰۰۸",
+   "مک بوک پرو ۱۷ اوایل ۲۰۰۸",
+   "مک بوک پرو 17 اوایل 2008"
+  ],
+  "year": 2008,
+  "announced": "2008-02-26",
+  "chips": [
+   "Intel Core 2 Duo 2.5GHz",
+   "Intel Core 2 Duo 2.6GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   200,
+   250,
+   300
+  ],
+  "display": {
+   "inch": 17,
+   "type": "widescreen (optional glossy; optional LED-backlit 1920x1200)",
+   "hz": 60,
+   "resolution": "1680x1050"
+  },
+  "ports": [
+   "3x USB 2.0",
+   "FireWire 400",
+   "FireWire 800",
+   "ExpressCard/34",
+   "DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": null,
+  "features": [
+   "NVIDIA GeForce 8600M GT 512MB",
+   "Multi-Touch trackpad",
+   "8x SuperDrive",
+   "Wi-Fi 802.11n"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2008/02/26Apple-Introduces-New-MacBook-and-MacBook-Pro-Models/"
+  ]
+ },
+ {
+  "key": "imac 20 2008",
+  "name": "iMac (20-inch, Early 2008)",
+  "name_fa": "آی‌مک ۲۰ اینچ (اوایل ۲۰۰۸)",
+  "aliases": [
+   "imac 20 2008",
+   "imac202008",
+   "ایمک ۲۰ ۲۰۰۸",
+   "آیمک ۲۰ اینچ ۲۰۰۸",
+   "آی مک 20 اینچ 2008",
+   "ای مک ۲۰ ۲۰۰۸",
+   "imac 20 early 2008",
+   "imac 20 2008 early",
+   "imac 20 inch early 2008",
+   "ایمک ۲۰ اوایل ۲۰۰۸",
+   "آیمک ۲۰ اینچ اوایل ۲۰۰۸",
+   "آی مک 20 اینچ اوایل 2008"
+  ],
+  "year": 2008,
+  "announced": "2008-04-28",
+  "chips": [
+   "Intel Core 2 Duo 2.4GHz",
+   "Intel Core 2 Duo 2.66GHz"
+  ],
+  "ram_gb": [
+   1,
+   2,
+   4
+  ],
+  "storage_gb": [
+   250,
+   320,
+   500,
+   750
+  ],
+  "display": {
+   "inch": 20,
+   "type": "glossy widescreen TFT LCD",
+   "hz": 60,
+   "resolution": "1680x1050"
+  },
+  "ports": [
+   "1x FireWire 400 + 1x FireWire 800",
+   "3x USB 2.0 (+2x USB 2.0 on keyboard)",
+   "mini-DVI out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.1,
+  "features": [
+   "ATI Radeon HD 2400 XT (128MB) or HD 2600 PRO (256MB)",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11n, Bluetooth 2.1+EDR"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112494",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2008/04/28Apple-Updates-iMac/",
+   "https://support.apple.com/en-us/111989",
+   "https://support.apple.com/en-us/111988"
+  ]
+ },
+ {
+  "key": "imac 24 2008",
+  "name": "iMac (24-inch, Early 2008)",
+  "name_fa": "آی‌مک ۲۴ اینچ (اوایل ۲۰۰۸)",
+  "aliases": [
+   "imac 24 2008",
+   "imac242008",
+   "ایمک ۲۴ ۲۰۰۸",
+   "آیمک ۲۴ اینچ ۲۰۰۸",
+   "آی مک 24 اینچ 2008",
+   "ای مک ۲۴ ۲۰۰۸",
+   "imac 24 early 2008",
+   "imac 24 2008 early",
+   "imac 24 inch early 2008",
+   "ایمک ۲۴ اوایل ۲۰۰۸",
+   "آیمک ۲۴ اینچ اوایل ۲۰۰۸",
+   "آی مک 24 اینچ اوایل 2008"
+  ],
+  "year": 2008,
+  "announced": "2008-04-28",
+  "chips": [
+   "Intel Core 2 Duo 2.8GHz",
+   "Intel Core 2 Duo 3.06GHz (optional)"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   320,
+   500,
+   750,
+   1024
+  ],
+  "display": {
+   "inch": 24,
+   "type": "glossy widescreen TFT LCD",
+   "hz": 60,
+   "resolution": "1920x1200"
+  },
+  "ports": [
+   "1x FireWire 400 + 1x FireWire 800",
+   "3x USB 2.0 (+2x USB 2.0 on keyboard)",
+   "mini-DVI out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 11.5,
+  "features": [
+   "ATI Radeon HD 2600 PRO (256MB) or NVIDIA GeForce 8800 GS (512MB)",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11n, Bluetooth 2.1+EDR"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112494",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2008/04/28Apple-Updates-iMac/",
+   "https://support.apple.com/en-us/111989",
+   "https://support.apple.com/en-us/111988"
+  ]
+ },
+ {
+  "key": "macbook 13 2008 aluminum",
+  "name": "MacBook (13-inch, Aluminum, Late 2008)",
+  "name_fa": "مک‌بوک آلومینیومی ۱۳ اینچ (اواخر ۲۰۰۸)",
+  "aliases": [
+   "macbook aluminum 13 2008",
+   "مکبوک آلومینیومی ۱۳ ۲۰۰۸",
+   "مک بوک آلومینیومی ۱۳ ۲۰۰۸",
+   "مک بوک آلومینیومی 13 2008",
+   "macbook 13 2008 aluminum",
+   "مکبوک ۱۳ ۲۰۰۸ آلومینیومی",
+   "مک بوک ۱۳ ۲۰۰۸ آلومینیومی",
+   "مک بوک 13 2008 آلومینیومی",
+   "macbook aluminum 13 2008 late",
+   "مکبوک آلومینیومی ۱۳ ۲۰۰۸ اواخر",
+   "مک بوک آلومینیومی ۱۳ ۲۰۰۸ اواخر",
+   "مک بوک آلومینیومی 13 2008 اواخر",
+   "macbook aluminum 2008",
+   "macbookaluminum2008",
+   "مکبوک آلومینیومی ۲۰۰۸",
+   "مک بوک آلومینیومی ۲۰۰۸",
+   "مک بوک آلومینیومی 2008",
+   "macbook unibody 2008",
+   "مکبوک یونیبادی ۲۰۰۸"
+  ],
+  "year": 2008,
+  "announced": "2008-10-14",
+  "chips": [
+   "Intel Core 2 Duo 2.0GHz",
+   "Intel Core 2 Duo 2.4GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   128,
+   160,
+   250,
+   320
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "Mini DisplayPort",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 2.04,
+  "features": [
+   "aluminum unibody",
+   "NVIDIA GeForce 9400M",
+   "glass Multi-Touch trackpad",
+   "8x SuperDrive"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112512",
+   "https://support.apple.com/en-us/103257",
+   "https://www.apple.com/newsroom/2008/10/14New-MacBook-Family-Redefines-Notebook-Design/"
+  ]
+ },
+ {
+  "key": "macbook 13 2008 late white",
+  "name": "MacBook (13-inch, Late 2008)",
+  "name_fa": "مک‌بوک سفید ۱۳ اینچ (اواخر ۲۰۰۸)",
+  "aliases": [
+   "macbook white 13 2008",
+   "مکبوک سفید ۱۳ ۲۰۰۸",
+   "مک بوک سفید ۱۳ ۲۰۰۸",
+   "مک بوک سفید 13 2008",
+   "macbook 13 2008 white",
+   "مکبوک ۱۳ ۲۰۰۸ سفید",
+   "مک بوک ۱۳ ۲۰۰۸ سفید",
+   "مک بوک 13 2008 سفید",
+   "macbook white 13 2008 late",
+   "مکبوک سفید ۱۳ ۲۰۰۸ اواخر",
+   "مک بوک سفید ۱۳ ۲۰۰۸ اواخر",
+   "مک بوک سفید 13 2008 اواخر",
+   "macbook white 2008",
+   "macbookwhite2008",
+   "مکبوک سفید ۲۰۰۸",
+   "مک بوک سفید ۲۰۰۸",
+   "مک بوک سفید 2008"
+  ],
+  "year": 2008,
+  "announced": "2008-10-14",
+  "chips": [
+   "Intel Core 2 Duo 2.1GHz"
+  ],
+  "ram_gb": [
+   1,
+   2,
+   4
+  ],
+  "storage_gb": [
+   120,
+   160,
+   250
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "glossy TFT widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "Mini-DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 2.27,
+  "features": [
+   "Intel GMA X3100",
+   "8x SuperDrive",
+   "Wi-Fi 802.11n (draft)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112467",
+   "https://support.apple.com/en-us/103257",
+   "https://www.apple.com/newsroom/2008/10/14New-MacBook-Family-Redefines-Notebook-Design/"
+  ]
+ },
+ {
+  "key": "macbook air 2008 late",
+  "name": "MacBook Air (Late 2008)",
+  "name_fa": "مک‌بوک ایر (اواخر ۲۰۰۸)",
+  "aliases": [
+   "macbook air 13 2008 late",
+   "مکبوک ایر ۱۳ ۲۰۰۸ اواخر",
+   "مک بوک ایر ۱۳ ۲۰۰۸ اواخر",
+   "مک بوک ایر 13 2008 اواخر",
+   "macbook air 13 late 2008",
+   "مکبوک ایر ۱۳ اواخر ۲۰۰۸",
+   "مک بوک ایر ۱۳ اواخر ۲۰۰۸",
+   "مک بوک ایر 13 اواخر 2008"
+  ],
+  "year": 2008,
+  "announced": "2008-10-14",
+  "chips": [
+   "Intel Core 2 Duo 1.6GHz",
+   "Intel Core 2 Duo 1.86GHz"
+  ],
+  "ram_gb": [
+   2
+  ],
+  "storage_gb": [
+   120,
+   128
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "USB 2.0",
+   "Mini DisplayPort",
+   "headphone",
+   "MagSafe"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 1.36,
+  "features": [
+   "NVIDIA GeForce 9400M",
+   "no optical drive",
+   "Wi-Fi 802.11n (draft)"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112447",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2008/10/14New-MacBook-Family-Redefines-Notebook-Design/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2008 late",
+  "name": "MacBook Pro (15-inch, Late 2008)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ یونیبادی (اواخر ۲۰۰۸)",
+  "aliases": [
+   "macbook pro 15 2008 late",
+   "مکبوک پرو ۱۵ ۲۰۰۸ اواخر",
+   "مک بوک پرو ۱۵ ۲۰۰۸ اواخر",
+   "مک بوک پرو 15 2008 اواخر",
+   "macbook pro 15 late 2008",
+   "مکبوک پرو ۱۵ اواخر ۲۰۰۸",
+   "مک بوک پرو ۱۵ اواخر ۲۰۰۸",
+   "مک بوک پرو 15 اواخر 2008",
+   "macbook pro unibody 15 2008",
+   "مکبوک پرو یونیبادی ۱۵ ۲۰۰۸",
+   "مک بوک پرو یونیبادی ۱۵ ۲۰۰۸",
+   "مک بوک پرو یونیبادی 15 2008",
+   "macbook pro 15 2008 unibody",
+   "مکبوک پرو ۱۵ ۲۰۰۸ یونیبادی",
+   "مک بوک پرو ۱۵ ۲۰۰۸ یونیبادی",
+   "مک بوک پرو 15 2008 یونیبادی",
+   "macbook pro unibody 15 2008 late",
+   "مکبوک پرو یونیبادی ۱۵ ۲۰۰۸ اواخر",
+   "مک بوک پرو یونیبادی ۱۵ ۲۰۰۸ اواخر",
+   "مک بوک پرو یونیبادی 15 2008 اواخر"
+  ],
+  "year": 2008,
+  "announced": "2008-10-14",
+  "chips": [
+   "Intel Core 2 Duo 2.4GHz",
+   "Intel Core 2 Duo 2.53GHz",
+   "Intel Core 2 Duo 2.8GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   128,
+   250,
+   320
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 800",
+   "ExpressCard/34",
+   "Mini DisplayPort",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 2.49,
+  "features": [
+   "aluminum unibody",
+   "NVIDIA GeForce 9400M + 9600M GT",
+   "glass Multi-Touch trackpad",
+   "removable battery",
+   "8x SuperDrive"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112526",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2008/10/14New-MacBook-Family-Redefines-Notebook-Design/"
+  ]
+ },
+ {
+  "key": "macbook pro 17 2008 late",
+  "name": "MacBook Pro (17-inch, Late 2008)",
+  "name_fa": "مک‌بوک پرو ۱۷ اینچ (اواخر ۲۰۰۸)",
+  "aliases": [
+   "macbook pro 17 2008 late",
+   "مکبوک پرو ۱۷ ۲۰۰۸ اواخر",
+   "مک بوک پرو ۱۷ ۲۰۰۸ اواخر",
+   "مک بوک پرو 17 2008 اواخر",
+   "macbook pro 17 late 2008",
+   "مکبوک پرو ۱۷ اواخر ۲۰۰۸",
+   "مک بوک پرو ۱۷ اواخر ۲۰۰۸",
+   "مک بوک پرو 17 اواخر 2008"
+  ],
+  "year": 2008,
+  "announced": "2008-10-14",
+  "chips": [
+   "Intel Core 2 Duo 2.5GHz"
+  ],
+  "ram_gb": [
+   4
+  ],
+  "storage_gb": [
+   320
+  ],
+  "display": {
+   "inch": 17,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1920x1200"
+  },
+  "ports": [
+   "3x USB 2.0",
+   "FireWire 400",
+   "FireWire 800",
+   "ExpressCard/34",
+   "DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": null,
+  "features": [
+   "NVIDIA GeForce 8600M GT 512MB",
+   "Multi-Touch trackpad",
+   "8x SuperDrive",
+   "Wi-Fi 802.11n"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/docs/mac/132142",
+   "https://www.apple.com/newsroom/2008/10/14New-MacBook-Family-Redefines-Notebook-Design/"
+  ]
+ },
+ {
+  "key": "macbook pro 17 2009 early",
+  "name": "MacBook Pro (17-inch, Early 2009)",
+  "name_fa": "مک‌بوک پرو ۱۷ اینچ (اوایل ۲۰۰۹)",
+  "aliases": [
+   "macbook pro 17 2009 early",
+   "مکبوک پرو ۱۷ ۲۰۰۹ اوایل",
+   "مک بوک پرو ۱۷ ۲۰۰۹ اوایل",
+   "مک بوک پرو 17 2009 اوایل",
+   "macbook pro 17 early 2009",
+   "مکبوک پرو ۱۷ اوایل ۲۰۰۹",
+   "مک بوک پرو ۱۷ اوایل ۲۰۰۹",
+   "مک بوک پرو 17 اوایل 2009"
+  ],
+  "year": 2009,
+  "announced": "2009-01-06",
+  "chips": [
+   "Intel Core 2 Duo 2.66GHz",
+   "Intel Core 2 Duo 2.93GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   320
+  ],
+  "display": {
+   "inch": 17,
+   "type": "LED-backlit glossy widescreen (optional antiglare)",
+   "hz": 60,
+   "resolution": "1920x1200"
+  },
+  "ports": [
+   "3x USB 2.0",
+   "FireWire 800",
+   "ExpressCard/34",
+   "Mini DisplayPort",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 8,
+  "weight_kg": 2.99,
+  "features": [
+   "aluminum unibody",
+   "NVIDIA GeForce 9400M + 9600M GT",
+   "built-in 95Wh battery",
+   "8x SuperDrive"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112526",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2009/01/06Apple-Introduces-17-inch-MacBook-Pro-With-Revolutionary-New-Built-in-Battery-That-Delivers-Eight-Hours-of-Use-1-000-Recharges/"
+  ]
+ },
+ {
+  "key": "imac 20 2009 early",
+  "name": "iMac (20-inch, Early 2009)",
+  "name_fa": "آی‌مک ۲۰ اینچ (اوایل ۲۰۰۹)",
+  "aliases": [
+   "imac 20 early 2009",
+   "imac 20 2009 early",
+   "imac 20 inch early 2009",
+   "ایمک ۲۰ اوایل ۲۰۰۹",
+   "آیمک ۲۰ اینچ اوایل ۲۰۰۹",
+   "آی مک 20 اینچ اوایل 2009"
+  ],
+  "year": 2009,
+  "announced": "2009-03-03",
+  "chips": [
+   "Intel Core 2 Duo 2.66GHz"
+  ],
+  "ram_gb": [
+   2,
+   4,
+   8
+  ],
+  "storage_gb": [
+   320,
+   640,
+   1024
+  ],
+  "display": {
+   "inch": 20,
+   "type": "glossy widescreen TFT LCD",
+   "hz": 60,
+   "resolution": "1680x1050"
+  },
+  "ports": [
+   "1x FireWire 800",
+   "4x USB 2.0 (+2x USB 2.0 on keyboard)",
+   "Mini DisplayPort out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.1,
+  "features": [
+   "NVIDIA GeForce 9400M",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11n, Bluetooth 2.1+EDR"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112427",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2009/03/03Apple-Updates-Consumer-Desktop-Line/"
+  ]
+ },
+ {
+  "key": "imac 24 2009",
+  "name": "iMac (24-inch, Early 2009)",
+  "name_fa": "آی‌مک ۲۴ اینچ (اوایل ۲۰۰۹)",
+  "aliases": [
+   "imac 24 2009",
+   "imac242009",
+   "ایمک ۲۴ ۲۰۰۹",
+   "آیمک ۲۴ اینچ ۲۰۰۹",
+   "آی مک 24 اینچ 2009",
+   "ای مک ۲۴ ۲۰۰۹",
+   "imac 24 early 2009",
+   "imac 24 2009 early",
+   "imac 24 inch early 2009",
+   "ایمک ۲۴ اوایل ۲۰۰۹",
+   "آیمک ۲۴ اینچ اوایل ۲۰۰۹",
+   "آی مک 24 اینچ اوایل 2009"
+  ],
+  "year": 2009,
+  "announced": "2009-03-03",
+  "chips": [
+   "Intel Core 2 Duo 2.66GHz",
+   "Intel Core 2 Duo 2.93GHz",
+   "Intel Core 2 Duo 3.06GHz"
+  ],
+  "ram_gb": [
+   2,
+   4,
+   8
+  ],
+  "storage_gb": [
+   640,
+   1024
+  ],
+  "display": {
+   "inch": 24,
+   "type": "glossy widescreen TFT LCD",
+   "hz": 60,
+   "resolution": "1920x1200"
+  },
+  "ports": [
+   "1x FireWire 800",
+   "4x USB 2.0 (+2x USB 2.0 on keyboard)",
+   "Mini DisplayPort out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 11.5,
+  "features": [
+   "NVIDIA GeForce 9400M, GT 120, GT 130 or ATI Radeon HD 4850",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11n, Bluetooth 2.1+EDR"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112427",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2009/03/03Apple-Updates-Consumer-Desktop-Line/"
+  ]
+ },
+ {
+  "key": "mac mini 2009 early",
+  "name": "Mac mini (Early 2009)",
+  "name_fa": "مک مینی (اوایل ۲۰۰۹)",
+  "aliases": [
+   "mac mini early 2009",
+   "mac mini 2009 early",
+   "مک مینی اوایل ۲۰۰۹",
+   "مکمینی اوایل ۲۰۰۹"
+  ],
+  "year": 2009,
+  "announced": "2009-03-03",
+  "chips": [
+   "Intel Core 2 Duo 2.0GHz",
+   "Intel Core 2 Duo 2.26GHz (optional)"
+  ],
+  "ram_gb": [
+   1,
+   2,
+   4
+  ],
+  "storage_gb": [
+   120,
+   250,
+   320
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "1x FireWire 800",
+   "5x USB 2.0",
+   "Mini DisplayPort",
+   "mini-DVI",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": null,
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 1.31,
+  "features": [
+   "NVIDIA GeForce 9400M graphics",
+   "8x SuperDrive"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111345",
+   "https://support.apple.com/en-us/102852",
+   "https://www.apple.com/newsroom/2009/03/03Apple-Updates-Consumer-Desktop-Line/"
+  ]
+ },
+ {
+  "key": "mac pro 2009",
+  "name": "Mac Pro (Early 2009)",
+  "name_fa": "مک پرو (اوایل ۲۰۰۹)",
+  "aliases": [
+   "mac pro 2009",
+   "macpro2009",
+   "مک پرو ۲۰۰۹",
+   "مک‌پرو ۲۰۰۹",
+   "مکپرو ۲۰۰۹"
+  ],
+  "year": 2009,
+  "announced": "2009-03-03",
+  "chips": [
+   "1x Intel Xeon 3500 quad-core 2.66, 2.93 or 3.33GHz",
+   "2x Intel Xeon 5500 quad-core 2.26, 2.66 or 2.93GHz (8-core)"
+  ],
+  "ram_gb": [
+   3,
+   6,
+   8,
+   12,
+   16,
+   32
+  ],
+  "storage_gb": [
+   640,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "4x FireWire 800",
+   "5x USB 2.0",
+   "2x Gigabit Ethernet",
+   "optical digital audio in/out",
+   "analog audio in/out"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 18.1,
+  "features": [
+   "tower, 4 drive bays",
+   "NVIDIA GeForce GT 120 or ATI Radeon HD 4870",
+   "Nehalem Xeon with Turbo Boost and Hyper-Threading",
+   "DDR3 ECC memory",
+   "weight: quad-core 18.1kg, 8-core 18.7kg"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112590",
+   "https://support.apple.com/en-us/102887",
+   "https://www.apple.com/newsroom/2009/03/03Apple-Introduces-New-Mac-Pro/"
+  ]
+ },
+ {
+  "key": "macbook air 2009",
+  "name": "MacBook Air (Mid 2009)",
+  "name_fa": "مک‌بوک ایر (اواسط ۲۰۰۹)",
+  "aliases": [
+   "macbook air 13 2009 mid",
+   "مکبوک ایر ۱۳ ۲۰۰۹ اواسط",
+   "مک بوک ایر ۱۳ ۲۰۰۹ اواسط",
+   "مک بوک ایر 13 2009 اواسط",
+   "macbook air 13 mid 2009",
+   "مکبوک ایر ۱۳ اواسط ۲۰۰۹",
+   "مک بوک ایر ۱۳ اواسط ۲۰۰۹",
+   "مک بوک ایر 13 اواسط 2009",
+   "macbook air 13 2009",
+   "مکبوک ایر ۱۳ ۲۰۰۹",
+   "مک بوک ایر ۱۳ ۲۰۰۹",
+   "مک بوک ایر 13 2009",
+   "macbook air 2009 13",
+   "مکبوک ایر ۲۰۰۹ ۱۳",
+   "مک بوک ایر ۲۰۰۹ ۱۳",
+   "مک بوک ایر 2009 13",
+   "macbook air 2009",
+   "macbookair2009",
+   "مکبوک ایر ۲۰۰۹",
+   "مک بوک ایر ۲۰۰۹",
+   "مک بوک ایر 2009"
+  ],
+  "year": 2009,
+  "announced": "2009-06-08",
+  "chips": [
+   "Intel Core 2 Duo 1.86GHz",
+   "Intel Core 2 Duo 2.13GHz"
+  ],
+  "ram_gb": [
+   2
+  ],
+  "storage_gb": [
+   120,
+   128
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "USB 2.0",
+   "Mini DisplayPort",
+   "headphone",
+   "MagSafe"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 1.36,
+  "features": [
+   "NVIDIA GeForce 9400M",
+   "no optical drive",
+   "Wi-Fi 802.11n (draft)"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112660",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2009/06/08Apple-Updates-MacBook-Pro-Family-with-New-Models-Innovative-Built-in-Battery-for-Up-to-40-Percent-Longer-Battery-Life/"
+  ]
+ },
+ {
+  "key": "macbook pro 13 2009",
+  "name": "MacBook Pro (13-inch, Mid 2009)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ (اواسط ۲۰۰۹)",
+  "aliases": [
+   "macbook pro 13 2009 mid",
+   "مکبوک پرو ۱۳ ۲۰۰۹ اواسط",
+   "مک بوک پرو ۱۳ ۲۰۰۹ اواسط",
+   "مک بوک پرو 13 2009 اواسط",
+   "macbook pro 13 mid 2009",
+   "مکبوک پرو ۱۳ اواسط ۲۰۰۹",
+   "مک بوک پرو ۱۳ اواسط ۲۰۰۹",
+   "مک بوک پرو 13 اواسط 2009",
+   "macbook pro 13 2009",
+   "مکبوک پرو ۱۳ ۲۰۰۹",
+   "مک بوک پرو ۱۳ ۲۰۰۹",
+   "مک بوک پرو 13 2009",
+   "macbook pro 2009 13",
+   "مکبوک پرو ۲۰۰۹ ۱۳",
+   "مک بوک پرو ۲۰۰۹ ۱۳",
+   "مک بوک پرو 2009 13"
+  ],
+  "year": 2009,
+  "announced": "2009-06-08",
+  "chips": [
+   "Intel Core 2 Duo 2.26GHz",
+   "Intel Core 2 Duo 2.53GHz"
+  ],
+  "ram_gb": [
+   2,
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   160,
+   250,
+   256,
+   320,
+   500
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 800",
+   "SD card slot",
+   "Mini DisplayPort",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio in/out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.04,
+  "features": [
+   "aluminum unibody",
+   "NVIDIA GeForce 9400M",
+   "8x SuperDrive",
+   "backlit keyboard"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112474",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2009/06/08Apple-Updates-MacBook-Pro-Family-with-New-Models-Innovative-Built-in-Battery-for-Up-to-40-Percent-Longer-Battery-Life/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2009 2.53",
+  "name": "MacBook Pro (15-inch, 2.53GHz, Mid 2009)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ ۲٫۵۳ گیگاهرتز (اواسط ۲۰۰۹)",
+  "aliases": [
+   "macbook pro 2.53ghz 15 2009",
+   "مکبوک پرو ۲٫۵۳ گیگاهرتز ۱۵ ۲۰۰۹",
+   "مک بوک پرو ۲٫۵۳ گیگاهرتز ۱۵ ۲۰۰۹",
+   "مک بوک پرو 2.53 گیگاهرتز 15 2009",
+   "macbook pro 15 2009 2.53ghz",
+   "مکبوک پرو ۱۵ ۲۰۰۹ ۲٫۵۳ گیگاهرتز",
+   "مک بوک پرو ۱۵ ۲۰۰۹ ۲٫۵۳ گیگاهرتز",
+   "مک بوک پرو 15 2009 2.53 گیگاهرتز",
+   "macbook pro 2.53ghz 15 2009 mid",
+   "مکبوک پرو ۲٫۵۳ گیگاهرتز ۱۵ ۲۰۰۹ اواسط",
+   "مک بوک پرو ۲٫۵۳ گیگاهرتز ۱۵ ۲۰۰۹ اواسط",
+   "مک بوک پرو 2.53 گیگاهرتز 15 2009 اواسط"
+  ],
+  "year": 2009,
+  "announced": "2009-06-08",
+  "chips": [
+   "Intel Core 2 Duo 2.53GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   250,
+   256,
+   320,
+   500
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 800",
+   "SD card slot",
+   "Mini DisplayPort",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.49,
+  "features": [
+   "aluminum unibody",
+   "NVIDIA GeForce 9400M",
+   "8x SuperDrive"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112624",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2009/06/08Apple-Updates-MacBook-Pro-Family-with-New-Models-Innovative-Built-in-Battery-for-Up-to-40-Percent-Longer-Battery-Life/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2009 mid",
+  "name": "MacBook Pro (15-inch, Mid 2009)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (اواسط ۲۰۰۹)",
+  "aliases": [],
+  "year": 2009,
+  "announced": "2009-06-08",
+  "chips": [
+   "Intel Core 2 Duo 2.66GHz",
+   "Intel Core 2 Duo 2.8GHz",
+   "Intel Core 2 Duo 3.06GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   320,
+   500
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 800",
+   "SD card slot",
+   "Mini DisplayPort",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.49,
+  "features": [
+   "aluminum unibody",
+   "NVIDIA GeForce 9400M + 9600M GT",
+   "8x SuperDrive"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112624",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2009/06/08Apple-Updates-MacBook-Pro-Family-with-New-Models-Innovative-Built-in-Battery-for-Up-to-40-Percent-Longer-Battery-Life/"
+  ]
+ },
+ {
+  "key": "macbook pro 17 2009 mid",
+  "name": "MacBook Pro (17-inch, Mid 2009)",
+  "name_fa": "مک‌بوک پرو ۱۷ اینچ (اواسط ۲۰۰۹)",
+  "aliases": [
+   "macbook pro 17 2009 mid",
+   "مکبوک پرو ۱۷ ۲۰۰۹ اواسط",
+   "مک بوک پرو ۱۷ ۲۰۰۹ اواسط",
+   "مک بوک پرو 17 2009 اواسط",
+   "macbook pro 17 mid 2009",
+   "مکبوک پرو ۱۷ اواسط ۲۰۰۹",
+   "مک بوک پرو ۱۷ اواسط ۲۰۰۹",
+   "مک بوک پرو 17 اواسط 2009"
+  ],
+  "year": 2009,
+  "announced": "2009-06-08",
+  "chips": [
+   "Intel Core 2 Duo 2.8GHz",
+   "Intel Core 2 Duo 3.06GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   500
+  ],
+  "display": {
+   "inch": 17,
+   "type": "LED-backlit glossy widescreen (optional antiglare)",
+   "hz": 60,
+   "resolution": "1920x1200"
+  },
+  "ports": [
+   "3x USB 2.0",
+   "FireWire 800",
+   "ExpressCard/34",
+   "Mini DisplayPort",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 8,
+  "weight_kg": 2.99,
+  "features": [
+   "aluminum unibody",
+   "NVIDIA GeForce 9400M + 9600M GT",
+   "8x SuperDrive"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112473",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2009/06/08Apple-Updates-MacBook-Pro-Family-with-New-Models-Innovative-Built-in-Battery-for-Up-to-40-Percent-Longer-Battery-Life/"
+  ]
+ },
+ {
+  "key": "imac 21.5 2009",
+  "name": "iMac (21.5-inch, Late 2009)",
+  "name_fa": "آی‌مک ۲۱.۵ اینچ (اواخر ۲۰۰۹)",
+  "aliases": [
+   "imac 21.5 2009",
+   "imac 21.5inch 2009",
+   "ایمک ۲۱.۵ ۲۰۰۹",
+   "آیمک ۲۱.۵ اینچ ۲۰۰۹",
+   "آی مک 21.5 اینچ 2009",
+   "ای مک ۲۱.۵ ۲۰۰۹",
+   "imac 21.5 late 2009",
+   "imac 21.5 2009 late",
+   "imac 21.5 inch late 2009",
+   "ایمک ۲۱.۵ اواخر ۲۰۰۹",
+   "آیمک ۲۱.۵ اینچ اواخر ۲۰۰۹",
+   "آی مک 21.5 اینچ اواخر 2009"
+  ],
+  "year": 2009,
+  "announced": "2009-10-20",
+  "chips": [
+   "Intel Core 2 Duo 3.06GHz",
+   "Intel Core 2 Duo 3.33GHz"
+  ],
+  "ram_gb": [
+   4,
+   16
+  ],
+  "storage_gb": [
+   500,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 21.5,
+   "type": "LED-backlit IPS",
+   "hz": 60,
+   "resolution": "1920x1080"
+  },
+  "ports": [
+   "1x FireWire 800",
+   "4x USB 2.0",
+   "SD card slot",
+   "Mini DisplayPort out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.3,
+  "features": [
+   "first 16:9 iMac",
+   "NVIDIA GeForce 9400M or ATI Radeon HD 4670 (256MB)",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11n, Bluetooth 2.1+EDR"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112565",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2009/10/20Apple-Unveils-New-iMac-With-21-5-and-27-inch-Displays/"
+  ]
+ },
+ {
+  "key": "imac 27 2009",
+  "name": "iMac (27-inch, Late 2009)",
+  "name_fa": "آی‌مک ۲۷ اینچ (اواخر ۲۰۰۹)",
+  "aliases": [
+   "imac 27 2009",
+   "imac272009",
+   "ایمک ۲۷ ۲۰۰۹",
+   "آیمک ۲۷ اینچ ۲۰۰۹",
+   "آی مک 27 اینچ 2009",
+   "ای مک ۲۷ ۲۰۰۹",
+   "imac 27 late 2009",
+   "imac 27 2009 late",
+   "imac 27 inch late 2009",
+   "ایمک ۲۷ اواخر ۲۰۰۹",
+   "آیمک ۲۷ اینچ اواخر ۲۰۰۹",
+   "آی مک 27 اینچ اواخر 2009"
+  ],
+  "year": 2009,
+  "announced": "2009-10-20",
+  "chips": [
+   "Intel Core 2 Duo 3.06GHz",
+   "Intel Core 2 Duo 3.33GHz",
+   "Intel Core i5 quad-core 2.66GHz",
+   "Intel Core i7 quad-core 2.8GHz"
+  ],
+  "ram_gb": [
+   4,
+   16
+  ],
+  "storage_gb": [
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 27,
+   "type": "LED-backlit IPS",
+   "hz": 60,
+   "resolution": "2560x1440"
+  },
+  "ports": [
+   "1x FireWire 800",
+   "4x USB 2.0",
+   "SD card slot",
+   "Mini DisplayPort (in and out)",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 13.8,
+  "features": [
+   "first 27-inch iMac",
+   "ATI Radeon HD 4670 (256MB) or HD 4850 (512MB)",
+   "Target Display Mode (DisplayPort input)",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11n, Bluetooth 2.1+EDR"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112564",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2009/10/20Apple-Unveils-New-iMac-With-21-5-and-27-inch-Displays/"
+  ]
+ },
+ {
+  "key": "mac mini 2009 late",
+  "name": "Mac mini (Late 2009)",
+  "name_fa": "مک مینی (اواخر ۲۰۰۹)",
+  "aliases": [
+   "mac mini late 2009",
+   "mac mini 2009 late",
+   "مک مینی اواخر ۲۰۰۹",
+   "مکمینی اواخر ۲۰۰۹",
+   "mac mini server 2009",
+   "مک مینی سرور ۲۰۰۹"
+  ],
+  "year": 2009,
+  "announced": "2009-10-20",
+  "chips": [
+   "Intel Core 2 Duo 2.26GHz",
+   "Intel Core 2 Duo 2.53GHz",
+   "Intel Core 2 Duo 2.66GHz (optional)"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   160,
+   320,
+   500
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "1x FireWire 800",
+   "5x USB 2.0",
+   "Mini DisplayPort",
+   "mini-DVI",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": null,
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 1.31,
+  "features": [
+   "NVIDIA GeForce 9400M graphics",
+   "8x SuperDrive",
+   "Mac OS X Server variant: 2.53GHz, 4GB, dual 500GB drives, no optical drive"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112482",
+   "https://support.apple.com/en-us/112626",
+   "https://support.apple.com/en-us/102852",
+   "https://www.apple.com/newsroom/2009/10/20Apple-Unveils-New-iMac-With-21-5-and-27-inch-Displays/"
+  ]
+ },
+ {
+  "key": "macbook 13 2009 late",
+  "name": "MacBook (13-inch, Late 2009)",
+  "name_fa": "مک‌بوک ۱۳ اینچ یونیبادی (اواخر ۲۰۰۹)",
+  "aliases": [
+   "macbook 13 2009 late",
+   "مکبوک ۱۳ ۲۰۰۹ اواخر",
+   "مک بوک ۱۳ ۲۰۰۹ اواخر",
+   "مک بوک 13 2009 اواخر",
+   "macbook 13 late 2009",
+   "مکبوک ۱۳ اواخر ۲۰۰۹",
+   "مک بوک ۱۳ اواخر ۲۰۰۹",
+   "مک بوک 13 اواخر 2009",
+   "macbook unibody 13 2009",
+   "مکبوک یونیبادی ۱۳ ۲۰۰۹",
+   "مک بوک یونیبادی ۱۳ ۲۰۰۹",
+   "مک بوک یونیبادی 13 2009",
+   "macbook 13 2009 unibody",
+   "مکبوک ۱۳ ۲۰۰۹ یونیبادی",
+   "مک بوک ۱۳ ۲۰۰۹ یونیبادی",
+   "مک بوک 13 2009 یونیبادی",
+   "macbook unibody 13 2009 late",
+   "مکبوک یونیبادی ۱۳ ۲۰۰۹ اواخر",
+   "مک بوک یونیبادی ۱۳ ۲۰۰۹ اواخر",
+   "مک بوک یونیبادی 13 2009 اواخر",
+   "macbook 2009 late",
+   "macbook2009late",
+   "مکبوک ۲۰۰۹ اواخر",
+   "مک بوک ۲۰۰۹ اواخر",
+   "مک بوک 2009 اواخر",
+   "macbook unibody 2009",
+   "macbookunibody2009",
+   "مکبوک یونیبادی ۲۰۰۹",
+   "مک بوک یونیبادی ۲۰۰۹",
+   "مک بوک یونیبادی 2009"
+  ],
+  "year": 2009,
+  "announced": "2009-10-20",
+  "chips": [
+   "Intel Core 2 Duo 2.26GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   250,
+   320,
+   500
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "Mini DisplayPort",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio in/out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.13,
+  "features": [
+   "polycarbonate unibody",
+   "NVIDIA GeForce 9400M",
+   "glass Multi-Touch trackpad",
+   "8x SuperDrive",
+   "built-in battery"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112623",
+   "https://support.apple.com/en-us/103257",
+   "https://www.apple.com/newsroom/2009/10/20Apple-Updates-MacBook-With-LED-Backlit-Display-Multi-Touch-Trackpad-Built-in-Seven-Hour-Battery/"
+  ]
+ },
+ {
+  "key": "imac 20 2009 mid",
+  "name": "iMac (20-inch, Mid 2009)",
+  "name_fa": "آی‌مک ۲۰ اینچ (اواسط ۲۰۰۹)",
+  "aliases": [
+   "imac 20 mid 2009",
+   "imac 20 2009 mid",
+   "imac 20 inch mid 2009",
+   "ایمک ۲۰ اواسط ۲۰۰۹",
+   "آیمک ۲۰ اینچ اواسط ۲۰۰۹",
+   "آی مک 20 اینچ اواسط 2009"
+  ],
+  "year": 2009,
+  "announced": null,
+  "chips": [
+   "Intel Core 2 Duo 2.0GHz",
+   "Intel Core 2 Duo 2.26GHz"
+  ],
+  "ram_gb": [
+   1,
+   2,
+   4,
+   8
+  ],
+  "storage_gb": [
+   160,
+   320
+  ],
+  "display": {
+   "inch": 20,
+   "type": "glossy widescreen TFT LCD",
+   "hz": 60,
+   "resolution": "1680x1050"
+  },
+  "ports": [
+   "1x FireWire 800",
+   "4x USB 2.0 (+2x USB 2.0 on keyboard)",
+   "Mini DisplayPort out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.1,
+  "features": [
+   "NVIDIA GeForce 9400M",
+   "8x SuperDrive",
+   "AirPort Extreme 802.11n"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112423",
+   "https://support.apple.com/en-us/108054",
+   "https://support.apple.com/en-us/111989",
+   "https://support.apple.com/en-us/111988"
+  ]
+ },
+ {
+  "key": "macbook 13 2009 early",
+  "name": "MacBook (13-inch, Early 2009)",
+  "name_fa": "مک‌بوک ۱۳ اینچ (اوایل ۲۰۰۹)",
+  "aliases": [
+   "macbook 13 2009 early",
+   "مکبوک ۱۳ ۲۰۰۹ اوایل",
+   "مک بوک ۱۳ ۲۰۰۹ اوایل",
+   "مک بوک 13 2009 اوایل",
+   "macbook 13 early 2009",
+   "مکبوک ۱۳ اوایل ۲۰۰۹",
+   "مک بوک ۱۳ اوایل ۲۰۰۹",
+   "مک بوک 13 اوایل 2009",
+   "macbook 2009 early",
+   "macbook2009early",
+   "مکبوک ۲۰۰۹ اوایل",
+   "مک بوک ۲۰۰۹ اوایل",
+   "مک بوک 2009 اوایل"
+  ],
+  "year": 2009,
+  "announced": null,
+  "chips": [
+   "Intel Core 2 Duo 2.0GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   120,
+   160,
+   250,
+   320
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "glossy TFT widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "Mini-DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 2.27,
+  "features": [
+   "NVIDIA GeForce 9400M",
+   "8x SuperDrive",
+   "Wi-Fi 802.11n (draft)"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111344",
+   "https://support.apple.com/en-us/103257"
+  ]
+ },
+ {
+  "key": "macbook 13 2009 mid",
+  "name": "MacBook (13-inch, Mid 2009)",
+  "name_fa": "مک‌بوک ۱۳ اینچ (اواسط ۲۰۰۹)",
+  "aliases": [
+   "macbook 13 2009 mid",
+   "مکبوک ۱۳ ۲۰۰۹ اواسط",
+   "مک بوک ۱۳ ۲۰۰۹ اواسط",
+   "مک بوک 13 2009 اواسط",
+   "macbook 13 mid 2009",
+   "مکبوک ۱۳ اواسط ۲۰۰۹",
+   "مک بوک ۱۳ اواسط ۲۰۰۹",
+   "مک بوک 13 اواسط 2009",
+   "macbook 2009 mid",
+   "macbook2009mid",
+   "مکبوک ۲۰۰۹ اواسط",
+   "مک بوک ۲۰۰۹ اواسط",
+   "مک بوک 2009 اواسط"
+  ],
+  "year": 2009,
+  "announced": null,
+  "chips": [
+   "Intel Core 2 Duo 2.13GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   160,
+   250,
+   320,
+   500
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "glossy TFT widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 400",
+   "Mini-DVI",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "optical/analog audio in",
+   "optical/analog audio out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 2.27,
+  "features": [
+   "NVIDIA GeForce 9400M",
+   "8x SuperDrive",
+   "polycarbonate enclosure"
+  ],
+  "max_macos": "OS X 10.11 El Capitan",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112459",
+   "https://support.apple.com/en-us/103257"
+  ]
+ },
+ {
+  "key": "macbook pro 13 2010",
+  "name": "MacBook Pro (13-inch, Mid 2010)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ (اواسط ۲۰۱۰)",
+  "aliases": [
+   "macbook pro 13 2010 mid",
+   "مکبوک پرو ۱۳ ۲۰۱۰ اواسط",
+   "مک بوک پرو ۱۳ ۲۰۱۰ اواسط",
+   "مک بوک پرو 13 2010 اواسط",
+   "macbook pro 13 mid 2010",
+   "مکبوک پرو ۱۳ اواسط ۲۰۱۰",
+   "مک بوک پرو ۱۳ اواسط ۲۰۱۰",
+   "مک بوک پرو 13 اواسط 2010",
+   "macbook pro 13 2010",
+   "مکبوک پرو ۱۳ ۲۰۱۰",
+   "مک بوک پرو ۱۳ ۲۰۱۰",
+   "مک بوک پرو 13 2010",
+   "macbook pro 2010 13",
+   "مکبوک پرو ۲۰۱۰ ۱۳",
+   "مک بوک پرو ۲۰۱۰ ۱۳",
+   "مک بوک پرو 2010 13"
+  ],
+  "year": 2010,
+  "announced": "2010-04-13",
+  "chips": [
+   "Intel Core 2 Duo 2.4GHz",
+   "Intel Core 2 Duo 2.66GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   250,
+   256,
+   320,
+   500,
+   512
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 800",
+   "SD card slot",
+   "Mini DisplayPort",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio in/out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 10,
+  "weight_kg": 2.04,
+  "features": [
+   "aluminum unibody",
+   "NVIDIA GeForce 320M",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112604",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2010/04/13Apple-Updates-MacBook-Pro-Line/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2010",
+  "name": "MacBook Pro (15-inch, Mid 2010)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (اواسط ۲۰۱۰)",
+  "aliases": [
+   "macbook pro 15 2010 mid",
+   "مکبوک پرو ۱۵ ۲۰۱۰ اواسط",
+   "مک بوک پرو ۱۵ ۲۰۱۰ اواسط",
+   "مک بوک پرو 15 2010 اواسط",
+   "macbook pro 15 mid 2010",
+   "مکبوک پرو ۱۵ اواسط ۲۰۱۰",
+   "مک بوک پرو ۱۵ اواسط ۲۰۱۰",
+   "مک بوک پرو 15 اواسط 2010",
+   "macbook pro 15 2010",
+   "مکبوک پرو ۱۵ ۲۰۱۰",
+   "مک بوک پرو ۱۵ ۲۰۱۰",
+   "مک بوک پرو 15 2010",
+   "macbook pro 2010 15",
+   "مکبوک پرو ۲۰۱۰ ۱۵",
+   "مک بوک پرو ۲۰۱۰ ۱۵",
+   "مک بوک پرو 2010 15"
+  ],
+  "year": 2010,
+  "announced": "2010-04-13",
+  "chips": [
+   "Intel Core i5 2.4GHz",
+   "Intel Core i5 2.53GHz",
+   "Intel Core i7 2.66GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   320,
+   500,
+   512
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "LED-backlit glossy widescreen (optional 1680x1050 glossy/antiglare)",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "FireWire 800",
+   "SD card slot",
+   "Mini DisplayPort",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 2.54,
+  "features": [
+   "aluminum unibody",
+   "Intel HD Graphics + NVIDIA GeForce GT 330M (automatic switching)",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112605",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2010/04/13Apple-Updates-MacBook-Pro-Line/"
+  ]
+ },
+ {
+  "key": "macbook pro 17 2010",
+  "name": "MacBook Pro (17-inch, Mid 2010)",
+  "name_fa": "مک‌بوک پرو ۱۷ اینچ (اواسط ۲۰۱۰)",
+  "aliases": [
+   "macbook pro 17 2010 mid",
+   "مکبوک پرو ۱۷ ۲۰۱۰ اواسط",
+   "مک بوک پرو ۱۷ ۲۰۱۰ اواسط",
+   "مک بوک پرو 17 2010 اواسط",
+   "macbook pro 17 mid 2010",
+   "مکبوک پرو ۱۷ اواسط ۲۰۱۰",
+   "مک بوک پرو ۱۷ اواسط ۲۰۱۰",
+   "مک بوک پرو 17 اواسط 2010",
+   "macbook pro 17 2010",
+   "مکبوک پرو ۱۷ ۲۰۱۰",
+   "مک بوک پرو ۱۷ ۲۰۱۰",
+   "مک بوک پرو 17 2010",
+   "macbook pro 2010 17",
+   "مکبوک پرو ۲۰۱۰ ۱۷",
+   "مک بوک پرو ۲۰۱۰ ۱۷",
+   "مک بوک پرو 2010 17"
+  ],
+  "year": 2010,
+  "announced": "2010-04-13",
+  "chips": [
+   "Intel Core i5 2.53GHz",
+   "Intel Core i7 2.66GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   500,
+   512
+  ],
+  "display": {
+   "inch": 17,
+   "type": "LED-backlit glossy widescreen (optional antiglare)",
+   "hz": 60,
+   "resolution": "1920x1200"
+  },
+  "ports": [
+   "3x USB 2.0",
+   "FireWire 800",
+   "ExpressCard/34",
+   "Mini DisplayPort",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 2.99,
+  "features": [
+   "aluminum unibody",
+   "Intel HD Graphics + NVIDIA GeForce GT 330M (automatic switching)",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112606",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2010/04/13Apple-Updates-MacBook-Pro-Line/"
+  ]
+ },
+ {
+  "key": "mac mini 2010",
+  "name": "Mac mini (Mid 2010)",
+  "name_fa": "مک مینی (اواسط ۲۰۱۰)",
+  "aliases": [
+   "mac mini 2010",
+   "macmini2010",
+   "مک مینی ۲۰۱۰",
+   "مک‌مینی ۲۰۱۰",
+   "مکمینی ۲۰۱۰",
+   "mac mini mid 2010",
+   "mac mini 2010 mid",
+   "مک مینی اواسط ۲۰۱۰",
+   "مکمینی اواسط ۲۰۱۰"
+  ],
+  "year": 2010,
+  "announced": "2010-06-15",
+  "chips": [
+   "Intel Core 2 Duo 2.4GHz",
+   "Intel Core 2 Duo 2.66GHz (optional)"
+  ],
+  "ram_gb": [
+   2,
+   4,
+   8
+  ],
+  "storage_gb": [
+   320,
+   500
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "1x FireWire 800",
+   "4x USB 2.0",
+   "HDMI",
+   "Mini DisplayPort",
+   "SD card slot",
+   "Gigabit Ethernet",
+   "audio in/out"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 1.37,
+  "features": [
+   "first aluminum unibody Mac mini",
+   "NVIDIA GeForce 320M graphics",
+   "built-in power supply",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112588",
+   "https://support.apple.com/en-us/102852",
+   "https://www.apple.com/newsroom/2010/06/15Apple-Unveils-All-New-Mac-mini/"
+  ]
+ },
+ {
+  "key": "imac 21.5 2010",
+  "name": "iMac (21.5-inch, Mid 2010)",
+  "name_fa": "آی‌مک ۲۱.۵ اینچ (اواسط ۲۰۱۰)",
+  "aliases": [
+   "imac 21.5 2010",
+   "imac 21.5inch 2010",
+   "ایمک ۲۱.۵ ۲۰۱۰",
+   "آیمک ۲۱.۵ اینچ ۲۰۱۰",
+   "آی مک 21.5 اینچ 2010",
+   "ای مک ۲۱.۵ ۲۰۱۰",
+   "imac 21.5 mid 2010",
+   "imac 21.5 2010 mid",
+   "imac 21.5 inch mid 2010",
+   "ایمک ۲۱.۵ اواسط ۲۰۱۰",
+   "آیمک ۲۱.۵ اینچ اواسط ۲۰۱۰",
+   "آی مک 21.5 اینچ اواسط 2010"
+  ],
+  "year": 2010,
+  "announced": "2010-07-27",
+  "chips": [
+   "Intel Core i3 3.06GHz",
+   "Intel Core i3 3.2GHz",
+   "Intel Core i5 3.6GHz"
+  ],
+  "ram_gb": [
+   4,
+   16
+  ],
+  "storage_gb": [
+   500,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 21.5,
+   "type": "LED-backlit IPS",
+   "hz": 60,
+   "resolution": "1920x1080"
+  },
+  "ports": [
+   "1x FireWire 800",
+   "4x USB 2.0",
+   "SDXC card slot",
+   "Mini DisplayPort out",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.3,
+  "features": [
+   "ATI Radeon HD 4670 (256MB) or HD 5670 (512MB)",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112567",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2010/07/27Apple-Updates-iMac-Line/"
+  ]
+ },
+ {
+  "key": "imac 27 2010",
+  "name": "iMac (27-inch, Mid 2010)",
+  "name_fa": "آی‌مک ۲۷ اینچ (اواسط ۲۰۱۰)",
+  "aliases": [
+   "imac 27 2010",
+   "imac272010",
+   "ایمک ۲۷ ۲۰۱۰",
+   "آیمک ۲۷ اینچ ۲۰۱۰",
+   "آی مک 27 اینچ 2010",
+   "ای مک ۲۷ ۲۰۱۰",
+   "imac 27 mid 2010",
+   "imac 27 2010 mid",
+   "imac 27 inch mid 2010",
+   "ایمک ۲۷ اواسط ۲۰۱۰",
+   "آیمک ۲۷ اینچ اواسط ۲۰۱۰",
+   "آی مک 27 اینچ اواسط 2010"
+  ],
+  "year": 2010,
+  "announced": "2010-07-27",
+  "chips": [
+   "Intel Core i3 3.2GHz",
+   "Intel Core i5 3.6GHz",
+   "Intel Core i5 quad-core 2.8GHz",
+   "Intel Core i7 quad-core 2.93GHz"
+  ],
+  "ram_gb": [
+   4,
+   16
+  ],
+  "storage_gb": [
+   256,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 27,
+   "type": "LED-backlit IPS",
+   "hz": 60,
+   "resolution": "2560x1440"
+  },
+  "ports": [
+   "1x FireWire 800",
+   "4x USB 2.0",
+   "SDXC card slot",
+   "Mini DisplayPort (in and out)",
+   "Gigabit Ethernet",
+   "optical digital/analog audio in & out"
+  ],
+  "camera": "iSight",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 13.8,
+  "features": [
+   "ATI Radeon HD 5670 (512MB) or HD 5750 (1GB)",
+   "optional 256GB SSD",
+   "Target Display Mode",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112566",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2010/07/27Apple-Updates-iMac-Line/"
+  ]
+ },
+ {
+  "key": "mac pro 2010",
+  "name": "Mac Pro (Mid 2010)",
+  "name_fa": "مک پرو (اواسط ۲۰۱۰)",
+  "aliases": [
+   "mac pro 2010",
+   "macpro2010",
+   "مک پرو ۲۰۱۰",
+   "مک‌پرو ۲۰۱۰",
+   "مکپرو ۲۰۱۰"
+  ],
+  "year": 2010,
+  "announced": "2010-07-27",
+  "chips": [
+   "1x Intel Xeon quad-core 2.8 or 3.2GHz (Nehalem)",
+   "1x Intel Xeon 6-core 3.33GHz (Westmere)",
+   "2x Intel Xeon quad-core 2.4GHz (8-core)",
+   "2x Intel Xeon 6-core 2.66 or 2.93GHz (12-core)"
+  ],
+  "ram_gb": [
+   3,
+   6,
+   8,
+   12,
+   16,
+   24,
+   32,
+   64
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "4x FireWire 800",
+   "5x USB 2.0",
+   "2x Gigabit Ethernet",
+   "optical digital audio in/out",
+   "analog audio in/out",
+   "Mini DisplayPort (on graphics card)"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 18.1,
+  "features": [
+   "tower, 4 drive bays",
+   "up to 12 cores",
+   "ATI Radeon HD 5770 or 5870",
+   "optional 512GB SSD",
+   "weight: quad-core 18.1kg, 8-core 18.7kg",
+   "macOS Mojave needs a Metal-capable graphics card"
+  ],
+  "max_macos": "macOS 10.14 Mojave",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112578",
+   "https://support.apple.com/en-us/102887",
+   "https://www.apple.com/newsroom/2010/07/27Apple-Unveils-New-Mac-Pro-With-Up-to-12-Processing-Cores/",
+   "https://support.apple.com/en-us/111930"
+  ]
+ },
+ {
+  "key": "macbook air 11 2010",
+  "name": "MacBook Air (11-inch, Late 2010)",
+  "name_fa": "مک‌بوک ایر ۱۱ اینچ (اواخر ۲۰۱۰)",
+  "aliases": [
+   "macbook air 11 2010 late",
+   "مکبوک ایر ۱۱ ۲۰۱۰ اواخر",
+   "مک بوک ایر ۱۱ ۲۰۱۰ اواخر",
+   "مک بوک ایر 11 2010 اواخر",
+   "macbook air 11 late 2010",
+   "مکبوک ایر ۱۱ اواخر ۲۰۱۰",
+   "مک بوک ایر ۱۱ اواخر ۲۰۱۰",
+   "مک بوک ایر 11 اواخر 2010",
+   "macbook air 11 2010",
+   "مکبوک ایر ۱۱ ۲۰۱۰",
+   "مک بوک ایر ۱۱ ۲۰۱۰",
+   "مک بوک ایر 11 2010",
+   "macbook air 2010 11",
+   "مکبوک ایر ۲۰۱۰ ۱۱",
+   "مک بوک ایر ۲۰۱۰ ۱۱",
+   "مک بوک ایر 2010 11"
+  ],
+  "year": 2010,
+  "announced": "2010-10-20",
+  "chips": [
+   "Intel Core 2 Duo 1.4GHz",
+   "Intel Core 2 Duo 1.6GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   64,
+   128
+  ],
+  "display": {
+   "inch": 11.6,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1366x768"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "Mini DisplayPort",
+   "headphone",
+   "MagSafe"
+  ],
+  "camera": "FaceTime",
+  "colors": [],
+  "battery_hours": 5,
+  "weight_kg": 1.06,
+  "features": [
+   "NVIDIA GeForce 320M",
+   "flash storage",
+   "Wi-Fi 802.11n"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112580",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2010/10/20Apple-Reinvents-Notebooks-With-New-MacBook-Air/"
+  ]
+ },
+ {
+  "key": "macbook air 13 2010",
+  "name": "MacBook Air (13-inch, Late 2010)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ (اواخر ۲۰۱۰)",
+  "aliases": [
+   "macbook air 13 2010 late",
+   "مکبوک ایر ۱۳ ۲۰۱۰ اواخر",
+   "مک بوک ایر ۱۳ ۲۰۱۰ اواخر",
+   "مک بوک ایر 13 2010 اواخر",
+   "macbook air 13 late 2010",
+   "مکبوک ایر ۱۳ اواخر ۲۰۱۰",
+   "مک بوک ایر ۱۳ اواخر ۲۰۱۰",
+   "مک بوک ایر 13 اواخر 2010",
+   "macbook air 13 2010",
+   "مکبوک ایر ۱۳ ۲۰۱۰",
+   "مک بوک ایر ۱۳ ۲۰۱۰",
+   "مک بوک ایر 13 2010",
+   "macbook air 2010 13",
+   "مکبوک ایر ۲۰۱۰ ۱۳",
+   "مک بوک ایر ۲۰۱۰ ۱۳",
+   "مک بوک ایر 2010 13"
+  ],
+  "year": 2010,
+  "announced": "2010-10-20",
+  "chips": [
+   "Intel Core 2 Duo 1.86GHz",
+   "Intel Core 2 Duo 2.13GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   128,
+   256
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "Mini DisplayPort",
+   "SD card slot",
+   "headphone",
+   "MagSafe"
+  ],
+  "camera": "FaceTime",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 1.32,
+  "features": [
+   "NVIDIA GeForce 320M",
+   "flash storage",
+   "Wi-Fi 802.11n"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112585",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2010/10/20Apple-Reinvents-Notebooks-With-New-MacBook-Air/"
+  ]
+ },
+ {
+  "key": "macbook 13 2010",
+  "name": "MacBook (13-inch, Mid 2010)",
+  "name_fa": "مک‌بوک ۱۳ اینچ (اواسط ۲۰۱۰)",
+  "aliases": [
+   "macbook 13 2010 mid",
+   "مکبوک ۱۳ ۲۰۱۰ اواسط",
+   "مک بوک ۱۳ ۲۰۱۰ اواسط",
+   "مک بوک 13 2010 اواسط",
+   "macbook 13 mid 2010",
+   "مکبوک ۱۳ اواسط ۲۰۱۰",
+   "مک بوک ۱۳ اواسط ۲۰۱۰",
+   "مک بوک 13 اواسط 2010",
+   "macbook 13 2010",
+   "مکبوک ۱۳ ۲۰۱۰",
+   "مک بوک ۱۳ ۲۰۱۰",
+   "مک بوک 13 2010",
+   "macbook 2010 13",
+   "مکبوک ۲۰۱۰ ۱۳",
+   "مک بوک ۲۰۱۰ ۱۳",
+   "مک بوک 2010 13",
+   "macbook 2010",
+   "macbook2010",
+   "مکبوک ۲۰۱۰",
+   "مک بوک ۲۰۱۰",
+   "مک بوک 2010",
+   "macbook 2010 mid",
+   "macbook2010mid",
+   "مکبوک ۲۰۱۰ اواسط",
+   "مک بوک ۲۰۱۰ اواسط",
+   "مک بوک 2010 اواسط"
+  ],
+  "year": 2010,
+  "announced": null,
+  "chips": [
+   "Intel Core 2 Duo 2.4GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   250,
+   320,
+   500
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "Mini DisplayPort",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio in/out"
+  ],
+  "camera": "iSight",
+  "colors": [],
+  "battery_hours": 10,
+  "weight_kg": 2.13,
+  "features": [
+   "polycarbonate unibody",
+   "NVIDIA GeForce 320M",
+   "8x SuperDrive",
+   "built-in battery"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112581",
+   "https://support.apple.com/en-us/103257"
+  ]
+ },
+ {
+  "key": "macbook pro 13 2011 early",
+  "name": "MacBook Pro (13-inch, Early 2011)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ (اوایل ۲۰۱۱)",
+  "aliases": [
+   "macbook pro 13 2011 early",
+   "مکبوک پرو ۱۳ ۲۰۱۱ اوایل",
+   "مک بوک پرو ۱۳ ۲۰۱۱ اوایل",
+   "مک بوک پرو 13 2011 اوایل",
+   "macbook pro 13 early 2011",
+   "مکبوک پرو ۱۳ اوایل ۲۰۱۱",
+   "مک بوک پرو ۱۳ اوایل ۲۰۱۱",
+   "مک بوک پرو 13 اوایل 2011"
+  ],
+  "year": 2011,
+  "announced": "2011-02-24",
+  "chips": [
+   "Intel Core i5 dual-core 2.3GHz",
+   "Intel Core i7 dual-core 2.7GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   320,
+   500,
+   512,
+   750
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "SDXC card slot",
+   "Thunderbolt",
+   "FireWire 800",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.04,
+  "features": [
+   "Intel HD Graphics 3000",
+   "8x SuperDrive",
+   "Wi-Fi 802.11n"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112600",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2011/02/24Apple-Updates-MacBook-Pro-with-Next-Generation-Processors-Graphics-Thunderbolt-I-O-Technology/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2011 early",
+  "name": "MacBook Pro (15-inch, Early 2011)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (اوایل ۲۰۱۱)",
+  "aliases": [
+   "macbook pro 15 2011 early",
+   "مکبوک پرو ۱۵ ۲۰۱۱ اوایل",
+   "مک بوک پرو ۱۵ ۲۰۱۱ اوایل",
+   "مک بوک پرو 15 2011 اوایل",
+   "macbook pro 15 early 2011",
+   "مکبوک پرو ۱۵ اوایل ۲۰۱۱",
+   "مک بوک پرو ۱۵ اوایل ۲۰۱۱",
+   "مک بوک پرو 15 اوایل 2011"
+  ],
+  "year": 2011,
+  "announced": "2011-02-24",
+  "chips": [
+   "Intel Core i7 quad-core 2.0GHz",
+   "Intel Core i7 quad-core 2.2GHz",
+   "Intel Core i7 quad-core 2.3GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   500,
+   512,
+   750
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "LED-backlit glossy widescreen (optional antiglare / 1680x1050)",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "SDXC card slot",
+   "Thunderbolt",
+   "FireWire 800",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.54,
+  "features": [
+   "Intel HD Graphics 3000 + AMD Radeon HD 6490M/6750M (automatic switching)",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112599",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2011/02/24Apple-Updates-MacBook-Pro-with-Next-Generation-Processors-Graphics-Thunderbolt-I-O-Technology/"
+  ]
+ },
+ {
+  "key": "macbook pro 17 2011 early",
+  "name": "MacBook Pro (17-inch, Early 2011)",
+  "name_fa": "مک‌بوک پرو ۱۷ اینچ (اوایل ۲۰۱۱)",
+  "aliases": [
+   "macbook pro 17 2011 early",
+   "مکبوک پرو ۱۷ ۲۰۱۱ اوایل",
+   "مک بوک پرو ۱۷ ۲۰۱۱ اوایل",
+   "مک بوک پرو 17 2011 اوایل",
+   "macbook pro 17 early 2011",
+   "مکبوک پرو ۱۷ اوایل ۲۰۱۱",
+   "مک بوک پرو ۱۷ اوایل ۲۰۱۱",
+   "مک بوک پرو 17 اوایل 2011"
+  ],
+  "year": 2011,
+  "announced": "2011-02-24",
+  "chips": [
+   "Intel Core i7 quad-core 2.2GHz",
+   "Intel Core i7 quad-core 2.3GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   500,
+   512,
+   750
+  ],
+  "display": {
+   "inch": 17,
+   "type": "LED-backlit glossy widescreen (optional antiglare)",
+   "hz": 60,
+   "resolution": "1920x1200"
+  },
+  "ports": [
+   "3x USB 2.0",
+   "ExpressCard/34",
+   "Thunderbolt",
+   "FireWire 800",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.99,
+  "features": [
+   "Intel HD Graphics 3000 + AMD Radeon HD 6750M (automatic switching)",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112598",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2011/02/24Apple-Updates-MacBook-Pro-with-Next-Generation-Processors-Graphics-Thunderbolt-I-O-Technology/"
+  ]
+ },
+ {
+  "key": "imac 21.5 2011 mid",
+  "name": "iMac (21.5-inch, Mid 2011)",
+  "name_fa": "آی‌مک ۲۱.۵ اینچ (اواسط ۲۰۱۱)",
+  "aliases": [
+   "imac 21.5 mid 2011",
+   "imac 21.5 2011 mid",
+   "imac 21.5 inch mid 2011",
+   "ایمک ۲۱.۵ اواسط ۲۰۱۱",
+   "آیمک ۲۱.۵ اینچ اواسط ۲۰۱۱",
+   "آی مک 21.5 اینچ اواسط 2011"
+  ],
+  "year": 2011,
+  "announced": "2011-05-03",
+  "chips": [
+   "Intel Core i5 quad-core 2.5GHz",
+   "Intel Core i5 quad-core 2.7GHz",
+   "Intel Core i7 quad-core 2.8GHz (optional)"
+  ],
+  "ram_gb": [
+   4,
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   500,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 21.5,
+   "type": "LED-backlit IPS",
+   "hz": 60,
+   "resolution": "1920x1080"
+  },
+  "ports": [
+   "1x Thunderbolt",
+   "1x FireWire 800",
+   "4x USB 2.0",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "audio in/out"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.3,
+  "features": [
+   "first iMac with Thunderbolt",
+   "AMD Radeon HD 6750M or 6770M (512MB)",
+   "optional 256GB SSD second drive",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111983",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2011/05/03Apple-Announces-New-iMac-With-Next-Generation-Quad-Core-Processors-Graphics-Thunderbolt-I-O-Technology/"
+  ]
+ },
+ {
+  "key": "imac 27 2011",
+  "name": "iMac (27-inch, Mid 2011)",
+  "name_fa": "آی‌مک ۲۷ اینچ (اواسط ۲۰۱۱)",
+  "aliases": [
+   "imac 27 2011",
+   "imac272011",
+   "ایمک ۲۷ ۲۰۱۱",
+   "آیمک ۲۷ اینچ ۲۰۱۱",
+   "آی مک 27 اینچ 2011",
+   "ای مک ۲۷ ۲۰۱۱",
+   "imac 27 mid 2011",
+   "imac 27 2011 mid",
+   "imac 27 inch mid 2011",
+   "ایمک ۲۷ اواسط ۲۰۱۱",
+   "آیمک ۲۷ اینچ اواسط ۲۰۱۱",
+   "آی مک 27 اینچ اواسط 2011"
+  ],
+  "year": 2011,
+  "announced": "2011-05-03",
+  "chips": [
+   "Intel Core i5 quad-core 2.7GHz",
+   "Intel Core i5 quad-core 3.1GHz",
+   "Intel Core i7 quad-core 3.4GHz (optional)"
+  ],
+  "ram_gb": [
+   4,
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 27,
+   "type": "LED-backlit IPS",
+   "hz": 60,
+   "resolution": "2560x1440"
+  },
+  "ports": [
+   "2x Thunderbolt",
+   "1x FireWire 800",
+   "4x USB 2.0",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "audio in/out"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 13.8,
+  "features": [
+   "AMD Radeon HD 6770M (512MB) or 6970M (1GB/2GB)",
+   "optional 256GB SSD second drive",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112569",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2011/05/03Apple-Announces-New-iMac-With-Next-Generation-Quad-Core-Processors-Graphics-Thunderbolt-I-O-Technology/"
+  ]
+ },
+ {
+  "key": "mac mini 2011",
+  "name": "Mac mini (Mid 2011)",
+  "name_fa": "مک مینی (اواسط ۲۰۱۱)",
+  "aliases": [
+   "mac mini 2011",
+   "macmini2011",
+   "مک مینی ۲۰۱۱",
+   "مک‌مینی ۲۰۱۱",
+   "مکمینی ۲۰۱۱",
+   "mac mini mid 2011",
+   "mac mini 2011 mid",
+   "مک مینی اواسط ۲۰۱۱",
+   "مکمینی اواسط ۲۰۱۱"
+  ],
+  "year": 2011,
+  "announced": "2011-07-20",
+  "chips": [
+   "Intel Core i5 dual-core 2.3GHz",
+   "Intel Core i5 dual-core 2.5GHz",
+   "Intel Core i7 dual-core 2.7GHz (optional)"
+  ],
+  "ram_gb": [
+   2,
+   4,
+   8
+  ],
+  "storage_gb": [
+   256,
+   500,
+   750
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "1x Thunderbolt",
+   "1x FireWire 800",
+   "4x USB 2.0",
+   "HDMI",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "audio in/out"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 1.22,
+  "features": [
+   "no optical drive",
+   "Intel HD Graphics 3000 or AMD Radeon HD 6630M (2.5GHz model)",
+   "802.11n Wi-Fi"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112007",
+   "https://support.apple.com/en-us/102852",
+   "https://www.apple.com/newsroom/2011/07/20Apple-Updates-Mac-mini/"
+  ]
+ },
+ {
+  "key": "macbook air 11 2011",
+  "name": "MacBook Air (11-inch, Mid 2011)",
+  "name_fa": "مک‌بوک ایر ۱۱ اینچ (اواسط ۲۰۱۱)",
+  "aliases": [
+   "macbook air 11 2011 mid",
+   "مکبوک ایر ۱۱ ۲۰۱۱ اواسط",
+   "مک بوک ایر ۱۱ ۲۰۱۱ اواسط",
+   "مک بوک ایر 11 2011 اواسط",
+   "macbook air 11 mid 2011",
+   "مکبوک ایر ۱۱ اواسط ۲۰۱۱",
+   "مک بوک ایر ۱۱ اواسط ۲۰۱۱",
+   "مک بوک ایر 11 اواسط 2011",
+   "macbook air 11 2011",
+   "مکبوک ایر ۱۱ ۲۰۱۱",
+   "مک بوک ایر ۱۱ ۲۰۱۱",
+   "مک بوک ایر 11 2011",
+   "macbook air 2011 11",
+   "مکبوک ایر ۲۰۱۱ ۱۱",
+   "مک بوک ایر ۲۰۱۱ ۱۱",
+   "مک بوک ایر 2011 11"
+  ],
+  "year": 2011,
+  "announced": "2011-07-20",
+  "chips": [
+   "Intel Core i5 dual-core 1.6GHz",
+   "Intel Core i7 dual-core 1.8GHz"
+  ],
+  "ram_gb": [
+   2,
+   4
+  ],
+  "storage_gb": [
+   64,
+   128,
+   256
+  ],
+  "display": {
+   "inch": 11.6,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1366x768"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "Thunderbolt",
+   "headphone",
+   "MagSafe"
+  ],
+  "camera": "FaceTime",
+  "colors": [],
+  "battery_hours": 5,
+  "weight_kg": 1.08,
+  "features": [
+   "Intel HD Graphics 3000",
+   "backlit keyboard",
+   "Bluetooth 4.0"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112439",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2011/07/20Apple-Updates-MacBook-Air-With-Next-Generation-Processors-Thunderbolt-I-O-Backlit-Keyboard/"
+  ]
+ },
+ {
+  "key": "macbook air 13 2011",
+  "name": "MacBook Air (13-inch, Mid 2011)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ (اواسط ۲۰۱۱)",
+  "aliases": [
+   "macbook air 13 2011 mid",
+   "مکبوک ایر ۱۳ ۲۰۱۱ اواسط",
+   "مک بوک ایر ۱۳ ۲۰۱۱ اواسط",
+   "مک بوک ایر 13 2011 اواسط",
+   "macbook air 13 mid 2011",
+   "مکبوک ایر ۱۳ اواسط ۲۰۱۱",
+   "مک بوک ایر ۱۳ اواسط ۲۰۱۱",
+   "مک بوک ایر 13 اواسط 2011",
+   "macbook air 13 2011",
+   "مکبوک ایر ۱۳ ۲۰۱۱",
+   "مک بوک ایر ۱۳ ۲۰۱۱",
+   "مک بوک ایر 13 2011",
+   "macbook air 2011 13",
+   "مکبوک ایر ۲۰۱۱ ۱۳",
+   "مک بوک ایر ۲۰۱۱ ۱۳",
+   "مک بوک ایر 2011 13"
+  ],
+  "year": 2011,
+  "announced": "2011-07-20",
+  "chips": [
+   "Intel Core i5 dual-core 1.7GHz",
+   "Intel Core i7 dual-core 1.8GHz"
+  ],
+  "ram_gb": [
+   4
+  ],
+  "storage_gb": [
+   128,
+   256
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "Thunderbolt",
+   "SD card slot",
+   "headphone",
+   "MagSafe"
+  ],
+  "camera": "FaceTime",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 1.35,
+  "features": [
+   "Intel HD Graphics 3000",
+   "backlit keyboard",
+   "Bluetooth 4.0"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112038",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2011/07/20Apple-Updates-MacBook-Air-With-Next-Generation-Processors-Thunderbolt-I-O-Backlit-Keyboard/"
+  ]
+ },
+ {
+  "key": "imac 21.5 2011 late",
+  "name": "iMac (21.5-inch, Late 2011)",
+  "name_fa": "آی‌مک ۲۱.۵ اینچ (اواخر ۲۰۱۱)",
+  "aliases": [
+   "imac 21.5 late 2011",
+   "imac 21.5 2011 late",
+   "imac 21.5 inch late 2011",
+   "ایمک ۲۱.۵ اواخر ۲۰۱۱",
+   "آیمک ۲۱.۵ اینچ اواخر ۲۰۱۱",
+   "آی مک 21.5 اینچ اواخر 2011",
+   "imac 21.5 education 2011",
+   "آیمک ۲۱.۵ آموزشی ۲۰۱۱"
+  ],
+  "year": 2011,
+  "announced": null,
+  "chips": [
+   "Intel Core i3 dual-core 3.1GHz"
+  ],
+  "ram_gb": [
+   2,
+   4,
+   8
+  ],
+  "storage_gb": [
+   250
+  ],
+  "display": {
+   "inch": 21.5,
+   "type": "LED-backlit IPS",
+   "hz": 60,
+   "resolution": "1920x1080"
+  },
+  "ports": [
+   "1x FireWire 800",
+   "4x USB 2.0",
+   "SDXC card slot",
+   "Mini DisplayPort out",
+   "Gigabit Ethernet",
+   "audio in/out"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 8.8,
+  "features": [
+   "education model",
+   "AMD Radeon HD 6750M (256MB)",
+   "no Thunderbolt",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112596",
+   "https://support.apple.com/en-us/108054",
+   "https://support.apple.com/en-us/111934",
+   "https://support.apple.com/en-us/111930"
+  ]
+ },
+ {
+  "key": "macbook pro 13 2011 late",
+  "name": "MacBook Pro (13-inch, Late 2011)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ (اواخر ۲۰۱۱)",
+  "aliases": [
+   "macbook pro 13 2011 late",
+   "مکبوک پرو ۱۳ ۲۰۱۱ اواخر",
+   "مک بوک پرو ۱۳ ۲۰۱۱ اواخر",
+   "مک بوک پرو 13 2011 اواخر",
+   "macbook pro 13 late 2011",
+   "مکبوک پرو ۱۳ اواخر ۲۰۱۱",
+   "مک بوک پرو ۱۳ اواخر ۲۰۱۱",
+   "مک بوک پرو 13 اواخر 2011"
+  ],
+  "year": 2011,
+  "announced": null,
+  "chips": [
+   "Intel Core i5 dual-core 2.4GHz",
+   "Intel Core i7 dual-core 2.8GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   500,
+   512,
+   750
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "SDXC card slot",
+   "Thunderbolt",
+   "FireWire 800",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.04,
+  "features": [
+   "Intel HD Graphics 3000",
+   "8x SuperDrive",
+   "Wi-Fi 802.11n"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111341",
+   "https://support.apple.com/en-us/108052"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2011 late",
+  "name": "MacBook Pro (15-inch, Late 2011)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (اواخر ۲۰۱۱)",
+  "aliases": [
+   "macbook pro 15 2011 late",
+   "مکبوک پرو ۱۵ ۲۰۱۱ اواخر",
+   "مک بوک پرو ۱۵ ۲۰۱۱ اواخر",
+   "مک بوک پرو 15 2011 اواخر",
+   "macbook pro 15 late 2011",
+   "مکبوک پرو ۱۵ اواخر ۲۰۱۱",
+   "مک بوک پرو ۱۵ اواخر ۲۰۱۱",
+   "مک بوک پرو 15 اواخر 2011"
+  ],
+  "year": 2011,
+  "announced": null,
+  "chips": [
+   "Intel Core i7 quad-core 2.2GHz",
+   "Intel Core i7 quad-core 2.4GHz",
+   "Intel Core i7 quad-core 2.5GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   500,
+   512,
+   750
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "LED-backlit glossy widescreen (optional antiglare / 1680x1050)",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 2.0",
+   "SDXC card slot",
+   "Thunderbolt",
+   "FireWire 800",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.54,
+  "features": [
+   "Intel HD Graphics 3000 + AMD Radeon HD 6750M/6770M (automatic switching)",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112586",
+   "https://support.apple.com/en-us/108052"
+  ]
+ },
+ {
+  "key": "macbook pro 17 2011 late",
+  "name": "MacBook Pro (17-inch, Late 2011)",
+  "name_fa": "مک‌بوک پرو ۱۷ اینچ (اواخر ۲۰۱۱)",
+  "aliases": [
+   "macbook pro 17 2011 late",
+   "مکبوک پرو ۱۷ ۲۰۱۱ اواخر",
+   "مک بوک پرو ۱۷ ۲۰۱۱ اواخر",
+   "مک بوک پرو 17 2011 اواخر",
+   "macbook pro 17 late 2011",
+   "مکبوک پرو ۱۷ اواخر ۲۰۱۱",
+   "مک بوک پرو ۱۷ اواخر ۲۰۱۱",
+   "مک بوک پرو 17 اواخر 2011"
+  ],
+  "year": 2011,
+  "announced": null,
+  "chips": [
+   "Intel Core i7 quad-core 2.4GHz",
+   "Intel Core i7 quad-core 2.5GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512,
+   750
+  ],
+  "display": {
+   "inch": 17,
+   "type": "LED-backlit glossy widescreen (optional antiglare)",
+   "hz": 60,
+   "resolution": "1920x1200"
+  },
+  "ports": [
+   "3x USB 2.0",
+   "ExpressCard/34",
+   "Thunderbolt",
+   "FireWire 800",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.99,
+  "features": [
+   "Intel HD Graphics 3000 + AMD Radeon HD 6770M (automatic switching)",
+   "8x SuperDrive"
+  ],
+  "max_macos": "macOS 10.13 High Sierra",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112418",
+   "https://support.apple.com/en-us/108052"
+  ]
+ },
+ {
+  "key": "macbook air 11 2012",
+  "name": "MacBook Air (11-inch, Mid 2012)",
+  "name_fa": "مک‌بوک ایر ۱۱ اینچ (اواسط ۲۰۱۲)",
+  "aliases": [
+   "macbook air 11 2012 mid",
+   "مکبوک ایر ۱۱ ۲۰۱۲ اواسط",
+   "مک بوک ایر ۱۱ ۲۰۱۲ اواسط",
+   "مک بوک ایر 11 2012 اواسط",
+   "macbook air 11 mid 2012",
+   "مکبوک ایر ۱۱ اواسط ۲۰۱۲",
+   "مک بوک ایر ۱۱ اواسط ۲۰۱۲",
+   "مک بوک ایر 11 اواسط 2012",
+   "macbook air 11 2012",
+   "مکبوک ایر ۱۱ ۲۰۱۲",
+   "مک بوک ایر ۱۱ ۲۰۱۲",
+   "مک بوک ایر 11 2012",
+   "macbook air 2012 11",
+   "مکبوک ایر ۲۰۱۲ ۱۱",
+   "مک بوک ایر ۲۰۱۲ ۱۱",
+   "مک بوک ایر 2012 11"
+  ],
+  "year": 2012,
+  "announced": "2012-06-11",
+  "chips": [
+   "Intel Core i5 dual-core 1.7GHz",
+   "Intel Core i7 dual-core 2.0GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   64,
+   128,
+   256,
+   512
+  ],
+  "display": {
+   "inch": 11.6,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1366x768"
+  },
+  "ports": [
+   "2x USB 3",
+   "Thunderbolt",
+   "MagSafe 2",
+   "headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 5,
+  "weight_kg": 1.08,
+  "features": [
+   "Intel HD Graphics 4000",
+   "Bluetooth 4.0"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112008",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2012/06/11Apple-Updates-MacBook-Air-and-Current-Generation-MacBook-Pro-with-Latest-Processors-and-New-Graphics/"
+  ]
+ },
+ {
+  "key": "macbook air 13 2012",
+  "name": "MacBook Air (13-inch, Mid 2012)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ (اواسط ۲۰۱۲)",
+  "aliases": [
+   "macbook air 13 2012 mid",
+   "مکبوک ایر ۱۳ ۲۰۱۲ اواسط",
+   "مک بوک ایر ۱۳ ۲۰۱۲ اواسط",
+   "مک بوک ایر 13 2012 اواسط",
+   "macbook air 13 mid 2012",
+   "مکبوک ایر ۱۳ اواسط ۲۰۱۲",
+   "مک بوک ایر ۱۳ اواسط ۲۰۱۲",
+   "مک بوک ایر 13 اواسط 2012",
+   "macbook air 13 2012",
+   "مکبوک ایر ۱۳ ۲۰۱۲",
+   "مک بوک ایر ۱۳ ۲۰۱۲",
+   "مک بوک ایر 13 2012",
+   "macbook air 2012 13",
+   "مکبوک ایر ۲۰۱۲ ۱۳",
+   "مک بوک ایر ۲۰۱۲ ۱۳",
+   "مک بوک ایر 2012 13"
+  ],
+  "year": 2012,
+  "announced": "2012-06-11",
+  "chips": [
+   "Intel Core i5 dual-core 1.8GHz",
+   "Intel Core i7 dual-core 2.0GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 3",
+   "Thunderbolt",
+   "SD card slot",
+   "MagSafe 2",
+   "headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 1.35,
+  "features": [
+   "Intel HD Graphics 4000",
+   "Bluetooth 4.0"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111966",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2012/06/11Apple-Updates-MacBook-Air-and-Current-Generation-MacBook-Pro-with-Latest-Processors-and-New-Graphics/"
+  ]
+ },
+ {
+  "key": "macbook pro 13 2012 mid",
+  "name": "MacBook Pro (13-inch, Mid 2012)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ (اواسط ۲۰۱۲، بدون رتینا)",
+  "aliases": [
+   "macbook pro 13 2012 mid",
+   "مکبوک پرو ۱۳ ۲۰۱۲ اواسط",
+   "مک بوک پرو ۱۳ ۲۰۱۲ اواسط",
+   "مک بوک پرو 13 2012 اواسط",
+   "macbook pro 13 mid 2012",
+   "مکبوک پرو ۱۳ اواسط ۲۰۱۲",
+   "مک بوک پرو ۱۳ اواسط ۲۰۱۲",
+   "مک بوک پرو 13 اواسط 2012",
+   "macbook pro 13 2012 non retina",
+   "مکبوک پرو ۱۳ ۲۰۱۲ معمولی",
+   "مکبوک پرو ۱۳ ۲۰۱۲ بدون رتینا",
+   "مک بوک پرو 13 2012 سی دی خور",
+   "مکبوک پرو ۱۳ ۲۰۱۲ دی وی دی خور"
+  ],
+  "year": 2012,
+  "announced": "2012-06-11",
+  "chips": [
+   "Intel Core i5 dual-core 2.5GHz",
+   "Intel Core i7 dual-core 2.9GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   500,
+   512,
+   750,
+   1000
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1280x800"
+  },
+  "ports": [
+   "2x USB 3",
+   "Thunderbolt",
+   "FireWire 800",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.06,
+  "features": [
+   "Intel HD Graphics 4000",
+   "8x SuperDrive",
+   "Bluetooth 4.0"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111958",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2012/06/11Apple-Updates-MacBook-Air-and-Current-Generation-MacBook-Pro-with-Latest-Processors-and-New-Graphics/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2012 mid",
+  "name": "MacBook Pro (15-inch, Mid 2012)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (اواسط ۲۰۱۲، بدون رتینا)",
+  "aliases": [
+   "macbook pro 15 2012 non retina",
+   "مکبوک پرو ۱۵ ۲۰۱۲ معمولی",
+   "مکبوک پرو ۱۵ ۲۰۱۲ بدون رتینا"
+  ],
+  "year": 2012,
+  "announced": "2012-06-11",
+  "chips": [
+   "Intel Core i7 quad-core 2.3GHz",
+   "Intel Core i7 quad-core 2.6GHz",
+   "Intel Core i7 quad-core 2.7GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   500,
+   512,
+   750,
+   1000
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "LED-backlit glossy widescreen (optional antiglare / 1680x1050)",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 3",
+   "Thunderbolt",
+   "FireWire 800",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "MagSafe",
+   "audio line in",
+   "audio line out"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.56,
+  "features": [
+   "Intel HD Graphics 4000 + NVIDIA GeForce GT 650M (automatic switching)",
+   "8x SuperDrive",
+   "Bluetooth 4.0"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112568",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2012/06/11Apple-Updates-MacBook-Air-and-Current-Generation-MacBook-Pro-with-Latest-Processors-and-New-Graphics/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2012 retina",
+  "name": "MacBook Pro (Retina, 15-inch, Mid 2012)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ رتینا (اواسط ۲۰۱۲)",
+  "aliases": [
+   "macbook pro retina 15 2012",
+   "مکبوک پرو رتینا ۱۵ ۲۰۱۲",
+   "مک بوک پرو رتینا ۱۵ ۲۰۱۲",
+   "مک بوک پرو رتینا 15 2012",
+   "macbook pro 15 2012 retina",
+   "مکبوک پرو ۱۵ ۲۰۱۲ رتینا",
+   "مک بوک پرو ۱۵ ۲۰۱۲ رتینا",
+   "مک بوک پرو 15 2012 رتینا",
+   "macbook pro retina 15 2012 mid",
+   "مکبوک پرو رتینا ۱۵ ۲۰۱۲ اواسط",
+   "مک بوک پرو رتینا ۱۵ ۲۰۱۲ اواسط",
+   "مک بوک پرو رتینا 15 2012 اواسط"
+  ],
+  "year": 2012,
+  "announced": "2012-06-11",
+  "chips": [
+   "Intel Core i7 quad-core 2.3GHz",
+   "Intel Core i7 quad-core 2.6GHz",
+   "Intel Core i7 quad-core 2.7GHz"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   768
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "Retina (IPS)",
+   "hz": 60,
+   "resolution": "2880x1800"
+  },
+  "ports": [
+   "2x Thunderbolt",
+   "2x USB 3",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 2",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.02,
+  "features": [
+   "Intel HD Graphics 4000 + NVIDIA GeForce GT 650M (automatic switching)",
+   "flash storage",
+   "Bluetooth 4.0"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112576",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2012/06/11Apple-Introduces-All-New-MacBook-Pro-with-Retina-Display/"
+  ]
+ },
+ {
+  "key": "imac 21.5 2012",
+  "name": "iMac (21.5-inch, Late 2012)",
+  "name_fa": "آی‌مک ۲۱.۵ اینچ (اواخر ۲۰۱۲)",
+  "aliases": [
+   "imac 21.5 2012",
+   "imac 21.5inch 2012",
+   "ایمک ۲۱.۵ ۲۰۱۲",
+   "آیمک ۲۱.۵ اینچ ۲۰۱۲",
+   "آی مک 21.5 اینچ 2012",
+   "ای مک ۲۱.۵ ۲۰۱۲",
+   "imac 21.5 late 2012",
+   "imac 21.5 2012 late",
+   "imac 21.5 inch late 2012",
+   "ایمک ۲۱.۵ اواخر ۲۰۱۲",
+   "آیمک ۲۱.۵ اینچ اواخر ۲۰۱۲",
+   "آی مک 21.5 اینچ اواخر 2012"
+  ],
+  "year": 2012,
+  "announced": "2012-10-23",
+  "chips": [
+   "Intel Core i5 quad-core 2.7GHz",
+   "Intel Core i5 quad-core 2.9GHz",
+   "Intel Core i7 quad-core 3.1GHz (optional)"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   1024
+  ],
+  "display": {
+   "inch": 21.5,
+   "type": "LED-backlit IPS",
+   "hz": 60,
+   "resolution": "1920x1080"
+  },
+  "ports": [
+   "2x Thunderbolt",
+   "4x USB 3",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 5.68,
+  "features": [
+   "thin-edge design, no optical drive",
+   "NVIDIA GeForce GT 640M or GT 650M (512MB)",
+   "HDD or 1TB Fusion Drive",
+   "802.11n Wi-Fi",
+   "RAM not user-replaceable"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112435",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2012/10/23All-New-iMac-Features-Stunning-Design-Brilliant-Display-Faster-Performance/"
+  ]
+ },
+ {
+  "key": "imac 27 2012",
+  "name": "iMac (27-inch, Late 2012)",
+  "name_fa": "آی‌مک ۲۷ اینچ (اواخر ۲۰۱۲)",
+  "aliases": [
+   "imac 27 2012",
+   "imac272012",
+   "ایمک ۲۷ ۲۰۱۲",
+   "آیمک ۲۷ اینچ ۲۰۱۲",
+   "آی مک 27 اینچ 2012",
+   "ای مک ۲۷ ۲۰۱۲",
+   "imac 27 late 2012",
+   "imac 27 2012 late",
+   "imac 27 inch late 2012",
+   "ایمک ۲۷ اواخر ۲۰۱۲",
+   "آیمک ۲۷ اینچ اواخر ۲۰۱۲",
+   "آی مک 27 اینچ اواخر 2012"
+  ],
+  "year": 2012,
+  "announced": "2012-10-23",
+  "chips": [
+   "Intel Core i5 quad-core 2.9GHz",
+   "Intel Core i5 quad-core 3.2GHz",
+   "Intel Core i7 quad-core 3.4GHz (optional)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   32
+  ],
+  "storage_gb": [
+   768,
+   1024,
+   3072
+  ],
+  "display": {
+   "inch": 27,
+   "type": "LED-backlit IPS",
+   "hz": 60,
+   "resolution": "2560x1440"
+  },
+  "ports": [
+   "2x Thunderbolt",
+   "4x USB 3",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.54,
+  "features": [
+   "thin-edge design, no optical drive",
+   "NVIDIA GeForce GTX 660M, 675MX or 680MX",
+   "HDD, Fusion Drive or 768GB flash",
+   "user-accessible RAM (4 slots)",
+   "802.11n Wi-Fi"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112433",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2012/10/23All-New-iMac-Features-Stunning-Design-Brilliant-Display-Faster-Performance/"
+  ]
+ },
+ {
+  "key": "macbook pro 13 2012 retina",
+  "name": "MacBook Pro (Retina, 13-inch, Late 2012)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ رتینا (اواخر ۲۰۱۲)",
+  "aliases": [
+   "macbook pro 13 2012 late",
+   "مکبوک پرو ۱۳ ۲۰۱۲ اواخر",
+   "مک بوک پرو ۱۳ ۲۰۱۲ اواخر",
+   "مک بوک پرو 13 2012 اواخر",
+   "macbook pro 13 late 2012",
+   "مکبوک پرو ۱۳ اواخر ۲۰۱۲",
+   "مک بوک پرو ۱۳ اواخر ۲۰۱۲",
+   "مک بوک پرو 13 اواخر 2012",
+   "macbook pro retina 13 2012",
+   "مکبوک پرو رتینا ۱۳ ۲۰۱۲",
+   "مک بوک پرو رتینا ۱۳ ۲۰۱۲",
+   "مک بوک پرو رتینا 13 2012",
+   "macbook pro 13 2012 retina",
+   "مکبوک پرو ۱۳ ۲۰۱۲ رتینا",
+   "مک بوک پرو ۱۳ ۲۰۱۲ رتینا",
+   "مک بوک پرو 13 2012 رتینا",
+   "macbook pro retina 13 2012 late",
+   "مکبوک پرو رتینا ۱۳ ۲۰۱۲ اواخر",
+   "مک بوک پرو رتینا ۱۳ ۲۰۱۲ اواخر",
+   "مک بوک پرو رتینا 13 2012 اواخر"
+  ],
+  "year": 2012,
+  "announced": "2012-10-23",
+  "chips": [
+   "Intel Core i5 dual-core 2.5GHz",
+   "Intel Core i7 dual-core 2.9GHz"
+  ],
+  "ram_gb": [
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512,
+   768
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (IPS)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x Thunderbolt",
+   "2x USB 3",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 2",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 1.62,
+  "features": [
+   "Intel HD Graphics 4000",
+   "flash storage",
+   "Bluetooth 4.0"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/118463",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2012/10/23Apple-Introduces-13-inch-MacBook-Pro-with-Retina-Display/"
+  ]
+ },
+ {
+  "key": "mac mini 2012",
+  "name": "Mac mini (Late 2012)",
+  "name_fa": "مک مینی (اواخر ۲۰۱۲)",
+  "aliases": [
+   "mac mini 2012",
+   "macmini2012",
+   "مک مینی ۲۰۱۲",
+   "مک‌مینی ۲۰۱۲",
+   "مکمینی ۲۰۱۲",
+   "mac mini late 2012",
+   "mac mini 2012 late",
+   "مک مینی اواخر ۲۰۱۲",
+   "مکمینی اواخر ۲۰۱۲"
+  ],
+  "year": 2012,
+  "announced": null,
+  "chips": [
+   "Intel Core i5 dual-core 2.5GHz",
+   "Intel Core i7 quad-core 2.3GHz",
+   "Intel Core i7 quad-core 2.6GHz (optional)"
+  ],
+  "ram_gb": [
+   4,
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   500,
+   1024
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "1x Thunderbolt",
+   "1x FireWire 800",
+   "4x USB 3",
+   "HDMI",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "audio in/out"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 1.22,
+  "features": [
+   "Intel HD Graphics 4000",
+   "HDD, 1TB Fusion Drive or 256GB SSD",
+   "user-upgradeable RAM",
+   "802.11n Wi-Fi"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111926",
+   "https://support.apple.com/en-us/102852"
+  ]
+ },
+ {
+  "key": "mac pro 2012",
+  "name": "Mac Pro (Mid 2012)",
+  "name_fa": "مک پرو (اواسط ۲۰۱۲)",
+  "aliases": [
+   "mac pro 2012",
+   "macpro2012",
+   "مک پرو ۲۰۱۲",
+   "مک‌پرو ۲۰۱۲",
+   "مکپرو ۲۰۱۲"
+  ],
+  "year": 2012,
+  "announced": null,
+  "chips": [
+   "1x Intel Xeon quad-core 3.2GHz",
+   "1x Intel Xeon 6-core 3.33GHz",
+   "2x Intel Xeon 6-core 2.4, 2.66 or 3.06GHz (12-core)"
+  ],
+  "ram_gb": [
+   6,
+   8,
+   12,
+   16,
+   24,
+   32,
+   48,
+   64
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "4x FireWire 800",
+   "5x USB 2.0",
+   "2x Gigabit Ethernet",
+   "optical digital audio in/out",
+   "analog audio in/out",
+   "Mini DisplayPort (on graphics card)"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 18.1,
+  "features": [
+   "tower, 4 drive bays",
+   "ATI Radeon HD 5770 or 5870",
+   "optional 512GB SSD",
+   "also sold as Mac Pro Server",
+   "weight: quad-core 18.1kg, 12-core 18.7kg",
+   "macOS Mojave needs a Metal-capable graphics card"
+  ],
+  "max_macos": "macOS 10.14 Mojave",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/118464",
+   "https://support.apple.com/en-us/102887",
+   "https://support.apple.com/en-us/111930"
+  ]
+ },
+ {
+  "key": "macbook pro 13 2013 retina early",
+  "name": "MacBook Pro (Retina, 13-inch, Early 2013)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ رتینا (اوایل ۲۰۱۳)",
+  "aliases": [
+   "macbook pro 13 2013 early",
+   "مکبوک پرو ۱۳ ۲۰۱۳ اوایل",
+   "مک بوک پرو ۱۳ ۲۰۱۳ اوایل",
+   "مک بوک پرو 13 2013 اوایل",
+   "macbook pro 13 early 2013",
+   "مکبوک پرو ۱۳ اوایل ۲۰۱۳",
+   "مک بوک پرو ۱۳ اوایل ۲۰۱۳",
+   "مک بوک پرو 13 اوایل 2013",
+   "macbook pro retina 13 2013 early",
+   "مکبوک پرو رتینا ۱۳ ۲۰۱۳ اوایل",
+   "مک بوک پرو رتینا ۱۳ ۲۰۱۳ اوایل",
+   "مک بوک پرو رتینا 13 2013 اوایل"
+  ],
+  "year": 2013,
+  "announced": "2013-02-13",
+  "chips": [
+   "Intel Core i5 dual-core 2.5GHz",
+   "Intel Core i5 dual-core 2.6GHz",
+   "Intel Core i7 dual-core 2.9GHz",
+   "Intel Core i7 dual-core 3.0GHz"
+  ],
+  "ram_gb": [
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512,
+   768
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (IPS)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x Thunderbolt",
+   "2x USB 3",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 2",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 1.62,
+  "features": [
+   "Intel HD Graphics 4000",
+   "flash storage",
+   "Bluetooth 4.0"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/118466",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2013/02/13Apple-Updates-Processors-Prices-of-MacBook-Pro-with-Retina-Display/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2013 retina early",
+  "name": "MacBook Pro (Retina, 15-inch, Early 2013)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ رتینا (اوایل ۲۰۱۳)",
+  "aliases": [
+   "macbook pro 15 2013 early",
+   "مکبوک پرو ۱۵ ۲۰۱۳ اوایل",
+   "مک بوک پرو ۱۵ ۲۰۱۳ اوایل",
+   "مک بوک پرو 15 2013 اوایل",
+   "macbook pro 15 early 2013",
+   "مکبوک پرو ۱۵ اوایل ۲۰۱۳",
+   "مک بوک پرو ۱۵ اوایل ۲۰۱۳",
+   "مک بوک پرو 15 اوایل 2013",
+   "macbook pro retina 15 2013 early",
+   "مکبوک پرو رتینا ۱۵ ۲۰۱۳ اوایل",
+   "مک بوک پرو رتینا ۱۵ ۲۰۱۳ اوایل",
+   "مک بوک پرو رتینا 15 2013 اوایل"
+  ],
+  "year": 2013,
+  "announced": "2013-02-13",
+  "chips": [
+   "Intel Core i7 quad-core 2.4GHz",
+   "Intel Core i7 quad-core 2.7GHz",
+   "Intel Core i7 quad-core 2.8GHz"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   768
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "Retina (IPS)",
+   "hz": 60,
+   "resolution": "2880x1800"
+  },
+  "ports": [
+   "2x Thunderbolt",
+   "2x USB 3",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 2",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 7,
+  "weight_kg": 2.02,
+  "features": [
+   "Intel HD Graphics 4000 + NVIDIA GeForce GT 650M (automatic switching)",
+   "flash storage",
+   "Bluetooth 4.0"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/118465",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2013/02/13Apple-Updates-Processors-Prices-of-MacBook-Pro-with-Retina-Display/"
+  ]
+ },
+ {
+  "key": "macbook air 11 2013",
+  "name": "MacBook Air (11-inch, Mid 2013)",
+  "name_fa": "مک‌بوک ایر ۱۱ اینچ (اواسط ۲۰۱۳)",
+  "aliases": [
+   "macbook air 11 2013 mid",
+   "مکبوک ایر ۱۱ ۲۰۱۳ اواسط",
+   "مک بوک ایر ۱۱ ۲۰۱۳ اواسط",
+   "مک بوک ایر 11 2013 اواسط",
+   "macbook air 11 mid 2013",
+   "مکبوک ایر ۱۱ اواسط ۲۰۱۳",
+   "مک بوک ایر ۱۱ اواسط ۲۰۱۳",
+   "مک بوک ایر 11 اواسط 2013",
+   "macbook air 11 2013",
+   "مکبوک ایر ۱۱ ۲۰۱۳",
+   "مک بوک ایر ۱۱ ۲۰۱۳",
+   "مک بوک ایر 11 2013",
+   "macbook air 2013 11",
+   "مکبوک ایر ۲۰۱۳ ۱۱",
+   "مک بوک ایر ۲۰۱۳ ۱۱",
+   "مک بوک ایر 2013 11"
+  ],
+  "year": 2013,
+  "announced": "2013-06-10",
+  "chips": [
+   "Intel Core i5 dual-core 1.3GHz",
+   "Intel Core i7 dual-core 1.7GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "display": {
+   "inch": 11.6,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1366x768"
+  },
+  "ports": [
+   "2x USB 3",
+   "Thunderbolt",
+   "MagSafe 2",
+   "headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 9,
+  "weight_kg": 1.08,
+  "features": [
+   "Intel HD Graphics 5000",
+   "Wi-Fi 5 (802.11ac)"
+  ],
+  "max_macos": "macOS 11 Big Sur",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112437",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2013/06/10Apple-Brings-All-Day-Battery-Life-to-MacBook-Air/"
+  ]
+ },
+ {
+  "key": "macbook air 13 2013",
+  "name": "MacBook Air (13-inch, Mid 2013)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ (اواسط ۲۰۱۳)",
+  "aliases": [
+   "macbook air 13 2013 mid",
+   "مکبوک ایر ۱۳ ۲۰۱۳ اواسط",
+   "مک بوک ایر ۱۳ ۲۰۱۳ اواسط",
+   "مک بوک ایر 13 2013 اواسط",
+   "macbook air 13 mid 2013",
+   "مکبوک ایر ۱۳ اواسط ۲۰۱۳",
+   "مک بوک ایر ۱۳ اواسط ۲۰۱۳",
+   "مک بوک ایر 13 اواسط 2013",
+   "macbook air 13 2013",
+   "مکبوک ایر ۱۳ ۲۰۱۳",
+   "مک بوک ایر ۱۳ ۲۰۱۳",
+   "مک بوک ایر 13 2013",
+   "macbook air 2013 13",
+   "مکبوک ایر ۲۰۱۳ ۱۳",
+   "مک بوک ایر ۲۰۱۳ ۱۳",
+   "مک بوک ایر 2013 13"
+  ],
+  "year": 2013,
+  "announced": "2013-06-10",
+  "chips": [
+   "Intel Core i5 dual-core 1.3GHz",
+   "Intel Core i7 dual-core 1.7GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 3",
+   "Thunderbolt",
+   "SDXC card slot",
+   "MagSafe 2",
+   "headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 12,
+  "weight_kg": 1.35,
+  "features": [
+   "Intel HD Graphics 5000",
+   "Wi-Fi 5 (802.11ac)"
+  ],
+  "max_macos": "macOS 11 Big Sur",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111938",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2013/06/10Apple-Brings-All-Day-Battery-Life-to-MacBook-Air/"
+  ]
+ },
+ {
+  "key": "imac 21.5 2013 late",
+  "name": "iMac (21.5-inch, Late 2013)",
+  "name_fa": "آی‌مک ۲۱.۵ اینچ (اواخر ۲۰۱۳)",
+  "aliases": [
+   "imac 21.5 late 2013",
+   "imac 21.5 2013 late",
+   "imac 21.5 inch late 2013",
+   "ایمک ۲۱.۵ اواخر ۲۰۱۳",
+   "آیمک ۲۱.۵ اینچ اواخر ۲۰۱۳",
+   "آی مک 21.5 اینچ اواخر 2013"
+  ],
+  "year": 2013,
+  "announced": "2013-09-24",
+  "chips": [
+   "Intel Core i5 quad-core 2.7GHz",
+   "Intel Core i5 quad-core 2.9GHz",
+   "Intel Core i7 quad-core 3.1GHz (optional)"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024
+  ],
+  "display": {
+   "inch": 21.5,
+   "type": "LED-backlit IPS",
+   "hz": 60,
+   "resolution": "1920x1080"
+  },
+  "ports": [
+   "2x Thunderbolt",
+   "4x USB 3",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 5.68,
+  "features": [
+   "Intel Iris Pro or NVIDIA GeForce GT 750M (1GB)",
+   "HDD, Fusion Drive or flash storage",
+   "802.11ac Wi-Fi",
+   "RAM not user-replaceable"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111967",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2013/09/24Apple-Updates-iMac/"
+  ]
+ },
+ {
+  "key": "imac 27 2013",
+  "name": "iMac (27-inch, Late 2013)",
+  "name_fa": "آی‌مک ۲۷ اینچ (اواخر ۲۰۱۳)",
+  "aliases": [
+   "imac 27 2013",
+   "imac272013",
+   "ایمک ۲۷ ۲۰۱۳",
+   "آیمک ۲۷ اینچ ۲۰۱۳",
+   "آی مک 27 اینچ 2013",
+   "ای مک ۲۷ ۲۰۱۳",
+   "imac 27 late 2013",
+   "imac 27 2013 late",
+   "imac 27 inch late 2013",
+   "ایمک ۲۷ اواخر ۲۰۱۳",
+   "آیمک ۲۷ اینچ اواخر ۲۰۱۳",
+   "آی مک 27 اینچ اواخر 2013"
+  ],
+  "year": 2013,
+  "announced": "2013-09-24",
+  "chips": [
+   "Intel Core i5 quad-core 3.2GHz",
+   "Intel Core i5 quad-core 3.4GHz",
+   "Intel Core i7 quad-core 3.5GHz (optional)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   32
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   3072
+  ],
+  "display": {
+   "inch": 27,
+   "type": "LED-backlit IPS",
+   "hz": 60,
+   "resolution": "2560x1440"
+  },
+  "ports": [
+   "2x Thunderbolt",
+   "4x USB 3",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.54,
+  "features": [
+   "NVIDIA GeForce GT 755M, GTX 775M or GTX 780M",
+   "HDD, Fusion Drive or flash storage",
+   "user-accessible RAM (4 slots)",
+   "802.11ac Wi-Fi"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111970",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2013/09/24Apple-Updates-iMac/"
+  ]
+ },
+ {
+  "key": "mac pro 2013",
+  "name": "Mac Pro (Late 2013)",
+  "name_fa": "مک پرو (اواخر ۲۰۱۳)",
+  "aliases": [
+   "mac pro 2013",
+   "macpro2013",
+   "مک پرو ۲۰۱۳",
+   "مک‌پرو ۲۰۱۳",
+   "مکپرو ۲۰۱۳",
+   "mac pro trash can",
+   "mac pro trashcan",
+   "مک پرو سطلی",
+   "مک پرو استوانه ای",
+   "مک پرو استوانه‌ای"
+  ],
+  "year": 2013,
+  "announced": "2013-10-22",
+  "chips": [
+   "Intel Xeon E5 quad-core 3.7GHz",
+   "Intel Xeon E5 6-core 3.5GHz",
+   "Intel Xeon E5 8-core 3.0GHz",
+   "Intel Xeon E5 12-core 2.7GHz"
+  ],
+  "ram_gb": [
+   12,
+   16,
+   32,
+   64
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "6x Thunderbolt 2",
+   "4x USB 3",
+   "HDMI 1.4",
+   "2x Gigabit Ethernet",
+   "optical/analog audio out",
+   "3.5mm headphone"
+  ],
+  "camera": null,
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": 4.99,
+  "features": [
+   "cylindrical design",
+   "dual AMD FirePro D300, D500 or D700",
+   "PCIe-based SSD",
+   "DDR3 ECC memory",
+   "802.11ac Wi-Fi"
+  ],
+  "max_macos": "macOS 12 Monterey",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112025",
+   "https://support.apple.com/en-us/102887",
+   "https://www.apple.com/newsroom/2013/10/23Introducing-the-All-New-Mac-Pro-The-Most-Radical-Mac-Ever/"
+  ]
+ },
+ {
+  "key": "macbook pro 13 2013 retina late",
+  "name": "MacBook Pro (Retina, 13-inch, Late 2013)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ رتینا (اواخر ۲۰۱۳)",
+  "aliases": [
+   "macbook pro 13 2013 late",
+   "مکبوک پرو ۱۳ ۲۰۱۳ اواخر",
+   "مک بوک پرو ۱۳ ۲۰۱۳ اواخر",
+   "مک بوک پرو 13 2013 اواخر",
+   "macbook pro 13 late 2013",
+   "مکبوک پرو ۱۳ اواخر ۲۰۱۳",
+   "مک بوک پرو ۱۳ اواخر ۲۰۱۳",
+   "مک بوک پرو 13 اواخر 2013",
+   "macbook pro retina 13 2013 late",
+   "مکبوک پرو رتینا ۱۳ ۲۰۱۳ اواخر",
+   "مک بوک پرو رتینا ۱۳ ۲۰۱۳ اواخر",
+   "مک بوک پرو رتینا 13 2013 اواخر"
+  ],
+  "year": 2013,
+  "announced": "2013-10-22",
+  "chips": [
+   "Intel Core i5 dual-core 2.4GHz",
+   "Intel Core i5 dual-core 2.6GHz",
+   "Intel Core i7 dual-core 2.8GHz"
+  ],
+  "ram_gb": [
+   4,
+   8,
+   16
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1000
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (IPS)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x Thunderbolt 2",
+   "2x USB 3",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 2",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 9,
+  "weight_kg": 1.57,
+  "features": [
+   "Intel Iris Graphics",
+   "PCIe flash storage",
+   "Wi-Fi 5 (802.11ac)"
+  ],
+  "max_macos": "macOS 11 Big Sur",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111946",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2013/10/23MacBook-Pro-with-Retina-Display-Updated-with-Latest-Processors-Faster-Graphics-Longer-Battery-Life/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2013 retina late",
+  "name": "MacBook Pro (Retina, 15-inch, Late 2013)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ رتینا (اواخر ۲۰۱۳)",
+  "aliases": [
+   "macbook pro 15 2013 late",
+   "مکبوک پرو ۱۵ ۲۰۱۳ اواخر",
+   "مک بوک پرو ۱۵ ۲۰۱۳ اواخر",
+   "مک بوک پرو 15 2013 اواخر",
+   "macbook pro 15 late 2013",
+   "مکبوک پرو ۱۵ اواخر ۲۰۱۳",
+   "مک بوک پرو ۱۵ اواخر ۲۰۱۳",
+   "مک بوک پرو 15 اواخر 2013",
+   "macbook pro retina 15 2013 late",
+   "مکبوک پرو رتینا ۱۵ ۲۰۱۳ اواخر",
+   "مک بوک پرو رتینا ۱۵ ۲۰۱۳ اواخر",
+   "مک بوک پرو رتینا 15 2013 اواخر"
+  ],
+  "year": 2013,
+  "announced": "2013-10-22",
+  "chips": [
+   "Intel Core i7 quad-core 2.0GHz",
+   "Intel Core i7 quad-core 2.3GHz",
+   "Intel Core i7 quad-core 2.6GHz"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1000
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "Retina (IPS)",
+   "hz": 60,
+   "resolution": "2880x1800"
+  },
+  "ports": [
+   "2x Thunderbolt 2",
+   "2x USB 3",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 2",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 8,
+  "weight_kg": 2.02,
+  "features": [
+   "Intel Iris Pro Graphics (+ NVIDIA GeForce GT 750M on higher model)",
+   "PCIe flash storage",
+   "Wi-Fi 5 (802.11ac)"
+  ],
+  "max_macos": "macOS 11 Big Sur",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111971",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2013/10/23MacBook-Pro-with-Retina-Display-Updated-with-Latest-Processors-Faster-Graphics-Longer-Battery-Life/"
+  ]
+ },
+ {
+  "key": "imac 21.5 2013 early",
+  "name": "iMac (21.5-inch, Early 2013)",
+  "name_fa": "آی‌مک ۲۱.۵ اینچ (اوایل ۲۰۱۳)",
+  "aliases": [
+   "imac 21.5 early 2013",
+   "imac 21.5 2013 early",
+   "imac 21.5 inch early 2013",
+   "ایمک ۲۱.۵ اوایل ۲۰۱۳",
+   "آیمک ۲۱.۵ اینچ اوایل ۲۰۱۳",
+   "آی مک 21.5 اینچ اوایل 2013",
+   "imac 21.5 education 2013",
+   "آیمک ۲۱.۵ آموزشی ۲۰۱۳"
+  ],
+  "year": 2013,
+  "announced": null,
+  "chips": [],
+  "ram_gb": null,
+  "storage_gb": null,
+  "display": {
+   "inch": 21.5,
+   "type": null,
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [],
+  "camera": null,
+  "colors": [],
+  "battery_hours": null,
+  "weight_kg": null,
+  "features": [
+   "education model"
+  ],
+  "max_macos": "macOS 10.15 Catalina",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/docs/mac/133982",
+   "https://support.apple.com/en-us/118458",
+   "https://support.apple.com/en-us/111980"
+  ]
+ },
+ {
+  "key": "macbook air 11 2014",
+  "name": "MacBook Air (11-inch, Early 2014)",
+  "name_fa": "مک‌بوک ایر ۱۱ اینچ (اوایل ۲۰۱۴)",
+  "aliases": [
+   "macbook air 11 2014 early",
+   "مکبوک ایر ۱۱ ۲۰۱۴ اوایل",
+   "مک بوک ایر ۱۱ ۲۰۱۴ اوایل",
+   "مک بوک ایر 11 2014 اوایل",
+   "macbook air 11 early 2014",
+   "مکبوک ایر ۱۱ اوایل ۲۰۱۴",
+   "مک بوک ایر ۱۱ اوایل ۲۰۱۴",
+   "مک بوک ایر 11 اوایل 2014",
+   "macbook air 11 2014",
+   "مکبوک ایر ۱۱ ۲۰۱۴",
+   "مک بوک ایر ۱۱ ۲۰۱۴",
+   "مک بوک ایر 11 2014",
+   "macbook air 2014 11",
+   "مکبوک ایر ۲۰۱۴ ۱۱",
+   "مک بوک ایر ۲۰۱۴ ۱۱",
+   "مک بوک ایر 2014 11"
+  ],
+  "year": 2014,
+  "announced": "2014-04-29",
+  "chips": [
+   "Intel Core i5 dual-core 1.4GHz",
+   "Intel Core i7 dual-core 1.7GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "display": {
+   "inch": 11.6,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1366x768"
+  },
+  "ports": [
+   "2x USB 3",
+   "Thunderbolt",
+   "MagSafe 2",
+   "headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 9,
+  "weight_kg": 1.08,
+  "features": [
+   "Intel HD Graphics 5000",
+   "PCIe flash storage",
+   "Wi-Fi 5 (802.11ac)"
+  ],
+  "max_macos": "macOS 11 Big Sur",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112032",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2014/04/29Apple-Updates-MacBook-Air/"
+  ]
+ },
+ {
+  "key": "macbook air 13 2014",
+  "name": "MacBook Air (13-inch, Early 2014)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ (اوایل ۲۰۱۴)",
+  "aliases": [
+   "macbook air 13 2014 early",
+   "مکبوک ایر ۱۳ ۲۰۱۴ اوایل",
+   "مک بوک ایر ۱۳ ۲۰۱۴ اوایل",
+   "مک بوک ایر 13 2014 اوایل",
+   "macbook air 13 early 2014",
+   "مکبوک ایر ۱۳ اوایل ۲۰۱۴",
+   "مک بوک ایر ۱۳ اوایل ۲۰۱۴",
+   "مک بوک ایر 13 اوایل 2014",
+   "macbook air 13 2014",
+   "مکبوک ایر ۱۳ ۲۰۱۴",
+   "مک بوک ایر ۱۳ ۲۰۱۴",
+   "مک بوک ایر 13 2014",
+   "macbook air 2014 13",
+   "مکبوک ایر ۲۰۱۴ ۱۳",
+   "مک بوک ایر ۲۰۱۴ ۱۳",
+   "مک بوک ایر 2014 13"
+  ],
+  "year": 2014,
+  "announced": "2014-04-29",
+  "chips": [
+   "Intel Core i5 dual-core 1.4GHz",
+   "Intel Core i7 dual-core 1.7GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED-backlit glossy widescreen",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 3",
+   "Thunderbolt",
+   "SDXC card slot",
+   "MagSafe 2",
+   "headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 12,
+  "weight_kg": 1.35,
+  "features": [
+   "Intel HD Graphics 5000",
+   "PCIe flash storage",
+   "Wi-Fi 5 (802.11ac)"
+  ],
+  "max_macos": "macOS 11 Big Sur",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111944",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2014/04/29Apple-Updates-MacBook-Air/"
+  ]
+ },
+ {
+  "key": "imac 21.5 2014",
+  "name": "iMac (21.5-inch, Mid 2014)",
+  "name_fa": "آی‌مک ۲۱.۵ اینچ (اواسط ۲۰۱۴)",
+  "aliases": [
+   "imac 21.5 2014",
+   "imac 21.5inch 2014",
+   "ایمک ۲۱.۵ ۲۰۱۴",
+   "آیمک ۲۱.۵ اینچ ۲۰۱۴",
+   "آی مک 21.5 اینچ 2014",
+   "ای مک ۲۱.۵ ۲۰۱۴",
+   "imac 21.5 mid 2014",
+   "imac 21.5 2014 mid",
+   "imac 21.5 inch mid 2014",
+   "ایمک ۲۱.۵ اواسط ۲۰۱۴",
+   "آیمک ۲۱.۵ اینچ اواسط ۲۰۱۴",
+   "آی مک 21.5 اینچ اواسط 2014"
+  ],
+  "year": 2014,
+  "announced": "2014-06-18",
+  "chips": [
+   "Intel Core i5 dual-core 1.4GHz"
+  ],
+  "ram_gb": [
+   8
+  ],
+  "storage_gb": [
+   256,
+   500,
+   1024
+  ],
+  "display": {
+   "inch": 21.5,
+   "type": "LED-backlit IPS",
+   "hz": 60,
+   "resolution": "1920x1080"
+  },
+  "ports": [
+   "2x Thunderbolt",
+   "4x USB 3",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 5.68,
+  "features": [
+   "entry-level model",
+   "Intel HD Graphics 5000",
+   "8GB LPDDR3 onboard memory",
+   "HDD, Fusion Drive or flash storage",
+   "802.11ac Wi-Fi"
+  ],
+  "max_macos": "macOS 11 Big Sur",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112031",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2014/06/18Apple-Introduces-New-Entry-Level-21-5-inch-iMac/"
+  ]
+ },
+ {
+  "key": "macbook pro 13 2014 retina",
+  "name": "MacBook Pro (Retina, 13-inch, Mid 2014)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ رتینا (اواسط ۲۰۱۴)",
+  "aliases": [
+   "macbook pro 13 2014 mid",
+   "مکبوک پرو ۱۳ ۲۰۱۴ اواسط",
+   "مک بوک پرو ۱۳ ۲۰۱۴ اواسط",
+   "مک بوک پرو 13 2014 اواسط",
+   "macbook pro 13 mid 2014",
+   "مکبوک پرو ۱۳ اواسط ۲۰۱۴",
+   "مک بوک پرو ۱۳ اواسط ۲۰۱۴",
+   "مک بوک پرو 13 اواسط 2014",
+   "macbook pro retina 13 2014",
+   "مکبوک پرو رتینا ۱۳ ۲۰۱۴",
+   "مک بوک پرو رتینا ۱۳ ۲۰۱۴",
+   "مک بوک پرو رتینا 13 2014",
+   "macbook pro 13 2014 retina",
+   "مکبوک پرو ۱۳ ۲۰۱۴ رتینا",
+   "مک بوک پرو ۱۳ ۲۰۱۴ رتینا",
+   "مک بوک پرو 13 2014 رتینا",
+   "macbook pro retina 13 2014 mid",
+   "مکبوک پرو رتینا ۱۳ ۲۰۱۴ اواسط",
+   "مک بوک پرو رتینا ۱۳ ۲۰۱۴ اواسط",
+   "مک بوک پرو رتینا 13 2014 اواسط",
+   "macbook pro 13 2014",
+   "مکبوک پرو ۱۳ ۲۰۱۴",
+   "مک بوک پرو ۱۳ ۲۰۱۴",
+   "مک بوک پرو 13 2014",
+   "macbook pro 2014 13",
+   "مکبوک پرو ۲۰۱۴ ۱۳",
+   "مک بوک پرو ۲۰۱۴ ۱۳",
+   "مک بوک پرو 2014 13"
+  ],
+  "year": 2014,
+  "announced": "2014-07-29",
+  "chips": [
+   "Intel Core i5 dual-core 2.6GHz",
+   "Intel Core i5 dual-core 2.8GHz",
+   "Intel Core i7 dual-core 3.0GHz"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1000
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (IPS)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x Thunderbolt 2",
+   "2x USB 3",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 2",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 9,
+  "weight_kg": 1.57,
+  "features": [
+   "Intel Iris Graphics",
+   "PCIe flash storage",
+   "Wi-Fi 5 (802.11ac)"
+  ],
+  "max_macos": "macOS 11 Big Sur",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111942",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2014/07/29Apple-Updates-MacBook-Pro-with-Retina-Display/"
+  ]
+ },
+ {
+  "key": "macbook pro 15 2014 retina",
+  "name": "MacBook Pro (Retina, 15-inch, Mid 2014)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ رتینا (اواسط ۲۰۱۴)",
+  "aliases": [
+   "macbook pro 15 2014 mid",
+   "مکبوک پرو ۱۵ ۲۰۱۴ اواسط",
+   "مک بوک پرو ۱۵ ۲۰۱۴ اواسط",
+   "مک بوک پرو 15 2014 اواسط",
+   "macbook pro 15 mid 2014",
+   "مکبوک پرو ۱۵ اواسط ۲۰۱۴",
+   "مک بوک پرو ۱۵ اواسط ۲۰۱۴",
+   "مک بوک پرو 15 اواسط 2014",
+   "macbook pro retina 15 2014",
+   "مکبوک پرو رتینا ۱۵ ۲۰۱۴",
+   "مک بوک پرو رتینا ۱۵ ۲۰۱۴",
+   "مک بوک پرو رتینا 15 2014",
+   "macbook pro 15 2014 retina",
+   "مکبوک پرو ۱۵ ۲۰۱۴ رتینا",
+   "مک بوک پرو ۱۵ ۲۰۱۴ رتینا",
+   "مک بوک پرو 15 2014 رتینا",
+   "macbook pro retina 15 2014 mid",
+   "مکبوک پرو رتینا ۱۵ ۲۰۱۴ اواسط",
+   "مک بوک پرو رتینا ۱۵ ۲۰۱۴ اواسط",
+   "مک بوک پرو رتینا 15 2014 اواسط",
+   "macbook pro 15 2014",
+   "مکبوک پرو ۱۵ ۲۰۱۴",
+   "مک بوک پرو ۱۵ ۲۰۱۴",
+   "مک بوک پرو 15 2014",
+   "macbook pro 2014 15",
+   "مکبوک پرو ۲۰۱۴ ۱۵",
+   "مک بوک پرو ۲۰۱۴ ۱۵",
+   "مک بوک پرو 2014 15"
+  ],
+  "year": 2014,
+  "announced": "2014-07-29",
+  "chips": [
+   "Intel Core i7 quad-core 2.2GHz",
+   "Intel Core i7 quad-core 2.5GHz",
+   "Intel Core i7 quad-core 2.8GHz"
+  ],
+  "ram_gb": [
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1000
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "Retina (IPS)",
+   "hz": 60,
+   "resolution": "2880x1800"
+  },
+  "ports": [
+   "2x Thunderbolt 2",
+   "2x USB 3",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 2",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [],
+  "battery_hours": 8,
+  "weight_kg": 2.02,
+  "features": [
+   "Intel Iris Pro Graphics (+ NVIDIA GeForce GT 750M on higher model)",
+   "PCIe flash storage",
+   "Wi-Fi 5 (802.11ac)"
+  ],
+  "max_macos": "macOS 11 Big Sur",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111935",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2014/07/29Apple-Updates-MacBook-Pro-with-Retina-Display/"
+  ]
+ },
+ {
+  "key": "imac 27 2014 retina 5k",
+  "name": "iMac (Retina 5K, 27-inch, Late 2014)",
+  "name_fa": "آی‌مک ۲۷ اینچ رتینا 5K (اواخر ۲۰۱۴)",
+  "aliases": [
+   "imac 27 2014",
+   "imac272014",
+   "ایمک ۲۷ ۲۰۱۴",
+   "آیمک ۲۷ اینچ ۲۰۱۴",
+   "آی مک 27 اینچ 2014",
+   "ای مک ۲۷ ۲۰۱۴",
+   "imac 27 late 2014",
+   "imac 27 2014 late",
+   "imac 27 inch late 2014",
+   "ایمک ۲۷ اواخر ۲۰۱۴",
+   "آیمک ۲۷ اینچ اواخر ۲۰۱۴",
+   "آی مک 27 اینچ اواخر 2014",
+   "imac 5k 2014",
+   "imac retina 5k 2014",
+   "آیمک 5k ۲۰۱۴",
+   "آیمک رتینا ۲۰۱۴",
+   "ایمک ۵k ۲۰۱۴"
+  ],
+  "year": 2014,
+  "announced": "2014-10-16",
+  "chips": [
+   "Intel Core i5 quad-core 3.5GHz",
+   "Intel Core i7 quad-core 4.0GHz (optional)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   32
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   3072
+  ],
+  "display": {
+   "inch": 27,
+   "type": "Retina 5K",
+   "hz": 60,
+   "resolution": "5120x2880"
+  },
+  "ports": [
+   "2x Thunderbolt 2",
+   "4x USB 3",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.54,
+  "features": [
+   "first Retina iMac",
+   "AMD Radeon R9 M290X (2GB) or M295X (4GB)",
+   "1TB Fusion Drive standard",
+   "user-accessible RAM (4 slots)",
+   "802.11ac Wi-Fi"
+  ],
+  "max_macos": "macOS 11 Big Sur",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112436",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2014/10/16Apple-Introduces-27-inch-iMac-with-Retina-5K-Display/"
+  ]
+ },
+ {
+  "key": "mac mini 2014",
+  "name": "Mac mini (Late 2014)",
+  "name_fa": "مک مینی (اواخر ۲۰۱۴)",
+  "aliases": [
+   "mac mini 2014",
+   "macmini2014",
+   "مک مینی ۲۰۱۴",
+   "مک‌مینی ۲۰۱۴",
+   "مکمینی ۲۰۱۴",
+   "mac mini late 2014",
+   "mac mini 2014 late",
+   "مک مینی اواخر ۲۰۱۴",
+   "مکمینی اواخر ۲۰۱۴"
+  ],
+  "year": 2014,
+  "announced": "2014-10-16",
+  "chips": [
+   "Intel Core i5 dual-core 1.4GHz",
+   "Intel Core i5 dual-core 2.6GHz",
+   "Intel Core i5 dual-core 2.8GHz",
+   "Intel Core i7 dual-core 3.0GHz (optional)"
+  ],
+  "ram_gb": [
+   4,
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   500,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "2x Thunderbolt 2",
+   "4x USB 3",
+   "HDMI",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "audio in"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 1.19,
+  "features": [
+   "Intel HD Graphics 5000 or Iris Graphics",
+   "LPDDR3 memory (not upgradeable)",
+   "HDD, Fusion Drive or SSD",
+   "802.11ac Wi-Fi"
+  ],
+  "max_macos": "macOS 12 Monterey",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111931",
+   "https://support.apple.com/en-us/102852",
+   "https://www.apple.com/newsroom/2014/10/16Apple-Updates-Mac-mini/"
+  ]
+ },
+ {
   "key": "macbook air 11 2015",
   "name": "MacBook Air 11-inch (Early 2015)",
   "name_fa": "مک‌بوک ایر ۱۱ اینچ (اوایل ۲۰۱۵)",

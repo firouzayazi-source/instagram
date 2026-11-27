@@ -232,9 +232,14 @@ def _cam(t: str) -> str:
 
 def _gb(n) -> str:
     try:
-        n = int(n)
+        n = float(n)
     except (TypeError, ValueError):
         return fa(n)
+    if 0 < n < 1:                                   # رم و حافظه‌ی مدل‌های قدیمی: ۰٫۵ ← «۵۱۲ مگ»
+        return f"{fa(round(n * 1024))} مگ"
+    n = int(n) if n == int(n) else n
+    if not isinstance(n, int):
+        return f"{fa(n)} گیگ"
     return f"{fa(n // 1024)} ترابایت" if n >= 1024 and n % 1024 == 0 else f"{fa(n)} گیگ"
 
 
@@ -271,11 +276,14 @@ def _support(r: dict) -> str:
     for k, name in (("max_ios", "iOS"), ("max_ipados", "iPadOS"), ("max_macos", "macOS")):
         if k in r:
             v = r.get(k)
-            if not v:
-                return "آخرین نسخه را می‌گیرد"
+            if not v:     # null یعنی «هنوز پشتیبانی می‌شود» فقط برای مدل‌های تازه؛ برای قدیمی‌ها یعنی «نامعلوم»
+                return "آخرین نسخه را می‌گیرد" if (r.get("year") or 0) >= 2015 else ""
             # «macOS 12 Monterey» و «OS X 10.11 El Capitan» نام سیستم را خودشان دارند
             return f"تا {fa(v)}" if re.match(r"[A-Za-z]", str(v)) else f"تا {name} {fa(v)}"
     return ""
+
+
+_GB_SIZES = ("ipod", "tv", "homepod")       # در این دسته‌ها sizes ظرفیت حافظه (گیگ) است، نه اندازه‌ی بدنه
 
 
 def card(r: dict, html: bool = True) -> str:
@@ -289,9 +297,9 @@ def card(r: dict, html: bool = True) -> str:
         ("📐 صفحه", _display(r.get("display"))),
         ("📸 دوربین پشت", _cam(r.get("rear_cameras"))),
         ("🤳 دوربین جلو", _cam(r.get("front_camera") or r.get("camera"))),
-        ("💾 حافظه", _list(r.get("storage_gb"), _gb)),
+        ("💾 حافظه", _list(r.get("storage_gb") or (r.get("sizes") if cat in _GB_SIZES else None), _gb)),
         ("🎨 رنگ‌ها", _colors(r.get("colors"))),
-        ("📏 اندازه", _list(r.get("sizes"), lambda x: f"{fa(x)} میلی‌متر")),
+        ("📏 اندازه", "" if cat in _GB_SIZES else _list(r.get("sizes"), lambda x: f"{fa(x)} میلی‌متر")),
         ("🔌 درگاه", r.get("port") or _list(r.get("ports"))),
         ("🔐 قفل", {"Face ID": "فیس‌آیدی", "Touch ID": "تاچ‌آیدی", "none": ""}.get(r.get("biometrics"), r.get("biometrics") or "")),
         ("📶 شبکه", r.get("network") or r.get("cellular") or r.get("connectivity") or ""),
