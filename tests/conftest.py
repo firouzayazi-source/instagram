@@ -18,3 +18,6 @@ def _isolate_data(tmp_path, monkeypatch):
     for k in ("COMPOSIO_API_KEY", "COMPOSIO_ACCOUNT_ID", "COMPOSIO_USER_ID"):   # هیچ تستی به Composio واقعی وصل نمی‌شود
         monkeypatch.delenv(k, raising=False)
         monkeypatch.setattr(config, k, "", raising=False)
+    from app import worker                      # حافظه‌ی سرعت (آخرین «در حال نوشتن»، اولین ارسال) از تست قبلی نماند
+    worker._typing_at.clear()
+    worker._sent_events.clear()

@@ -741,3 +741,28 @@ os._exit(0)
 """ % str(TG)
     r = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-3000:]
+
+
+def test_speed_typing_loop_and_latency():
+    """سرعت تلگرام: «در حال نوشتن…» تا رسیدن جواب مغز مرکزی تکرار می‌شود و زمان جواب برای گزارش صبح ثبت می‌شود."""
+    code = r"""
+import asyncio, os, sys
+os.environ.update(BOT_TOKEN='0:x', ADMIN_ID='1'); os.environ.pop('BOT_PLATFORM', None)
+sys.path.insert(0, %r)
+import bot
+acts = []
+class B:
+    async def send_chat_action(self, chat_id, action): acts.append(action)
+async def run():
+    stop = asyncio.Event()
+    t = asyncio.create_task(bot._keep_typing(B(), 5, stop, every=0.05))
+    await asyncio.sleep(0.18); stop.set(); await t
+    n = len(acts); assert n >= 3, acts
+    await asyncio.sleep(0.1); assert len(acts) == n          # بعد از جواب دیگر نمی‌فرستد
+asyncio.run(run())
+for v in (0.4, 0.6, 0.8, 1.0, 9.0): bot.note_latency(v)
+st = bot.latency_stats(); assert st['n'] == 5 and st['median'] == 0.8 and st['p90'] == 9.0
+print('OK')
+""" % str(TG)
+    r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=60)
+    assert r.returncode == 0 and "OK" in r.stdout, r.stdout[-2000:] + r.stderr[-2000:]

@@ -363,12 +363,54 @@ async def handle_mention(ig, row, c, payload, inc: Incoming, s: dict) -> str:
     return "done" if ok else "skipped"
 
 
+# ── سرعت (۶ آذر ۱۴۰۵): «دیده شد / در حال نوشتن…» همان لحظه‌ی رسیدن پیام، نه بعد از آماده شدن جواب
+TYPING_TTL = 20                 # اینستاگرام «در حال نوشتن» را حدود ۲۰ ثانیه نشان می‌دهد
+_typing_at: dict = {}           # user_id ← آخرین «در حال نوشتن»
+_bg_actions: set = set()
+
+
+async def _sender_actions(ig, uid: str) -> None:
+    for action in ("mark_seen", "typing_on"):      # بهترین تلاش؛ خطایش کاری را متوقف نمی‌کند
+        try:
+            await ig.sender_action(uid, action)
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def early_typing(ig, c, uid: str) -> None:
+    """در پس‌زمینه، تا مشتری همان لحظه ببیند پیامش دیده شد و جواب در راه است (هوش مصنوعی چند ثانیه فکر می‌کند)."""
+    if not uid or not ai.settings(c)["typing_indicator"] or time.time() - _typing_at.get(uid, 0) < TYPING_TTL:
+        return
+    _typing_at[uid] = time.time()
+    if len(_typing_at) > 2000:
+        _typing_at.clear()
+    t = asyncio.create_task(_sender_actions(ig, uid))
+    _bg_actions.add(t)
+    t.add_done_callback(_bg_actions.discard)
+
+
+def send_delay(kind: str, payload: dict, first: bool) -> float:
+    """مکث طبیعی پیش از ارسال (SEND_DELAY_MIN تا MAX). برای اولین پیام دایرکت، زمانی که مشتری از لحظه‌ی فرستادن
+    پیامش منتظر مانده (خوانش، فکر کردن) از آن کم می‌شود: فاصله‌ی واقعی پیام مشتری تا جواب ما همان‌قدر طبیعی می‌ماند
+    و دو بار منتظر نمی‌ماند. کامنت و تکه‌های بعدی پیام بلند همان مکث کامل را دارند."""
+    base = random.uniform(config.SEND_DELAY_MIN, config.SEND_DELAY_MAX)
+    ts = payload.get("timestamp")
+    if kind != "dm" or not first or not isinstance(ts, (int, float)) or ts <= 0:
+        return base
+    waited = time.time() - ts / 1000
+    return max(0.0, base - max(0.0, waited))
+
+
+_sent_events: dict = {}         # event_id ← زمان اولین ارسال (برای «اولین پیام همین رویداد»)
+
+
 async def handle_ai(ig, row, c, payload, inc: Incoming) -> str:
     """وقتی هیچ قانونی نخورد: پاسخ هوشمند. خروجی: done | ignored | skipped"""
     if inc.channel == "comment":
         username = payload.get("from", {}).get("username")
     else:
         username = db.conversation_username(c, inc.user_id)
+        early_typing(ig, c, inc.user_id)
     s = ai.settings(c)
     mnote = db.media_note(c, inc.media_id)
     notes = [STORY_NOTE] if inc.source == "story_reply" else []
@@ -521,13 +563,15 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replie
                 return False
         text = parts[-1]
     target = payload.get("id", "") if kind in ("public", "private") else inc.user_id
-    if kind == "dm" and ai.settings(c)["typing_indicator"]:
-        for action in ("mark_seen", "typing_on"):      # بهترین تلاش؛ خطایش ارسال را متوقف نمی‌کند
-            try:
-                await ig.sender_action(target, action)
-            except Exception:  # noqa: BLE001
-                pass
-    await asyncio.sleep(random.uniform(config.SEND_DELAY_MIN, config.SEND_DELAY_MAX))
+    if kind == "dm" and ai.settings(c)["typing_indicator"] and time.time() - _typing_at.get(target, 0) >= TYPING_TTL:
+        _typing_at[target] = time.time()
+        await _sender_actions(ig, target)
+    first = event_id not in _sent_events
+    if first:
+        _sent_events[event_id] = time.time()
+        if len(_sent_events) > 5000:
+            _sent_events.clear()
+    await asyncio.sleep(send_delay(kind, payload, first))
     for attempt in range(MAX_RETRIES):
         try:
             if kind == "public":

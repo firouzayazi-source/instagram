@@ -105,3 +105,23 @@ async def test_polled_echo_of_bot_message_is_not_a_human(wenv):
                                             "message": {"mid": "other-id", "text": "لینک ربات", "is_echo": True}, "_via": "poll"})
         assert await worker.handle_event(wenv, db.pending_events(c)[0], c) == "skipped"
         assert db.human_until(c, "u1") == 0
+
+
+def test_speed_dm_interval_and_send_delay(monkeypatch):
+    """سرعت: گفتگوی زنده ← خوانش دایرکت هر ۱۵ ثانیه، وگرنه هر دقیقه؛ مکث پیش از اولین جواب دایرکت به اندازه‌ی
+    انتظاری که مشتری کشیده کم می‌شود، ولی کامنت و تکه‌های بعدی مکث کامل دارند."""
+    import time as _t
+    db.init()
+    with db.connect() as c:
+        assert comment_poll.dm_interval(c) == 60
+        db.add_message(c, "x1", "u1", "in", "سلام", created_at=_t.time() - 30)
+        assert comment_poll.dm_interval(c) == comment_poll.DM_FAST
+        db.add_message(c, "x0", "u2", "in", "قدیمی", created_at=_t.time() - 3600)
+        assert comment_poll.dm_interval(c) == comment_poll.DM_FAST
+    monkeypatch.setattr(config, "SEND_DELAY_MIN", 5)
+    monkeypatch.setattr(config, "SEND_DELAY_MAX", 5)
+    now_ms = int(_t.time() * 1000)
+    assert worker.send_delay("dm", {"timestamp": now_ms - 40_000}, True) == 0          # ۴۰ ثانیه منتظر مانده
+    assert 2.5 <= worker.send_delay("dm", {"timestamp": now_ms - 2_000}, True) <= 3.1   # فقط باقی‌مانده‌ی مکث
+    assert worker.send_delay("dm", {"timestamp": now_ms - 40_000}, False) == 5          # تکه‌ی بعدی: مکث کامل
+    assert worker.send_delay("public", {"timestamp": now_ms - 40_000}, True) == 5       # کامنت: مکث کامل

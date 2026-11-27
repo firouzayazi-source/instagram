@@ -922,7 +922,9 @@ def _plain(t,limit=260,lines=False):
 
 def tx_capture(chat_id,text):
     t=_tx.get(chat_id)
-    if t and text and time.time()-t["ts"]<TX_WINDOW: t["replies"].append(str(text))
+    if t and text and time.time()-t["ts"]<TX_WINDOW:
+        if not t["replies"]: note_latency(time.time()-t["ts"])
+        t["replies"].append(str(text))
 
 def tx_active(uid):
     t=_tx.get(uid); return bool(t and time.time()-t["ts"]<TX_WINDOW)
@@ -3239,6 +3241,9 @@ async def morning_brief():
             names=[(r[1] or "—")+(f" (@{r[2]})" if r[2] else "") for r in await c.fetchall()]
         out.append(f"🔥 {to_fa(hot)} مشتری داغ: "+esc("، ".join(names)))
     if openn: out.append(f"⏳ {to_fa(openn)} پیام منتظر جواب شما")
+    ls=latency_stats()
+    if ls: out.append(f"⚡️ زمان جواب ربات: معمولاً {to_fa(round(ls['median'],1))} ثانیه"
+                      +(f" (کندترین‌ها {to_fa(round(ls['p90'],1))} ثانیه)" if ls['p90']>=3 else ""))
     try:
         vt=await visits_today()
         if vt: out.append("🗓 بازدید امروز: "+esc("، ".join(f"{to_fa(a[11:])} {n or '—'}" for a,n in vt)))
@@ -5983,6 +5988,27 @@ async def _typing(bot,chat_id,n=80):
         except Exception: pass
     _bg(_act(),"typing")
 
+async def _keep_typing(bot,chat_id,stop,every=4.5,limit=90):
+    """«در حال نوشتن…» تلگرام ۵ ثانیه می‌ماند؛ تا وقتی جواب آماده نشده تکرار می‌شود (حداکثر ۹۰ ثانیه)."""
+    t0=time.time()
+    while not stop.is_set() and time.time()-t0<limit:
+        try: await bot.send_chat_action(chat_id=chat_id,action="typing")
+        except Exception: pass
+        try: await asyncio.wait_for(stop.wait(),timeout=every)
+        except asyncio.TimeoutError: pass
+
+# ── زمان جواب (۶ آذر ۱۴۰۵): از رسیدن پیام مشتری تا اولین جواب ربات، برای گزارش صبح و هشدار کندی
+_latency: list = []      # [(زمان، ثانیه)] ۵۰۰ تای آخر
+
+def note_latency(sec):
+    _latency.append((time.time(),sec)); del _latency[:-500]
+    if sec>8: logger.warning(f"کندی: جواب بعد از {sec:.1f} ثانیه")
+
+def latency_stats(hours=24):
+    xs=sorted(v for t,v in _latency if time.time()-t<hours*3600)
+    if not xs: return None
+    return {"n":len(xs),"median":xs[len(xs)//2],"p90":xs[min(len(xs)-1,int(len(xs)*0.9))]}
+
 def _join(*parts): return "\n\n".join(p for p in parts if p and p.strip())
 
 # ── کارهای پشت‌صحنه: اول جواب مشتری، بعد ثبت آمار و رونوشت مدیر
@@ -7898,7 +7924,11 @@ async def assistant_reply(update,ctx,text,user,dry=False):
 
     # ۶٫۵) هوش مصنوعی مرکزی (اگر در پنل وب روشن است): جواب واقعی به‌جای «متوجه نشدم» یا سپردن به همکار.
     # مشکلِ دستگاه هم از آن می‌گذرد: اگر جواب کامل نداشته باشد خودش ارجاع (handoff) می‌دهد.
-    ai=await core_think(text,user,dry)
+    # تا جواب مغز مرکزی برسد (چند ثانیه)، «در حال نوشتن…» یکسره دیده شود، نه سکوت
+    _stop_typing=asyncio.Event()
+    if not dry: _bg(_keep_typing(ctx.bot,msg.chat_id,_stop_typing),"typing loop")
+    try: ai=await core_think(text,user,dry)
+    finally: _stop_typing.set()
     if ai:
         brain_ctx[uid]={"ts":now,"product":prod}
         await _typing(ctx.bot,msg.chat_id)

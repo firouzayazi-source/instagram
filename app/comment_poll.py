@@ -231,22 +231,48 @@ async def poll_dms_once(ig, c, now: float | None = None) -> dict:
     return {"queued": queued, "checked": checked}
 
 
-async def poll_loop(ig, stop: asyncio.Event, interval: float = INTERVAL) -> None:
+DM_FAST = 15          # ثانیه: وقتی گفتگوی زنده هست (پیام رفت یا آمد در ۱۰ دقیقه‌ی اخیر)
+DM_HOT_WINDOW = 600
+
+
+def dm_interval(c, slow: float = INTERVAL) -> float:
+    """خوانش دایرکت در گفتگوی زنده هر ۱۵ ثانیه، وگرنه هر دقیقه (۶ آذر ۱۴۰۵؛ پیش‌تر همیشه یک دقیقه بود و مشتری
+    به‌طور میانگین نیم دقیقه فقط منتظر دیده شدن پیامش می‌ماند). خواندن، پیام روی پیج نمی‌فرستد؛ خطای سقف نرخ
+    خواندن هم ترمز نمی‌کشد (safety.dangerous_read)."""
+    last = c.execute("SELECT MAX(created_at) FROM messages").fetchone()[0] or 0
+    return DM_FAST if time.time() - last < DM_HOT_WINDOW else slow
+
+
+async def _poll_one(ig, key, fn) -> None:
+    try:
+        with db.connect() as c:
+            r = await asyncio.wait_for(fn(ig, c), POLL_TIMEOUT)   # یک دور گیرکرده کل خوانش را نگه ندارد
+            db.kv_set(c, key, json.dumps({"at": time.time(), "ok": True, **r}, ensure_ascii=False))
+    except Exception as e:  # noqa: BLE001
+        try:
+            with db.connect() as c:
+                db.kv_set(c, key, json.dumps({"at": time.time(), "ok": False, "error": str(e)[:300]},
+                                             ensure_ascii=False))
+        except Exception as e2:  # noqa: BLE001
+            print("poll status write failed:", e2)
+
+
+async def _loop(ig, stop: asyncio.Event, key, fn, wait) -> None:
     while not stop.is_set():
         if active(ig):
-            for key, fn in ((STATUS_KEY, poll_once), (DM_STATUS_KEY, poll_dms_once)):
-                try:
-                    with db.connect() as c:
-                        r = await asyncio.wait_for(fn(ig, c), POLL_TIMEOUT)   # یک دور گیرکرده کل خوانش را نگه ندارد
-                        db.kv_set(c, key, json.dumps({"at": time.time(), "ok": True, **r}, ensure_ascii=False))
-                except Exception as e:  # noqa: BLE001
-                    try:
-                        with db.connect() as c:
-                            db.kv_set(c, key, json.dumps({"at": time.time(), "ok": False, "error": str(e)[:300]},
-                                                         ensure_ascii=False))
-                    except Exception as e2:  # noqa: BLE001
-                        print("poll status write failed:", e2)
+            await _poll_one(ig, key, fn)
         try:
-            await asyncio.wait_for(stop.wait(), timeout=interval)
+            with db.connect() as c:
+                t = wait(c)
+        except Exception:  # noqa: BLE001
+            t = INTERVAL
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=t)
         except asyncio.TimeoutError:
             pass
+
+
+async def poll_loop(ig, stop: asyncio.Event, interval: float = INTERVAL) -> None:
+    """کامنت‌ها و دایرکت‌ها دو حلقه‌ی جدا: خوانش کند کامنت‌ها (چند پست) دیگر دایرکت را معطل نمی‌کند."""
+    await asyncio.gather(_loop(ig, stop, STATUS_KEY, poll_once, lambda c: interval),
+                         _loop(ig, stop, DM_STATUS_KEY, poll_dms_once, lambda c: dm_interval(c, interval)))
