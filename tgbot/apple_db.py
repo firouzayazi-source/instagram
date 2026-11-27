@@ -1,4 +1,4 @@
-"""دانشنامه‌ی محصولات اپل (۶ آذر ۱۴۰۵): آیفون، آیپد، مک، اپل‌واچ، ایرپاد و چند لوازم، از اولین مدل تا امروز.
+"""دانشنامه‌ی محصولات اپل (۶ آذر ۱۴۰۵): آیفون، آیپد، مک، اپل‌واچ، ایرپاد، آیپاد، اپل تی‌وی، هوم‌پاد و چند لوازم، از اولین مدل تا امروز.
 
 داده در پوشه‌ی apple/ کنار همین فایل است (یک JSON برای هر دسته). مشخصات رسمی لحظه‌ی عرضه است: سال، تراشه،
 رم، صفحه، دوربین، حافظه‌ها، رنگ‌ها، درگاه، وزن و ویژگی‌ها. مدل‌های ۲۰۲۴ به بعد از صفحه‌های اپل و رسانه‌های معتبر
@@ -14,10 +14,11 @@ from pathlib import Path
 import brain
 
 DIR = Path(__file__).resolve().parent / "apple"
-FILES = {"iphone": "iphone.json", "ipad": "ipad.json", "mac": "mac.json", "other": "watch_airpods.json"}
+FILES = {"iphone": "iphone.json", "ipad": "ipad.json", "mac": "mac.json", "other": "watch_airpods.json",
+         "home": "ipod_tv_home.json"}
 CAT_FA = {"iphone": "آیفون", "ipad": "آیپد", "mac": "مک", "watch": "اپل‌واچ", "airpods": "ایرپاد",
-          "accessory": "لوازم اپل"}
-CAT_ICON = {"iphone": "📱", "ipad": "📲", "mac": "💻", "watch": "⌚️", "airpods": "🎧", "accessory": "🍏"}
+          "accessory": "لوازم اپل", "ipod": "آیپاد", "tv": "اپل تی‌وی", "homepod": "هوم‌پاد"}
+CAT_ICON = {"iphone": "📱", "ipad": "📲", "mac": "💻", "watch": "⌚️", "airpods": "🎧", "accessory": "🍏", "ipod": "🎵", "tv": "📺", "homepod": "🔊"}
 
 _FA = str.maketrans("0123456789.", "۰۱۲۳۴۵۶۷۸۹٫")
 _TO_EN = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
@@ -26,7 +27,9 @@ _TO_EN = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "012345678901
 _WORDS = [
     (r"مک ?بوک", "macbook"), (r"macbook", "macbook"), (r"ا?ی ?مک|imac", "imac"), (r"\bمک\b", "mac"),
     (r"ا?ی ?پد|ipad", "ipad"), (r"ا?ی ?فون|iphone", "iphone"), (r"اپل ?واچ|apple ?watch|ساعت اپل", "watch"),
-    (r"ا?یر ?پادز?|airpods?", "airpods"), (r"ایر ?تگ|airtag", "airtag"), (r"ویژن ?پرو|vision ?pro", "vision pro"),
+    (r"ا?یر ?پادز?|airpods?", "airpods"),
+    (r"ا?ی ?پاد|ipod", "ipod"), (r"هوم ?پاد|homepod", "homepod"), (r"اپل ?تی ?وی|apple ?tv", "apple tv"),
+    (r"نانو", "nano"), (r"شافل", "shuffle"), (r"کلاسیک", "classic"), (r"ایر ?تگ|airtag", "airtag"), (r"ویژن ?پرو|vision ?pro", "vision pro"),
     (r"پنسیل|pencil|قلم اپل", "pencil"), (r"استودیو", "studio"), (r"مینی", "mini"), (r"\bایر\b", "air"),
     (r"پرو", "pro"), (r"مکس", "max"), (r"پلاس", "plus"), (r"اولترا", "ultra"), (r"سری", "series"),
     (r"نسل", "gen"), (r"اینچ", "inch"), (r"\bام ?(\d)", r"m\1"), (r"اس ?ای", "se"), (r"ده\b", "10"),
@@ -158,8 +161,8 @@ def find(text: str, limit: int = 3) -> list[dict]:
 
 _MODELISH = re.compile(r"^(?:m\d+|a\d+|\d+(?:\.\d+)?|pro|max|plus|mini|ultra|air|se|e|gen|series|inch)$")
 _FAMILY = {"apple", "iphone", "ipad", "macbook", "imac", "mac", "watch", "airpods", "pro", "max", "plus", "mini",
-           "air", "ultra", "se", "studio"}
-_CAT_WORDS = ("iphone", "ipad", "macbook", "imac", "mac", "watch", "airpods")
+           "air", "ultra", "se", "studio", "ipod", "homepod", "tv"}
+_CAT_WORDS = ("iphone", "ipad", "macbook", "imac", "mac", "watch", "airpods", "ipod", "homepod")
 
 
 def _loose(toks: list) -> list[dict]:
