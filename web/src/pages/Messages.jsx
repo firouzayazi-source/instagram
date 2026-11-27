@@ -12,7 +12,7 @@ export default function Messages({ userId }) {
 function ConversationList() {
   const [filter, setFilter] = useState('all')
   const [items, setItems] = useState([])
-  const load = () => api.get(`/api/conversations?filter=${filter}`).then(setItems).catch(() => {})
+  const load = () => api.fresh(`/api/conversations?filter=${filter}`).then(setItems).catch(() => {})
   useEffect(() => { load() }, [filter])
   return (
     <>
@@ -49,7 +49,7 @@ function Thread({ userId }) {
   const fix = (id) => api.post(`/api/conversations/${userId}/fix`, { message_id: id })
     .then(() => setFixed((f) => ({ ...f, [id]: '✅ به فهرست اصلاح رفت؛ در ربات تلگرام با ‎/review‎ درستش کنید' })))
     .catch((e) => setFixed((f) => ({ ...f, [id]: '❌ ' + (e.message || 'ثبت نشد') })))
-  const load = () => api.get(`/api/conversations/${userId}/messages`).then((m) => { setMsgs(m); setTimeout(() => end.current?.scrollIntoView(), 50) }).catch(() => {})
+  const load = () => api.fresh(`/api/conversations/${userId}/messages`).then((m) => { setMsgs(m); setTimeout(() => end.current?.scrollIntoView(), 50) }).catch(() => {})
   useEffect(() => {
     load(); loadHuman()
     api.get('/api/conversations').then((cs) => { const c = cs.find((x) => x.user_id === userId); if (c?.username) setName(c.username) }).catch(() => {})

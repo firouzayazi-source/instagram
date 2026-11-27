@@ -29,13 +29,36 @@ async function call(method, path, body) {
   return data
 }
 
+// سرعت (۶ آذر ۱۴۰۵): جواب GET چند ثانیه در حافظه می‌ماند تا برگشتن به یک صفحه فوری باشد، و دو درخواست هم‌زمان
+// یکسان یکی می‌شوند. هر تغییر (POST/PUT/DELETE) کل حافظه را پاک می‌کند تا هیچ صفحه‌ای داده‌ی کهنه نشان ندهد.
+const CACHE_MS = 8000
+const cache = new Map()      // مسیر ← { at, data }
+const inflight = new Map()   // مسیر ← Promise
+
+function cachedGet(p) {
+  const hit = cache.get(p)
+  if (hit && Date.now() - hit.at < CACHE_MS) return Promise.resolve(hit.data)
+  if (inflight.has(p)) return inflight.get(p)
+  const req = call('GET', p).then((data) => { cache.set(p, { at: Date.now(), data }); return data })
+    .finally(() => inflight.delete(p))
+  inflight.set(p, req)
+  return req
+}
+
+function mutate(method, p, b) {
+  cache.clear()
+  return call(method, p, b)
+}
+
 export const api = {
-  get: (p) => call('GET', p),
-  post: (p, b) => call('POST', p, b || {}),
-  put: (p, b) => call('PUT', p, b),
-  del: (p, b) => call('DELETE', p, b),
+  get: cachedGet,
+  fresh: (p) => { cache.delete(p); return cachedGet(p) },   // برای دکمه‌ی «تازه‌سازی» و خوانش دوره‌ای
+  post: (p, b) => mutate('POST', p, b || {}),
+  put: (p, b) => mutate('PUT', p, b),
+  del: (p, b) => mutate('DELETE', p, b),
   // فایل خام در بدنه، نه فرم
   async upload(p, file) {
+    cache.clear()
     const res = await fetch(p, { method: 'POST', body: file, credentials: 'same-origin' })
     if (res.status === 401) window.dispatchEvent(new Event('auth:lost'))
     const data = await res.json().catch(() => ({}))

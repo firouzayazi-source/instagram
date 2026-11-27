@@ -13,7 +13,7 @@ export default function Comments() {
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const load = () => api.get(`/api/comments?filter=${filter}`).then(setItems).catch(() => {})
+  const load = () => api.fresh(`/api/comments?filter=${filter}`).then(setItems).catch(() => {})
   useEffect(() => { load() }, [filter])
 
   function toggle(c) {

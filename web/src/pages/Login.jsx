@@ -17,16 +17,16 @@ export default function Login({ onLogin }) {
   }
 
   return (
-    <main>
+    <main className="login-screen">
       <form className="card login" onSubmit={submit}>
-        <h2>ورود به پنل استوک لند</h2>
+        <div className="login-brand"><b>استوک لند</b><span>پنل پاسخ‌گویی و فروش</span></div>
         <div className="field">
           <label htmlFor="pw">رمز پنل</label>
           <input id="pw" type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus autoComplete="current-password" />
         </div>
         {err && <p className="err">{err}</p>}
         {pending && <div className="note warn" style={{ marginBottom: 10 }}>🔐 {pending}</div>}
-        <button className="btn primary" disabled={busy || !pw}>ورود</button>
+        <button className="btn primary block big" disabled={busy || !pw}>{busy ? 'در حال ورود…' : 'ورود'}</button>
       </form>
     </main>
   )

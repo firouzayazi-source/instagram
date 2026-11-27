@@ -84,7 +84,7 @@ export default function Schedule() {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState(null)
   const input = useRef(null)
-  const load = () => api.get('/api/schedule').then(setItems).catch(() => {})
+  const load = () => api.fresh('/api/schedule').then(setItems).catch(() => {})
   useEffect(() => { load(); const t = setInterval(load, 30000); return () => clearInterval(t) }, [])
 
   const isVideo = file && file.type.startsWith('video/')

@@ -19,6 +19,18 @@ const Rules = lazyPage(() => import('./pages/Rules.jsx'))
 const Content = lazyPage(() => import('./pages/Content.jsx'))
 const More = lazyPage(() => import('./pages/More.jsx'))
 const Smart = lazyPage(() => import('./pages/Smart.jsx'))
+// بعد از باز شدن پیشخوان، بقیه‌ی صفحه‌ها در وقت آزاد مرورگر پیش‌بارگذاری می‌شوند تا رفتن به هر تب فوری باشد
+const PRELOAD = [() => import('./pages/Messages.jsx'), () => import('./pages/Comments.jsx'), () => import('./pages/Rules.jsx'),
+  () => import('./pages/Content.jsx'), () => import('./pages/More.jsx'), () => import('./pages/Ai.jsx'),
+  () => import('./pages/Customers.jsx'), () => import('./pages/Orders.jsx'), () => import('./pages/Smart.jsx'),
+  () => import('./pages/Channels.jsx'), () => import('./pages/RuleForm.jsx'), () => import('./pages/Settings.jsx')]
+function preloadPages() {
+  const idle = window.requestIdleCallback || ((f) => setTimeout(f, 1200))
+  let i = 0
+  const next = () => { if (i < PRELOAD.length) PRELOAD[i++]().catch(() => {}).finally(() => idle(next)) }
+  idle(next)
+}
+const Skeleton = () => <div className="skeleton" aria-label="در حال بارگذاری"><i /><i /><i /></div>
 import Icon from './icons.jsx'
 
 // خطای بارگذاری صفحه (معمولاً نسخه‌ی تازه منتشر شده): به‌جای صفحه‌ی سفید، دکمه‌ی تازه‌سازی
@@ -71,13 +83,14 @@ export default function App() {
 
   useEffect(() => {
     if (!authed) return
-    const load = () => api.get('/api/stats').then(setStats).catch(() => {})
+    const load = () => api.fresh('/api/stats').then(setStats).catch(() => {})
     load()
     const t = setInterval(load, 30000)
     return () => clearInterval(t)
   }, [authed, route])
 
   useEffect(() => { if (authed !== null) window.hideSplash?.() }, [authed])
+  useEffect(() => { if (authed) preloadPages() }, [authed])
   if (authed === null) return null      // صفحه‌ی انتظار لوگو هنوز روی صفحه است
   if (!authed) return <Login onLogin={() => setAuthed(true)} />
 
@@ -109,7 +122,7 @@ export default function App() {
     : false
   return (
     <div className="app">
-      <main><PageError route={route}><Suspense fallback={<div className="empty">در حال بارگذاری…</div>}>{page}</Suspense></PageError></main>
+      <main><PageError route={route}><Suspense fallback={<Skeleton />}>{page}</Suspense></PageError></main>
       <nav className="nav" aria-label="منوی اصلی">
         {TABS.map(([path, label, icon]) => (
           <a key={path} href={`#${path}`} className={isActive(path) ? 'active' : ''}>
