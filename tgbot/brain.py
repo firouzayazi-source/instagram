@@ -27,7 +27,7 @@ from functools import lru_cache
 # ════════════════════════════════════════════════
 _AR_FIX = str.maketrans("يكةۀأإؤ", "یکههااو")
 _DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
-_PUNCT = re.compile(r"[‌‏‎‍?؟!.,،؛;:\-_()\[\]{}\"'«»/\\*+=#@~`|<>^&%$]+")
+_PUNCT = re.compile(r"[‌‏‎‍?؟!.,،؛;:\-_()\[\]{}\"'«»/\\*+=#@~`|<>^&%$·•]+")
 _EMOJI = re.compile("[\U0001F000-\U0001FAFF☀-➿️]+")
 _REPEAT = re.compile(r"(.)\1{2,}")          # «سلاااام» → «سلام»
 
@@ -40,6 +40,7 @@ def norm(text):
     t = _EMOJI.sub(" ", t)
     t = _PUNCT.sub(" ", t)
     t = _REPEAT.sub(r"\1", t)
+    t = re.sub(r"(?<=[\u0600-\u06ff])(?=[a-z])|(?<=[a-z])(?=[\u0600-\u06ff])", " ", t)   # «قیمتxs»، «داریدxs»
     return re.sub(r"\s+", " ", t).strip()
 
 
@@ -65,7 +66,7 @@ SYNONYMS = {
     # آدرس
     "نشانی": "ادرس", "نشونی": "ادرس", "لوکیشن": "ادرس", "لوکیشین": "ادرس",
     "location": "ادرس", "لوکیشنتون": "ادرس", "ادرستون": "ادرس",
-    "کجایید": "کجا", "کجاست": "کجا", "کجاس": "کجا", "کجان": "کجا", "کجایین": "کجا",
+    "کجایید": "کجا", "کجاست": "کجا", "کجاین": "کجا", "کجائید": "کجا", "کجائین": "کجا", "کجاس": "کجا", "کجان": "کجا", "کجایین": "کجا",
     # قیمت
     "قیمتش": "قیمت", "قیمتا": "قیمت", "قیمتها": "قیمت", "نرخ": "قیمت",
     "price": "قیمت", "چقد": "چقدر", "چقدره": "چقدر",
@@ -283,6 +284,32 @@ _var_rx = "|".join(sorted(map(re.escape, _VARIANTS), key=len, reverse=True))
 _PRODUCT = re.compile(rf"(?:\b({_brand_rx}))?\s*\b(\d{{1,2}})?\s*(?:(?:\b|(?<=\d))({_var_rx})\b)?")   # «13max» هم
 
 
+# آیفون‌هایی که نامشان عدد نیست (۷ آذر ۱۴۰۵؛ از پیام‌های واقعی: «قیمتxs»، «ایکس اس مکس»، «se 2022 موجوده»)
+_L = r"(?<![a-z])"                     # «قیمتxs»: حرف فارسی چسبیده مرز حساب می‌شود، حرف لاتین نه
+_NAMED = [
+    (re.compile(_L + r"(?:ایکس ?اس ?(?:مکس|ماکس)|xs ?max|xsmax)(?![a-z])"), "XS Max"),
+    (re.compile(_L + r"(?:ایکس ?اس|xs)(?![a-z])"), "XS"),
+    (re.compile(_L + r"(?:ایکس ?ار|xr)(?![a-z])"), "XR"),
+    (re.compile(r"(?:ایفون|iphone|ایفن)\s*(?:ایکس|x|10|ده)(?![a-z\d\u0600-\u06ff])"), "X"),
+    (re.compile(_L + r"(?:اس ?ای|se)\s*(?:3|2022|نسل ?(?:3|سوم))(?!\d)"), "SE 3"),
+    (re.compile(_L + r"(?:اس ?ای|se)\s*(?:2|2020|نسل ?(?:2|دوم))(?!\d)"), "SE 2"),
+    (re.compile(_L + r"(?:ایفون\s*اس ?ای|اس ?ای|se)(?![a-z])"), "SE"),
+]
+
+
+def named_products(text, spans=None):
+    """[(شروع, «آیفون XS Max»)] برای نام‌های حرفی، به ترتیب آمدن؛ هر جای متن فقط یک بار."""
+    t = norm(text).lower()
+    out, used = [], ([] if spans is None else spans)
+    for rx, name in _NAMED:
+        for m in rx.finditer(t):
+            if any(a < m.end() and m.start() < b for a, b in used):
+                continue
+            used.append((m.start(), m.end()))
+            out.append((m.start(), "آیفون " + name))
+    return sorted(out)
+
+
 def product(text):
     """«قیمت ایفون ۱۳ پرو مکس؟» → «آیفون ۱۳ پرو مکس». اگر چیزی نبود: "".
 
@@ -301,6 +328,9 @@ def product(text):
         cand = " ".join(parts)
         if len(cand) > len(best):
             best = cand
+    if named_products(text):          # «ایفون ایکس»، «ایفون ۱۰»، «se 2022»: همان ترتیب و همپوشانی products_all
+        pa = products_all(text)
+        return pa[0] if pa else best
     return best
 
 
@@ -491,7 +521,7 @@ BASE_VOCAB = set("""
 """.split())
 
 # غلط‌های رایجی که شکل درستشان روشن است: پیش از هر چیز با همان عوض می‌شوند (تا جست‌وجوی محصول هم درست ببیند)
-TYPO_FIX = {"اصلن": "اصلا", "گرانتی": "گارانتی", "گارنتی": "گارانتی", "گارانطی": "گارانتی", "اقصاط": "اقساط", "اغساط": "اقساط",
+TYPO_FIX = {"اصلن": "اصلا", "ملیون": "میلیون", "ملیونی": "میلیونی", "گرانتی": "گارانتی", "گارنتی": "گارانتی", "گارانطی": "گارانتی", "اقصاط": "اقساط", "اغساط": "اقساط",
             "قصط": "قسط", "قصطی": "قسطی", "ابل": "اپل", "ایفن": "ایفون", "ایفوون": "ایفون", "ایغون": "ایفون",
             "محضول": "محصول", "محصولت": "محصولات", "ادرص": "ادرس", "لیصت": "لیست", "قیمط": "قیمت"}
 
@@ -1026,8 +1056,12 @@ def products_all(text, default_brand="آیفون"):
     به شرط اینکه عددی در محدوده‌ی مدل‌ها باشد."""
     t = norm(text)
     out, brand_now = [], None
+    spans = []
+    named = named_products(text, spans)          # «se 2022» و «ایفون ۱۰» عدد مدل نیستند
     for m in _PRODUCT.finditer(t):
         brand, num, var = m.group(1), m.group(2), m.group(3)
+        if num and any(a < m.end(2) and m.start(2) < b for a, b in spans):
+            num = None
         if brand:
             brand_now = _BRANDS[brand]
         if not (brand or num or var):
@@ -1043,9 +1077,14 @@ def products_all(text, default_brand="آیفون"):
         if len(parts) == 1:
             continue
         p = " ".join(parts)
-        if p not in out:
-            out.append(p)
-    return out
+        if p not in [x for _, x in out]:
+            out.append((m.start(), p))
+    # نام‌های حرفی (XS، SE…) سر جای خودشان در جمله؛ «آیفون» تنهای پیش از آن‌ها حذف می‌شود
+    for pos, p in named:
+        if p not in [x for _, x in out]:
+            out.append((pos, p))
+    out.sort(key=lambda x: x[0])
+    return [p for _, p in out]
 
 
 def content_words(text, limit=3):

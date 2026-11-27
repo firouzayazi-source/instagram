@@ -33,7 +33,11 @@ def fa(x):
 # ════════════════════════════════════════════════
 def _model_key(m):
     """«iPhone 15 Pro Max» → «15 pro max» — همان کلید جدول مشخصات (specs)."""
-    m = " ".join((m or "").lower().replace("iphone", "").split())
+    m = " ".join(re.sub(r"[()]", " ", (m or "").lower().replace("iphone", "")).split())
+    # «SE (2022)»، «SE 3rd generation» ← «se 3»؛ «SE (2020)» ← «se 2» (همان کلید جدول مشخصات)
+    m = re.sub(r"^se\s*(?:2022|3(?:rd)?(?: gen\w*)?)$", "se 3", m)
+    m = re.sub(r"^se\s*(?:2020|2(?:nd)?(?: gen\w*)?)$", "se 2", m)
+    m = re.sub(r"^xs\s*max$|^xsmax$", "xs max", m)
     return m or None
 
 
@@ -245,13 +249,16 @@ def _num_ok(num, t):
     return bool(alone) or not re.search(num, t)
 
 
+_NAMED_WORDS = {"ایکس", "اس", "ار", "ای", "x", "xs", "xr", "se", "2020", "2022", "مکس", "ماکس", "ده", "نسل", "سوم", "دوم"}
+
+
 def parse(text, product="", alias=None):
     """جستجوی مشتری → فیلترها. alias(کلمه‌های ناشناخته) → فیلتر یادگرفته یا None."""
     text = re.sub(r"(?i)(iphone|ایفون|آیفون)(?=\d)", r"\1 ", text or "")        # «iphone13» = «iphone 13»
     text = re.sub(r"(?i)(\d)\s*(gb|tb)\b", lambda m: m.group(1) + (" گیگ" if m.group(2).lower() == "gb" else " ترا"), text)
     t = " " + brain.norm(text).replace("ارزون ترین", "ارزونترین").replace("گرون ترین", "گرونترین") \
         .replace("ارزان ترین", "ارزانترین").replace("دست دوم", "دستدوم").replace("دسته دوم", "دستدوم") \
-        .replace("پرو مکس", "پرومکس") + " "
+        .replace("پرو مکس", "پرومکس").replace("ملیون", "میلیون") + " "
     q = {}
     # مدلِ خودِ پیام اول («16e» را find_models درست می‌فهمد)، بعد مدلِ گفتگو
     cands = brain.products_all(text) + [product]
@@ -306,7 +313,8 @@ def parse(text, product="", alias=None):
     rest = [w for w in t.split() if w not in known and not w.isdigit()
             and brain.stem(w) not in known and not any(w.startswith(k) for k in known if len(k) >= 4)
             and w not in {v for ws in VARIANTS.values() for v in ws} | {"مکس", "max", "ماکس"}
-            and not (key and (w == key.replace(" ", "") or re.fullmatch(r"\d{1,2}[^\d\s]+", w)))]
+            and not (key and (w == key.replace(" ", "") or re.fullmatch(r"\d{1,2}[^\d\s]+", w)))
+            and not (key and (w in key.split() or w in _NAMED_WORDS or re.search(r"(?:xs|xr|se)(?:max)?\S*$", w)))]
     if rest:
         q["rest"] = rest
         learned = alias(rest) if alias else None

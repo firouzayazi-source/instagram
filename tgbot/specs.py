@@ -18,12 +18,30 @@ def fa(x):
 
 # دوربین: متنِ کوتاه پشت گوشی؛ tele: زوم اپتیکال تله‌فوتو (۰ = ندارد)
 IPHONES = {
+    # پیش از ۱۱ (۷ آذر ۱۴۰۵، از دانشنامه‌ی apple/iphone.json که با صفحه‌های رسمی اپل وارسی شده)
+    "se":         (2016, "A9", 4.0, "LCD", 60, "یک دوربین ۱۲ مگاپیکسل", 0, "Lightning", ["Touch ID"]),
+    "7":          (2016, "A10", 4.7, "LCD", 60, "یک دوربین ۱۲ مگاپیکسل", 0, "Lightning", ["Touch ID"]),
+    "7 plus":     (2016, "A10", 5.5, "LCD", 60, "دو دوربین ۱۲ مگاپیکسل", 2, "Lightning", ["Touch ID", "پرتره"]),
+    "8":          (2017, "A11", 4.7, "LCD", 60, "یک دوربین ۱۲ مگاپیکسل", 0, "Lightning",
+                   ["Touch ID", "شارژ بی‌سیم"]),
+    "8 plus":     (2017, "A11", 5.5, "LCD", 60, "دو دوربین ۱۲ مگاپیکسل", 2, "Lightning",
+                   ["Touch ID", "شارژ بی‌سیم", "پرتره"]),
+    "x":          (2017, "A11", 5.8, "OLED", 60, "دو دوربین ۱۲ مگاپیکسل", 2, "Lightning",
+                   ["Face ID", "شارژ بی‌سیم"]),
+    "xs":         (2018, "A12", 5.8, "OLED", 60, "دو دوربین ۱۲ مگاپیکسل", 2, "Lightning",
+                   ["Face ID", "شارژ بی‌سیم", "eSIM"]),
+    "xs max":     (2018, "A12", 6.5, "OLED", 60, "دو دوربین ۱۲ مگاپیکسل", 2, "Lightning",
+                   ["Face ID", "شارژ بی‌سیم", "eSIM"]),
+    "xr":         (2018, "A12", 6.1, "LCD", 60, "یک دوربین ۱۲ مگاپیکسل", 0, "Lightning",
+                   ["Face ID", "شارژ بی‌سیم", "eSIM"]),
     "11":         (2019, "A13", 6.1, "LCD", 60, "دو دوربین ۱۲ مگاپیکسل", 0, "Lightning",
                    []),
     "11 pro":     (2019, "A13", 5.8, "OLED", 60, "سه دوربین ۱۲ مگاپیکسل", 2, "Lightning",
                    []),
     "11 pro max": (2019, "A13", 6.5, "OLED", 60, "سه دوربین ۱۲ مگاپیکسل", 2, "Lightning",
                    []),
+    "se 2":       (2020, "A13", 4.7, "LCD", 60, "یک دوربین ۱۲ مگاپیکسل", 0, "Lightning",
+                   ["Touch ID", "شارژ بی‌سیم", "eSIM"]),
     "12 mini":    (2020, "A14", 5.4, "OLED", 60, "دو دوربین ۱۲ مگاپیکسل", 0, "Lightning",
                    ["5G", "MagSafe"]),
     "12":         (2020, "A14", 6.1, "OLED", 60, "دو دوربین ۱۲ مگاپیکسل", 0, "Lightning",
@@ -40,6 +58,8 @@ IPHONES = {
                    "Lightning", ["5G", "MagSafe", "LiDAR", "ProMotion"]),
     "13 pro max": (2021, "A15 (GPU ۵ هسته)", 6.7, "OLED", 120, "سه دوربین ۱۲ مگاپیکسل + LiDAR", 3,
                    "Lightning", ["5G", "MagSafe", "LiDAR", "ProMotion"]),
+    "se 3":       (2022, "A15", 4.7, "LCD", 60, "یک دوربین ۱۲ مگاپیکسل", 0, "Lightning",
+                   ["5G", "Touch ID", "شارژ بی‌سیم", "eSIM"]),
     "14":         (2022, "A15 (GPU ۵ هسته)", 6.1, "OLED", 60, "دو دوربین ۱۲ مگاپیکسل", 0, "Lightning",
                    ["5G", "MagSafe"]),
     "14 plus":    (2022, "A15 (GPU ۵ هسته)", 6.7, "OLED", 60, "دو دوربین ۱۲ مگاپیکسل", 0, "Lightning",
@@ -97,7 +117,7 @@ IPHONES = {
                     "دکمه‌ی Action", "Camera Control", "دوربین سلفی ۱۸ مگاپیکسل", "دیافراگم متغیر"]),
 }
 # ترتیب قدرت تراشه‌ها — برای اینکه «تراشه‌ی قوی‌تر» فقط به نفع مدلِ واقعاً قوی‌تر نوشته شود
-CHIP_RANK = ["A13", "A14", "A15", "A15 (GPU ۵ هسته)", "A16", "A17 Pro", "A18", "A18 Pro",
+CHIP_RANK = ["A9", "A10", "A11", "A12", "A13", "A14", "A15", "A15 (GPU ۵ هسته)", "A16", "A17 Pro", "A18", "A18 Pro",
              "A19", "A19 Pro", "A20 Pro"]
 _VAR = {"پرو مکس": "pro max", "پرو": "pro", "پلاس": "plus", "مینی": "mini", "ایر": "air"}
 _TO_EN = str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789")
@@ -111,15 +131,21 @@ def key_of(product):
     rest = p[len("آیفون"):].strip().translate(_TO_EN)
     for fa_v, en in _VAR.items():
         rest = re.sub(rf"(?<!\S){fa_v}(?!\S)", en, rest)
-    rest = " ".join(rest.split())
+    rest = " ".join(rest.split()).lower()
     if rest in ("air", "17 air"):
         rest = "air"
     return rest if rest in IPHONES else None
 
 
+_LETTER_NAMES = {"x": "آیفون X", "xs": "آیفون XS", "xs max": "آیفون XS Max", "xr": "آیفون XR",
+                 "se": "آیفون SE", "se 2": "آیفون SE ۲۰۲۰", "se 3": "آیفون SE ۲۰۲۲"}
+
+
 def name_of(key):
     if key == "air":
         return "آیفون ایر"
+    if key in _LETTER_NAMES:
+        return _LETTER_NAMES[key]
     num, *var = key.split()
     inv = {v: k for k, v in _VAR.items()}
     v = " ".join(var)

@@ -133,6 +133,13 @@ def find(text: str, limit: int = 3) -> list[dict]:
     out = [r for _, r in hits]
     if not out:
         out = _loose(toks)
+    if not out:
+        # «۱۱ نرمال»، «xs»، «se 2022» بی‌کلمه‌ی آیفون: همان فهم مدل ربات (brain.products_all)
+        for p in brain.products_all(text):
+            if p.startswith("آیفون "):
+                for r in find("iphone " + p[len("آیفون "):], 1):
+                    if r not in out:
+                        out.append(r)
     # «فرق ایفون ۷ با ۸»، «۱۵ پرو یا ۱۶ پرو»: طرف دوم نام دسته را تکرار نمی‌کند
     if out and len(out) < limit:
         cat = out[0]["category"]
@@ -344,7 +351,7 @@ def compare(rs: list[dict], html: bool = True) -> str:
 SPEC_WORDS = re.compile(
     r"مشخصات|سخت ?افزار|تراشه|چیپ|پردازنده|\bرم\b|رمش|حافظه|صفحه|نمایشگر|اینچ|دوربین|باتری|وزن|رنگ|"
     r"چه سالی|کی اومد|کی اومده|سال ساخت|فرق|تفاوت|مقایسه|بهتره|قوی ?تر|پورت|درگاه|شارژ|ضد ?اب|ای ?او ?اس|ios|"
-    r"اپدیت|آپدیت|چند گیگ|چند ترا|specs?|chip|ram|camera|battery|colou?rs?", re.I)
+    r"اپدیت|آپدیت|ابدیت|چند گیگ|چند ترا|specs?|chip|ram|camera|battery|colou?rs?", re.I)
 PRICE_WORDS = re.compile(r"قیمت|چند[هه]?\b|چنده|چقدر|تومن|تومان|موجود|دارید|دارین|بخرم|خرید|قسط|اقساط", re.I)
 
 

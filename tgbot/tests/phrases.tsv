@@ -445,3 +445,29 @@ snapppay darid	i_snapppay
 فرق ۱۷ پرو با ۱۸ پرو	i_compare
 مک بوک ایر m1 با m2 فرقش چیه	i_compare
 مشخصات ایمک	i_specs
+
+# ── ۷ آذر ۱۴۰۵: از پیام‌های واقعی (بی‌نام): آیفون‌های حرفی، «نشون بده»، «ملیون»، «صدی چند»
+قیمت ایفون ایکس چنده	catalog|i_price
+قیمتxs	catalog|i_price
+Xs قیمت میدین؟	catalog|i_price
+ایکس اس مکس دارید	catalog|i_stock
+ایفون se 2022موجوده	catalog|i_stock
+ایفون x با 11 نورمال موجود دارین	catalog|i_stock
+xs پلمپ رجیستر شده 256 چند	catalog|i_price|i_registry
+ایفون ۷ پلاس دارید	catalog|i_stock
+15 پرو را نشون بده	catalog
+همونو نشون بده	catalog|dym|unknown
+صدی چند؟	i_install
+12 ماه اقساط میدین	i_install
+20ملیون	catalog
+آیفون 15 · کارکرده	catalog
+آیفون · 17 میلیون تا 23 میلیون	catalog
+کجاین شما	i_address
+شما کیه	i_about
+صاحب کار کیه	i_owner
+ابدیت برا 11 نرمال میاد	i_specs
+مشخصات ایکس اس	i_specs
+فرق ایکس اس با ۱۱	i_compare
+!Se چنده یه گوشی دوم میخوام	catalog|i_price
+!شرایط چی داری	i_install|i_order
+!کدوم ای او اس 27 پشتیبانی نمیکنه	i_specs|human|unknown
