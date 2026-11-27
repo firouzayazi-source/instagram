@@ -177,3 +177,28 @@ def test_any_comment_only_for_specific_posts_and_short_public():
     assert validate({**any_all, "post_scope": ["123"]}) == []           # هر کامنتِ یک پست: بله
     assert validate({"name": "x", "channels": ["comment"], "triggers": [{"match": "contains", "value": "قیمت"}],
                      "actions": {"comment_mode": "public", "public_replies": ["ا" * 151]}})
+
+
+def test_dm_one_link_and_caps(tmp_path, monkeypatch):
+    """دایرکت خودکار: فقط یک لینک؛ سقف ۱۵ پیام به یک نفر در ۱۰ دقیقه (بعد همکار) و ۶۰ پیام پیج در ساعت."""
+    import time as _t
+    from app import config, db, worker
+    monkeypatch.setattr(config, "DB_PATH", str(tmp_path / "t.db"))
+    t = "۱۳ پرو\n  https://stland.ir/?p=1\n• ۱۴\n  https://stland.ir/?p=2\nلیست کامل: https://stland.ir"
+    out = worker.one_link(t)
+    assert out.count("https://") == 1 and "?p=1" in out and "• ۱۴" in out and "لیست کامل در سایت stland.ir" in out
+    assert worker.one_link("فقط https://stland.ir/?p=1") == "فقط https://stland.ir/?p=1"
+    db.init()
+    now = _t.time()
+    with db.connect() as c:
+        for i in range(worker.DM_USER_LIMIT):
+            db.add_message(c, f"o{i}", "loop", "out", "x", created_at=now - 60, sender="bot")
+        why = worker.dm_cap_problem(c, "loop", now)
+        assert "یک نفر" in why
+        worker._dm_capped(c, "loop", why)
+        assert db.human_until(c, "loop") and c.execute("SELECT COUNT(*) FROM handoffs WHERE user_id='loop'").fetchone()[0] == 1
+        assert worker.dm_cap_problem(c, "other", now) == ""
+        for i in range(worker.DM_HOURLY_LIMIT):
+            db.add_message(c, f"p{i}", f"u{i}", "out", "x", created_at=now - 600, sender="bot")
+        assert "پیج" in worker.dm_cap_problem(c, "fresh", now)
+        assert worker.dm_cap_problem(c, "fresh", now + 3600) == ""       # ساعت بعد دوباره باز

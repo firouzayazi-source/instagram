@@ -536,6 +536,62 @@ def _chunks(text: str, limit: int = DM_MAX) -> list[str]:
     return out or [text]
 
 
+# ── سقف دایرکت خودکار (۶ آذر ۱۴۰۵، docs/INSTAGRAM_SAFETY.md): دو ربات که به هم جواب بدهند، یا یک مزاحم که پشت‌سرهم
+# پیام بدهد، ربات ما را به موجی از دایرکت خودکار می‌کشاند که الگوی اسپم است.
+DM_USER_LIMIT = 15         # دایرکت خودکار به یک نفر در ۱۰ دقیقه (یک سفارش کامل حدود ۸ پیام است؛ حلقه‌ی دو ربات حدود ۴۰)؛ بعدش همکار
+DM_USER_WINDOW = 600
+DM_HOURLY_LIMIT = 60       # دایرکت خودکار روی کل پیج در یک ساعت
+_URL_RX = __import__("re").compile(r"https?://\S+", __import__("re").I)
+
+
+def one_link(text: str) -> str:
+    """فقط اولین لینک یک دایرکت می‌ماند؛ خطی که بعد از برداشتن لینک‌های بعدی خالی شود هم می‌رود."""
+    urls = _URL_RX.findall(text or "")
+    if len(urls) <= 1:
+        return text
+    first, out, seen = urls[0], [], False
+    for line in text.split("\n"):
+        new = line
+        for u in _URL_RX.findall(line):
+            if u == first and not seen:
+                seen = True
+                continue
+            new = new.replace(u, "")
+        if line.strip() and not new.strip().strip(":：").strip():
+            continue
+        if new != line and new.rstrip().endswith((":", "：")):
+            new = new.rstrip().rstrip(":：").rstrip() + " در سایت stland.ir"     # «لیست کامل:» بی لینک
+        out.append(new.rstrip())
+    return "\n".join(out).strip()
+
+
+def dm_cap_problem(c, user_id: str, now: float | None = None) -> str:
+    now = now or time.time()
+    n_user = c.execute("SELECT COUNT(*) FROM messages WHERE user_id=? AND direction='out' AND sender='bot' AND created_at>?",
+                       (user_id, now - DM_USER_WINDOW)).fetchone()[0]
+    if n_user >= DM_USER_LIMIT:
+        return f"سقف دایرکت خودکار به یک نفر ({DM_USER_LIMIT} در ۱۰ دقیقه)"
+    n_all = c.execute("SELECT COUNT(*) FROM messages WHERE direction='out' AND sender='bot' AND created_at>?",
+                      (now - 3600,)).fetchone()[0]
+    if n_all >= DM_HOURLY_LIMIT:
+        return f"سقف دایرکت خودکار پیج ({DM_HOURLY_LIMIT} در ساعت)"
+    return ""
+
+
+def _dm_capped(c, user_id: str, why: str) -> None:
+    """یک نفر: گفتگو به همکار (ربات برایش ساکت) و یک ارجاع؛ کل پیج: یک خبر تلگرام در ساعت."""
+    if why.startswith("سقف دایرکت خودکار به یک نفر"):
+        db.set_human(c, user_id, 60)
+        if not c.execute("SELECT 1 FROM handoffs WHERE user_id=? AND status='open'", (user_id,)).fetchone():
+            c.execute("INSERT INTO handoffs(created_at,channel,user_id,text,reason) VALUES (?,?,?,?,?)",
+                      (time.time(), "dm", user_id, "پیام‌های پشت‌سرهم", f"{why}؛ ربات برای این نفر یک ساعت ساکت شد"))
+    else:
+        hour = time.strftime("%Y%m%d%H")
+        if db.kv_get(c, "dm_cap_alert") != hour:
+            db.kv_set(c, "dm_cap_alert", hour)
+            tg_notify.send(f"⚠️ {why} رسید؛ تا ساعت بعد دایرکت‌ها فقط در صندوق پنل ثبت می‌شوند و جواب خودکار نمی‌گیرند.")
+
+
 async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replies=None, buttons=None) -> bool:
     # قواعد ایمنی پیج (app/safety.py): لینک در جواب عمومی کامنت و لینک کوتاه‌شده در هر پیام خودکار نمی‌رود
     bad = ("جواب عمومی کامنت لینک ندارد (الگوی اسپم)؛ لینک فقط در دایرکت" if kind == "public" and safety.has_link(text) else
@@ -549,6 +605,12 @@ async def _send(ig, c, event_id, rule_id, kind, payload, inc, text, quick_replie
             return False
         if len(text) > PUBLIC_MAX:
             bad = f"جواب عمومی حداکثر {PUBLIC_MAX} نویسه"
+    if kind == "dm" and not bad:
+        bad = dm_cap_problem(c, inc.user_id)
+        if bad:
+            _dm_capped(c, inc.user_id, bad)
+        else:
+            text = one_link(text)        # فقط یک لینک در هر دایرکت خودکار
     if bad:
         db.log_reply(c, event_id, rule_id, kind, payload.get("id", "") or inc.user_id, text, ok=False, error="ایمنی: " + bad)
         return False

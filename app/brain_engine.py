@@ -96,13 +96,14 @@ def _short_link(x: dict) -> str:
     return f"{SITE}/?p={x['id']}" if x.get("id") else x.get("link", "")
 
 
-def _item_line(x: dict) -> str:
+def _item_line(x: dict, link: bool = True) -> str:
     a = x.get("attrs") or {}
     bits = [a.get("حافظه", ""), a.get("رنگ", ""), a.get("وضعیت", "") if x.get("model") else "",
             f"باتری {a['سلامت باتری']}" if a.get("سلامت باتری") else ""]
     bits = " · ".join(b for b in bits if b)
     last = " · 🔥 آخرین عدد" if x.get("left") == 1 else ""
-    return f"• {x['name']}" + (f" · {bits}" if bits else "") + f"\n  💰 {catalog.fmt_price(x['price'])}{last}\n  {_short_link(x)}"
+    return (f"• {x['name']}" + (f" · {bits}" if bits else "") + f"\n  💰 {catalog.fmt_price(x['price'])}{last}"
+            + (f"\n  {_short_link(x)}" if link else ""))
 
 
 def _with_budget(q: dict, budget: int) -> dict:
@@ -122,13 +123,15 @@ def _catalog_reply(text: str, product: str, budget: int = 0) -> str | None:
     res = catalog.search(q)
     what = catalog.describe(q) or "این مورد"
     if res:
-        lines = [_item_line(x) for x in res[:MAX_ITEMS]]
-        more = f"\n\nو {catalog.fa(len(res) - MAX_ITEMS)} مورد دیگر؛ لیست کامل: {SITE}" if len(res) > MAX_ITEMS else ""
+        # فقط یک لینک در هر دایرکت (قواعد ایمنی پیج، ۶ آذر ۱۴۰۵): لینک اولین کالا؛ بقیه با نام و قیمت
+        lines = [_item_line(x, link=(i == 0)) for i, x in enumerate(res[:MAX_ITEMS])]
+        more = f"\n\nو {catalog.fa(len(res) - MAX_ITEMS)} مورد دیگر؛ لیست کامل در سایت stland.ir" if len(res) > MAX_ITEMS else ""
         hint = catalog.neighbor_line(q)    # یک اشاره به مدل بالاتر و پایین‌تر
         return f"موجودی‌های {what}:\n\n" + "\n\n".join(lines) + more + (f"\n\n{hint}" if hint else "")
     near = catalog.search(q, family=True) if q.get("model") else []
     if near:
-        return (f"الان {what} موجود نداریم 🙏 گزینه‌های نزدیک:\n\n" + "\n\n".join(_item_line(x) for x in near[:2]))
+        return (f"الان {what} موجود نداریم 🙏 گزینه‌های نزدیک:\n\n" +
+                "\n\n".join(_item_line(x, link=(i == 0)) for i, x in enumerate(near[:2])))
     return f"الان {what} موجود نداریم 🙏 لیست به‌روز همه‌ی موجودی‌ها: {SITE}"
 
 
