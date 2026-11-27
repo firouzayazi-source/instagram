@@ -164,3 +164,21 @@ def test_panel_endpoints_and_think_context(env, monkeypatch, tmp_path):
         r = cl.post("/internal/think", headers={"X-Internal-Key": key},
                     json={"channel": "telegram", "user_id": "9", "text": "همون آبیش", "context": [["مشتری", "۱۳ پرو"], ["ربات", "۱۳ پرو موجوده"]]})
         assert r.status_code == 200 and "مشتری: ۱۳ پرو" in seen["note"] and "ربات: ۱۳ پرو موجوده" in seen["note"]
+
+
+def test_review_distills_agent_answers(env):
+    """انتقال دانش: سؤالی که فقط فروشنده‌ی هوشمند جواب داد نامزد جمله‌ی نمونه است؛
+    آنچه ربات آفلاین خودش می‌فهمد، رأی منفی خورده یا به همکار رفته کنار می‌رود."""
+    with db.connect() as c:
+        for q, act, vote in (("گوشیای شما تو جعبه‌ی خودشونه یا نه", "reply", 0),
+                             ("گارانتی دارن؟", "reply", 0),                 # ربات آفلاین خودش می‌فهمد
+                             ("یه سؤال عجیب دیگه درباره‌ی کارتن", "reply", -1),    # مشتری گفت بد بود
+                             ("سؤال سخت درباره‌ی قطعات", "handoff", 0)):
+            c.execute("INSERT INTO ai_log(created_at,channel,user_id,input,action,reply,model,customer_vote,status,is_test) "
+                      "VALUES (strftime('%s','now'),'dm','u1',?,?,'جواب',?,?,'sent',0)",
+                      (q, act, "agent:claude-haiku-5-5", "down" if vote < 0 else ""))
+        c.execute("INSERT INTO ai_log(created_at,channel,user_id,input,action,reply,model,status,is_test) "
+                  "VALUES (strftime('%s','now'),'dm','u1','سؤال آزمایشی پنل','reply','x','agent:m','sent',1)")
+        wins = review.agent_wins(c)
+    assert [w["question"] for w in wins] == ["گوشیای شما تو جعبه‌ی خودشونه یا نه"]
+    assert wins[0]["ai_reply"] == "جواب"

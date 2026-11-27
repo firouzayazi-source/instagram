@@ -30,19 +30,30 @@ Run the regression set. It must be green before you change anything; otherwise f
 
 ## 2. Collect real data from the server
 
-Customer text is private: keep it in `/tmp/aq/`, never commit it. Ask the user to run these on the server
-(each in its own code box, nothing else inside) and paste the output; save each to `/tmp/aq/`:
+Customer text is private: keep it in `/tmp/aq/`, never commit it. One command on the server exports every
+source at once (Instagram DMs and comments, the central-brain log of all three platforms, the shared
+unanswered list, Telegram product searches), masked (no names or ids; phone/card numbers, links, emails and
+@handles hidden), deduplicated with counts:
 
 ```
-python3 -c "import json;d=json.load(open('/opt/telegram-bot/unmatched.json'));print(json.dumps([[u['text'],u.get('count',1)] for u in d],ensure_ascii=False))"
+cd /opt/igbot && python3 tools/export_questions.py
 ```
 
+The understanding number can be measured on the server without the text leaving it (`--summary` prints
+only the percentage and the count per route):
+
 ```
-cat /opt/telegram-bot/faq.json
+cd /opt/igbot/tgbot && /opt/igbot/.venv/bin/python tools/answer_check.py scan /tmp/stockland_questions.json --faq /opt/igbot/data/telegram/faq.json --catalog /opt/igbot/data/telegram/catalog.json --summary
 ```
 
-`faq.json` holds the live intents, including the admin's own edits in the panel, so scanning against it
-matches production. The bot's `/demand` report (in Telegram) adds product searches that found nothing.
+For the full classification the user sends `/tmp/stockland_questions.json`; save it to `/tmp/aq/`, and scan
+against the live `faq.json` (`cat /opt/igbot/data/telegram/faq.json`) so the result matches production.
+
+**Held-out sets.** `tests/heldout.tsv` and `tests/heldout2.tsv` measure general understanding on phrases that
+were never used to build vocabulary. Never copy their lines into `examples`/`keys`; when you build a new round
+of fixes, write a fresh held-out file first and report its before/after number, not the regression set's.
+The nightly review (`app/review.py` `agent_wins`) proposes, for owner approval, the questions only the AI
+salesperson could answer as example sentences of existing intents, so this loop also runs on its own.
 
 ## 3. Scan and classify every miss
 

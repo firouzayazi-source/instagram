@@ -1,0 +1,96 @@
+# آزمون کنارگذاشته (۶ آذر ۱۴۰۵): جمله‌هایی که هنگام ساخت دیکشنری و جمله‌های نمونه دیده نمی‌شوند.
+# قاعده: هیچ جمله‌ی این فایل عیناً به examples/keys نیتی اضافه نمی‌شود؛ فقط فهم کلی را می‌سنجد.
+# اجرا: python3 tools/answer_check.py tests/heldout.tsv   (شکست‌ها با ! علامت خورده‌اند و تست را رد نمی‌کنند)
+
+# ── قیمت و کالا
+سلام وقتتون بخیر قیمت ۱۴ پرو مکس چنده	catalog|i_price
+۱۳pm دارین؟	catalog|i_stock
+iphone 13 pro max chande	catalog|i_price
+ایفون ۱۵ پرومکس ۲۵۶ نچرال موجوده	catalog|i_stock
+۱۶ پرو مکس یک ترا میخواستم	catalog
+یه ۱۱ ساده ارزون میخوام	catalog
+قیمت ۱۲ پرو کارکرده چقدره	catalog|i_price
+ایفون ۱۳ مشکی ۱۲۸ دارید	catalog|i_stock
+لیست قیمت ایفونارو بفرستید لطفا	catalog|i_price
+۱۵ پرو ابی میخوام	catalog
+ghimat iphone 15	catalog|i_price
+مدل های اکبند چی دارید	catalog|i_stock|i_condition|i_products
+۱۴ معمولی نو دارین	catalog|i_stock
+شارژر اصل اپل دارید	catalog|i_accessory
+گلس ۱۳ پرو مکس میخوام	catalog|i_accessory
+# ── وضعیت، اصالت و دیکشنری تخصصی
+اوپن باکس دارید	i_condition
+open box هم دارین	i_condition
+ریفربیش دارید	i_genuine|i_condition
+گوشیاتون ریفر نیست؟	i_genuine
+فیس ایدیش سالمه؟	i_genuine
+ترو تون داره	i_genuine
+ال سی دیش اصلیه	i_genuine
+صفحش عوض نشده؟	i_genuine
+گوشیای استوکتون تمیزن	i_condition
+پلمپ کارخونه هستن	i_condition
+!دو سیم کارته هست	human|unknown|dym
+!ای سیم داره	human|unknown|dym
+رجیستری داره؟	i_registry
+rejister shode?	i_registry
+ریجستر شده یا نه	i_registry
+# ── اقساط و پرداخت
+قسطی هم میدین؟	i_install
+اغساطی میفروشید	i_install
+ghesti darid	i_install
+چک صیادی قبول میکنید	i_install
+بدون چک هم میشه قسطی گرفت	i_install
+پیش پرداختش چقدره	i_install
+اسنپ پی دارید؟	i_snapppay
+با اسنپ‌پی میشه خرید کرد	i_snapppay
+snapp pay darid	i_snapppay
+میشه با اسنپ پی قسطی بخرم	i_snapppay|i_install
+درگاه پرداخت دارید	i_payment
+زرین پال دارید	i_payment
+شبا بزنم میشه	i_payment
+کارت به کارت کنم؟	i_payment
+حضوری کارت بکشم	i_payment
+# ── ارسال
+به مشهد ارسال دارید	i_shipping
+تیپاکس میکنید؟	i_shipping
+با پست میفرستین	i_shipping
+پیک دارید داخل قم	i_shipping
+ersal be tehran darid	i_shipping
+چند روزه میرسه	i_shipping
+هزینه ارسالش چقدره	i_shipping
+# ── معاوضه، گارانتی، مرجوعی
+گوشیمو عوض میکنید با ۱۴	i_tradein
+۱۱ دارم میخوام بدم ۱۳ بگیرم	i_tradein
+گوشی کارکرده میخرید	i_tradein
+کارشناسی گوشی دارید	i_tradein
+garanti dare?	i_warranty
+ضمانت اصالت میدید	i_warranty|i_genuine
+چند روز مهلت تست داره	i_return
+اگه ایراد داشت پسش بیارم	i_return
+# ── آدرس، ساعت، تماس
+ادرس مغازه کجاست	i_address
+لوکیشن بفرستید	i_address
+addres koja hast	i_address
+کجای قمید	i_address
+امروز تا چند بازید	i_hours
+جمعه ها بازید؟	i_hours
+saat kari chie	i_hours
+ظهر تعطیلید؟	i_hours
+شمارتونو بدید	i_phone
+شماره تماس فروشگاه	i_phone
+میخوام زنگ بزنم	i_phone|i_human
+سایتتون چیه	i_site
+پیجتون کدومه	i_social
+اپل ایدی میخوام	i_appleid
+اپل آیدی دارید	i_appleid
+# ── سایر
+مقایسه ۱۴ پرو با ۱۵ پرو	i_compare
+کدوم بهتره ۱۳ یا ۱۴	i_compare|i_advisor
+بودجم ۵۰ میلیونه چی بخرم	i_advisor|catalog
+مشخصات ۱۵ پرو	i_specs
+تخفیف نمیدید؟	i_discount
+اخرش چند میدی	i_discount
+ایرپاد دارید	i_other|catalog
+سامسونگ هم دارید	i_android
+میخوام با یکی صحبت کنم	i_human
+اصلن چطوری میشه خرید کرد	i_order

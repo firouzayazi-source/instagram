@@ -164,3 +164,9 @@ async def test_polled_dm_gets_brain_reply_when_dm_reply_on(env, monkeypatch):
         db.add_event(c, "m:p3", "message", ev("p3", "ساعت کاری"))
         row = [r for r in db.pending_events(c) if r["id"] == "m:p3"][0]
         assert await worker.handle_event(ig, row, c) == "braked"
+
+
+def test_engine_intent_labels_feed_crm(env):
+    """اقساط و اسنپ‌پی برچسب installment می‌گیرند (برچسب «اقساطی» مخاطب و گزارش علاقه‌ی خرید)."""
+    assert brain_engine.decide("شرایط اقساط چیه؟")[2] == "installment"
+    assert brain_engine.decide("اسنپ پی دارید؟")[2] == "installment"

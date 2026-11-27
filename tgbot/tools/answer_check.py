@@ -3,6 +3,8 @@
     python3 tools/answer_check.py                   # تست ثابت: tests/phrases.tsv
     python3 tools/answer_check.py scan FILE         # پیام‌های واقعی مشتری (unmatched.json یا یک خط در هر پیام)
     گزینه‌ها:  --faq faq.json   --catalog catalog.json   (نسخه‌ی سرور؛ بی‌آن پیش‌فرض‌های کد و یک لیست کالای کوچک)
+               --summary   فقط درصد و تعداد هر مسیر، بی‌متن پیام‌ها
+    روی سرور، پیام‌های واقعی با tools/export_questions.py ریشه‌ی پروژه بیرون می‌آیند.
 
 هر پیام یک «مسیر» می‌گیرد:
     i_xxx      نیتی که اجرا شد
@@ -31,6 +33,8 @@ SAMPLE_CATALOG = [  # چند کالای نمونه تا مسیرهای کالا 
 def _args():
     a = sys.argv[1:]
     opt = {}
+    if "--summary" in a:            # فقط عددها، بی‌متن پیام‌ها (برای فرستادن در چت)
+        a.remove("--summary"); opt["--summary"] = True
     for k in ("--faq", "--catalog"):
         if k in a:
             i = a.index(k); opt[k] = os.path.abspath(a[i + 1]); del a[i:i + 2]
@@ -154,7 +158,8 @@ async def main():
         for r in sorted(by, key=lambda r: (ok_routes(r), -sum(c for c, _ in by[r]))):
             items = sorted(by[r], reverse=True)
             print(f"── {r} ({sum(c for c, _ in items)})")
-            for c, t in items[:40]: print(f"   ×{c}  {t}")
+            if not opt.get("--summary"):
+                for c, t in items[:40]: print(f"   ×{c}  {t}")
         sys.stdout.flush()
         os._exit(0)
 

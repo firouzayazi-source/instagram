@@ -392,3 +392,39 @@ hamkar mikham	i_human
 چطوری دوستمو معرفی کنم	i_invite
 کد معرف من چیه	i_invite
 میخوام رزرو کنم بیام مغازه	i_address|i_hours
+
+# ── ۶ آذر ۱۴۰۵: دیکشنری تخصصی آیفون و موضوع‌های «اطلاعات کسب‌وکار» (جمله‌ها غیر از آزمون‌های کنارگذاشته)
+اسنپ پی قبول میکنید	i_snapppay
+میتونم از اسنپ پی استفاده کنم	i_snapppay
+snapp pay dare	i_snapppay
+با زرین پال پرداخت کنم	i_payment
+درگاه اینترنتی دارید	i_payment
+میتونم شبا کنم	i_payment
+ارسالتون با تیپاکسه یا پست	i_shipping
+هزینه ارسال به شهرستان	i_shipping
+داخل قم پیک میفرستید	i_shipping
+گوشیمو کارشناسی میکنید	i_tradein
+گوشی من چقدر ارزش داره	i_tradein
+اپن باکس چی دارید	i_condition|catalog
+گوشی جعبه باز هم دارین	i_condition
+گوشی ریفربیش شده نیست	i_genuine
+تروتونش فعاله	i_genuine
+فیس ایدی گوشی کار میکنه	i_genuine
+صفحه گوشی اصلیه	i_genuine
+مغازتون تو کدوم پاساژه	i_address
+کجای قم هستین	i_address
+ظهرا بازید	i_hours
+امروز تا ساعت چند هستید	i_hours
+چطوری میشه خرید کرد	i_order
+چطوری میتونم سفارش بدم	i_order
+مدارک قسطی چیه	i_install
+ضامن میخواد	i_install
+ghesti mifrooshid	i_install
+gheymat 13 pro	catalog|i_price
+۱۶ پرو مکس یک ترا دارید	catalog|i_stock
+۱۵ پرو دزرت میخوام	catalog
+iphone13 128gb	catalog|i_stock
+سلام چطوری	smalltalk
+با اسنپ میام ادرس کجاست	i_address
+snapppay darid	i_snapppay
+اسنپپی دارید	i_snapppay

@@ -1,0 +1,45 @@
+# آزمون کنارگذاشته‌ی دوم (۶ آذر ۱۴۰۵): بعد از ساخت دیکشنری نوشته شد و هیچ اصلاحی بر اساس آن انجام نشده.
+# فقط برای سنجش؛ جمله‌هایش به examples/keys اضافه نمی‌شوند.
+قیمت ایفون ۱۶ پرو چقدر شده	catalog|i_price
+۱۲ پرومکس کارکرده دارین	catalog|i_stock
+ip 14 pro mojode?	catalog|i_stock
+ایفون سیزده دارید	catalog|i_stock
+۱۵ پلاس صورتی میخوام	catalog
+اپن باکس ۱۴ پرو دارید	catalog|i_condition
+!گوشی ریفربیشد نمیخوام	i_genuine|i_condition
+سلامت باتریش چنده	i_genuine|catalog
+truetone dare?	i_genuine
+فیس آیدیش کار میکنه	i_genuine
+قسطی بخوام چیکار کنم	i_install
+aghsati mifrooshid	i_install
+با طلا هم قسطی میدید	i_install
+ضامن لازمه	i_install
+snapppay قبول میکنید	i_snapppay
+اسنپ پی هم میشه پرداخت کرد	i_snapppay
+درگاه زرین پال دارید	i_payment
+میتونم پولو کارت به کارت کنم	i_payment
+شماره شبا بدید	i_payment
+تیپاکس میفرستید شیراز	i_shipping
+پست پیشتاز دارید	i_shipping
+تو قم پیک دارید	i_shipping
+چقدر طول میکشه برسه تبریز	i_shipping
+گوشیمو بیارم کارشناسی کنید	i_tradein
+گوشی کهنمو میخرین	i_tradein
+میخوام ۱۲ رو با ۱۴ معاوضه کنم	i_tradein
+گارانتیش چند ماهه	i_warranty
+اصل بودنشو تضمین میکنید	i_genuine|i_warranty
+اگه خراب در اومد چی	i_return
+مغازتون کجاس	i_address
+تو بازار سلام کدوم طبقه	i_address
+جمعه بازه مغازه	i_hours
+الان بازین	i_hours
+ساعت ۱ ظهر هستید	i_hours
+شماره مغازه رو بدید	i_phone
+آدرس سایتتون	i_site
+اینستاتون چیه	i_social
+appleid mikham	i_appleid
+۱۳ بهتره یا ۱۴	i_compare|i_advisor
+میخوام گوشی بخرم کمکم کنید	i_advisor|i_order
+تخفیف بدید دیگه	i_discount
+میخوام با پشتیبانی حرف بزنم	i_human
+چطوری سفارش بدم	i_order

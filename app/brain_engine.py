@@ -37,7 +37,9 @@ LIST_RX = re.compile(r"(?:^|\s)(?:لیست|لیستتون|لیستو|لیستش)
 HAVE_RX = re.compile(r"(?<!\S)(?:دارید|دارین|داری|دارن|هست|هستش|موجود\S*|قیمت\S*|چند|چنده|چقدر\S*|چقد|"
                      r"میخوام|میخواستم|میخام|میخواهم|لازم دارم|بخرم)(?!\S)")
 # نیت ربات تلگرام ← دسته‌ی نیت در لاگ پنل
-_INTENT = {"i_price": "price", "i_stock": "availability", "i_installment": "installment", "i_greet": "greeting"}
+# شناسه‌ی واقعی نیت اقساط ربات تلگرام i_install است (i_installment هرگز نبود و اقساط «other» ثبت می‌شد؛ ۶ آذر ۱۴۰۵)
+_INTENT = {"i_price": "price", "i_stock": "availability", "i_install": "installment", "i_snapppay": "installment",
+           "i_order": "purchase", "i_greet": "greeting"}
 
 _cache: dict = {}   # نام فایل → (mtime، داده)
 

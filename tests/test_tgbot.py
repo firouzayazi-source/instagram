@@ -18,6 +18,14 @@ def test_tgbot_answer_check():
     assert "0 شکست تازه" in r.stdout
 
 
+def test_tgbot_heldout_understanding():
+    """آزمون‌های کنارگذاشته (جمله‌هایی که در ساخت دیکشنری دیده نشده‌اند) هم عقب نروند."""
+    for f in ("tests/heldout.tsv", "tests/heldout2.tsv"):
+        r = subprocess.run([sys.executable, "-u", "tools/answer_check.py", f], cwd=TG, capture_output=True, text=True,
+                           timeout=300)
+        assert r.returncode == 0 and "0 شکست تازه" in r.stdout, f + "\n" + r.stdout[-2000:] + r.stderr[-2000:]
+
+
 def test_address_card_has_one_hours_button(tmp_path):
     """کارت آدرس: دکمه‌ی پیشنهادی «ساعت کاری» و دکمه‌ی ثابت کنار آدرس دوتا نشوند."""
     code = r"""

@@ -166,9 +166,14 @@ COLORS = {
     "نچرال": ("natural",), "تیتانیوم": ("titanium", "natural"),
     "طوسی": ("gray", "grey", "graphite", "space"), "خاکستری": ("gray", "grey", "graphite", "space"),
     "دودی": ("gray", "graphite", "space"),
+    # نام‌های سایتی رنگ‌ها که مشتری‌ها فارسی می‌نویسند (۶ آذر ۱۴۰۵)
+    "دزرت": ("desert",), "صحرایی": ("desert",), "گرافیت": ("graphite",), "اسپیس": ("space",),
+    "سیرا": ("sierra",), "اولترامارین": ("ultramarine",), "تیل": ("teal",), "لاوندر": ("lavender",),
+    "میدنایت": ("midnight",), "استارلایت": ("starlight",), "پسیفیک": ("pacific",), "الپاین": ("alpine",),
 }
 for _en in ("black", "white", "silver", "gold", "blue", "green", "red", "pink", "purple",
-            "yellow", "orange", "natural", "midnight", "starlight", "graphite", "titanium"):
+            "yellow", "orange", "natural", "midnight", "starlight", "graphite", "titanium",
+            "desert", "sierra", "ultramarine", "teal", "lavender", "pacific", "alpine", "space"):
     COLORS[_en] = (_en,)
 
 NEW_WORDS = {"نو", "اکبند", "اک", "پلمب", "پلمپ", "اکبندی", "new", "صفر", "اوریجینال"}
@@ -202,7 +207,7 @@ FILLER = brain.STOPWORDS | {
     "حدودا", "حد", "حداکثر", "حداقل", "ترین", "تر", "باتری", "سلامت", "درصد", "ممنون", "مرسی",
     "سلام", "وقت", "بخیر", "لطفا", "دستتون", "درد", "نکنه", "امروز", "الان", "فعلا", "خرید",
     "بخرم", "واسم", "برام", "یکی", "یه", "دونه", "عدد", "تومنی", "میلیونی", "ای", "بهم",
-    "نرمال", "معمولی", "ساده", "بیس", "base", "normal",   # «۱۳ نرمال» = خودِ مدل پایه، نه پرو
+    "نرمال", "معمولی", "ساده", "بیس", "base", "normal", "ترا", "ترابایت", "tb",   # «۱۳ نرمال» = خودِ مدل پایه، نه پرو
 } | PHONE_WORDS | NEW_WORDS | USED_WORDS | CHEAP | DEAR
 
 
@@ -242,6 +247,8 @@ def _num_ok(num, t):
 
 def parse(text, product="", alias=None):
     """جستجوی مشتری → فیلترها. alias(کلمه‌های ناشناخته) → فیلتر یادگرفته یا None."""
+    text = re.sub(r"(?i)(iphone|ایفون|آیفون)(?=\d)", r"\1 ", text or "")        # «iphone13» = «iphone 13»
+    text = re.sub(r"(?i)(\d)\s*(gb|tb)\b", lambda m: m.group(1) + (" گیگ" if m.group(2).lower() == "gb" else " ترا"), text)
     t = " " + brain.norm(text).replace("ارزون ترین", "ارزونترین").replace("گرون ترین", "گرونترین") \
         .replace("ارزان ترین", "ارزانترین").replace("دست دوم", "دستدوم").replace("دسته دوم", "دستدوم") \
         .replace("پرو مکس", "پرومکس") + " "
@@ -262,7 +269,7 @@ def parse(text, product="", alias=None):
     m = re.search(r"(?<!\d)(64|128|256|512)(?!\d)", t)
     if m:
         q["storage"] = m.group(1)
-    elif re.search(r"(?<!\d)1\s*(?:ترا|tb|ترابایت)", t):
+    elif re.search(r"(?:(?<!\d)1\s*|یک\s*|(?<!\S))(?:ترا|tb|ترابایت)(?!\S)", t):
         q["storage"] = "ترا"
     for w, ens in COLORS.items():
         if _has(t, [w]):
