@@ -40,6 +40,12 @@ TOOLS = [
      "input_schema": {"type": "object", "properties": {"topic": {"type": "string", "enum": list(facts.TOPICS)},
                                                        "question": {"type": "string"}},
                       "required": ["topic"], "additionalProperties": False}},
+    {"name": "apple_specs",
+     "description": "مشخصات رسمی هر محصول اپل از اولین مدل تا امروز (آیفون، آیپد، مک، اپل‌واچ، ایرپاد، ویژن‌پرو، "
+                    "قلم): سال عرضه، تراشه، رم، صفحه، دوربین، حافظه‌ها، رنگ‌ها، درگاه، وزن، ویژگی‌ها. query نام مدل "
+                    "است، مثل «آیفون ۱۸ پرو مکس» یا «مک‌بوک ایر M4» یا «آیپد پرو M5». قیمت و موجودی ندارد.",
+     "input_schema": {"type": "object", "properties": {"query": {"type": "string"}},
+                      "required": ["query"], "additionalProperties": False}},
     {"name": "reply_to_customer",
      "description": "جواب نهایی به مشتری (پایان کار). هر مبلغ و لینک داخل text باید عیناً از خروجی ابزارها آمده باشد.",
      "input_schema": {"type": "object", "properties": {
@@ -81,6 +87,7 @@ def system_prompt(s: dict) -> list:
 روش کار:
 - قیمت، موجودی، مقایسه یا پیشنهاد کالا: search_products (برای مقایسه‌ی دو مدل، دو بار).
 - اقساط یک کالا: اول search_products، بعد installment_quote با product_id همان کالا.
+- مشخصات فنی، رنگ‌ها، حافظه‌ها، سال عرضه یا فرق سخت‌افزاری هر محصول اپل: apple_specs (برای مقایسه، هر مدل یک بار در همان نوبت). این مشخصات کالاست، نه موجودی؛ اگر مشتری خرید یا قیمت می‌خواهد، search_products هم بزن.
 - ساعت، آدرس، تماس، شبکه‌ها، گارانتی، ارسال، مرجوعی، معاوضه و بقیه: store_info.
 - سلام خالی یا تشکر: بدون ابزار، یک جواب گرم و کوتاه با reply_to_customer.
 - قصد خرید قطعی (سفارش، آدرس دقیق برای آمدن، پرداخت)، شکایت یا عصبانیت: جواب مفید کوتاه و handoff_to_human.
@@ -103,6 +110,8 @@ def run_tool(name: str, args: dict) -> dict:
             return facts.search_products(str(args.get("query") or "")[:200])
         if name == "installment_quote":
             return facts.installment_quote(str(args.get("product_id") or ""), int(args.get("price_toman") or 0))
+        if name == "apple_specs":
+            return facts.apple_specs(str(args.get("query") or "")[:120])
         if name == "store_info":
             return facts.store_info(str(args.get("topic") or ""), str(args.get("question") or "")[:300])
     except Exception as e:  # noqa: BLE001

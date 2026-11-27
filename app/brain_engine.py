@@ -21,6 +21,7 @@ TG_DIR = Path(__file__).resolve().parent.parent / "tgbot"
 if str(TG_DIR) not in sys.path:
     sys.path.insert(0, str(TG_DIR))
 
+import apple_db  # noqa: E402  (tgbot/apple_db.py: دانشنامه‌ی محصولات اپل)
 import appleid  # noqa: E402  (tgbot/appleid.py)
 import brain  # noqa: E402  (tgbot/brain.py)
 import catalog  # noqa: E402  (tgbot/catalog.py)
@@ -258,6 +259,10 @@ def _render(item: dict, text: str, product: str, name: str):
             return _plain(specs.compare_text(keys)), "reply"
         if keys:
             return _plain(specs.spec_text(keys[0])), "reply"
+        rs = apple_db.find(text)
+        if rs:
+            return _plain(apple_db.compare(rs, html=False) if action == "compare" and len(rs) >= 2
+                          else apple_db.card(rs[0], html=False)), "reply"
     return answer, "reply"
 
 
@@ -287,6 +292,15 @@ def decide(text: str, username: str | None = None, product_hint: str = "", budge
         return "handoff", _join(lead, random.choice(brain.MOOD_LEADS[mood])), "complaint", 1.0, f"{reason}: {text[:120]}"
     if mood == "issue":
         lead = _join(lead, random.choice(brain.MOOD_LEADS["issue"]))
+
+    # مشخصات، رنگ‌ها، حافظه‌ها و سال عرضه‌ی هر محصول اپل (همان مسیر ربات تلگرام)
+    if mood != "issue":
+        rs = apple_db.spec_question(text)
+        if rs:
+            ks = specs.find_models(text)
+            body = (specs.compare_text(ks) if len(rs) >= 2 and len(ks) >= 2 else
+                    apple_db.compare(rs, html=False) if len(rs) >= 2 else apple_db.card(rs[0], html=False))
+            return "reply", _join(lead, _plain(body)), "other", 1.0, ""
 
     by_id = {x.get("id"): x for x in its}
     if by_id.get("i_other") and brain.product(text).startswith(INACTIVE_BRANDS):

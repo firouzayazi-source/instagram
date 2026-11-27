@@ -4,6 +4,7 @@ import aiofiles, types
 import appleid     # لینک ربات اپل‌آیدی از تنظیمات منو
 import brain       # موتور فهم پیام — بدون هیچ API بیرونی
 import specs       # مشخصات فنی آیفون‌ها (مقایسه)
+import apple_db    # دانشنامه‌ی همه‌ی محصولات اپل (مشخصات، رنگ، حافظه، سال)
 import profanity   # تشخیص فحش و توهین
 import catalog     # لیست کالای زنده از سایت (stland.ir)
 import sitepages   # صفحه‌ها و نوشته‌های سایت برای جواب آفلاین (به‌جز کالا)
@@ -7684,6 +7685,10 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
             keep_product=specs.name_of(keys[0])
             if action=="compare":
                 await msg.reply_text(f"با کدوم مدل مقایسه‌اش کنم؟ مثلاً «با {specs.name_of('16')}»")
+        elif apple_db.find(text):
+            rs=apple_db.find(text)
+            await _send_html(msg,_join(esc(lead),apple_db.compare(rs) if action=="compare" and len(rs)>=2
+                                       else apple_db.card(rs[0])),rows)
         elif brain.product(text) and not brain.product(text).startswith("آیفون"):
             hr=suggest_rows(ids=["i_human"])
             await msg.reply_text(_join(lead,"مشخصات دقیق این مدل رو همکارم براتون می‌گه 🙏"),
@@ -7816,6 +7821,20 @@ async def assistant_reply(update,ctx,text,user,dry=False):
         if mood=="complaint": set_human(uid,ctx.bot)
         return True
     if mood=="issue": lead=_join(lead,random.choice(brain.MOOD_LEADS["issue"]))
+
+    # ۲٫۴) مشخصات، رنگ‌ها، حافظه‌ها و سال عرضه‌ی هر محصول اپل از دانشنامه (apple_db؛ ۶ آذر ۱۴۰۵) — نه قیمت و موجودی
+    if mood!="issue":
+        rs=apple_db.spec_question(text)
+        if rs:
+            ks=specs.find_models(text)
+            body=(specs.compare_text(ks) if len(rs)>=2 and len(ks)>=2 else
+                  apple_db.compare(rs) if len(rs)>=2 else apple_db.card(rs[0]))
+            p0=rs[-1].get("name_fa","") if rs[-1].get("category")=="iphone" else ""
+            brain_ctx[uid]={"ts":now,"product":p0,"intent":"i_specs"}
+            await _typing(ctx.bot,msg.chat_id)
+            await _send_html(msg,_join(esc(lead),body))
+            if not dry: _bg(record_event(uid,"ai:i_specs"),"ev specs")
+            return True
 
     # ۲٫۵) محصولی که فعلاً نداریم (آیپد، مک‌بوک…) — قیمت و موجودی‌اش بی‌معنی است
     oth=faq_item("i_other")

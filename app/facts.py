@@ -177,6 +177,16 @@ def store_info(topic: str, question: str = "") -> dict:
     return out
 
 
+def apple_specs(query: str) -> dict:
+    """مشخصات رسمی هر محصول اپل از دانشنامه‌ی پروژه (tgbot/apple: آیفون، آیپد، مک، اپل‌واچ، ایرپاد…)."""
+    import apple_db  # tgbot/apple_db.py (مسیرش را brain_engine افزوده)
+    rs = apple_db.search(query or "")
+    if not rs:
+        return {"ok": False, "error": "این مدل در دانشنامه پیدا نشد؛ مشخصاتش را از حافظه نگو"}
+    return {"ok": True, "models": [apple_db.public(r) for r in rs],
+            "note": "مشخصات رسمی لحظه‌ی عرضه است، نه موجودی فروشگاه؛ قیمت و موجودی فقط از search_products"}
+
+
 def health() -> list[str]:
     """چیزهایی که اگر خراب باشند مغز داده‌ی ناقص دارد (برای پنل و گزارش)."""
     out = []
