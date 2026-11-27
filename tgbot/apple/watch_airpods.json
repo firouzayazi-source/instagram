@@ -20,7 +20,7 @@
    38,
    42
   ],
-  "display": "Retina OLED with Force Touch",
+  "display": "Retina OLED with Force Touch; sapphire crystal (steel, gold), Ion-X glass (Sport aluminum)",
   "materials": [
    "aluminum",
    "stainless steel",
@@ -36,6 +36,14 @@
     "fa": "خاکستری فضایی"
    },
    {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   },
+   {
     "en": "Stainless Steel",
     "fa": "استیل (نقره‌ای)"
    },
@@ -44,15 +52,15 @@
     "fa": "مشکی فضایی"
    },
    {
-    "en": "Yellow Gold",
-    "fa": "طلای زرد"
+    "en": "18-Karat Yellow Gold",
+    "fa": "طلای زرد ۱۸ عیار"
    },
    {
-    "en": "Rose Gold",
-    "fa": "رزگلد"
+    "en": "18-Karat Rose Gold",
+    "fa": "طلای رز ۱۸ عیار"
    }
   ],
-  "connectivity": "Bluetooth 4.0, Wi-Fi 802.11b/g/n (uses iPhone GPS)",
+  "connectivity": "Wi-Fi 802.11b/g/n 2.4GHz; Bluetooth 4.0 (uses iPhone GPS)",
   "battery": "up to 18h",
   "water": "IPX7 (splash resistant)",
   "features": [
@@ -63,7 +71,13 @@
    "Apple Pay"
   ],
   "discontinued": 2016,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/112009",
+   "https://support.apple.com/en-us/112010",
+   "https://support.apple.com/en-us/112011",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2014/09/09Apple-Unveils-Apple-Watch-Apples-Most-Personal-Device-Ever/"
+  ]
  },
  {
   "category": "watch",
@@ -87,7 +101,7 @@
    38,
    42
   ],
-  "display": "Retina OLED with Force Touch",
+  "display": "OLED Retina with Force Touch, 450 nits; Ion-X glass",
   "materials": [
    "aluminum"
   ],
@@ -109,7 +123,7 @@
     "fa": "خاکستری فضایی"
    }
   ],
-  "connectivity": "Bluetooth 4.0, Wi-Fi (uses iPhone GPS)",
+  "connectivity": "Wi-Fi 802.11b/g/n 2.4GHz; Bluetooth 4.2 (uses iPhone GPS)",
   "battery": "up to 18h",
   "water": "IPX7 (splash resistant)",
   "features": [
@@ -119,7 +133,11 @@
    "Apple Pay"
   ],
   "discontinued": 2018,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111985",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2016/09/apple-introduces-apple-watch-series-2/"
+  ]
  },
  {
   "category": "watch",
@@ -143,7 +161,7 @@
    38,
    42
   ],
-  "display": "Retina OLED with Force Touch, 1000 nits",
+  "display": "Second-generation OLED Retina with Force Touch, 1000 nits",
   "materials": [
    "aluminum",
    "stainless steel",
@@ -179,7 +197,7 @@
     "fa": "سرامیک سفید"
    }
   ],
-  "connectivity": "GPS (built-in); Bluetooth 4.0, Wi-Fi",
+  "connectivity": "Built-in GPS and GLONASS; Wi-Fi 802.11b/g/n 2.4GHz; Bluetooth 4.0",
   "battery": "up to 18h",
   "water": "WR50 (swimproof)",
   "features": [
@@ -189,7 +207,11 @@
    "Breathe app"
   ],
   "discontinued": 2017,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/112022",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2016/09/apple-introduces-apple-watch-series-2/"
+  ]
  },
  {
   "category": "watch",
@@ -249,7 +271,7 @@
     "fa": "سرامیک خاکستری"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular (LTE); Bluetooth 4.2",
+  "connectivity": "GPS / GPS + Cellular (LTE and UMTS); Wi-Fi 802.11b/g/n 2.4GHz; Bluetooth 4.2",
   "battery": "up to 18h",
   "water": "WR50 (swimproof)",
   "features": [
@@ -259,7 +281,11 @@
    "high heart rate notifications"
   ],
   "discontinued": 2022,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111891",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2017/09/apple-watch-series-3-features-built-in-cellular-and-more/"
+  ]
  },
  {
   "category": "watch",
@@ -283,7 +309,7 @@
    40,
    44
   ],
-  "display": "LTPO OLED Retina, larger edge-to-edge, 1000 nits",
+  "display": "LTPO OLED Retina with Force Touch, edge-to-edge, 1000 nits",
   "materials": [
    "aluminum",
    "stainless steel"
@@ -310,7 +336,7 @@
     "fa": "مشکی فضایی"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.0",
+  "connectivity": "GPS / GPS + Cellular (LTE and UMTS); Wi-Fi 802.11b/g/n 2.4GHz; Bluetooth 5.0",
   "battery": "up to 18h",
   "water": "WR50 (swimproof)",
   "features": [
@@ -320,7 +346,11 @@
    "haptic Digital Crown"
   ],
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111984",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2018/09/redesigned-apple-watch-series-4-revolutionizes-communication-fitness-and-health/"
+  ]
  },
  {
   "category": "watch",
@@ -344,7 +374,7 @@
    40,
    44
   ],
-  "display": "Always-On Retina LTPO OLED, 1000 nits",
+  "display": "Always-On Retina LTPO OLED with Force Touch, 1000 nits",
   "materials": [
    "aluminum",
    "stainless steel",
@@ -381,7 +411,7 @@
     "fa": "سرامیک سفید"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.0",
+  "connectivity": "GPS / GPS + Cellular (LTE and UMTS); Wi-Fi 802.11b/g/n 2.4GHz; Bluetooth 5.0",
   "battery": "up to 18h",
   "water": "WR50 (swimproof)",
   "features": [
@@ -392,7 +422,11 @@
    "fall detection"
   ],
   "discontinued": 2020,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/118453",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2019/09/apple-unveils-apple-watch-series-5/"
+  ]
  },
  {
   "category": "watch",
@@ -414,7 +448,7 @@
    40,
    44
   ],
-  "display": "Retina LTPO OLED (not always-on), up to 1000 nits",
+  "display": "Retina LTPO OLED (not always-on), 1000 nits",
   "materials": [
    "aluminum"
   ],
@@ -432,7 +466,7 @@
     "fa": "خاکستری فضایی"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.0",
+  "connectivity": "GPS / GPS + Cellular (LTE and UMTS); Wi-Fi 802.11b/g/n 2.4GHz; Bluetooth 5.0",
   "battery": "up to 18h",
   "water": "WR50 (swimproof)",
   "features": [
@@ -442,7 +476,11 @@
    "heart-rate notifications"
   ],
   "discontinued": 2022,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111862",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2020/09/apple-watch-se-the-ultimate-combination-of-design-function-and-value/"
+  ]
  },
  {
   "category": "watch",
@@ -466,7 +504,7 @@
    40,
    44
   ],
-  "display": "Always-On Retina LTPO OLED, 1000 nits (2.5x brighter always-on outdoors)",
+  "display": "Always-On Retina LTPO OLED, 1000 nits",
   "materials": [
    "aluminum",
    "stainless steel",
@@ -506,7 +544,7 @@
     "fa": "مشکی فضایی"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.0; U1 (Ultra Wideband)",
+  "connectivity": "GPS / GPS + Cellular (LTE and UMTS); Wi-Fi 802.11b/g/n 2.4GHz and 5GHz; Bluetooth 5.0; U1 (Ultra Wideband)",
   "battery": "up to 18h",
   "water": "WR50 (swimproof)",
   "features": [
@@ -516,7 +554,11 @@
    "U1 chip"
   ],
   "discontinued": 2021,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111918",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2020/09/apple-watch-series-6-delivers-breakthrough-wellness-and-fitness-capabilities/"
+  ]
  },
  {
   "category": "watch",
@@ -588,7 +630,7 @@
     "fa": "مشکی فضایی"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.0; U1",
+  "connectivity": "GPS / GPS + Cellular (LTE and UMTS); Wi-Fi 802.11b/g/n 2.4GHz and 5GHz; Bluetooth 5.0; U1 (Ultra Wideband)",
   "battery": "up to 18h",
   "water": "WR50, IP6X",
   "features": [
@@ -599,7 +641,11 @@
    "ECG"
   ],
   "discontinued": 2022,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111909",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2021/09/apple-reveals-apple-watch-series-7-featuring-the-largest-most-advanced-display/"
+  ]
  },
  {
   "category": "watch",
@@ -623,7 +669,7 @@
    41,
    45
   ],
-  "display": "Always-On Retina LTPO OLED, 1000 nits",
+  "display": "Always-On Retina LTPO OLED, up to 1000 nits",
   "materials": [
    "aluminum",
    "stainless steel"
@@ -654,7 +700,7 @@
     "fa": "طلایی"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.3; U1",
+  "connectivity": "GPS / GPS + Cellular (LTE and UMTS); Wi-Fi 802.11b/g/n 2.4GHz and 5GHz; Bluetooth 5.3; U1 (Ultra Wideband)",
   "battery": "up to 18h (up to 36h Low Power Mode)",
   "water": "WR50, IP6X",
   "features": [
@@ -665,7 +711,11 @@
    "Low Power Mode"
   ],
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111848",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2022/09/apple-reveals-apple-watch-series-8-and-the-new-apple-watch-se/"
+  ]
  },
  {
   "category": "watch",
@@ -687,7 +737,7 @@
    40,
    44
   ],
-  "display": "Retina LTPO OLED (not always-on), up to 1000 nits",
+  "display": "Retina LTPO OLED (not always-on), Ion-X glass, up to 1000 nits",
   "materials": [
    "aluminum"
   ],
@@ -705,7 +755,7 @@
     "fa": "نقره‌ای"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.3",
+  "connectivity": "GPS / GPS + Cellular (LTE and UMTS); Wi-Fi 4 (802.11n); Bluetooth 5.3",
   "battery": "up to 18h",
   "water": "WR50 (swimproof)",
   "features": [
@@ -714,7 +764,11 @@
    "heart-rate notifications"
   ],
   "discontinued": 2025,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111853",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2022/09/apple-reveals-apple-watch-series-8-and-the-new-apple-watch-se/"
+  ]
  },
  {
   "category": "watch",
@@ -735,7 +789,7 @@
   "sizes": [
    49
   ],
-  "display": "Always-On Retina LTPO OLED, up to 2000 nits",
+  "display": "Always-On Retina LTPO2 OLED, up to 2000 nits; flat sapphire crystal",
   "materials": [
    "titanium"
   ],
@@ -745,7 +799,7 @@
     "fa": "طبیعی (تیتانیومی)"
    }
   ],
-  "connectivity": "GPS + Cellular; dual-frequency GPS (L1+L5); Bluetooth 5.3",
+  "connectivity": "GPS + Cellular (LTE and UMTS); dual-frequency GPS (L1+L5); Wi-Fi 802.11b/g/n 2.4GHz and 5GHz; Bluetooth 5.3; U1 (Ultra Wideband)",
   "battery": "up to 36h (up to 60h Low Power Mode)",
   "water": "WR100, IP6X, EN13319 (dive to 40m)",
   "features": [
@@ -757,7 +811,11 @@
    "temperature sensing"
   ],
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111852",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2022/09/introducing-apple-watch-ultra/"
+  ]
  },
  {
   "category": "watch",
@@ -781,7 +839,7 @@
    41,
    45
   ],
-  "display": "Always-On Retina LTPO OLED, up to 2000 nits",
+  "display": "Always-On Retina LTPO OLED, up to 2000 nits; Ion-X glass (aluminum), sapphire (stainless steel)",
   "materials": [
    "aluminum",
    "stainless steel"
@@ -816,8 +874,8 @@
     "fa": "گرافیتی"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.3; second-gen Ultra Wideband",
-  "battery": "up to 18h (up to 36h Low Power Mode)",
+  "connectivity": "GPS / GPS + Cellular (LTE and UMTS); Wi-Fi 4 (802.11n); Bluetooth 5.3; second-gen Ultra Wideband",
+  "battery": "up to 18h (up to 36h Low Power Mode); 80% in ~45 min",
   "water": "WR50, IP6X",
   "features": [
    "double tap",
@@ -828,7 +886,11 @@
    "crash detection"
   ],
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111833",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2023/09/apple-introduces-the-advanced-new-apple-watch-series-9/"
+  ]
  },
  {
   "category": "watch",
@@ -849,7 +911,7 @@
   "sizes": [
    49
   ],
-  "display": "Always-On Retina LTPO OLED, up to 3000 nits",
+  "display": "Always-On Retina LTPO2 OLED, up to 3000 nits; flat sapphire crystal",
   "materials": [
    "titanium"
   ],
@@ -863,8 +925,8 @@
     "fa": "مشکی"
    }
   ],
-  "connectivity": "GPS + Cellular; dual-frequency GPS; Bluetooth 5.3; second-gen Ultra Wideband",
-  "battery": "up to 36h (up to 72h Low Power Mode)",
+  "connectivity": "GPS + Cellular (LTE and UMTS); dual-frequency GPS (L1+L5); Wi-Fi 4 (802.11n); Bluetooth 5.3; second-gen Ultra Wideband",
+  "battery": "up to 36h (up to 72h Low Power Mode); 80% in ~1 hour",
   "water": "WR100, IP6X, EN13319 (dive to 40m)",
   "features": [
    "double tap",
@@ -876,7 +938,10 @@
   ],
   "discontinued": 2025,
   "sources": [
-   "https://www.macrumors.com/2025/09/09/apple-discontinues-these-apple-watch-models/"
+   "https://support.apple.com/en-us/111832",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2023/09/apple-unveils-apple-watch-ultra-2/",
+   "https://www.apple.com/newsroom/2024/09/apple-watch-ultra-2-now-available-in-black-titanium/"
   ]
  },
  {
@@ -932,7 +997,7 @@
     "fa": "طبیعی (تیتانیومی)"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.3",
+  "connectivity": "GPS / GPS + Cellular (LTE and UMTS); Wi-Fi 4 (802.11n); Bluetooth 5.3; second-gen Ultra Wideband",
   "battery": "up to 18h (up to 36h Low Power Mode); 80% in ~30 min",
   "water": "WR50, IP6X",
   "features": [
@@ -945,9 +1010,9 @@
   ],
   "discontinued": 2025,
   "sources": [
-   "https://support.apple.com/121202",
-   "https://www.apple.com/apple-watch-series-10/specs/",
-   "https://www.macrumors.com/2025/09/09/apple-discontinues-these-apple-watch-models/"
+   "https://support.apple.com/en-us/121202",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2024/09/introducing-apple-watch-series-10/"
   ]
  },
  {
@@ -1007,7 +1072,7 @@
     "fa": "طبیعی (تیتانیومی)"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular (5G RedCap on supported models); Bluetooth 5.3",
+  "connectivity": "GPS / GPS + Cellular (5G RedCap and LTE); Wi-Fi 4 (802.11n) 2.4GHz and 5GHz; Bluetooth 5.3; second-gen Ultra Wideband",
   "battery": "up to 24h (up to 38h Low Power Mode); 80% in ~30 min",
   "water": "WR50, IP6X",
   "features": [
@@ -1020,9 +1085,9 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://support.apple.com/125093",
-   "https://www.apple.com/apple-watch-series-11/specs/",
-   "https://techcrunch.com/2025/09/09/apple-unveils-apple-watch-series-11-watch-ultra-3-and-watch-se-3"
+   "https://support.apple.com/en-us/125093",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2025/09/apple-debuts-apple-watch-series-11-featuring-groundbreaking-health-insights/"
   ]
  },
  {
@@ -1045,7 +1110,7 @@
    40,
    44
   ],
-  "display": "Always-On Retina LTPO OLED, up to 1000 nits",
+  "display": "Always-On Retina OLED (LTPO), up to 1000 nits; Ion-X glass with 4x crack resistance",
   "materials": [
    "aluminum"
   ],
@@ -1059,7 +1124,7 @@
     "fa": "استارلایت (کرم)"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.3",
+  "connectivity": "GPS / GPS + Cellular (5G RedCap and LTE); Wi-Fi 4 (802.11n) 2.4GHz; Bluetooth 5.3",
   "battery": "up to 18h (up to 32h Low Power Mode); 80% in ~45 min",
   "water": "WR50",
   "features": [
@@ -1071,9 +1136,9 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/uk/apple-watch-se-3/specs/",
-   "https://techcrunch.com/2025/09/09/apple-unveils-apple-watch-series-11-watch-ultra-3-and-watch-se-3",
-   "https://m.gsmarena.com/apple_watch_series_11_watch_se_3_and_watch_ultra_3_announced_-news-69424.php"
+   "https://support.apple.com/en-us/125094",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2025/09/apple-introduces-apple-watch-se-3/"
   ]
  },
  {
@@ -1095,7 +1160,7 @@
   "sizes": [
    49
   ],
-  "display": "Always-On Retina wide-angle OLED (LTPO3), largest Apple Watch display, 1Hz always-on",
+  "display": "Always-On Retina wide-angle OLED (LTPO3), 1Hz always-on, up to 3000 nits; flat sapphire crystal, largest Apple Watch display",
   "materials": [
    "titanium"
   ],
@@ -1109,7 +1174,7 @@
     "fa": "مشکی"
    }
   ],
-  "connectivity": "GPS + Cellular (5G); satellite (Emergency SOS, Messages, Find My); dual-frequency GPS; Bluetooth 5.3",
+  "connectivity": "GPS + Cellular (5G RedCap and LTE); satellite (Emergency SOS, Messages, Find My); dual-frequency GPS (L1+L5); Wi-Fi 4 (802.11n); Bluetooth 5.3; second-gen Ultra Wideband",
   "battery": "up to 42h (up to 72h Low Power Mode); 80% in ~45 min",
   "water": "WR100, IP6X, EN13319 (dive to 40m)",
   "features": [
@@ -1122,9 +1187,9 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/newsroom/2025/09/introducing-apple-watch-ultra-3/",
-   "https://support.apple.com/125095",
-   "https://www.apple.com/apple-watch-ultra-3/specs/"
+   "https://support.apple.com/en-us/125095",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2025/09/introducing-apple-watch-ultra-3/"
   ]
  },
  {
@@ -1149,7 +1214,7 @@
    42,
    46
   ],
-  "display": "Always-On Retina LTPO OLED, up to 2000 nits; Ceramic Shield 2 (aluminum), sapphire (titanium, ceramic)",
+  "display": "Always-On Retina wide-angle OLED (LTPO3), 1Hz always-on, 2000 nits; Ceramic Shield 2 (aluminum), sapphire (titanium, ceramic)",
   "materials": [
    "aluminum",
    "titanium",
@@ -1189,7 +1254,7 @@
     "fa": "آبی شب"
    }
   ],
-  "connectivity": "GPS / GPS + Cellular (LTE and 5G NR)",
+  "connectivity": "GPS / GPS + Cellular (5G RedCap and LTE); Wi-Fi 4 (802.11n) 2.4GHz and 5GHz; Bluetooth 5.3; second-gen Ultra Wideband",
   "battery": "up to 24h (up to 38h Low Power Mode); 80% in ~30 min",
   "water": "WR50, IP6X",
   "features": [
@@ -1205,10 +1270,9 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://apple.com/newsroom/2026/09/introducing-apple-watch-series-12-with-the-all-new-health-sensing-system/",
-   "https://www.apple.com/apple-watch-series-12/specs/",
-   "https://support.apple.com/en-gb/148589",
-   "https://www.macrumors.com/2026/09/09/apple-watch-series-12-announced-all-day-hr-sensor/"
+   "https://support.apple.com/en-us/148589",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2026/09/introducing-apple-watch-series-12-with-the-all-new-health-sensing-system/"
   ]
  },
  {
@@ -1230,7 +1294,7 @@
   "sizes": [
    49
   ],
-  "display": "Always-On Retina OLED, up to 3000 nits",
+  "display": "Always-On Retina wide-angle OLED (LTPO3), 1Hz always-on, 3000 nits; flat sapphire crystal",
   "materials": [
    "titanium"
   ],
@@ -1244,7 +1308,7 @@
     "fa": "مشکی"
    }
   ],
-  "connectivity": "GPS + Cellular; satellite (Emergency SOS, Messages, Find My); dual-frequency GPS; Bluetooth 5.3",
+  "connectivity": "GPS + Cellular (5G RedCap and LTE); satellite (Emergency SOS, Messages, Find My); precision dual-frequency GPS; Wi-Fi 4 (802.11n); Bluetooth 5.3; second-gen Ultra Wideband",
   "battery": "up to 50h (up to 84h Low Power Mode); 15 min charge adds up to 18h",
   "water": "WR100, IP6X, EN13319 (dive to 40m)",
   "features": [
@@ -1257,9 +1321,9 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/ae/newsroom/2026/09/apple-unveils-apple-watch-ultra-4/",
-   "https://www.apple.com/apple-watch-ultra-4/specs/",
-   "https://engadget.com/2254048/apple-watch-ultra-4-comes-with-better-battery-and-upgraded-health-tracking/"
+   "https://support.apple.com/en-us/148758",
+   "https://support.apple.com/en-us/108056",
+   "https://www.apple.com/newsroom/2026/09/apple-unveils-apple-watch-ultra-4/"
   ]
  },
  {
@@ -1287,7 +1351,7 @@
     "fa": "سفید"
    }
   ],
-  "connectivity": "Bluetooth (W1); Lightning case",
+  "connectivity": "Bluetooth (W1); Lightning Charging Case",
   "battery": "up to 5h listening, 24h+ with case",
   "water": null,
   "features": [
@@ -1296,7 +1360,11 @@
    "optical in-ear sensors"
   ],
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111855",
+   "https://support.apple.com/en-us/109525",
+   "https://www.apple.com/newsroom/2016/09/apple-reinvents-the-wireless-headphones-with-airpods/"
+  ]
  },
  {
   "category": "airpods",
@@ -1322,7 +1390,7 @@
     "fa": "سفید"
    }
   ],
-  "connectivity": "Bluetooth 5.0; Lightning case (standard or Wireless Charging Case)",
+  "connectivity": "Bluetooth 5.0; Lightning Charging Case or Wireless Charging Case (Qi)",
   "battery": "up to 5h listening, 24h+ with case",
   "water": null,
   "features": [
@@ -1331,7 +1399,12 @@
    "optional wireless charging case"
   ],
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111856",
+   "https://support.apple.com/en-us/111860",
+   "https://support.apple.com/en-us/109525",
+   "https://www.apple.com/newsroom/2019/03/airpods-the-worlds-most-popular-wireless-headphones-are-getting-even-better/"
+  ]
  },
  {
   "category": "airpods",
@@ -1358,7 +1431,7 @@
     "fa": "سفید"
    }
   ],
-  "connectivity": "Bluetooth 5.0; Lightning wireless charging case (MagSafe case from Oct 2021)",
+  "connectivity": "Bluetooth 5.0; Wireless Charging Case (Lightning, Qi); MagSafe Charging Case from 2021",
   "battery": "up to 4.5h listening (5h ANC off), 24h+ with case",
   "water": "IPX4 (earbuds)",
   "features": [
@@ -1368,7 +1441,12 @@
    "silicone ear tips"
   ],
   "discontinued": 2022,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111861",
+   "https://support.apple.com/en-us/111859",
+   "https://support.apple.com/en-us/109525",
+   "https://www.apple.com/newsroom/2019/10/apple-reveals-new-airpods-pro-available-october-30/"
+  ]
  },
  {
   "category": "airpods",
@@ -1380,8 +1458,7 @@
    "airpods max lightning",
    "ایرپادز مکس",
    "ایرپاد مکس",
-   "ایرپاد مکس لایتنینگ",
-   "هدفون اپل"
+   "ایرپاد مکس لایتنینگ"
   ],
   "year": 2020,
   "announced": "2020-12-08",
@@ -1411,18 +1488,22 @@
     "fa": "صورتی"
    }
   ],
-  "connectivity": "Bluetooth 5.0; Lightning; Smart Case",
+  "connectivity": "Bluetooth 5.0; Lightning charging; Smart Case",
   "battery": "up to 20h (ANC or Transparency on)",
   "water": null,
   "features": [
    "Active Noise Cancellation",
    "Transparency mode",
-   "Spatial Audio",
+   "Personalized Spatial Audio",
    "Digital Crown",
    "Smart Case"
   ],
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111858",
+   "https://support.apple.com/en-us/109525",
+   "https://www.apple.com/newsroom/2020/12/apple-introduces-airpods-max-the-magic-of-airpods-in-a-stunning-over-ear-design/"
+  ]
  },
  {
   "category": "airpods",
@@ -1448,17 +1529,21 @@
     "fa": "سفید"
    }
   ],
-  "connectivity": "Bluetooth 5.0; Lightning or MagSafe charging case",
+  "connectivity": "Bluetooth 5.0; Lightning Charging Case or MagSafe Charging Case",
   "battery": "up to 6h listening, 30h with case",
   "water": "IPX4 (earbuds and case)",
   "features": [
-   "Spatial Audio",
+   "Personalized Spatial Audio",
    "Adaptive EQ",
    "force sensor",
    "skin-detect sensor"
   ],
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111863",
+   "https://support.apple.com/en-us/109525",
+   "https://www.apple.com/newsroom/2021/10/introducing-the-next-generation-of-airpods/"
+  ]
  },
  {
   "category": "airpods",
@@ -1485,7 +1570,7 @@
     "fa": "سفید"
    }
   ],
-  "connectivity": "Bluetooth 5.3; MagSafe Charging Case (Lightning) with speaker and U1",
+  "connectivity": "Bluetooth 5.3; MagSafe Charging Case (Lightning) with speaker, lanyard loop and U1 (MagSafe, Apple Watch charger, Qi)",
   "battery": "up to 6h listening with ANC, 30h with case",
   "water": "IPX4 (earbuds and case)",
   "features": [
@@ -1496,7 +1581,11 @@
    "Precision Finding for case"
   ],
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111851",
+   "https://support.apple.com/en-us/109525",
+   "https://www.apple.com/newsroom/2022/09/apple-announces-the-next-generation-of-airpods-pro/"
+  ]
  },
  {
   "category": "airpods",
@@ -1522,7 +1611,7 @@
     "fa": "سفید"
    }
   ],
-  "connectivity": "Bluetooth 5.3; MagSafe Charging Case (USB-C) with speaker; Precision Finding",
+  "connectivity": "Bluetooth 5.3; MagSafe Charging Case (USB-C) with speaker, lanyard loop and U1 (MagSafe, Apple Watch charger, Qi); Precision Finding",
   "battery": "up to 6h listening with ANC, 30h with case",
   "water": "IP54 (earbuds and case)",
   "features": [
@@ -1534,7 +1623,9 @@
   ],
   "discontinued": 2025,
   "sources": [
-   "https://www.macrumors.com/2025/09/09/apple-discontinues-these-apple-watch-models/"
+   "https://support.apple.com/en-us/111834",
+   "https://support.apple.com/en-us/109525",
+   "https://www.apple.com/newsroom/2023/09/apple-upgrades-airpods-pro-2nd-generation-with-usb-c-charging/"
   ]
  },
  {
@@ -1573,7 +1664,8 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/uk/airpods-4/specs/",
+   "https://support.apple.com/en-us/121203",
+   "https://support.apple.com/en-us/109525",
    "https://www.apple.com/newsroom/2024/09/apple-introduces-airpods-4-and-a-hearing-health-experience-with-airpods-pro-2/"
   ]
  },
@@ -1614,7 +1706,8 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/uk/airpods-4/specs/",
+   "https://support.apple.com/en-us/121204",
+   "https://support.apple.com/en-us/109525",
    "https://www.apple.com/newsroom/2024/09/apple-introduces-airpods-4-and-a-hearing-health-experience-with-airpods-pro-2/"
   ]
  },
@@ -1658,7 +1751,7 @@
     "fa": "نارنجی"
    }
   ],
-  "connectivity": "Bluetooth 5.0; USB-C (lossless and low-latency wired audio via USB-C added by 2025 firmware); Smart Case",
+  "connectivity": "Bluetooth 5.0; USB-C charging (Lossless Audio via USB-C); Smart Case",
   "battery": "up to 20h (ANC or Transparency on)",
   "water": null,
   "features": [
@@ -1670,6 +1763,8 @@
   ],
   "discontinued": null,
   "sources": [
+   "https://support.apple.com/en-us/121205",
+   "https://support.apple.com/en-us/109525",
    "https://www.apple.com/newsroom/2024/09/apple-introduces-airpods-4-and-a-hearing-health-experience-with-airpods-pro-2/"
   ]
  },
@@ -1696,7 +1791,7 @@
     "fa": "سفید"
    }
   ],
-  "connectivity": "Bluetooth 5.3; MagSafe Charging Case (USB-C, Qi, Apple Watch charger); Precision Finding",
+  "connectivity": "Bluetooth 5.3; MagSafe Charging Case (USB-C) with speaker, lanyard loop and second-gen Ultra Wideband (MagSafe, Apple Watch charger, Qi); Precision Finding",
   "battery": "up to 8h listening with ANC, 24h with case",
   "water": "IP57 (earbuds and case)",
   "features": [
@@ -1708,8 +1803,9 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://apple.com/airpods-pro/specs/",
-   "https://support.apple.com/en-gb/125135"
+   "https://support.apple.com/en-us/125135",
+   "https://support.apple.com/en-us/109525",
+   "https://www.apple.com/newsroom/2025/09/introducing-airpods-pro-3-the-ultimate-audio-experience/"
   ]
  },
  {
@@ -1764,10 +1860,9 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/hr/newsroom/2026/03/apple-introduces-airpods-max-2-powered-by-h2/",
-   "https://support.apple.com/en-nz/126620",
-   "https://www.apple.com/jo/airpods-max/specs/",
-   "https://macrumors.com/2026/03/16/apple-announces-airpods-max-2/"
+   "https://support.apple.com/en-us/126620",
+   "https://support.apple.com/en-us/109525",
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-airpods-max-2-powered-by-h2/"
   ]
  },
  {
@@ -1789,7 +1884,7 @@
   "materials": null,
   "colors": [],
   "connectivity": "Bluetooth 5.3; USB-C charging case",
-  "battery": "up to 4h listening with ANC",
+  "battery": "up to 4h listening with ANC (6h noise control off), 20h with case",
   "water": "IP57 (earbuds and case)",
   "features": [
    "Active Noise Cancellation standard (up to 50% more than AirPods 4 ANC)",
@@ -1799,10 +1894,9 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://apple.com/newsroom/2026/09/apple-introduces-airpods-5-with-best-in-class-open-ear-active-noise-cancellation/",
-   "https://www.apple.com/uk/airpods-5/specs/",
-   "https://www.macrumors.com/2026/09/09/airpods-5-include-anc-as-standard/",
-   "https://www.techrepublic.com/article/news-airpods-5-wireless-charging-case/"
+   "https://support.apple.com/en-us/148759",
+   "https://support.apple.com/en-us/109525",
+   "https://www.apple.com/newsroom/2026/09/apple-introduces-airpods-5-with-best-in-class-open-ear-active-noise-cancellation/"
   ]
  },
  {
@@ -1825,7 +1919,7 @@
   "materials": null,
   "colors": [],
   "connectivity": "Bluetooth 5.3; USB-C wireless charging case (Qi, Apple Watch charger) with speaker for Find My",
-  "battery": "up to 5h listening with ANC",
+  "battery": "up to 5h listening with ANC (7h noise control off), 22h with case",
   "water": "IP57 (earbuds and case)",
   "features": [
    "Active Noise Cancellation (up to 50% more than AirPods 4 ANC)",
@@ -1835,10 +1929,9 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://apple.com/newsroom/2026/09/apple-introduces-airpods-5-with-best-in-class-open-ear-active-noise-cancellation/",
-   "https://www.apple.com/uk/airpods-5/specs/",
-   "https://www.macrumors.com/2026/09/09/airpods-5-include-anc-as-standard/",
-   "https://www.techrepublic.com/article/news-airpods-5-wireless-charging-case/"
+   "https://support.apple.com/en-us/148760",
+   "https://support.apple.com/en-us/109525",
+   "https://www.apple.com/newsroom/2026/09/apple-introduces-airpods-5-with-best-in-class-open-ear-active-noise-cancellation/"
   ]
  },
  {
@@ -1873,7 +1966,11 @@
    "tilt sensitivity"
   ],
   "discontinued": null,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/108937",
+   "https://www.apple.com/apple-pencil/",
+   "https://www.apple.com/newsroom/2015/09/09Apple-Introduces-iPad-Pro-Featuring-Epic-12-9-inch-Retina-Display/"
+  ]
  },
  {
   "category": "accessory",
@@ -1909,7 +2006,11 @@
    "magnetic attach"
   ],
   "discontinued": null,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/108937",
+   "https://www.apple.com/apple-pencil/",
+   "https://www.apple.com/newsroom/2018/10/new-ipad-pro-with-all-screen-design-is-most-advanced-powerful-ipad-ever/"
+  ]
  },
  {
   "category": "accessory",
@@ -1944,7 +2045,11 @@
    "hover (supported iPads)"
   ],
   "discontinued": null,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/108937",
+   "https://www.apple.com/apple-pencil/",
+   "https://www.apple.com/newsroom/2023/10/apple-introduces-new-apple-pencil-bringing-more-value-and-choice-to-the-lineup/"
+  ]
  },
  {
   "category": "accessory",
@@ -1969,7 +2074,7 @@
     "fa": "سفید"
    }
   ],
-  "connectivity": "Bluetooth; magnetic pairing and wireless charging",
+  "connectivity": "Bluetooth; magnetically attaches, pairs and charges",
   "battery": null,
   "water": null,
   "features": [
@@ -1983,9 +2088,10 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://support.apple.com/120123",
-   "https://www.macrumors.com/2024/05/09/apple-pencil-pro-features",
-   "https://www.tomsguide.com/tablets/ipads/apple-announces-apple-pencil-pro-with-barrel-roll-and-squeeze-capabilities"
+   "https://support.apple.com/en-us/120123",
+   "https://support.apple.com/en-us/108937",
+   "https://www.apple.com/apple-pencil/",
+   "https://www.apple.com/newsroom/2024/05/apple-unveils-stunning-new-ipad-pro-with-m4-chip-and-apple-pencil-pro/"
   ]
  },
  {
@@ -2013,7 +2119,7 @@
     "fa": "سفید"
    }
   ],
-  "connectivity": "Bluetooth LE; U1 Ultra Wideband; NFC; Find My network",
+  "connectivity": "Bluetooth LE; U1 Ultra Wideband (Precision Finding); NFC (Lost Mode); Find My network",
   "battery": "over a year on a replaceable CR2032 coin cell",
   "water": "IP67",
   "features": [
@@ -2022,7 +2128,10 @@
    "Lost Mode via NFC"
   ],
   "discontinued": null,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111847",
+   "https://www.apple.com/newsroom/2021/04/apple-introduces-airtag/"
+  ]
  },
  {
   "category": "accessory",
@@ -2049,7 +2158,7 @@
     "fa": "سفید"
    }
   ],
-  "connectivity": "Bluetooth (upgraded); second-gen Ultra Wideband; NFC; Find My network",
+  "connectivity": "Bluetooth; second-gen Ultra Wideband (expanded Precision Finding); NFC (Lost Mode); Find My network",
   "battery": "over a year on a replaceable CR2032 coin cell",
   "water": "IP67",
   "features": [
@@ -2060,9 +2169,8 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://support.apple.com/126203",
-   "https://www.apple.com/li/newsroom/2026/01/apple-introduces-new-airtag-with-expanded-range-and-improved-findability/",
-   "https://www.macrumors.com/2026/01/26/apple-announces-new-airtag/"
+   "https://support.apple.com/en-us/126203",
+   "https://www.apple.com/newsroom/2026/01/apple-introduces-new-airtag-with-expanded-range-and-improved-findability/"
   ]
  },
  {
@@ -2081,10 +2189,10 @@
   "announced": "2023-06-05",
   "chip": "M2 + R1",
   "sizes": null,
-  "display": "dual micro-OLED, 23 million pixels, up to 100Hz",
+  "display": "micro-OLED 3D display system, 23 million pixels, 90/96/100Hz",
   "materials": null,
   "colors": [],
-  "connectivity": "Wi-Fi 6, Bluetooth 5.3; external battery pack",
+  "connectivity": "Wi-Fi 6 (802.11ax), Bluetooth 5.3; external battery pack",
   "battery": "up to 2h general use, 2.5h video",
   "water": null,
   "features": [
@@ -2096,8 +2204,8 @@
   ],
   "discontinued": 2025,
   "sources": [
-   "https://www.macrumors.com/2024/01/19/apple-vision-pro-tech-specs/",
-   "https://support.apple.com/en-ng/117810"
+   "https://support.apple.com/en-us/117810",
+   "https://www.apple.com/newsroom/2023/06/introducing-apple-vision-pro/"
   ]
  },
  {
@@ -2116,10 +2224,10 @@
   "announced": "2025-10-15",
   "chip": "M5 + R1",
   "sizes": null,
-  "display": "dual micro-OLED, up to 120Hz",
+  "display": "micro-OLED 3D display system, 23 million pixels, 90/96/100/120Hz",
   "materials": null,
   "colors": [],
-  "connectivity": "external tethered battery pack",
+  "connectivity": "Wi-Fi 6 (802.11ax), Bluetooth 5.3; external battery pack",
   "battery": "up to 2.5h general use, 3h video",
   "water": null,
   "features": [
@@ -2131,9 +2239,9 @@
   ],
   "discontinued": null,
   "sources": [
-   "https://www.macrumors.com/2025/10/15/apple-announces-vision-pro-with-m5-chip/",
-   "https://support.apple.com/en-gb/125436",
-   "https://apple.com/apple-vision-pro/specs/"
+   "https://support.apple.com/en-us/125436",
+   "https://www.apple.com/apple-vision-pro/specs/",
+   "https://www.apple.com/newsroom/2025/10/apple-vision-pro-upgraded-with-the-m5-chip-and-dual-knit-band/"
   ]
  }
 ]
