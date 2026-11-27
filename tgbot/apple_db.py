@@ -161,8 +161,8 @@ def find(text: str, limit: int = 3) -> list[dict]:
 
 _MODELISH = re.compile(r"^(?:m\d+|a\d+|\d+(?:\.\d+)?|pro|max|plus|mini|ultra|air|se|e|gen|series|inch)$")
 _FAMILY = {"apple", "iphone", "ipad", "macbook", "imac", "mac", "watch", "airpods", "pro", "max", "plus", "mini",
-           "air", "ultra", "se", "studio", "ipod", "homepod", "tv"}
-_CAT_WORDS = ("iphone", "ipad", "macbook", "imac", "mac", "watch", "airpods", "ipod", "homepod")
+           "air", "ultra", "se", "studio", "ipod", "tv", "nano", "shuffle", "classic", "touch"}
+_CAT_WORDS = ("iphone", "ipad", "macbook", "imac", "mac", "watch", "airpods", "ipod", "homepod", "tv")
 
 
 def _loose(toks: list) -> list[dict]:

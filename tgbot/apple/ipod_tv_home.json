@@ -1,0 +1,2614 @@
+[
+ {
+  "category": "ipod",
+  "key": "ipod 1",
+  "name": "iPod (Scroll Wheel)",
+  "name_fa": "آیپاد نسل ۱ (اسکرول ویل)",
+  "aliases": [
+   "ipod 1",
+   "ipod 1st gen",
+   "ipod first generation",
+   "ipod scroll wheel",
+   "آیپاد نسل ۱",
+   "ایپاد نسل 1",
+   "آیپاد نسل اول",
+   "اولین آیپاد"
+  ],
+  "year": 2001,
+  "announced": "2001-10-23",
+  "chip": null,
+  "sizes": [
+   5,
+   10
+  ],
+  "display": "2-inch grayscale LCD 160x128",
+  "materials": null,
+  "colors": [],
+  "connectivity": "FireWire 400 (6-pin)",
+  "battery": "up to 10h audio",
+  "water": null,
+  "features": [
+   "mechanical scroll wheel",
+   "hard drive",
+   "model M8541"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112530",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2001/10/23Apple-Presents-iPod/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod 2",
+  "name": "iPod (Touch Wheel)",
+  "name_fa": "آیپاد نسل ۲ (تاچ ویل)",
+  "aliases": [
+   "ipod 2",
+   "ipod 2nd gen",
+   "ipod second generation",
+   "ipod touch wheel",
+   "آیپاد نسل ۲",
+   "ایپاد نسل 2",
+   "آیپاد نسل دوم"
+  ],
+  "year": 2002,
+  "announced": "2002-07-17",
+  "chip": null,
+  "sizes": [
+   10,
+   20
+  ],
+  "display": "2-inch grayscale LCD 160x128",
+  "materials": null,
+  "colors": [],
+  "connectivity": "FireWire 400 (6-pin)",
+  "battery": "up to 10h audio",
+  "water": null,
+  "features": [
+   "solid-state touch wheel",
+   "hard drive",
+   "FireWire port cover",
+   "model A1019"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112462",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2002/07/17Apple-Unveils-New-iPods/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod 3",
+  "name": "iPod (Dock Connector)",
+  "name_fa": "آیپاد نسل ۳ (داک کانکتور)",
+  "aliases": [
+   "ipod 3",
+   "ipod 3rd gen",
+   "ipod third generation",
+   "ipod dock connector",
+   "آیپاد نسل ۳",
+   "ایپاد نسل 3",
+   "آیپاد نسل سوم"
+  ],
+  "year": 2003,
+  "announced": "2003-04-28",
+  "chip": null,
+  "sizes": [
+   10,
+   15,
+   20,
+   30,
+   40
+  ],
+  "display": "2-inch grayscale LCD 160x128",
+  "materials": null,
+  "colors": [],
+  "connectivity": "30-pin dock connector, FireWire 400 and USB 2.0",
+  "battery": "up to 8h audio",
+  "water": null,
+  "features": [
+   "touch wheel",
+   "touch-sensitive buttons above the wheel",
+   "first iPod with dock connector",
+   "hard drive",
+   "model A1040"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112515",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2003/04/28Apple-Introduces-New-iPods/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod 4",
+  "name": "iPod (Click Wheel)",
+  "name_fa": "آیپاد نسل ۴ (کلیک ویل)",
+  "aliases": [
+   "ipod 4",
+   "ipod 4th gen",
+   "ipod fourth generation",
+   "ipod click wheel",
+   "آیپاد نسل ۴",
+   "ایپاد نسل 4",
+   "آیپاد نسل چهارم",
+   "آیپاد کلیک ویل"
+  ],
+  "year": 2004,
+  "announced": "2004-07-19",
+  "chip": null,
+  "sizes": [
+   20,
+   40
+  ],
+  "display": "2-inch grayscale LCD 160x128",
+  "materials": null,
+  "colors": [],
+  "connectivity": "30-pin dock connector, FireWire 400 and USB 2.0",
+  "battery": "up to 12h audio",
+  "water": null,
+  "features": [
+   "Click Wheel",
+   "monochrome display",
+   "hard drive",
+   "U2 Special Edition (20GB)",
+   "model A1059"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112541",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2004/07/19Apple-Introduces-the-New-iPod/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod photo",
+  "name": "iPod photo",
+  "name_fa": "آیپاد فوتو",
+  "aliases": [
+   "ipod photo",
+   "آیپاد فوتو",
+   "ایپاد فوتو",
+   "آیپاد photo"
+  ],
+  "year": 2004,
+  "announced": "2004-10-26",
+  "chip": null,
+  "sizes": [
+   30,
+   40,
+   60
+  ],
+  "display": "2-inch color LCD 220x176",
+  "materials": null,
+  "colors": [],
+  "connectivity": "30-pin dock connector, FireWire 400 and USB 2.0",
+  "battery": "up to 15h audio, 5h slideshows",
+  "water": null,
+  "features": [
+   "color display",
+   "Click Wheel",
+   "photo slideshows with TV out",
+   "hard drive",
+   "model A1099"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112449",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2004/10/26Apple-Introduces-iPod-Photo/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod color",
+  "name": "iPod with color display",
+  "name_fa": "آیپاد با نمایشگر رنگی",
+  "aliases": [
+   "ipod color display",
+   "ipod with color display",
+   "ipod color",
+   "آیپاد صفحه رنگی",
+   "آیپاد نمایشگر رنگی",
+   "ایپاد رنگی"
+  ],
+  "year": 2005,
+  "announced": "2005-06-28",
+  "chip": null,
+  "sizes": [
+   20,
+   60
+  ],
+  "display": "2-inch color LCD 220x176",
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "30-pin dock connector, FireWire 400 and USB 2.0",
+  "battery": "up to 15h audio, 5h slideshows",
+  "water": null,
+  "features": [
+   "color display",
+   "Click Wheel",
+   "merged iPod and iPod photo lines",
+   "U2 and Harry Potter editions",
+   "hard drive",
+   "model A1099"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112539",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2005/06/28Apple-Merges-iPod-iPod-photo-Lines/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod 5",
+  "name": "iPod (5th generation)",
+  "name_fa": "آیپاد نسل ۵ (ویدیو)",
+  "aliases": [
+   "ipod 5",
+   "ipod 5th gen",
+   "ipod fifth generation",
+   "ipod video 2005",
+   "ipod with video 2005",
+   "آیپاد نسل ۵",
+   "ایپاد نسل 5",
+   "آیپاد نسل پنجم",
+   "آیپاد ویدیو ۲۰۰۵"
+  ],
+  "year": 2005,
+  "announced": "2005-10-12",
+  "chip": null,
+  "sizes": [
+   30,
+   60
+  ],
+  "display": "2.5-inch color LCD 320x240",
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "30-pin dock connector, USB 2.0",
+  "battery": "up to 20h audio, 3h video (60GB)",
+  "water": null,
+  "features": [
+   "video playback",
+   "Click Wheel",
+   "hard drive",
+   "model A1238"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111923",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2005/10/12Apple-Unveils-the-New-iPod/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod 5 late 2006",
+  "name": "iPod (5th generation Late 2006)",
+  "name_fa": "آیپاد نسل ۵ (اواخر ۲۰۰۶)",
+  "aliases": [
+   "ipod 5 late 2006",
+   "ipod 5 2006",
+   "ipod 5.5",
+   "ipod video 2006",
+   "ipod video 80gb",
+   "ipod 5th gen late 2006",
+   "آیپاد نسل ۵ ۲۰۰۶",
+   "ایپاد نسل 5 2006",
+   "آیپاد ویدیو ۲۰۰۶",
+   "آیپاد ویدیو ۸۰ گیگ"
+  ],
+  "year": 2006,
+  "announced": "2006-09-12",
+  "chip": null,
+  "sizes": [
+   30,
+   80
+  ],
+  "display": "2.5-inch color LCD 320x240",
+  "materials": null,
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "30-pin dock connector, USB 2.0",
+  "battery": "up to 20h audio, 6.5h video (80GB)",
+  "water": null,
+  "features": [
+   "60% brighter display",
+   "video playback",
+   "Click Wheel",
+   "hard drive",
+   "model A1238"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112454",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2006/09/12Apple-Introduces-the-New-iPod/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod classic 2007",
+  "name": "iPod classic",
+  "name_fa": "آیپاد کلاسیک (۲۰۰۷)",
+  "aliases": [
+   "ipod classic 2007",
+   "ipod classic 80gb",
+   "ipod classic 6th gen",
+   "آیپاد کلاسیک ۲۰۰۷",
+   "ایپاد کلاسیک 2007",
+   "آیپاد کلاسیک ۸۰ گیگ",
+   "ایپاد کلاسیک 80"
+  ],
+  "year": 2007,
+  "announced": "2007-09-05",
+  "chip": null,
+  "sizes": [
+   80,
+   160
+  ],
+  "display": "2.5-inch color LCD 320x240",
+  "materials": [
+   "anodized aluminum",
+   "polished stainless steel"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "30-pin dock connector, USB 2.0",
+  "battery": "up to 40h audio, 7h video (160GB)",
+  "water": null,
+  "features": [
+   "Click Wheel",
+   "photo and video playback",
+   "hard drive",
+   "model A1238"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112478",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2007/09/05Apple-Introduces-New-iPod-classic/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod classic 2008",
+  "name": "iPod classic (120GB)",
+  "name_fa": "آیپاد کلاسیک ۱۲۰ گیگ (۲۰۰۸)",
+  "aliases": [
+   "ipod classic 120gb",
+   "ipod classic 120",
+   "ipod classic 2008",
+   "آیپاد کلاسیک ۱۲۰",
+   "ایپاد کلاسیک 120 گیگ",
+   "آیپاد کلاسیک ۲۰۰۸"
+  ],
+  "year": 2008,
+  "announced": "2008-09-09",
+  "chip": null,
+  "sizes": [
+   120
+  ],
+  "display": "2.5-inch color LCD 320x240",
+  "materials": [
+   "aluminum",
+   "stainless steel"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "30-pin dock connector, USB 2.0",
+  "battery": "up to 36h audio, 6h video",
+  "water": null,
+  "features": [
+   "Click Wheel",
+   "50% more capacity at same price",
+   "hard drive",
+   "model A1238"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112321",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2008/09/09Apple-Introduces-New-iPod-nano/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod classic 2009",
+  "name": "iPod classic 160GB (Late 2009)",
+  "name_fa": "آیپاد کلاسیک ۱۶۰ گیگ (اواخر ۲۰۰۹)",
+  "aliases": [
+   "ipod classic 2009",
+   "ipod classic late 2009",
+   "ipod classic 160gb 2009",
+   "ipod classic 160 2009",
+   "آیپاد کلاسیک ۲۰۰۹",
+   "ایپاد کلاسیک 2009",
+   "آیپاد کلاسیک ۱۶۰ ۲۰۰۹"
+  ],
+  "year": 2009,
+  "announced": "2009-09-09",
+  "chip": null,
+  "sizes": [
+   160
+  ],
+  "display": "2.5-inch color LCD 320x240",
+  "materials": [
+   "aluminum",
+   "stainless steel"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "30-pin dock connector, USB 2.0",
+  "battery": "up to 36h audio, 6h video",
+  "water": null,
+  "features": [
+   "Click Wheel",
+   "hard drive",
+   "model A1238"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112601",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2009/09/09Apple-Introduces-New-iPod-nano-With-Built-in-Video-Camera/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod mini 1",
+  "name": "iPod mini",
+  "name_fa": "آیپاد مینی نسل ۱",
+  "aliases": [
+   "ipod mini 1",
+   "ipod mini 1st gen",
+   "ipod mini first generation",
+   "آیپاد مینی نسل ۱",
+   "ایپاد مینی 1",
+   "آیپاد مینی نسل اول",
+   "ایپاد مینی نسل 1"
+  ],
+  "year": 2004,
+  "announced": "2004-01-06",
+  "chip": null,
+  "sizes": [
+   4
+  ],
+  "display": "1.67-inch grayscale LCD 138x110",
+  "materials": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   }
+  ],
+  "connectivity": "30-pin dock connector, FireWire 400 and USB 2.0",
+  "battery": "up to 8h audio",
+  "water": null,
+  "features": [
+   "Click Wheel",
+   "hard drive",
+   "model A1051"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112317",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2004/01/06Apple-Introduces-iPod-mini/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod mini 2",
+  "name": "iPod mini (2nd generation)",
+  "name_fa": "آیپاد مینی نسل ۲",
+  "aliases": [
+   "ipod mini 2",
+   "ipod mini 2nd gen",
+   "ipod mini second generation",
+   "آیپاد مینی نسل ۲",
+   "ایپاد مینی 2",
+   "آیپاد مینی نسل دوم",
+   "ایپاد مینی نسل 2"
+  ],
+  "year": 2005,
+  "announced": "2005-02-23",
+  "chip": null,
+  "sizes": [
+   4,
+   6
+  ],
+  "display": "1.67-inch grayscale LCD 138x110",
+  "materials": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   }
+  ],
+  "connectivity": "30-pin dock connector, FireWire 400 and USB 2.0",
+  "battery": "up to 18h audio",
+  "water": null,
+  "features": [
+   "Click Wheel",
+   "color-matched Click Wheel labels",
+   "hard drive",
+   "model A1051"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112317",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2005/02/23Apple-Unveils-New-iPod-mini-Starting-at-Just-199/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod nano 1",
+  "name": "iPod nano",
+  "name_fa": "آیپاد نانو نسل ۱",
+  "aliases": [
+   "ipod nano 1",
+   "ipod nano 1st gen",
+   "آیپاد نانو ۱",
+   "ایپاد نانو ۱",
+   "آیپاد نانو 1",
+   "ایپاد نانو 1",
+   "آیپاد نانو نسل ۱",
+   "ipod nano gen 1"
+  ],
+  "year": 2005,
+  "announced": "2005-09-07",
+  "chip": null,
+  "sizes": [
+   1,
+   2,
+   4
+  ],
+  "display": "1.5-inch color LCD 176x132",
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "30-pin dock connector, USB 2.0",
+  "battery": "up to 14h audio",
+  "water": null,
+  "features": [
+   "Click Wheel",
+   "flash memory",
+   "model A1137"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112507",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2005/09/07Apple-Introduces-iPod-nano/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod nano 2",
+  "name": "iPod nano (2nd generation)",
+  "name_fa": "آیپاد نانو نسل ۲",
+  "aliases": [
+   "ipod nano 2",
+   "ipod nano 2nd gen",
+   "آیپاد نانو ۲",
+   "ایپاد نانو ۲",
+   "آیپاد نانو 2",
+   "ایپاد نانو 2",
+   "آیپاد نانو نسل ۲",
+   "ipod nano gen 2"
+  ],
+  "year": 2006,
+  "announced": "2006-09-12",
+  "chip": null,
+  "sizes": [
+   2,
+   4,
+   8
+  ],
+  "display": "1.5-inch color LCD 176x132",
+  "materials": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   }
+  ],
+  "connectivity": "30-pin dock connector, USB 2.0",
+  "battery": "up to 24h audio",
+  "water": null,
+  "features": [
+   "Click Wheel",
+   "(PRODUCT)RED Special Edition",
+   "model A1199"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112309",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2006/09/12Apple-Introduces-the-New-iPod-nano/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod nano 3",
+  "name": "iPod nano (3rd generation)",
+  "name_fa": "آیپاد نانو نسل ۳",
+  "aliases": [
+   "ipod nano 3",
+   "ipod nano 3rd gen",
+   "آیپاد نانو ۳",
+   "ایپاد نانو ۳",
+   "آیپاد نانو 3",
+   "ایپاد نانو 3",
+   "آیپاد نانو نسل ۳",
+   "ipod nano gen 3"
+  ],
+  "year": 2007,
+  "announced": "2007-09-05",
+  "chip": null,
+  "sizes": [
+   4,
+   8
+  ],
+  "display": "2-inch color LCD 320x240",
+  "materials": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   }
+  ],
+  "connectivity": "30-pin dock connector, USB 2.0",
+  "battery": "up to 24h audio, 5h video",
+  "water": null,
+  "features": [
+   "Click Wheel",
+   "video playback",
+   "wide screen",
+   "model A1236"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112552",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2007/09/05Apple-Introduces-All-New-iPod-nano/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod nano 4",
+  "name": "iPod nano (4th generation)",
+  "name_fa": "آیپاد نانو نسل ۴",
+  "aliases": [
+   "ipod nano 4",
+   "ipod nano 4th gen",
+   "آیپاد نانو ۴",
+   "ایپاد نانو ۴",
+   "آیپاد نانو 4",
+   "ایپاد نانو 4",
+   "آیپاد نانو نسل ۴",
+   "ipod nano gen 4"
+  ],
+  "year": 2008,
+  "announced": "2008-09-09",
+  "chip": null,
+  "sizes": [
+   8,
+   16
+  ],
+  "display": "2-inch color LCD 320x240 (portrait)",
+  "materials": [
+   "aluminum",
+   "glass"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Orange",
+    "fa": "نارنجی"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "30-pin dock connector, USB 2.0",
+  "battery": "up to 24h audio, 4h video",
+  "water": null,
+  "features": [
+   "Click Wheel",
+   "accelerometer (shake to shuffle, Cover Flow)",
+   "Genius playlists",
+   "curved design",
+   "model A1285"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112320",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2008/09/09Apple-Introduces-New-iPod-nano/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod nano 5",
+  "name": "iPod nano (5th generation)",
+  "name_fa": "آیپاد نانو نسل ۵",
+  "aliases": [
+   "ipod nano 5",
+   "ipod nano 5th gen",
+   "آیپاد نانو ۵",
+   "ایپاد نانو ۵",
+   "آیپاد نانو 5",
+   "ایپاد نانو 5",
+   "آیپاد نانو نسل ۵",
+   "ipod nano gen 5"
+  ],
+  "year": 2009,
+  "announced": "2009-09-09",
+  "chip": null,
+  "sizes": [
+   8,
+   16
+  ],
+  "display": "2.2-inch color TFT 240x376",
+  "materials": [
+   "polished anodized aluminum",
+   "glass"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Orange",
+    "fa": "نارنجی"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   }
+  ],
+  "connectivity": "30-pin dock connector, USB 2.0",
+  "battery": "up to 24h audio, 5h video",
+  "water": null,
+  "features": [
+   "video camera",
+   "FM radio with Live Pause",
+   "pedometer",
+   "speaker",
+   "Click Wheel",
+   "model A1320"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112495",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2009/09/09Apple-Introduces-New-iPod-nano-With-Built-in-Video-Camera/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod nano 6",
+  "name": "iPod nano (6th generation)",
+  "name_fa": "آیپاد نانو نسل ۶",
+  "aliases": [
+   "ipod nano 6",
+   "ipod nano 6th gen",
+   "آیپاد نانو ۶",
+   "ایپاد نانو ۶",
+   "آیپاد نانو 6",
+   "ایپاد نانو 6",
+   "آیپاد نانو نسل ۶",
+   "ipod nano gen 6"
+  ],
+  "year": 2010,
+  "announced": "2010-09-01",
+  "chip": null,
+  "sizes": [
+   8,
+   16
+  ],
+  "display": "1.54-inch color TFT Multi-Touch 240x240",
+  "materials": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Graphite",
+    "fa": "گرافیتی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Orange",
+    "fa": "نارنجی"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   }
+  ],
+  "connectivity": "30-pin dock connector, USB 2.0",
+  "battery": "up to 24h audio",
+  "water": null,
+  "features": [
+   "Multi-Touch display",
+   "built-in clip",
+   "FM radio with Live Pause",
+   "accelerometer",
+   "model A1366"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112432",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2010/09/01Apple-Reinvents-iPod-nano-With-Multi-Touch-Interface/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod nano 7",
+  "name": "iPod nano (7th generation)",
+  "name_fa": "آیپاد نانو نسل ۷",
+  "aliases": [
+   "ipod nano 7",
+   "ipod nano 7th gen",
+   "آیپاد نانو ۷",
+   "ایپاد نانو ۷",
+   "آیپاد نانو 7",
+   "ایپاد نانو 7",
+   "آیپاد نانو نسل ۷",
+   "ipod nano gen 7"
+  ],
+  "year": 2012,
+  "announced": "2012-09-12",
+  "chip": null,
+  "sizes": [
+   16
+  ],
+  "display": "2.5-inch Multi-Touch 240x432",
+  "materials": null,
+  "colors": [
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Slate",
+    "fa": "خاکستری تیره (اسلیت)"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   }
+  ],
+  "connectivity": "Lightning connector, Bluetooth 4.0",
+  "battery": "up to 30h audio, 3.5h video",
+  "water": null,
+  "features": [
+   "Multi-Touch display",
+   "Bluetooth",
+   "FM radio with Live Pause",
+   "Nike+ (pedometer)",
+   "Lightning",
+   "Home button",
+   "model A1446"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112039",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2012/09/12Apple-Introduces-New-iPod-touch-iPod-nano/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod nano 7 2015",
+  "name": "iPod nano (7th generation Mid 2015)",
+  "name_fa": "آیپاد نانو نسل ۷ (میانه‌ی ۲۰۱۵)",
+  "aliases": [
+   "ipod nano 7 2015",
+   "ipod nano 7 mid 2015",
+   "ipod nano 2015",
+   "آیپاد نانو ۷ ۲۰۱۵",
+   "ایپاد نانو 7 2015",
+   "آیپاد نانو نسل ۷ ۲۰۱۵",
+   "آیپاد نانو ۲۰۱۵",
+   "ایپاد نانو 2015"
+  ],
+  "year": 2015,
+  "announced": "2015-07-15",
+  "chip": null,
+  "sizes": [
+   16
+  ],
+  "display": "2.5-inch Multi-Touch 240x432",
+  "materials": null,
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   }
+  ],
+  "connectivity": "Lightning connector, Bluetooth 4.0",
+  "battery": "up to 30h audio, 3.5h video",
+  "water": null,
+  "features": [
+   "2015 color refresh",
+   "Multi-Touch display",
+   "Bluetooth",
+   "FM radio with Live Pause",
+   "Nike+ (pedometer)",
+   "model A1446"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112039",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2015/07/15Apple-Introduces-The-Best-iPod-touch-Yet/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod shuffle 1",
+  "name": "iPod shuffle",
+  "name_fa": "آیپاد شافل نسل ۱",
+  "aliases": [
+   "ipod shuffle 1",
+   "ipod shuffle 1st gen",
+   "ipod shuffle first generation",
+   "آیپاد شافل ۱",
+   "ایپاد شافل 1",
+   "آیپاد شافل نسل ۱",
+   "آیپاد شافل نسل اول"
+  ],
+  "year": 2005,
+  "announced": "2005-01-11",
+  "chip": null,
+  "sizes": [
+   0.5,
+   1
+  ],
+  "display": null,
+  "materials": null,
+  "colors": [],
+  "connectivity": "integrated USB connector (USB 1.1/2.0)",
+  "battery": "up to 12h audio",
+  "water": null,
+  "features": [
+   "no display",
+   "flash memory",
+   "built-in USB plug",
+   "model A1112"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112493",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2005/01/11Apple-Introduces-iPod-shuffle/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod shuffle 2",
+  "name": "iPod shuffle (2nd generation)",
+  "name_fa": "آیپاد شافل نسل ۲",
+  "aliases": [
+   "ipod shuffle 2",
+   "ipod shuffle 2nd gen",
+   "ipod shuffle second generation",
+   "آیپاد شافل ۲",
+   "ایپاد شافل 2",
+   "آیپاد شافل نسل ۲",
+   "آیپاد شافل نسل دوم"
+  ],
+  "year": 2006,
+  "announced": "2006-09-12",
+  "chip": null,
+  "sizes": [
+   1,
+   2
+  ],
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   }
+  ],
+  "connectivity": "USB 2.0 via included dock (3.5mm jack)",
+  "battery": "up to 12h audio",
+  "water": null,
+  "features": [
+   "built-in clip",
+   "no display",
+   "model A1204"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112455",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2006/09/12Apple-Unveils-the-New-iPod-shuffle/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod shuffle 3",
+  "name": "iPod shuffle (3rd generation)",
+  "name_fa": "آیپاد شافل نسل ۳",
+  "aliases": [
+   "ipod shuffle 3",
+   "ipod shuffle 3rd gen",
+   "ipod shuffle third generation",
+   "آیپاد شافل ۳",
+   "ایپاد شافل 3",
+   "آیپاد شافل نسل ۳",
+   "آیپاد شافل نسل سوم"
+  ],
+  "year": 2009,
+  "announced": "2009-03-11",
+  "chip": null,
+  "sizes": [
+   4
+  ],
+  "display": null,
+  "materials": [
+   "aluminum"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "USB 2.0 via headphone-jack cable",
+  "battery": "up to 10h audio",
+  "water": null,
+  "features": [
+   "controls on earphone cord",
+   "VoiceOver",
+   "stainless steel clip",
+   "model A1271"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112497",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2009/03/11Apple-Announces-Incredible-New-iPod-shuffle/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod shuffle 3 late 2009",
+  "name": "iPod shuffle (3rd generation Late 2009)",
+  "name_fa": "آیپاد شافل نسل ۳ (اواخر ۲۰۰۹)",
+  "aliases": [
+   "ipod shuffle 3 late 2009",
+   "ipod shuffle 3 2009 colors",
+   "ipod shuffle late 2009",
+   "آیپاد شافل ۳ اواخر ۲۰۰۹",
+   "ایپاد شافل 3 رنگی",
+   "آیپاد شافل نسل ۳ رنگی"
+  ],
+  "year": 2009,
+  "announced": "2009-09-09",
+  "chip": null,
+  "sizes": [
+   2,
+   4
+  ],
+  "display": null,
+  "materials": [
+   "anodized aluminum",
+   "polished stainless steel (special edition)"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Stainless Steel",
+    "fa": "استیل"
+   }
+  ],
+  "connectivity": "USB 2.0 via headphone-jack cable",
+  "battery": "up to 10h audio",
+  "water": null,
+  "features": [
+   "controls on earphone cord",
+   "VoiceOver",
+   "Stainless Steel 4GB special edition (Apple Store only)",
+   "model A1271"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112497",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2009/09/09Apples-iPod-shuffle-Now-Starts-at-Just-59/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod shuffle 4",
+  "name": "iPod shuffle (4th generation)",
+  "name_fa": "آیپاد شافل نسل ۴",
+  "aliases": [
+   "ipod shuffle 4",
+   "ipod shuffle 4th gen",
+   "ipod shuffle 2010",
+   "آیپاد شافل ۴",
+   "ایپاد شافل 4",
+   "آیپاد شافل نسل ۴",
+   "آیپاد شافل نسل چهارم",
+   "آیپاد شافل ۲۰۱۰"
+  ],
+  "year": 2010,
+  "announced": "2010-09-01",
+  "chip": null,
+  "sizes": [
+   2
+  ],
+  "display": null,
+  "materials": [
+   "aluminum"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Orange",
+    "fa": "نارنجی"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   }
+  ],
+  "connectivity": "USB 2.0 via headphone-jack cable",
+  "battery": "up to 15h audio",
+  "water": null,
+  "features": [
+   "clickable control pad",
+   "VoiceOver button",
+   "built-in clip",
+   "model A1373"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112422",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2010/09/01Apple-Unveils-New-iPod-shuffle/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod shuffle 4 2012",
+  "name": "iPod shuffle (4th generation Late 2012)",
+  "name_fa": "آیپاد شافل نسل ۴ (اواخر ۲۰۱۲)",
+  "aliases": [
+   "ipod shuffle 4 2012",
+   "ipod shuffle 4 late 2012",
+   "ipod shuffle 2012",
+   "آیپاد شافل ۴ ۲۰۱۲",
+   "ایپاد شافل 4 2012",
+   "آیپاد شافل ۲۰۱۲"
+  ],
+  "year": 2012,
+  "announced": "2012-09-12",
+  "chip": null,
+  "sizes": [
+   2
+  ],
+  "display": null,
+  "materials": [
+   "aluminum"
+  ],
+  "colors": [
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Slate",
+    "fa": "خاکستری تیره (اسلیت)"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   }
+  ],
+  "connectivity": "USB 2.0 via headphone-jack cable",
+  "battery": "up to 15h audio",
+  "water": null,
+  "features": [
+   "2012 color refresh",
+   "clickable control pad",
+   "VoiceOver button",
+   "built-in clip",
+   "model A1373"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112422",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2012/09/12Apple-Introduces-New-iPod-touch-iPod-nano/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod shuffle 4 2015",
+  "name": "iPod shuffle (4th generation Mid 2015)",
+  "name_fa": "آیپاد شافل نسل ۴ (میانه‌ی ۲۰۱۵)",
+  "aliases": [
+   "ipod shuffle 4 2015",
+   "ipod shuffle 4 mid 2015",
+   "ipod shuffle 2015",
+   "آیپاد شافل ۴ ۲۰۱۵",
+   "ایپاد شافل 4 2015",
+   "آیپاد شافل ۲۰۱۵"
+  ],
+  "year": 2015,
+  "announced": "2015-07-15",
+  "chip": null,
+  "sizes": [
+   2
+  ],
+  "display": null,
+  "materials": [
+   "aluminum"
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   }
+  ],
+  "connectivity": "USB 2.0 via headphone-jack cable",
+  "battery": "up to 15h audio",
+  "water": null,
+  "features": [
+   "2015 color refresh",
+   "clickable control pad",
+   "VoiceOver button",
+   "built-in clip",
+   "model A1373"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112422",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2015/07/15Apple-Introduces-The-Best-iPod-touch-Yet/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod touch 1",
+  "name": "iPod touch",
+  "name_fa": "آیپاد تاچ نسل ۱",
+  "aliases": [
+   "ipod touch 1",
+   "ipod touch 1st gen",
+   "آیپاد تاچ ۱",
+   "ایپاد تاچ ۱",
+   "آیپاد تاچ 1",
+   "ایپاد تاچ 1",
+   "آیپاد تاچ نسل ۱",
+   "ipod touch gen 1"
+  ],
+  "year": 2007,
+  "announced": "2007-09-05",
+  "chip": null,
+  "sizes": [
+   8,
+   16,
+   32
+  ],
+  "display": "3.5-inch Multi-Touch 480x320",
+  "materials": null,
+  "colors": [],
+  "connectivity": "Wi-Fi 802.11b/g, 30-pin dock connector",
+  "battery": "up to 22h audio, 5h video",
+  "water": null,
+  "features": [
+   "first Wi-Fi iPod",
+   "Safari",
+   "iTunes Wi-Fi Music Store",
+   "model A1213"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112532",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2007/09/05Apple-Unveils-iPod-touch/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod touch 2",
+  "name": "iPod touch (2nd generation)",
+  "name_fa": "آیپاد تاچ نسل ۲",
+  "aliases": [
+   "ipod touch 2",
+   "ipod touch 2nd gen",
+   "آیپاد تاچ ۲",
+   "ایپاد تاچ ۲",
+   "آیپاد تاچ 2",
+   "ایپاد تاچ 2",
+   "آیپاد تاچ نسل ۲",
+   "ipod touch gen 2"
+  ],
+  "year": 2008,
+  "announced": "2008-09-09",
+  "chip": null,
+  "sizes": [
+   8,
+   16,
+   32
+  ],
+  "display": "3.5-inch Multi-Touch 480x320",
+  "materials": null,
+  "colors": [],
+  "connectivity": "Wi-Fi 802.11b/g, 30-pin dock connector",
+  "battery": "up to 36h audio, 6h video",
+  "water": null,
+  "features": [
+   "contoured design",
+   "Nike + iPod support",
+   "model A1288"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112319",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2008/09/09Apple-Introduces-New-iPod-touch/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod touch 3",
+  "name": "iPod touch (3rd generation)",
+  "name_fa": "آیپاد تاچ نسل ۳",
+  "aliases": [
+   "ipod touch 3",
+   "ipod touch 3rd gen",
+   "آیپاد تاچ ۳",
+   "ایپاد تاچ ۳",
+   "آیپاد تاچ 3",
+   "ایپاد تاچ 3",
+   "آیپاد تاچ نسل ۳",
+   "ipod touch gen 3"
+  ],
+  "year": 2009,
+  "announced": "2009-09-09",
+  "chip": null,
+  "sizes": [
+   32,
+   64
+  ],
+  "display": "3.5-inch Multi-Touch 480x320",
+  "materials": null,
+  "colors": [],
+  "connectivity": "Wi-Fi 802.11b/g, Bluetooth 2.1 + EDR, 30-pin dock connector",
+  "battery": "up to 30h audio, 6h video",
+  "water": null,
+  "features": [
+   "Nike + iPod support",
+   "model A1318"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112461",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2009/09/09Apple-Introduces-New-iPod-touch-Lineup/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod touch 4",
+  "name": "iPod touch (4th generation)",
+  "name_fa": "آیپاد تاچ نسل ۴",
+  "aliases": [
+   "ipod touch 4",
+   "ipod touch 4th gen",
+   "آیپاد تاچ ۴",
+   "ایپاد تاچ ۴",
+   "آیپاد تاچ 4",
+   "ایپاد تاچ 4",
+   "آیپاد تاچ نسل ۴",
+   "ipod touch gen 4"
+  ],
+  "year": 2010,
+  "announced": "2010-09-01",
+  "chip": "A4",
+  "sizes": [
+   8,
+   16,
+   32,
+   64
+  ],
+  "display": "3.5-inch Retina 960x640",
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "Wi-Fi 802.11b/g/n, Bluetooth 2.1 + EDR, 30-pin dock connector",
+  "battery": "up to 40h audio, 7h video",
+  "water": null,
+  "features": [
+   "Retina display",
+   "FaceTime",
+   "HD (720p) video recording",
+   "front and back cameras",
+   "3-axis gyro",
+   "model A1367"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112431",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2010/09/01Apple-Introduces-New-iPod-touch/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod touch 5",
+  "name": "iPod touch (5th generation)",
+  "name_fa": "آیپاد تاچ نسل ۵",
+  "aliases": [
+   "ipod touch 5",
+   "ipod touch 5th gen",
+   "آیپاد تاچ ۵",
+   "ایپاد تاچ ۵",
+   "آیپاد تاچ 5",
+   "ایپاد تاچ 5",
+   "آیپاد تاچ نسل ۵",
+   "ipod touch gen 5"
+  ],
+  "year": 2012,
+  "announced": "2012-09-12",
+  "chip": "A5",
+  "sizes": [
+   16,
+   32,
+   64
+  ],
+  "display": "4-inch Retina 1136x640",
+  "materials": [
+   "anodized aluminum"
+  ],
+  "colors": [
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Slate",
+    "fa": "خاکستری تیره (اسلیت)"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   }
+  ],
+  "connectivity": "Wi-Fi 802.11a/b/g/n, Bluetooth 4.0, Lightning",
+  "battery": "up to 40h audio, 8h video",
+  "water": null,
+  "features": [
+   "5MP iSight camera",
+   "FaceTime HD camera",
+   "Siri",
+   "iPod touch loop (32/64GB)",
+   "model A1421 / A1509 (16GB, 2014)"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112021",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2012/09/12Apple-Introduces-New-iPod-touch-iPod-nano/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod touch 5 16gb 2013",
+  "name": "iPod touch 16GB (5th generation, Mid 2013)",
+  "name_fa": "آیپاد تاچ نسل ۵ ۱۶ گیگ (میانه‌ی ۲۰۱۳)",
+  "aliases": [
+   "ipod touch 5 16gb 2013",
+   "ipod touch 5 mid 2013",
+   "ipod touch 5 2013",
+   "ipod touch 5 without camera",
+   "آیپاد تاچ ۵ ۲۰۱۳",
+   "ایپاد تاچ 5 2013",
+   "آیپاد تاچ ۵ بدون دوربین",
+   "ایپاد تاچ 5 بدون دوربین"
+  ],
+  "year": 2013,
+  "announced": null,
+  "chip": null,
+  "sizes": [
+   16
+  ],
+  "display": "4-inch Retina 1136x640",
+  "materials": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "connectivity": "Wi-Fi 802.11a/b/g/n, Bluetooth 4.0, Lightning",
+  "battery": "up to 40h audio, 8h video",
+  "water": null,
+  "features": [
+   "FaceTime HD camera",
+   "no rear iSight camera",
+   "model A1509"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/118467",
+   "https://support.apple.com/en-us/103823"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod touch 6",
+  "name": "iPod touch (6th generation)",
+  "name_fa": "آیپاد تاچ نسل ۶",
+  "aliases": [
+   "ipod touch 6",
+   "ipod touch 6th gen",
+   "آیپاد تاچ ۶",
+   "ایپاد تاچ ۶",
+   "آیپاد تاچ 6",
+   "ایپاد تاچ 6",
+   "آیپاد تاچ نسل ۶",
+   "ipod touch gen 6"
+  ],
+  "year": 2015,
+  "announced": "2015-07-15",
+  "chip": "A8",
+  "sizes": [
+   16,
+   32,
+   64,
+   128
+  ],
+  "display": "4-inch Retina 1136x640",
+  "materials": null,
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   }
+  ],
+  "connectivity": "Wi-Fi 802.11a/b/g/n/ac, Bluetooth 4.1, Lightning",
+  "battery": "up to 40h audio, 8h video",
+  "water": null,
+  "features": [
+   "M8 motion coprocessor",
+   "8MP iSight camera",
+   "FaceTime HD camera",
+   "Siri",
+   "model A1574"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112023",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2015/07/15Apple-Introduces-The-Best-iPod-touch-Yet/"
+  ]
+ },
+ {
+  "category": "ipod",
+  "key": "ipod touch 7",
+  "name": "iPod touch (7th generation)",
+  "name_fa": "آیپاد تاچ نسل ۷",
+  "aliases": [
+   "ipod touch 7",
+   "ipod touch 7th gen",
+   "آیپاد تاچ ۷",
+   "ایپاد تاچ ۷",
+   "آیپاد تاچ 7",
+   "ایپاد تاچ 7",
+   "آیپاد تاچ نسل ۷",
+   "ipod touch gen 7"
+  ],
+  "year": 2019,
+  "announced": "2019-05-28",
+  "chip": "A10 Fusion",
+  "sizes": [
+   32,
+   128,
+   256
+  ],
+  "display": "4-inch Retina 1136x640",
+  "materials": null,
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   }
+  ],
+  "connectivity": "Wi-Fi 802.11a/b/g/n/ac, Bluetooth 4.1, Lightning",
+  "battery": "up to 40h audio, 8h video",
+  "water": null,
+  "features": [
+   "8MP camera",
+   "FaceTime HD camera",
+   "last iPod (sold while supplies last, May 2022)",
+   "model A2178"
+  ],
+  "discontinued": 2022,
+  "sources": [
+   "https://support.apple.com/en-us/111961",
+   "https://support.apple.com/en-us/103823",
+   "https://www.apple.com/newsroom/2019/05/new-ipod-touch-delivers-even-greater-performance/",
+   "https://www.apple.com/newsroom/2022/05/the-music-lives-on/"
+  ]
+ },
+ {
+  "category": "tv",
+  "key": "apple tv 1",
+  "name": "Apple TV (1st generation)",
+  "name_fa": "اپل تی‌وی نسل ۱",
+  "aliases": [
+   "apple tv 1",
+   "apple tv 1st gen",
+   "apple tv first generation",
+   "apple tv 2007",
+   "اپل تی وی ۱",
+   "اپل تی وی نسل ۱",
+   "اپل تی وی نسل اول",
+   "اپل تی وی 1"
+  ],
+  "year": 2007,
+  "announced": "2007-01-09",
+  "chip": "Intel processor",
+  "sizes": [
+   40,
+   160
+  ],
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "connectivity": "HDMI and component video, 10/100 Ethernet, Wi-Fi 802.11b/g/n, optical and RCA audio, USB 2.0 (service)",
+  "battery": null,
+  "water": null,
+  "features": [
+   "up to 720p video",
+   "hard drive storage",
+   "Apple Remote (white)",
+   "model A1218"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112555",
+   "https://support.apple.com/en-us/101605",
+   "https://www.apple.com/newsroom/2007/01/09Apple-TV-Coming-to-Your-Living-Room/"
+  ]
+ },
+ {
+  "category": "tv",
+  "key": "apple tv 2",
+  "name": "Apple TV (2nd generation)",
+  "name_fa": "اپل تی‌وی نسل ۲",
+  "aliases": [
+   "apple tv 2",
+   "apple tv 2nd gen",
+   "apple tv second generation",
+   "apple tv 2010",
+   "اپل تی وی ۲",
+   "اپل تی وی نسل ۲",
+   "اپل تی وی نسل دوم",
+   "اپل تی وی 2"
+  ],
+  "year": 2010,
+  "announced": "2010-09-01",
+  "chip": "A4",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "HDMI (720p), 10/100 Ethernet, Wi-Fi 802.11a/b/g/n, optical audio, Micro-USB (service)",
+  "battery": null,
+  "water": null,
+  "features": [
+   "720p",
+   "Apple Remote (aluminum)",
+   "model A1378"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112428",
+   "https://support.apple.com/en-us/101605",
+   "https://www.apple.com/newsroom/2010/09/01Apple-Premieres-New-Apple-TV-for-Breakthrough-Price-of-99/"
+  ]
+ },
+ {
+  "category": "tv",
+  "key": "apple tv 3",
+  "name": "Apple TV (3rd generation)",
+  "name_fa": "اپل تی‌وی نسل ۳",
+  "aliases": [
+   "apple tv 3",
+   "apple tv 3rd gen",
+   "apple tv third generation",
+   "apple tv 3 rev a",
+   "apple tv 2012",
+   "اپل تی وی ۳",
+   "اپل تی وی نسل ۳",
+   "اپل تی وی نسل سوم",
+   "اپل تی وی 3"
+  ],
+  "year": 2012,
+  "announced": "2012-03-07",
+  "chip": "A5 (single-core)",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "HDMI (1080p), 10/100 Ethernet, Wi-Fi 802.11a/b/g/n, optical audio, Micro-USB (service)",
+  "battery": null,
+  "water": null,
+  "features": [
+   "1080p",
+   "Apple Remote (aluminum)",
+   "model A1427; Rev A (early 2013) A1469"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112429",
+   "https://support.apple.com/en-us/101605",
+   "https://www.apple.com/newsroom/2012/03/07Apple-Brings-1080p-High-Definition-to-New-Apple-TV/"
+  ]
+ },
+ {
+  "category": "tv",
+  "key": "apple tv hd",
+  "name": "Apple TV HD",
+  "name_fa": "اپل تی‌وی HD (نسل ۴)",
+  "aliases": [
+   "apple tv hd",
+   "apple tv 4",
+   "apple tv 4th gen",
+   "apple tv 4th generation",
+   "apple tv 2015",
+   "اپل تی وی hd",
+   "اپل تی وی اچ دی",
+   "اپل تی وی نسل ۴",
+   "اپل تی وی 4"
+  ],
+  "year": 2015,
+  "announced": "2015-09-09",
+  "chip": "A8",
+  "sizes": [
+   32,
+   64
+  ],
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "HDMI 1.4, 10/100 Ethernet, Wi-Fi 802.11ac with MIMO, Bluetooth 4.0, IR receiver, USB-C (service)",
+  "battery": null,
+  "water": null,
+  "features": [
+   "1080p",
+   "tvOS and App Store",
+   "Siri Remote",
+   "previously Apple TV (4th generation)",
+   "model A1625"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111928",
+   "https://support.apple.com/en-us/101605",
+   "https://www.apple.com/newsroom/2015/09/09Apple-Brings-Innovation-Back-to-Television-with-The-All-New-Apple-TV/"
+  ]
+ },
+ {
+  "category": "tv",
+  "key": "apple tv 4k 1",
+  "name": "Apple TV 4K (1st generation)",
+  "name_fa": "اپل تی‌وی ۴K نسل ۱",
+  "aliases": [
+   "apple tv 4k 1",
+   "apple tv 4k 1st gen",
+   "apple tv 4k 2017",
+   "اپل تی وی 4k نسل 1",
+   "اپل تی وی ۴k نسل ۱",
+   "اپل تی وی 4k 2017",
+   "اپل تی وی فورکی نسل ۱"
+  ],
+  "year": 2017,
+  "announced": "2017-09-12",
+  "chip": "A10X Fusion",
+  "sizes": [
+   32,
+   64
+  ],
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "HDMI 2.0a, Gigabit Ethernet, Wi-Fi 802.11ac with MIMO, Bluetooth 5.0, IR receiver",
+  "battery": null,
+  "water": null,
+  "features": [
+   "4K HDR",
+   "Dolby Vision and HDR10",
+   "Siri Remote (1st generation)",
+   "model A1842"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111929",
+   "https://support.apple.com/en-us/101605",
+   "https://www.apple.com/newsroom/2017/09/apple-tv-4k-brings-home-the-magic-of-cinema-with-4k-and-hdr/"
+  ]
+ },
+ {
+  "category": "tv",
+  "key": "apple tv 4k 2",
+  "name": "Apple TV 4K (2nd generation)",
+  "name_fa": "اپل تی‌وی ۴K نسل ۲",
+  "aliases": [
+   "apple tv 4k 2",
+   "apple tv 4k 2nd gen",
+   "apple tv 4k 2021",
+   "اپل تی وی 4k نسل 2",
+   "اپل تی وی ۴k نسل ۲",
+   "اپل تی وی 4k 2021",
+   "اپل تی وی فورکی نسل ۲"
+  ],
+  "year": 2021,
+  "announced": "2021-04-20",
+  "chip": "A12 Bionic",
+  "sizes": [
+   32,
+   64
+  ],
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "HDMI 2.1, Gigabit Ethernet, Wi-Fi 6 (802.11ax), Bluetooth 5.0, Thread, IR receiver",
+  "battery": null,
+  "water": null,
+  "features": [
+   "4K60 HDR",
+   "Dolby Vision",
+   "Thread border router",
+   "Siri Remote (2nd generation, Lightning)",
+   "model A2169"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111922",
+   "https://support.apple.com/en-us/101605",
+   "https://www.apple.com/newsroom/2021/04/apple-unveils-the-next-generation-of-apple-tv-4k/"
+  ]
+ },
+ {
+  "category": "tv",
+  "key": "apple tv 4k 3",
+  "name": "Apple TV 4K (3rd generation)",
+  "name_fa": "اپل تی‌وی ۴K نسل ۳",
+  "aliases": [
+   "apple tv 4k 3",
+   "apple tv 4k 3rd gen",
+   "apple tv 4k 2022",
+   "اپل تی وی 4k نسل 3",
+   "اپل تی وی ۴k نسل ۳",
+   "اپل تی وی 4k 2022",
+   "اپل تی وی فورکی نسل ۳"
+  ],
+  "year": 2022,
+  "announced": "2022-10-18",
+  "chip": "A15 Bionic",
+  "sizes": [
+   64,
+   128
+  ],
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "HDMI 2.1, Wi-Fi 6 (802.11ax), Bluetooth 5.0, IR receiver; 128GB model adds Gigabit Ethernet and Thread",
+  "battery": null,
+  "water": null,
+  "features": [
+   "4K60 HDR10+ and Dolby Vision",
+   "Wi-Fi model (64GB, A2737) and Wi-Fi + Ethernet model (128GB, A2843)",
+   "Siri Remote (3rd generation, USB-C)",
+   "QMS"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111839",
+   "https://support.apple.com/en-us/101605",
+   "https://www.apple.com/newsroom/2022/10/apple-introduces-the-powerful-next-generation-apple-tv-4k/"
+  ]
+ },
+ {
+  "category": "tv",
+  "key": "apple tv 4k 4",
+  "name": "Apple TV 4K (4th generation)",
+  "name_fa": "اپل تی‌وی ۴K نسل ۴",
+  "aliases": [
+   "apple tv 4k 4",
+   "apple tv 4k 4th gen",
+   "apple tv 4k 2026",
+   "اپل تی وی 4k نسل 4",
+   "اپل تی وی ۴k نسل ۴",
+   "اپل تی وی 4k 2026",
+   "اپل تی وی فورکی نسل ۴"
+  ],
+  "year": 2026,
+  "announced": "2026-10-13",
+  "chip": "A19",
+  "sizes": [
+   128
+  ],
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "HDMI 2.1, Gigabit Ethernet, Wi-Fi 7 (802.11be), Bluetooth 6, Thread, IR receiver",
+  "battery": null,
+  "water": null,
+  "features": [
+   "Siri AI",
+   "three-microphone array (far-field Siri)",
+   "AV1 decoding",
+   "Dolby Vision, HDR10+",
+   "Siri Remote (4th generation) with Find My",
+   "model A3593"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/149359",
+   "https://support.apple.com/en-us/101605",
+   "https://www.apple.com/newsroom/2026/10/apple-unveils-the-new-apple-tv-4k/"
+  ]
+ },
+ {
+  "category": "homepod",
+  "key": "homepod 1",
+  "name": "HomePod (1st generation)",
+  "name_fa": "هوم‌پاد نسل ۱",
+  "aliases": [
+   "homepod 1",
+   "homepod 1st gen",
+   "homepod first generation",
+   "homepod 2018",
+   "هوم پاد ۱",
+   "هوم پاد نسل ۱",
+   "هوم پاد نسل اول",
+   "هوم پاد 1",
+   "هوم پاد بزرگ نسل ۱"
+  ],
+  "year": 2018,
+  "announced": "2017-06-05",
+  "chip": "A8",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Wi-Fi 802.11ac with MIMO, Bluetooth 5.0",
+  "battery": null,
+  "water": null,
+  "features": [
+   "high-excursion woofer",
+   "seven horn-loaded tweeters",
+   "six-microphone array",
+   "AirPlay 2",
+   "stereo pair"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111994",
+   "https://support.apple.com/en-us/101609",
+   "https://www.apple.com/newsroom/2017/06/homepod-reinvents-music-in-the-home/"
+  ]
+ },
+ {
+  "category": "homepod",
+  "key": "homepod mini",
+  "name": "HomePod mini",
+  "name_fa": "هوم‌پاد مینی",
+  "aliases": [
+   "homepod mini 1",
+   "homepod mini 2020",
+   "homepod mini 1st gen",
+   "هوم پاد مینی ۱",
+   "هوم پاد مینی نسل ۱",
+   "هوم پاد مینی 2020",
+   "هوم پاد مینی 1"
+  ],
+  "year": 2020,
+  "announced": "2020-10-13",
+  "chip": "S5",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Orange",
+    "fa": "نارنجی"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Midnight",
+    "fa": "میدنایت (سرمه‌ای تیره)"
+   }
+  ],
+  "connectivity": "Wi-Fi 802.11n, Bluetooth 5.0, Thread, Ultra Wideband",
+  "battery": null,
+  "water": null,
+  "features": [
+   "360-degree sound",
+   "four-microphone design",
+   "temperature and humidity sensor",
+   "Intercom",
+   "stereo pair",
+   "Thread border router"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111914",
+   "https://support.apple.com/en-us/101609",
+   "https://www.apple.com/newsroom/2020/10/apple-introduces-homepod-mini-a-powerful-smart-speaker-with-amazing-sound/"
+  ]
+ },
+ {
+  "category": "homepod",
+  "key": "homepod 2",
+  "name": "HomePod (2nd generation)",
+  "name_fa": "هوم‌پاد نسل ۲",
+  "aliases": [
+   "homepod 2",
+   "homepod 2nd gen",
+   "homepod second generation",
+   "homepod 2023",
+   "هوم پاد ۲",
+   "هوم پاد نسل ۲",
+   "هوم پاد نسل دوم",
+   "هوم پاد 2"
+  ],
+  "year": 2023,
+  "announced": "2023-01-18",
+  "chip": "S7",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "میدنایت (سرمه‌ای تیره)"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Wi-Fi 802.11n, Bluetooth 5.0, Thread, Ultra Wideband",
+  "battery": null,
+  "water": null,
+  "features": [
+   "4-inch woofer",
+   "five horn-loaded tweeters",
+   "Spatial Audio",
+   "room sensing",
+   "temperature and humidity sensor",
+   "Sound Recognition"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/111843",
+   "https://support.apple.com/en-us/101609",
+   "https://www.apple.com/newsroom/2023/01/apple-introduces-the-new-homepod-with-breakthrough-sound-and-intelligence/"
+  ]
+ },
+ {
+  "category": "homepod",
+  "key": "homepod mini 2",
+  "name": "HomePod mini 2",
+  "name_fa": "هوم‌پاد مینی ۲",
+  "aliases": [
+   "homepod mini 2",
+   "homepod mini 2nd gen",
+   "homepod mini 2026",
+   "هوم پاد مینی ۲",
+   "هوم پاد مینی نسل ۲",
+   "هوم پاد مینی 2",
+   "هوم پاد مینی 2026"
+  ],
+  "year": 2026,
+  "announced": "2026-10-13",
+  "chip": "S10",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Midnight",
+    "fa": "میدنایت (سرمه‌ای تیره)"
+   }
+  ],
+  "connectivity": "Wi-Fi 6E, Bluetooth 6, Thread, Ultra Wideband",
+  "battery": null,
+  "water": null,
+  "features": [
+   "Siri AI",
+   "three-microphone design",
+   "temperature and humidity sensor",
+   "Sound Recognition",
+   "surround with Apple TV 4K"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/149360",
+   "https://support.apple.com/en-us/101609",
+   "https://www.apple.com/newsroom/2026/10/apple-announces-the-next-generation-of-homepod-mini/"
+  ]
+ }
+]
