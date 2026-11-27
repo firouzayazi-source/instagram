@@ -170,3 +170,13 @@ def test_engine_intent_labels_feed_crm(env):
     """اقساط و اسنپ‌پی برچسب installment می‌گیرند (برچسب «اقساطی» مخاطب و گزارش علاقه‌ی خرید)."""
     assert brain_engine.decide("شرایط اقساط چیه؟")[2] == "installment"
     assert brain_engine.decide("اسنپ پی دارید؟")[2] == "installment"
+
+
+def test_engine_answers_apple_specs(env):
+    """مشخصات هر محصول اپل از دانشنامه، در اینستاگرام هم؛ قیمت همچنان از فهرست زنده."""
+    act, reply, *_ = brain_engine.decide("مشخصات ایپد پرو m4")
+    assert act == "reply" and "M4" in reply and "<b>" not in reply
+    act, reply, *_ = brain_engine.decide("رنگای ایفون ۱۸ پرو مکس چیه")
+    assert act == "reply" and "A20 Pro" in reply
+    act, reply, *_ = brain_engine.decide("قیمت آیفون ۱۳ پرو چنده؟")
+    assert "۱۹۰" in reply

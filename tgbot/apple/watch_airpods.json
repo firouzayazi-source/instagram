@@ -1,0 +1,2139 @@
+[
+ {
+  "category": "watch",
+  "key": "watch 1st gen",
+  "name": "Apple Watch (1st generation)",
+  "name_fa": "اپل‌واچ نسل اول",
+  "aliases": [
+   "apple watch 0",
+   "apple watch series 0",
+   "apple watch original",
+   "apple watch first generation",
+   "اپل واچ نسل ۱",
+   "اپل واچ سری ۰",
+   "اولین اپل واچ"
+  ],
+  "year": 2015,
+  "announced": "2014-09-09",
+  "chip": "S1",
+  "sizes": [
+   38,
+   42
+  ],
+  "display": "Retina OLED with Force Touch",
+  "materials": [
+   "aluminum",
+   "stainless steel",
+   "18-karat gold"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Stainless Steel",
+    "fa": "استیل (نقره‌ای)"
+   },
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Yellow Gold",
+    "fa": "طلای زرد"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   }
+  ],
+  "connectivity": "Bluetooth 4.0, Wi-Fi 802.11b/g/n (uses iPhone GPS)",
+  "battery": "up to 18h",
+  "water": "IPX7 (splash resistant)",
+  "features": [
+   "heart-rate sensor",
+   "Digital Crown",
+   "Force Touch",
+   "Taptic Engine",
+   "Apple Pay"
+  ],
+  "discontinued": 2016,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch series 1",
+  "name": "Apple Watch Series 1",
+  "name_fa": "اپل‌واچ سری ۱",
+  "aliases": [
+   "apple watch 1",
+   "apple watch series 1",
+   "iwatch 1",
+   "اپل واچ ۱",
+   "اپل واچ 1",
+   "اپل‌واچ سری ۱",
+   "ساعت اپل سری ۱",
+   "اپل واچ سری 1"
+  ],
+  "year": 2016,
+  "announced": "2016-09-07",
+  "chip": "S1P",
+  "sizes": [
+   38,
+   42
+  ],
+  "display": "Retina OLED with Force Touch",
+  "materials": [
+   "aluminum"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "connectivity": "Bluetooth 4.0, Wi-Fi (uses iPhone GPS)",
+  "battery": "up to 18h",
+  "water": "IPX7 (splash resistant)",
+  "features": [
+   "heart-rate sensor",
+   "dual-core S1P",
+   "Force Touch",
+   "Apple Pay"
+  ],
+  "discontinued": 2018,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch series 2",
+  "name": "Apple Watch Series 2",
+  "name_fa": "اپل‌واچ سری ۲",
+  "aliases": [
+   "apple watch 2",
+   "apple watch series 2",
+   "iwatch 2",
+   "اپل واچ ۲",
+   "اپل واچ 2",
+   "اپل‌واچ سری ۲",
+   "ساعت اپل سری ۲",
+   "اپل واچ سری 2"
+  ],
+  "year": 2016,
+  "announced": "2016-09-07",
+  "chip": "S2",
+  "sizes": [
+   38,
+   42
+  ],
+  "display": "Retina OLED with Force Touch, 1000 nits",
+  "materials": [
+   "aluminum",
+   "stainless steel",
+   "ceramic"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Stainless Steel",
+    "fa": "استیل (نقره‌ای)"
+   },
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "White Ceramic",
+    "fa": "سرامیک سفید"
+   }
+  ],
+  "connectivity": "GPS (built-in); Bluetooth 4.0, Wi-Fi",
+  "battery": "up to 18h",
+  "water": "WR50 (swimproof)",
+  "features": [
+   "built-in GPS",
+   "swimproof",
+   "heart-rate sensor",
+   "Breathe app"
+  ],
+  "discontinued": 2017,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch series 3",
+  "name": "Apple Watch Series 3",
+  "name_fa": "اپل‌واچ سری ۳",
+  "aliases": [
+   "apple watch 3",
+   "apple watch series 3",
+   "iwatch 3",
+   "اپل واچ ۳",
+   "اپل واچ 3",
+   "اپل‌واچ سری ۳",
+   "ساعت اپل سری ۳",
+   "اپل واچ سری 3"
+  ],
+  "year": 2017,
+  "announced": "2017-09-12",
+  "chip": "S3",
+  "sizes": [
+   38,
+   42
+  ],
+  "display": "Retina OLED with Force Touch, 1000 nits",
+  "materials": [
+   "aluminum",
+   "stainless steel",
+   "ceramic"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Stainless Steel",
+    "fa": "استیل (نقره‌ای)"
+   },
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "White Ceramic",
+    "fa": "سرامیک سفید"
+   },
+   {
+    "en": "Gray Ceramic",
+    "fa": "سرامیک خاکستری"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular (LTE); Bluetooth 4.2",
+  "battery": "up to 18h",
+  "water": "WR50 (swimproof)",
+  "features": [
+   "first cellular Apple Watch",
+   "barometric altimeter",
+   "heart-rate sensor",
+   "high heart rate notifications"
+  ],
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch series 4",
+  "name": "Apple Watch Series 4",
+  "name_fa": "اپل‌واچ سری ۴",
+  "aliases": [
+   "apple watch 4",
+   "apple watch series 4",
+   "iwatch 4",
+   "اپل واچ ۴",
+   "اپل واچ 4",
+   "اپل‌واچ سری ۴",
+   "ساعت اپل سری ۴",
+   "اپل واچ سری 4"
+  ],
+  "year": 2018,
+  "announced": "2018-09-12",
+  "chip": "S4",
+  "sizes": [
+   40,
+   44
+  ],
+  "display": "LTPO OLED Retina, larger edge-to-edge, 1000 nits",
+  "materials": [
+   "aluminum",
+   "stainless steel"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Stainless Steel",
+    "fa": "استیل (نقره‌ای)"
+   },
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.0",
+  "battery": "up to 18h",
+  "water": "WR50 (swimproof)",
+  "features": [
+   "ECG",
+   "fall detection",
+   "irregular rhythm notifications",
+   "haptic Digital Crown"
+  ],
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch series 5",
+  "name": "Apple Watch Series 5",
+  "name_fa": "اپل‌واچ سری ۵",
+  "aliases": [
+   "apple watch 5",
+   "apple watch series 5",
+   "iwatch 5",
+   "اپل واچ ۵",
+   "اپل واچ 5",
+   "اپل‌واچ سری ۵",
+   "ساعت اپل سری ۵",
+   "اپل واچ سری 5"
+  ],
+  "year": 2019,
+  "announced": "2019-09-10",
+  "chip": "S5",
+  "sizes": [
+   40,
+   44
+  ],
+  "display": "Always-On Retina LTPO OLED, 1000 nits",
+  "materials": [
+   "aluminum",
+   "stainless steel",
+   "titanium",
+   "ceramic"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Stainless Steel",
+    "fa": "استیل (نقره‌ای)"
+   },
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Titanium",
+    "fa": "تیتانیوم طبیعی"
+   },
+   {
+    "en": "White Ceramic",
+    "fa": "سرامیک سفید"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.0",
+  "battery": "up to 18h",
+  "water": "WR50 (swimproof)",
+  "features": [
+   "first Always-On display",
+   "compass",
+   "international emergency calling",
+   "ECG",
+   "fall detection"
+  ],
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch se",
+  "name": "Apple Watch SE (1st generation)",
+  "name_fa": "اپل‌واچ اس‌ای نسل اول",
+  "aliases": [
+   "apple watch se",
+   "apple watch se 1",
+   "اپل واچ اس ای",
+   "اپل واچ se",
+   "اپل واچ اس ای ۱",
+   "ساعت اپل اس ای"
+  ],
+  "year": 2020,
+  "announced": "2020-09-15",
+  "chip": "S5",
+  "sizes": [
+   40,
+   44
+  ],
+  "display": "Retina LTPO OLED (not always-on), up to 1000 nits",
+  "materials": [
+   "aluminum"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.0",
+  "battery": "up to 18h",
+  "water": "WR50 (swimproof)",
+  "features": [
+   "fall detection",
+   "compass",
+   "always-on altimeter",
+   "heart-rate notifications"
+  ],
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch series 6",
+  "name": "Apple Watch Series 6",
+  "name_fa": "اپل‌واچ سری ۶",
+  "aliases": [
+   "apple watch 6",
+   "apple watch series 6",
+   "iwatch 6",
+   "اپل واچ ۶",
+   "اپل واچ 6",
+   "اپل‌واچ سری ۶",
+   "ساعت اپل سری ۶",
+   "اپل واچ سری 6"
+  ],
+  "year": 2020,
+  "announced": "2020-09-15",
+  "chip": "S6",
+  "sizes": [
+   40,
+   44
+  ],
+  "display": "Always-On Retina LTPO OLED, 1000 nits (2.5x brighter always-on outdoors)",
+  "materials": [
+   "aluminum",
+   "stainless steel",
+   "titanium"
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   },
+   {
+    "en": "Graphite",
+    "fa": "گرافیتی"
+   },
+   {
+    "en": "Titanium",
+    "fa": "تیتانیوم طبیعی"
+   },
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.0; U1 (Ultra Wideband)",
+  "battery": "up to 18h",
+  "water": "WR50 (swimproof)",
+  "features": [
+   "blood oxygen",
+   "ECG",
+   "always-on altimeter",
+   "U1 chip"
+  ],
+  "discontinued": 2021,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch series 7",
+  "name": "Apple Watch Series 7",
+  "name_fa": "اپل‌واچ سری ۷",
+  "aliases": [
+   "apple watch 7",
+   "apple watch series 7",
+   "iwatch 7",
+   "اپل واچ ۷",
+   "اپل واچ 7",
+   "اپل‌واچ سری ۷",
+   "ساعت اپل سری ۷",
+   "اپل واچ سری 7"
+  ],
+  "year": 2021,
+  "announced": "2021-09-14",
+  "chip": "S7",
+  "sizes": [
+   41,
+   45
+  ],
+  "display": "Always-On Retina LTPO OLED, larger, 1000 nits",
+  "materials": [
+   "aluminum",
+   "stainless steel",
+   "titanium"
+  ],
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "میدنایت (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (کرم)"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Graphite",
+    "fa": "گرافیتی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Titanium",
+    "fa": "تیتانیوم طبیعی"
+   },
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.0; U1",
+  "battery": "up to 18h",
+  "water": "WR50, IP6X",
+  "features": [
+   "larger crack-resistant display",
+   "fast charging",
+   "full QWERTY keyboard",
+   "blood oxygen",
+   "ECG"
+  ],
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch series 8",
+  "name": "Apple Watch Series 8",
+  "name_fa": "اپل‌واچ سری ۸",
+  "aliases": [
+   "apple watch 8",
+   "apple watch series 8",
+   "iwatch 8",
+   "اپل واچ ۸",
+   "اپل واچ 8",
+   "اپل‌واچ سری ۸",
+   "ساعت اپل سری ۸",
+   "اپل واچ سری 8"
+  ],
+  "year": 2022,
+  "announced": "2022-09-07",
+  "chip": "S8 SiP",
+  "sizes": [
+   41,
+   45
+  ],
+  "display": "Always-On Retina LTPO OLED, 1000 nits",
+  "materials": [
+   "aluminum",
+   "stainless steel"
+  ],
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "میدنایت (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (کرم)"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   },
+   {
+    "en": "Graphite",
+    "fa": "گرافیتی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.3; U1",
+  "battery": "up to 18h (up to 36h Low Power Mode)",
+  "water": "WR50, IP6X",
+  "features": [
+   "temperature sensing",
+   "crash detection",
+   "blood oxygen",
+   "ECG",
+   "Low Power Mode"
+  ],
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch se 2",
+  "name": "Apple Watch SE (2nd generation)",
+  "name_fa": "اپل‌واچ اس‌ای ۲",
+  "aliases": [
+   "apple watch se 2",
+   "apple watch se 2022",
+   "اپل واچ اس ای ۲",
+   "اپل واچ se 2",
+   "اپل واچ اس ای 2",
+   "ساعت اپل اس ای نسل دوم"
+  ],
+  "year": 2022,
+  "announced": "2022-09-07",
+  "chip": "S8 SiP",
+  "sizes": [
+   40,
+   44
+  ],
+  "display": "Retina LTPO OLED (not always-on), up to 1000 nits",
+  "materials": [
+   "aluminum"
+  ],
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "میدنایت (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (کرم)"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.3",
+  "battery": "up to 18h",
+  "water": "WR50 (swimproof)",
+  "features": [
+   "crash detection",
+   "fall detection",
+   "heart-rate notifications"
+  ],
+  "discontinued": 2025,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch ultra",
+  "name": "Apple Watch Ultra",
+  "name_fa": "اپل‌واچ اولترا",
+  "aliases": [
+   "apple watch ultra 1",
+   "ultra 1",
+   "اپل واچ اولترا",
+   "اپل واچ اولترا ۱",
+   "اولترا نسل اول",
+   "ساعت اپل اولترا"
+  ],
+  "year": 2022,
+  "announced": "2022-09-07",
+  "chip": "S8 SiP",
+  "sizes": [
+   49
+  ],
+  "display": "Always-On Retina LTPO OLED, up to 2000 nits",
+  "materials": [
+   "titanium"
+  ],
+  "colors": [
+   {
+    "en": "Natural",
+    "fa": "طبیعی (تیتانیومی)"
+   }
+  ],
+  "connectivity": "GPS + Cellular; dual-frequency GPS (L1+L5); Bluetooth 5.3",
+  "battery": "up to 36h (up to 60h Low Power Mode)",
+  "water": "WR100, IP6X, EN13319 (dive to 40m)",
+  "features": [
+   "Action button",
+   "depth gauge",
+   "siren",
+   "dual-frequency GPS",
+   "crash detection",
+   "temperature sensing"
+  ],
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch series 9",
+  "name": "Apple Watch Series 9",
+  "name_fa": "اپل‌واچ سری ۹",
+  "aliases": [
+   "apple watch 9",
+   "apple watch series 9",
+   "iwatch 9",
+   "اپل واچ ۹",
+   "اپل واچ 9",
+   "اپل‌واچ سری ۹",
+   "ساعت اپل سری ۹",
+   "اپل واچ سری 9"
+  ],
+  "year": 2023,
+  "announced": "2023-09-12",
+  "chip": "S9 SiP",
+  "sizes": [
+   41,
+   45
+  ],
+  "display": "Always-On Retina LTPO OLED, up to 2000 nits",
+  "materials": [
+   "aluminum",
+   "stainless steel"
+  ],
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "میدنایت (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (کرم)"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (PRODUCT)RED"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Graphite",
+    "fa": "گرافیتی"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.3; second-gen Ultra Wideband",
+  "battery": "up to 18h (up to 36h Low Power Mode)",
+  "water": "WR50, IP6X",
+  "features": [
+   "double tap",
+   "Precision Finding for iPhone",
+   "on-device Siri",
+   "ECG",
+   "temperature sensing",
+   "crash detection"
+  ],
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "category": "watch",
+  "key": "watch ultra 2",
+  "name": "Apple Watch Ultra 2",
+  "name_fa": "اپل‌واچ اولترا ۲",
+  "aliases": [
+   "apple watch ultra 2",
+   "ultra 2",
+   "اپل واچ اولترا ۲",
+   "اپل واچ اولترا 2",
+   "ساعت اپل اولترا ۲",
+   "اولترا نسل دوم"
+  ],
+  "year": 2023,
+  "announced": "2023-09-12",
+  "chip": "S9 SiP",
+  "sizes": [
+   49
+  ],
+  "display": "Always-On Retina LTPO OLED, up to 3000 nits",
+  "materials": [
+   "titanium"
+  ],
+  "colors": [
+   {
+    "en": "Natural",
+    "fa": "طبیعی (تیتانیومی)"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "GPS + Cellular; dual-frequency GPS; Bluetooth 5.3; second-gen Ultra Wideband",
+  "battery": "up to 36h (up to 72h Low Power Mode)",
+  "water": "WR100, IP6X, EN13319 (dive to 40m)",
+  "features": [
+   "double tap",
+   "Precision Finding",
+   "on-device Siri",
+   "Action button",
+   "depth gauge",
+   "Black Titanium finish added 2024-09-09"
+  ],
+  "discontinued": 2025,
+  "sources": [
+   "https://www.macrumors.com/2025/09/09/apple-discontinues-these-apple-watch-models/"
+  ]
+ },
+ {
+  "category": "watch",
+  "key": "watch series 10",
+  "name": "Apple Watch Series 10",
+  "name_fa": "اپل‌واچ سری ۱۰",
+  "aliases": [
+   "apple watch 10",
+   "apple watch series 10",
+   "iwatch 10",
+   "اپل واچ ۱۰",
+   "اپل واچ 10",
+   "اپل‌واچ سری ۱۰",
+   "ساعت اپل سری ۱۰",
+   "اپل واچ سری 10"
+  ],
+  "year": 2024,
+  "announced": "2024-09-09",
+  "chip": "S10 SiP",
+  "sizes": [
+   42,
+   46
+  ],
+  "display": "Always-On Retina wide-angle OLED (LTPO3), up to 2000 nits",
+  "materials": [
+   "aluminum",
+   "titanium"
+  ],
+  "colors": [
+   {
+    "en": "Jet Black",
+    "fa": "مشکی براق (جت بلک)"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Slate",
+    "fa": "خاکستری تیره (اسلیت)"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Natural",
+    "fa": "طبیعی (تیتانیومی)"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.3",
+  "battery": "up to 18h (up to 36h Low Power Mode); 80% in ~30 min",
+  "water": "WR50, IP6X",
+  "features": [
+   "sleep apnea notifications",
+   "depth gauge to 6m",
+   "water temperature sensor",
+   "fast charging",
+   "ECG",
+   "double tap"
+  ],
+  "discontinued": 2025,
+  "sources": [
+   "https://support.apple.com/121202",
+   "https://www.apple.com/apple-watch-series-10/specs/",
+   "https://www.macrumors.com/2025/09/09/apple-discontinues-these-apple-watch-models/"
+  ]
+ },
+ {
+  "category": "watch",
+  "key": "watch series 11",
+  "name": "Apple Watch Series 11",
+  "name_fa": "اپل‌واچ سری ۱۱",
+  "aliases": [
+   "apple watch 11",
+   "apple watch series 11",
+   "iwatch 11",
+   "اپل واچ ۱۱",
+   "اپل واچ 11",
+   "اپل‌واچ سری ۱۱",
+   "ساعت اپل سری ۱۱",
+   "اپل واچ سری 11"
+  ],
+  "year": 2025,
+  "announced": "2025-09-09",
+  "chip": "S10 SiP",
+  "sizes": [
+   42,
+   46
+  ],
+  "display": "Always-On Retina wide-angle OLED (LTPO3), up to 2000 nits; Ion-X glass with 2x scratch resistance (aluminum), sapphire (titanium)",
+  "materials": [
+   "aluminum",
+   "titanium"
+  ],
+  "colors": [
+   {
+    "en": "Jet Black",
+    "fa": "مشکی براق (جت بلک)"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Slate",
+    "fa": "خاکستری تیره (اسلیت)"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Natural",
+    "fa": "طبیعی (تیتانیومی)"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular (5G RedCap on supported models); Bluetooth 5.3",
+  "battery": "up to 24h (up to 38h Low Power Mode); 80% in ~30 min",
+  "water": "WR50, IP6X",
+  "features": [
+   "hypertension notifications",
+   "sleep score",
+   "sleep apnea notifications",
+   "5G cellular",
+   "ECG",
+   "fast charging"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/125093",
+   "https://www.apple.com/apple-watch-series-11/specs/",
+   "https://techcrunch.com/2025/09/09/apple-unveils-apple-watch-series-11-watch-ultra-3-and-watch-se-3"
+  ]
+ },
+ {
+  "category": "watch",
+  "key": "watch se 3",
+  "name": "Apple Watch SE 3",
+  "name_fa": "اپل‌واچ اس‌ای ۳",
+  "aliases": [
+   "apple watch se 3",
+   "apple watch se 2025",
+   "اپل واچ اس ای ۳",
+   "اپل واچ se 3",
+   "اپل واچ اس ای 3",
+   "ساعت اپل اس ای نسل سوم"
+  ],
+  "year": 2025,
+  "announced": "2025-09-09",
+  "chip": "S10 SiP",
+  "sizes": [
+   40,
+   44
+  ],
+  "display": "Always-On Retina LTPO OLED, up to 1000 nits",
+  "materials": [
+   "aluminum"
+  ],
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "میدنایت (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (کرم)"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular; Bluetooth 5.3",
+  "battery": "up to 18h (up to 32h Low Power Mode); 80% in ~45 min",
+  "water": "WR50",
+  "features": [
+   "first SE with Always-On display",
+   "fast charging",
+   "sleep score",
+   "wrist temperature sensing",
+   "double tap"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/uk/apple-watch-se-3/specs/",
+   "https://techcrunch.com/2025/09/09/apple-unveils-apple-watch-series-11-watch-ultra-3-and-watch-se-3",
+   "https://m.gsmarena.com/apple_watch_series_11_watch_se_3_and_watch_ultra_3_announced_-news-69424.php"
+  ]
+ },
+ {
+  "category": "watch",
+  "key": "watch ultra 3",
+  "name": "Apple Watch Ultra 3",
+  "name_fa": "اپل‌واچ اولترا ۳",
+  "aliases": [
+   "apple watch ultra 3",
+   "ultra 3",
+   "اپل واچ اولترا ۳",
+   "اپل واچ اولترا 3",
+   "ساعت اپل اولترا ۳",
+   "اولترا نسل سوم"
+  ],
+  "year": 2025,
+  "announced": "2025-09-09",
+  "chip": "S10 SiP",
+  "sizes": [
+   49
+  ],
+  "display": "Always-On Retina wide-angle OLED (LTPO3), largest Apple Watch display, 1Hz always-on",
+  "materials": [
+   "titanium"
+  ],
+  "colors": [
+   {
+    "en": "Natural",
+    "fa": "طبیعی (تیتانیومی)"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "GPS + Cellular (5G); satellite (Emergency SOS, Messages, Find My); dual-frequency GPS; Bluetooth 5.3",
+  "battery": "up to 42h (up to 72h Low Power Mode); 80% in ~45 min",
+  "water": "WR100, IP6X, EN13319 (dive to 40m)",
+  "features": [
+   "satellite communications",
+   "hypertension notifications",
+   "5G cellular",
+   "sleep score",
+   "Action button",
+   "depth gauge"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2025/09/introducing-apple-watch-ultra-3/",
+   "https://support.apple.com/125095",
+   "https://www.apple.com/apple-watch-ultra-3/specs/"
+  ]
+ },
+ {
+  "category": "watch",
+  "key": "watch series 12",
+  "name": "Apple Watch Series 12",
+  "name_fa": "اپل‌واچ سری ۱۲",
+  "aliases": [
+   "apple watch 12",
+   "apple watch series 12",
+   "iwatch 12",
+   "اپل واچ ۱۲",
+   "اپل واچ 12",
+   "اپل‌واچ سری ۱۲",
+   "ساعت اپل سری ۱۲",
+   "اپل واچ سری 12"
+  ],
+  "year": 2026,
+  "announced": "2026-09-09",
+  "chip": "S11 SiP",
+  "sizes": [
+   42,
+   46
+  ],
+  "display": "Always-On Retina LTPO OLED, up to 2000 nits; Ceramic Shield 2 (aluminum), sapphire (titanium, ceramic)",
+  "materials": [
+   "aluminum",
+   "titanium",
+   "ceramic"
+  ],
+  "colors": [
+   {
+    "en": "Dark Bronze",
+    "fa": "برنزی تیره"
+   },
+   {
+    "en": "Light Gold",
+    "fa": "طلایی روشن"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Radiant Gold",
+    "fa": "طلایی درخشان"
+   },
+   {
+    "en": "Natural",
+    "fa": "طبیعی (تیتانیومی)"
+   },
+   {
+    "en": "Pearl White",
+    "fa": "سفید صدفی"
+   },
+   {
+    "en": "Night Blue",
+    "fa": "آبی شب"
+   }
+  ],
+  "connectivity": "GPS / GPS + Cellular (LTE and 5G NR)",
+  "battery": "up to 24h (up to 38h Low Power Mode); 80% in ~30 min",
+  "water": "WR50, IP6X",
+  "features": [
+   "new Health Sensing System (heart rate every 5 seconds all day)",
+   "readiness",
+   "Audio Intelligence (sound alerts)",
+   "hypertension notifications (region-dependent)",
+   "sleep score",
+   "sleep apnea notifications",
+   "ECG",
+   "blood oxygen",
+   "new ceramic case"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://apple.com/newsroom/2026/09/introducing-apple-watch-series-12-with-the-all-new-health-sensing-system/",
+   "https://www.apple.com/apple-watch-series-12/specs/",
+   "https://support.apple.com/en-gb/148589",
+   "https://www.macrumors.com/2026/09/09/apple-watch-series-12-announced-all-day-hr-sensor/"
+  ]
+ },
+ {
+  "category": "watch",
+  "key": "watch ultra 4",
+  "name": "Apple Watch Ultra 4",
+  "name_fa": "اپل‌واچ اولترا ۴",
+  "aliases": [
+   "apple watch ultra 4",
+   "ultra 4",
+   "اپل واچ اولترا ۴",
+   "اپل واچ اولترا 4",
+   "ساعت اپل اولترا ۴",
+   "اولترا نسل چهارم"
+  ],
+  "year": 2026,
+  "announced": "2026-09-09",
+  "chip": "S11 SiP",
+  "sizes": [
+   49
+  ],
+  "display": "Always-On Retina OLED, up to 3000 nits",
+  "materials": [
+   "titanium"
+  ],
+  "colors": [
+   {
+    "en": "Natural",
+    "fa": "طبیعی (تیتانیومی)"
+   },
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "connectivity": "GPS + Cellular; satellite (Emergency SOS, Messages, Find My); dual-frequency GPS; Bluetooth 5.3",
+  "battery": "up to 50h (up to 84h Low Power Mode); 15 min charge adds up to 18h",
+  "water": "WR100, IP6X, EN13319 (dive to 40m)",
+  "features": [
+   "new Health Sensing System (heart rate every 5 seconds all day)",
+   "Max Extended Workout mode",
+   "satellite communications",
+   "fast charging",
+   "Action button",
+   "depth gauge"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/ae/newsroom/2026/09/apple-unveils-apple-watch-ultra-4/",
+   "https://www.apple.com/apple-watch-ultra-4/specs/",
+   "https://engadget.com/2254048/apple-watch-ultra-4-comes-with-better-battery-and-upgraded-health-tracking/"
+  ]
+ },
+ {
+  "category": "airpods",
+  "key": "airpods 1",
+  "name": "AirPods (1st generation)",
+  "name_fa": "ایرپاد نسل ۱",
+  "aliases": [
+   "airpods 1",
+   "airpods gen 1",
+   "ایرپاد ۱",
+   "ایرپاد 1",
+   "ایرپاد نسل اول",
+   "ایرپاد اولیه"
+  ],
+  "year": 2016,
+  "announced": "2016-09-07",
+  "chip": "W1",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth (W1); Lightning case",
+  "battery": "up to 5h listening, 24h+ with case",
+  "water": null,
+  "features": [
+   "W1 auto-pairing",
+   "double-tap for Siri",
+   "optical in-ear sensors"
+  ],
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "category": "airpods",
+  "key": "airpods 2",
+  "name": "AirPods (2nd generation)",
+  "name_fa": "ایرپاد نسل ۲",
+  "aliases": [
+   "airpods 2",
+   "airpods gen 2",
+   "ایرپاد ۲",
+   "ایرپاد 2",
+   "ایرپاد نسل دوم"
+  ],
+  "year": 2019,
+  "announced": "2019-03-20",
+  "chip": "H1",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth 5.0; Lightning case (standard or Wireless Charging Case)",
+  "battery": "up to 5h listening, 24h+ with case",
+  "water": null,
+  "features": [
+   "Hey Siri",
+   "faster device switching",
+   "optional wireless charging case"
+  ],
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "category": "airpods",
+  "key": "airpods pro",
+  "name": "AirPods Pro (1st generation)",
+  "name_fa": "ایرپاد پرو نسل ۱",
+  "aliases": [
+   "airpods pro 1",
+   "airpods pro gen 1",
+   "ایرپاد پرو",
+   "ایرپاد پرو ۱",
+   "ایرپاد پرو 1",
+   "ایرپاد پرو نسل اول"
+  ],
+  "year": 2019,
+  "announced": "2019-10-28",
+  "chip": "H1",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth 5.0; Lightning wireless charging case (MagSafe case from Oct 2021)",
+  "battery": "up to 4.5h listening (5h ANC off), 24h+ with case",
+  "water": "IPX4 (earbuds)",
+  "features": [
+   "Active Noise Cancellation",
+   "Transparency mode",
+   "Spatial Audio",
+   "silicone ear tips"
+  ],
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "category": "airpods",
+  "key": "airpods max",
+  "name": "AirPods Max (Lightning)",
+  "name_fa": "ایرپادز مکس (لایتنینگ)",
+  "aliases": [
+   "airpods max",
+   "airpods max lightning",
+   "ایرپادز مکس",
+   "ایرپاد مکس",
+   "ایرپاد مکس لایتنینگ",
+   "هدفون اپل"
+  ],
+  "year": 2020,
+  "announced": "2020-12-08",
+  "chip": "H1",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Sky Blue",
+    "fa": "آبی آسمانی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   }
+  ],
+  "connectivity": "Bluetooth 5.0; Lightning; Smart Case",
+  "battery": "up to 20h (ANC or Transparency on)",
+  "water": null,
+  "features": [
+   "Active Noise Cancellation",
+   "Transparency mode",
+   "Spatial Audio",
+   "Digital Crown",
+   "Smart Case"
+  ],
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "category": "airpods",
+  "key": "airpods 3",
+  "name": "AirPods (3rd generation)",
+  "name_fa": "ایرپاد نسل ۳",
+  "aliases": [
+   "airpods 3",
+   "airpods gen 3",
+   "ایرپاد ۳",
+   "ایرپاد 3",
+   "ایرپاد نسل سوم"
+  ],
+  "year": 2021,
+  "announced": "2021-10-18",
+  "chip": "H1",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth 5.0; Lightning or MagSafe charging case",
+  "battery": "up to 6h listening, 30h with case",
+  "water": "IPX4 (earbuds and case)",
+  "features": [
+   "Spatial Audio",
+   "Adaptive EQ",
+   "force sensor",
+   "skin-detect sensor"
+  ],
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "category": "airpods",
+  "key": "airpods pro 2",
+  "name": "AirPods Pro (2nd generation) Lightning",
+  "name_fa": "ایرپاد پرو ۲ (لایتنینگ)",
+  "aliases": [
+   "airpods pro 2",
+   "airpods pro 2 lightning",
+   "ایرپاد پرو ۲",
+   "ایرپاد پرو 2",
+   "ایرپاد پرو نسل دوم",
+   "ایرپاد پرو ۲ لایتنینگ"
+  ],
+  "year": 2022,
+  "announced": "2022-09-07",
+  "chip": "H2",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth 5.3; MagSafe Charging Case (Lightning) with speaker and U1",
+  "battery": "up to 6h listening with ANC, 30h with case",
+  "water": "IPX4 (earbuds and case)",
+  "features": [
+   "Active Noise Cancellation (up to 2x vs AirPods Pro 1)",
+   "Adaptive Transparency",
+   "Personalized Spatial Audio",
+   "touch volume control",
+   "Precision Finding for case"
+  ],
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "category": "airpods",
+  "key": "airpods pro 2 usb-c",
+  "name": "AirPods Pro (2nd generation) with MagSafe Charging Case (USB-C)",
+  "name_fa": "ایرپاد پرو ۲ (تایپ‌سی)",
+  "aliases": [
+   "airpods pro 2 usb-c",
+   "airpods pro 2 type c",
+   "ایرپاد پرو ۲ تایپ سی",
+   "ایرپاد پرو 2 تایپ سی",
+   "ایرپاد پرو نسل دوم usb-c"
+  ],
+  "year": 2023,
+  "announced": "2023-09-12",
+  "chip": "H2",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth 5.3; MagSafe Charging Case (USB-C) with speaker; Precision Finding",
+  "battery": "up to 6h listening with ANC, 30h with case",
+  "water": "IP54 (earbuds and case)",
+  "features": [
+   "Active Noise Cancellation",
+   "Adaptive Audio",
+   "Conversation Awareness",
+   "Lossless Audio with Apple Vision Pro",
+   "hearing aid & hearing test (software update, 2024)"
+  ],
+  "discontinued": 2025,
+  "sources": [
+   "https://www.macrumors.com/2025/09/09/apple-discontinues-these-apple-watch-models/"
+  ]
+ },
+ {
+  "category": "airpods",
+  "key": "airpods 4",
+  "name": "AirPods 4",
+  "name_fa": "ایرپاد ۴",
+  "aliases": [
+   "airpods 4",
+   "ایرپاد ۴",
+   "ایرپاد 4",
+   "ایرپاد نسل چهارم",
+   "ایرپاد ۴ معمولی"
+  ],
+  "year": 2024,
+  "announced": "2024-09-09",
+  "chip": "H2",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth 5.3; USB-C charging case",
+  "battery": "up to 5h listening, 30h with case",
+  "water": "IP54 (earbuds and case)",
+  "features": [
+   "redesigned open-ear fit",
+   "Personalized Spatial Audio",
+   "Siri head gestures",
+   "Voice Isolation",
+   "force sensor"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/uk/airpods-4/specs/",
+   "https://www.apple.com/newsroom/2024/09/apple-introduces-airpods-4-and-a-hearing-health-experience-with-airpods-pro-2/"
+  ]
+ },
+ {
+  "category": "airpods",
+  "key": "airpods 4 anc",
+  "name": "AirPods 4 with Active Noise Cancellation",
+  "name_fa": "ایرپاد ۴ با نویز کنسلینگ (ANC)",
+  "aliases": [
+   "airpods 4 anc",
+   "airpods 4 noise cancelling",
+   "ایرپاد ۴ انس",
+   "ایرپاد ۴ نویز کنسلینگ",
+   "ایرپاد 4 anc",
+   "ایرپاد ۴ با حذف نویز"
+  ],
+  "year": 2024,
+  "announced": "2024-09-09",
+  "chip": "H2",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth 5.3; USB-C wireless charging case (Qi, Apple Watch charger) with speaker for Find My",
+  "battery": "up to 5h listening (4h with ANC), 30h with case (20h with ANC)",
+  "water": "IP54 (earbuds and case)",
+  "features": [
+   "Active Noise Cancellation",
+   "Transparency mode",
+   "Adaptive Audio",
+   "Conversation Awareness",
+   "wireless charging case"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/uk/airpods-4/specs/",
+   "https://www.apple.com/newsroom/2024/09/apple-introduces-airpods-4-and-a-hearing-health-experience-with-airpods-pro-2/"
+  ]
+ },
+ {
+  "category": "airpods",
+  "key": "airpods max usb-c",
+  "name": "AirPods Max (USB-C)",
+  "name_fa": "ایرپادز مکس (تایپ‌سی)",
+  "aliases": [
+   "airpods max usb-c",
+   "airpods max type c",
+   "airpods max 2024",
+   "ایرپادز مکس تایپ سی",
+   "ایرپاد مکس تایپ سی"
+  ],
+  "year": 2024,
+  "announced": "2024-09-09",
+  "chip": "H1",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "میدنایت (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (کرم)"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Orange",
+    "fa": "نارنجی"
+   }
+  ],
+  "connectivity": "Bluetooth 5.0; USB-C (lossless and low-latency wired audio via USB-C added by 2025 firmware); Smart Case",
+  "battery": "up to 20h (ANC or Transparency on)",
+  "water": null,
+  "features": [
+   "Active Noise Cancellation",
+   "Transparency mode",
+   "Personalized Spatial Audio",
+   "USB-C charging",
+   "new colors"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2024/09/apple-introduces-airpods-4-and-a-hearing-health-experience-with-airpods-pro-2/"
+  ]
+ },
+ {
+  "category": "airpods",
+  "key": "airpods pro 3",
+  "name": "AirPods Pro 3",
+  "name_fa": "ایرپاد پرو ۳",
+  "aliases": [
+   "airpods pro 3",
+   "ایرپاد پرو ۳",
+   "ایرپاد پرو 3",
+   "ایرپاد پرو نسل سوم"
+  ],
+  "year": 2025,
+  "announced": "2025-09-09",
+  "chip": "H2",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth 5.3; MagSafe Charging Case (USB-C, Qi, Apple Watch charger); Precision Finding",
+  "battery": "up to 8h listening with ANC, 24h with case",
+  "water": "IP57 (earbuds and case)",
+  "features": [
+   "Active Noise Cancellation (up to 2x vs AirPods Pro 2)",
+   "heart-rate sensing during workouts",
+   "Live Translation",
+   "hearing aid & hearing test",
+   "Adaptive Audio"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://apple.com/airpods-pro/specs/",
+   "https://support.apple.com/en-gb/125135"
+  ]
+ },
+ {
+  "category": "airpods",
+  "key": "airpods max 2",
+  "name": "AirPods Max 2",
+  "name_fa": "ایرپادز مکس ۲",
+  "aliases": [
+   "airpods max 2",
+   "ایرپادز مکس ۲",
+   "ایرپاد مکس ۲",
+   "ایرپاد مکس 2",
+   "ایرپادز مکس نسل دوم"
+  ],
+  "year": 2026,
+  "announced": "2026-03-16",
+  "chip": "H2",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "میدنایت (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (کرم)"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Orange",
+    "fa": "نارنجی"
+   }
+  ],
+  "connectivity": "Bluetooth 5.3; USB-C (Lossless and ultra-low-latency wired audio); Smart Case",
+  "battery": "up to 20h with ANC",
+  "water": null,
+  "features": [
+   "Active Noise Cancellation (up to 1.5x vs previous)",
+   "Adaptive Audio",
+   "Conversation Awareness",
+   "Voice Isolation",
+   "Live Translation"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/hr/newsroom/2026/03/apple-introduces-airpods-max-2-powered-by-h2/",
+   "https://support.apple.com/en-nz/126620",
+   "https://www.apple.com/jo/airpods-max/specs/",
+   "https://macrumors.com/2026/03/16/apple-announces-airpods-max-2/"
+  ]
+ },
+ {
+  "category": "airpods",
+  "key": "airpods 5",
+  "name": "AirPods 5",
+  "name_fa": "ایرپاد ۵",
+  "aliases": [
+   "airpods 5",
+   "ایرپاد ۵",
+   "ایرپاد 5",
+   "ایرپاد نسل پنجم"
+  ],
+  "year": 2026,
+  "announced": "2026-09-09",
+  "chip": "H2",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [],
+  "connectivity": "Bluetooth 5.3; USB-C charging case",
+  "battery": "up to 4h listening with ANC",
+  "water": "IP57 (earbuds and case)",
+  "features": [
+   "Active Noise Cancellation standard (up to 50% more than AirPods 4 ANC)",
+   "open-ear design",
+   "force sensor",
+   "Live Translation"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://apple.com/newsroom/2026/09/apple-introduces-airpods-5-with-best-in-class-open-ear-active-noise-cancellation/",
+   "https://www.apple.com/uk/airpods-5/specs/",
+   "https://www.macrumors.com/2026/09/09/airpods-5-include-anc-as-standard/",
+   "https://www.techrepublic.com/article/news-airpods-5-wireless-charging-case/"
+  ]
+ },
+ {
+  "category": "airpods",
+  "key": "airpods 5 wireless",
+  "name": "AirPods 5 with Wireless Charging Case",
+  "name_fa": "ایرپاد ۵ با کیس شارژ بی‌سیم",
+  "aliases": [
+   "airpods 5 wireless charging",
+   "airpods 5 wireless case",
+   "ایرپاد ۵ وایرلس",
+   "ایرپاد ۵ کیس بی سیم",
+   "ایرپاد 5 شارژ بیسیم"
+  ],
+  "year": 2026,
+  "announced": "2026-09-09",
+  "chip": "H2",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [],
+  "connectivity": "Bluetooth 5.3; USB-C wireless charging case (Qi, Apple Watch charger) with speaker for Find My",
+  "battery": "up to 5h listening with ANC",
+  "water": "IP57 (earbuds and case)",
+  "features": [
+   "Active Noise Cancellation (up to 50% more than AirPods 4 ANC)",
+   "swipe volume control on stem",
+   "wireless charging case",
+   "Live Translation"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://apple.com/newsroom/2026/09/apple-introduces-airpods-5-with-best-in-class-open-ear-active-noise-cancellation/",
+   "https://www.apple.com/uk/airpods-5/specs/",
+   "https://www.macrumors.com/2026/09/09/airpods-5-include-anc-as-standard/",
+   "https://www.techrepublic.com/article/news-airpods-5-wireless-charging-case/"
+  ]
+ },
+ {
+  "category": "accessory",
+  "key": "pencil 1",
+  "name": "Apple Pencil (1st generation)",
+  "name_fa": "اپل پنسل نسل ۱",
+  "aliases": [
+   "apple pencil 1",
+   "apple pencil gen 1",
+   "اپل پنسل ۱",
+   "اپل پنسل 1",
+   "قلم اپل نسل اول"
+  ],
+  "year": 2015,
+  "announced": "2015-09-09",
+  "chip": null,
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth; pairs and charges via Lightning (USB-C adapter for USB-C iPads)",
+  "battery": null,
+  "water": null,
+  "features": [
+   "pressure sensitivity",
+   "tilt sensitivity"
+  ],
+  "discontinued": null,
+  "sources": []
+ },
+ {
+  "category": "accessory",
+  "key": "pencil 2",
+  "name": "Apple Pencil (2nd generation)",
+  "name_fa": "اپل پنسل نسل ۲",
+  "aliases": [
+   "apple pencil 2",
+   "apple pencil gen 2",
+   "اپل پنسل ۲",
+   "اپل پنسل 2",
+   "قلم اپل نسل دوم"
+  ],
+  "year": 2018,
+  "announced": "2018-10-30",
+  "chip": null,
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth; magnetic pairing and wireless charging",
+  "battery": null,
+  "water": null,
+  "features": [
+   "pressure sensitivity",
+   "tilt sensitivity",
+   "double tap to switch tools",
+   "magnetic attach"
+  ],
+  "discontinued": null,
+  "sources": []
+ },
+ {
+  "category": "accessory",
+  "key": "pencil usb-c",
+  "name": "Apple Pencil (USB-C)",
+  "name_fa": "اپل پنسل تایپ‌سی",
+  "aliases": [
+   "apple pencil usb-c",
+   "apple pencil type c",
+   "اپل پنسل تایپ سی",
+   "اپل پنسل usb-c",
+   "قلم اپل تایپ سی"
+  ],
+  "year": 2023,
+  "announced": "2023-10-17",
+  "chip": null,
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth; pairs and charges via USB-C cable; magnetic attach",
+  "battery": null,
+  "water": null,
+  "features": [
+   "tilt sensitivity",
+   "no pressure sensitivity",
+   "hover (supported iPads)"
+  ],
+  "discontinued": null,
+  "sources": []
+ },
+ {
+  "category": "accessory",
+  "key": "pencil pro",
+  "name": "Apple Pencil Pro",
+  "name_fa": "اپل پنسل پرو",
+  "aliases": [
+   "apple pencil pro",
+   "اپل پنسل پرو",
+   "قلم اپل پرو",
+   "پنسل پرو"
+  ],
+  "year": 2024,
+  "announced": "2024-05-07",
+  "chip": null,
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth; magnetic pairing and wireless charging",
+  "battery": null,
+  "water": null,
+  "features": [
+   "squeeze (tool palette)",
+   "barrel roll (gyroscope)",
+   "haptic feedback",
+   "Find My",
+   "double tap",
+   "hover",
+   "pressure sensitivity"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/120123",
+   "https://www.macrumors.com/2024/05/09/apple-pencil-pro-features",
+   "https://www.tomsguide.com/tablets/ipads/apple-announces-apple-pencil-pro-with-barrel-roll-and-squeeze-capabilities"
+  ]
+ },
+ {
+  "category": "accessory",
+  "key": "airtag",
+  "name": "AirTag",
+  "name_fa": "ایرتگ",
+  "aliases": [
+   "airtag",
+   "air tag",
+   "ایرتگ",
+   "ایر تگ",
+   "ایرتگ نسل اول",
+   "ردیاب اپل"
+  ],
+  "year": 2021,
+  "announced": "2021-04-20",
+  "chip": "U1",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth LE; U1 Ultra Wideband; NFC; Find My network",
+  "battery": "over a year on a replaceable CR2032 coin cell",
+  "water": "IP67",
+  "features": [
+   "Precision Finding",
+   "built-in speaker",
+   "Lost Mode via NFC"
+  ],
+  "discontinued": null,
+  "sources": []
+ },
+ {
+  "category": "accessory",
+  "key": "airtag 2",
+  "name": "AirTag (2nd generation)",
+  "name_fa": "ایرتگ نسل ۲",
+  "aliases": [
+   "airtag 2",
+   "airtag gen 2",
+   "ایرتگ ۲",
+   "ایرتگ 2",
+   "ایرتگ نسل دوم",
+   "ایرتگ جدید"
+  ],
+  "year": 2026,
+  "announced": "2026-01-26",
+  "chip": "second-generation Ultra Wideband",
+  "sizes": null,
+  "display": null,
+  "materials": null,
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "connectivity": "Bluetooth (upgraded); second-gen Ultra Wideband; NFC; Find My network",
+  "battery": "over a year on a replaceable CR2032 coin cell",
+  "water": "IP67",
+  "features": [
+   "Precision Finding up to 50% farther",
+   "50% louder speaker",
+   "Precision Finding on Apple Watch Series 9+/Ultra 2+",
+   "Share Item Location with airlines"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/126203",
+   "https://www.apple.com/li/newsroom/2026/01/apple-introduces-new-airtag-with-expanded-range-and-improved-findability/",
+   "https://www.macrumors.com/2026/01/26/apple-announces-new-airtag/"
+  ]
+ },
+ {
+  "category": "accessory",
+  "key": "vision pro",
+  "name": "Apple Vision Pro",
+  "name_fa": "اپل ویژن پرو",
+  "aliases": [
+   "vision pro",
+   "apple vision pro m2",
+   "ویژن پرو",
+   "اپل ویژن پرو",
+   "عینک اپل"
+  ],
+  "year": 2024,
+  "announced": "2023-06-05",
+  "chip": "M2 + R1",
+  "sizes": null,
+  "display": "dual micro-OLED, 23 million pixels, up to 100Hz",
+  "materials": null,
+  "colors": [],
+  "connectivity": "Wi-Fi 6, Bluetooth 5.3; external battery pack",
+  "battery": "up to 2h general use, 2.5h video",
+  "water": null,
+  "features": [
+   "visionOS",
+   "eye and hand tracking",
+   "EyeSight",
+   "Optic ID",
+   "spatial photos and video"
+  ],
+  "discontinued": 2025,
+  "sources": [
+   "https://www.macrumors.com/2024/01/19/apple-vision-pro-tech-specs/",
+   "https://support.apple.com/en-ng/117810"
+  ]
+ },
+ {
+  "category": "accessory",
+  "key": "vision pro m5",
+  "name": "Apple Vision Pro (M5)",
+  "name_fa": "اپل ویژن پرو (M۵)",
+  "aliases": [
+   "vision pro m5",
+   "apple vision pro 2025",
+   "ویژن پرو m5",
+   "ویژن پرو جدید",
+   "ویژن پرو ام ۵"
+  ],
+  "year": 2025,
+  "announced": "2025-10-15",
+  "chip": "M5 + R1",
+  "sizes": null,
+  "display": "dual micro-OLED, up to 120Hz",
+  "materials": null,
+  "colors": [],
+  "connectivity": "external tethered battery pack",
+  "battery": "up to 2.5h general use, 3h video",
+  "water": null,
+  "features": [
+   "M5 chip (10-core CPU, 10-core GPU, 16GB)",
+   "120Hz",
+   "Dual Knit Band included",
+   "eye and hand tracking",
+   "Optic ID"
+  ],
+  "discontinued": null,
+  "sources": [
+   "https://www.macrumors.com/2025/10/15/apple-announces-vision-pro-with-m5-chip/",
+   "https://support.apple.com/en-gb/125436",
+   "https://apple.com/apple-vision-pro/specs/"
+  ]
+ }
+]

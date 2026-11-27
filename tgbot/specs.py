@@ -86,10 +86,19 @@ IPHONES = {
     "17 pro max": (2025, "A19 Pro", 6.9, "OLED", 120, "سه دوربین ۴۸ مگاپیکسل", 4, "USB-C",
                    ["5G", "MagSafe", "LiDAR", "ProMotion", "Dynamic Island", "Always-On",
                     "دکمه‌ی Action", "Camera Control", "دوربین سلفی ۱۸ مگاپیکسل"]),
+    # ۲۰۲۶ (از دانشنامه‌ی apple/iphone.json، وارسی‌شده با صفحه‌های اپل؛ ۶ آذر ۱۴۰۵)
+    "17e":        (2026, "A19", 6.1, "OLED", 60, "یک دوربین ۴۸ مگاپیکسل", 0, "USB-C",
+                   ["5G", "MagSafe", "دکمه‌ی Action"]),
+    "18 pro":     (2026, "A20 Pro", 6.3, "OLED", 120, "سه دوربین ۴۸ مگاپیکسل", 4, "USB-C",
+                   ["5G", "MagSafe", "LiDAR", "ProMotion", "Dynamic Island", "Always-On",
+                    "دکمه‌ی Action", "Camera Control", "دوربین سلفی ۱۸ مگاپیکسل", "دیافراگم متغیر"]),
+    "18 pro max": (2026, "A20 Pro", 6.9, "OLED", 120, "سه دوربین ۴۸ مگاپیکسل", 4, "USB-C",
+                   ["5G", "MagSafe", "LiDAR", "ProMotion", "Dynamic Island", "Always-On",
+                    "دکمه‌ی Action", "Camera Control", "دوربین سلفی ۱۸ مگاپیکسل", "دیافراگم متغیر"]),
 }
 # ترتیب قدرت تراشه‌ها — برای اینکه «تراشه‌ی قوی‌تر» فقط به نفع مدلِ واقعاً قوی‌تر نوشته شود
 CHIP_RANK = ["A13", "A14", "A15", "A15 (GPU ۵ هسته)", "A16", "A17 Pro", "A18", "A18 Pro",
-             "A19", "A19 Pro"]
+             "A19", "A19 Pro", "A20 Pro"]
 _VAR = {"پرو مکس": "pro max", "پرو": "pro", "پلاس": "plus", "مینی": "mini", "ایر": "air"}
 _TO_EN = str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789")
 
@@ -118,15 +127,16 @@ def name_of(key):
         (" " + inv.get(v, v) if v else "")
 
 
-_16E = re.compile(r"(?:16|۱۶)\s*(?:e|ای)\b", re.I)
+_16E = re.compile(r"(1[6-9]|۱[۶-۹])\s*(?:e|ای)\b", re.I)      # «۱۶e»، «17e»، «۱۷ ای»
 
 
 def find_models(text):
     """مدل‌های جدولِ مشخصات که در جمله آمده‌اند، به ترتیب."""
     out = []
     t = text or ""
-    if _16E.search(t):
-        out.append("16e")
+    m = _16E.search(t)
+    if m and m.group(1).translate(_TO_EN) + "e" in IPHONES:
+        out.append(m.group(1).translate(_TO_EN) + "e")
         t = _16E.sub(" ", t)        # «۱۶e» دیگر «۱۶» حساب نشود
     for p in brain.products_all(t):
         k = key_of(p)

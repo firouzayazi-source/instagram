@@ -1,0 +1,2932 @@
+[
+ {
+  "key": "ipad 1",
+  "name": "iPad",
+  "name_fa": "آیپد (نسل ۱)",
+  "aliases": [
+   "ipad 1",
+   "ipad 1st gen",
+   "آیپد ۱",
+   "ایپد ۱",
+   "آیپد نسل ۱",
+   "ایپد نسل ۱",
+   "آیپد نسل 1",
+   "ipad original",
+   "first ipad",
+   "آیپد اول",
+   "آیپد اورجینال ۲۰۱۰"
+  ],
+  "year": 2010,
+  "announced": "2010-01-27",
+  "chip": "A4",
+  "ram_gb": 0.25,
+  "display": {
+   "inch": 9.7,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1024x768"
+  },
+  "rear_cameras": "None",
+  "front_camera": "None",
+  "storage_gb": [
+   16,
+   32,
+   64
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   }
+  ],
+  "port": "30-pin",
+  "biometrics": "none",
+  "cellular": "Wi-Fi + Cellular (3G)",
+  "pencil": [],
+  "keyboard": null,
+  "weight_g": 680,
+  "features": [
+   "First iPad",
+   "No cameras",
+   "Micro-SIM (3G model)"
+  ],
+  "max_ipados": 5,
+  "discontinued": 2011,
+  "sources": []
+ },
+ {
+  "key": "ipad 2",
+  "name": "iPad 2",
+  "name_fa": "آیپد ۲",
+  "aliases": [
+   "ipad 2",
+   "ipad 2nd gen",
+   "آیپد ۲",
+   "ایپد ۲",
+   "آیپد نسل ۲",
+   "ایپد نسل ۲",
+   "آیپد نسل 2"
+  ],
+  "year": 2011,
+  "announced": "2011-03-02",
+  "chip": "A5",
+  "ram_gb": 0.5,
+  "display": {
+   "inch": 9.7,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1024x768"
+  },
+  "rear_cameras": "0.7MP (720p video)",
+  "front_camera": "VGA (0.3MP) FaceTime",
+  "storage_gb": [
+   16,
+   32,
+   64
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "port": "30-pin",
+  "biometrics": "none",
+  "cellular": "Wi-Fi + Cellular (3G)",
+  "pencil": [],
+  "keyboard": null,
+  "weight_g": 601,
+  "features": [
+   "First iPad with cameras",
+   "Smart Cover support"
+  ],
+  "max_ipados": 9,
+  "discontinued": 2014,
+  "sources": []
+ },
+ {
+  "key": "ipad 3",
+  "name": "iPad (3rd generation)",
+  "name_fa": "آیپد نسل ۳",
+  "aliases": [
+   "ipad 3",
+   "ipad 3rd gen",
+   "آیپد ۳",
+   "ایپد ۳",
+   "آیپد نسل ۳",
+   "ایپد نسل ۳",
+   "آیپد نسل 3",
+   "the new ipad",
+   "new ipad 2012"
+  ],
+  "year": 2012,
+  "announced": "2012-03-07",
+  "chip": "A5X",
+  "ram_gb": 1,
+  "display": {
+   "inch": 9.7,
+   "type": "Retina (LCD)",
+   "hz": 60,
+   "resolution": "2048x1536"
+  },
+  "rear_cameras": "5MP iSight (1080p video)",
+  "front_camera": "VGA (0.3MP) FaceTime",
+  "storage_gb": [
+   16,
+   32,
+   64
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "port": "30-pin",
+  "biometrics": "none",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [],
+  "keyboard": null,
+  "weight_g": 652,
+  "features": [
+   "First Retina display iPad",
+   "First LTE iPad"
+  ],
+  "max_ipados": 9,
+  "discontinued": 2012,
+  "sources": []
+ },
+ {
+  "key": "mini 1",
+  "name": "iPad mini",
+  "name_fa": "آیپد مینی (نسل ۱)",
+  "aliases": [
+   "ipad mini 1",
+   "ipad mini 1st gen",
+   "آیپد مینی ۱",
+   "ایپد مینی ۱",
+   "مینی ۱",
+   "آیپد مینی نسل ۱"
+  ],
+  "year": 2012,
+  "announced": "2012-10-23",
+  "chip": "A5",
+  "ram_gb": 0.5,
+  "display": {
+   "inch": 7.9,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1024x768"
+  },
+  "rear_cameras": "5MP iSight (1080p video)",
+  "front_camera": "1.2MP FaceTime HD (720p)",
+  "storage_gb": [
+   16,
+   32,
+   64
+  ],
+  "colors": [
+   {
+    "en": "Black & Slate",
+    "fa": "مشکی و اسلیت"
+   },
+   {
+    "en": "White & Silver",
+    "fa": "سفید و نقره‌ای"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "none",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [],
+  "keyboard": null,
+  "weight_g": 308,
+  "features": [
+   "First iPad mini",
+   "Lightning connector"
+  ],
+  "max_ipados": 9,
+  "discontinued": 2015,
+  "sources": []
+ },
+ {
+  "key": "ipad 4",
+  "name": "iPad (4th generation)",
+  "name_fa": "آیپد نسل ۴",
+  "aliases": [
+   "ipad 4",
+   "ipad 4th gen",
+   "آیپد ۴",
+   "ایپد ۴",
+   "آیپد نسل ۴",
+   "ایپد نسل ۴",
+   "آیپد نسل 4",
+   "ipad with retina display"
+  ],
+  "year": 2012,
+  "announced": "2012-10-23",
+  "chip": "A6X",
+  "ram_gb": 1,
+  "display": {
+   "inch": 9.7,
+   "type": "Retina (LCD)",
+   "hz": 60,
+   "resolution": "2048x1536"
+  },
+  "rear_cameras": "5MP iSight (1080p video)",
+  "front_camera": "1.2MP FaceTime HD (720p)",
+  "storage_gb": [
+   16,
+   32,
+   64,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "none",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [],
+  "keyboard": null,
+  "weight_g": 652,
+  "features": [
+   "Lightning connector",
+   "128GB added Feb 2013"
+  ],
+  "max_ipados": 10,
+  "discontinued": 2014,
+  "sources": []
+ },
+ {
+  "key": "air 1",
+  "name": "iPad Air",
+  "name_fa": "آیپد ایر (نسل ۱)",
+  "aliases": [
+   "ipad air 1",
+   "ipad air 1st gen",
+   "آیپد ایر ۱",
+   "ایپد ایر ۱",
+   "ایر ۱",
+   "آیپد ایر نسل ۱"
+  ],
+  "year": 2013,
+  "announced": "2013-10-22",
+  "chip": "A7",
+  "ram_gb": 1,
+  "display": {
+   "inch": 9.7,
+   "type": "Retina (LCD)",
+   "hz": 60,
+   "resolution": "2048x1536"
+  },
+  "rear_cameras": "5MP iSight (1080p video)",
+  "front_camera": "1.2MP FaceTime HD (720p)",
+  "storage_gb": [
+   16,
+   32,
+   64,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "none",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [],
+  "keyboard": null,
+  "weight_g": 469,
+  "features": [
+   "64-bit A7 chip",
+   "Thinner and lighter design"
+  ],
+  "max_ipados": 12,
+  "discontinued": 2016,
+  "sources": []
+ },
+ {
+  "key": "mini 2",
+  "name": "iPad mini 2",
+  "name_fa": "آیپد مینی ۲",
+  "aliases": [
+   "ipad mini 2",
+   "ipad mini retina",
+   "ipad mini with retina display",
+   "آیپد مینی ۲",
+   "ایپد مینی ۲",
+   "مینی ۲",
+   "آیپد مینی نسل ۲"
+  ],
+  "year": 2013,
+  "announced": "2013-10-22",
+  "chip": "A7",
+  "ram_gb": 1,
+  "display": {
+   "inch": 7.9,
+   "type": "Retina (LCD)",
+   "hz": 60,
+   "resolution": "2048x1536"
+  },
+  "rear_cameras": "5MP iSight (1080p video)",
+  "front_camera": "1.2MP FaceTime HD (720p)",
+  "storage_gb": [
+   16,
+   32,
+   64,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "none",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [],
+  "keyboard": null,
+  "weight_g": 331,
+  "features": [
+   "First Retina iPad mini"
+  ],
+  "max_ipados": 12,
+  "discontinued": 2017,
+  "sources": []
+ },
+ {
+  "key": "air 2",
+  "name": "iPad Air 2",
+  "name_fa": "آیپد ایر ۲",
+  "aliases": [
+   "ipad air 2",
+   "ipad air 2nd gen",
+   "آیپد ایر ۲",
+   "ایپد ایر ۲",
+   "ایر ۲",
+   "آیپد ایر نسل ۲"
+  ],
+  "year": 2014,
+  "announced": "2014-10-16",
+  "chip": "A8X",
+  "ram_gb": 2,
+  "display": {
+   "inch": 9.7,
+   "type": "Retina (LCD, fully laminated)",
+   "hz": 60,
+   "resolution": "2048x1536"
+  },
+  "rear_cameras": "8MP iSight (1080p video)",
+  "front_camera": "1.2MP FaceTime HD (720p)",
+  "storage_gb": [
+   16,
+   32,
+   64,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [],
+  "keyboard": null,
+  "weight_g": 437,
+  "features": [
+   "First iPad with Touch ID",
+   "Anti-reflective laminated display",
+   "32GB/128GB lineup from 2016"
+  ],
+  "max_ipados": 15,
+  "discontinued": 2017,
+  "sources": []
+ },
+ {
+  "key": "mini 3",
+  "name": "iPad mini 3",
+  "name_fa": "آیپد مینی ۳",
+  "aliases": [
+   "ipad mini 3",
+   "آیپد مینی ۳",
+   "ایپد مینی ۳",
+   "مینی ۳",
+   "آیپد مینی نسل ۳"
+  ],
+  "year": 2014,
+  "announced": "2014-10-16",
+  "chip": "A7",
+  "ram_gb": 1,
+  "display": {
+   "inch": 7.9,
+   "type": "Retina (LCD)",
+   "hz": 60,
+   "resolution": "2048x1536"
+  },
+  "rear_cameras": "5MP iSight (1080p video)",
+  "front_camera": "1.2MP FaceTime HD (720p)",
+  "storage_gb": [
+   16,
+   64,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [],
+  "keyboard": null,
+  "weight_g": 331,
+  "features": [
+   "Touch ID added"
+  ],
+  "max_ipados": 12,
+  "discontinued": 2015,
+  "sources": []
+ },
+ {
+  "key": "mini 4",
+  "name": "iPad mini 4",
+  "name_fa": "آیپد مینی ۴",
+  "aliases": [
+   "ipad mini 4",
+   "آیپد مینی ۴",
+   "ایپد مینی ۴",
+   "مینی ۴",
+   "آیپد مینی نسل ۴"
+  ],
+  "year": 2015,
+  "announced": "2015-09-09",
+  "chip": "A8",
+  "ram_gb": 2,
+  "display": {
+   "inch": 7.9,
+   "type": "Retina (LCD, fully laminated)",
+   "hz": 60,
+   "resolution": "2048x1536"
+  },
+  "rear_cameras": "8MP iSight (1080p video)",
+  "front_camera": "1.2MP FaceTime HD (720p)",
+  "storage_gb": [
+   16,
+   32,
+   64,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [],
+  "keyboard": null,
+  "weight_g": 298.8,
+  "features": [
+   "Laminated anti-reflective display",
+   "32GB/128GB lineup from 2016"
+  ],
+  "max_ipados": 15,
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "pro 12.9 1",
+  "name": "iPad Pro (12.9-inch)",
+  "name_fa": "آیپد پرو ۱۲٫۹ اینچ (نسل ۱)",
+  "aliases": [
+   "ipad pro 12.9 1st gen",
+   "ipad pro 12.9 2015",
+   "آیپد پرو ۱۲٫۹ نسل ۱",
+   "ایپد پرو ۱۲.۹ نسل ۱",
+   "آیپد پرو ۱۲.۹ ۲۰۱۵"
+  ],
+  "year": 2015,
+  "announced": "2015-09-09",
+  "chip": "A9X",
+  "ram_gb": 4,
+  "display": {
+   "inch": 12.9,
+   "type": "Retina (LCD)",
+   "hz": 60,
+   "resolution": "2732x2048"
+  },
+  "rear_cameras": "8MP iSight (1080p video)",
+  "front_camera": "1.2MP FaceTime HD (720p)",
+  "storage_gb": [
+   32,
+   128,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (1st generation)"
+  ],
+  "keyboard": "Smart Keyboard",
+  "weight_g": 713,
+  "features": [
+   "First iPad Pro",
+   "Smart Connector",
+   "Four-speaker audio",
+   "32GB Wi-Fi only; 256GB added 2016"
+  ],
+  "max_ipados": 16,
+  "discontinued": 2017,
+  "sources": []
+ },
+ {
+  "key": "pro 9.7",
+  "name": "iPad Pro (9.7-inch)",
+  "name_fa": "آیپد پرو ۹٫۷ اینچ",
+  "aliases": [
+   "ipad pro 9.7",
+   "ipad pro 9.7 inch",
+   "آیپد پرو ۹.۷",
+   "ایپد پرو ۹.۷",
+   "آیپد پرو ۹٫۷"
+  ],
+  "year": 2016,
+  "announced": "2016-03-21",
+  "chip": "A9X",
+  "ram_gb": 2,
+  "display": {
+   "inch": 9.7,
+   "type": "Retina (LCD, True Tone)",
+   "hz": 60,
+   "resolution": "2048x1536"
+  },
+  "rear_cameras": "12MP iSight (4K video, True Tone flash)",
+  "front_camera": "5MP FaceTime HD",
+  "storage_gb": [
+   32,
+   128,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (1st generation)"
+  ],
+  "keyboard": "Smart Keyboard",
+  "weight_g": 437,
+  "features": [
+   "True Tone display",
+   "Smart Connector",
+   "Four-speaker audio"
+  ],
+  "max_ipados": 16,
+  "discontinued": 2017,
+  "sources": []
+ },
+ {
+  "key": "ipad 5",
+  "name": "iPad (5th generation)",
+  "name_fa": "آیپد نسل ۵",
+  "aliases": [
+   "ipad 5",
+   "ipad 5th gen",
+   "آیپد ۵",
+   "ایپد ۵",
+   "آیپد نسل ۵",
+   "ایپد نسل ۵",
+   "آیپد نسل 5",
+   "ipad 2017",
+   "آیپد ۲۰۱۷"
+  ],
+  "year": 2017,
+  "announced": "2017-03-21",
+  "chip": "A9",
+  "ram_gb": 2,
+  "display": {
+   "inch": 9.7,
+   "type": "Retina (LCD)",
+   "hz": 60,
+   "resolution": "2048x1536"
+  },
+  "rear_cameras": "8MP (1080p video)",
+  "front_camera": "1.2MP FaceTime HD (720p)",
+  "storage_gb": [
+   32,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [],
+  "keyboard": null,
+  "weight_g": 469,
+  "features": [
+   "Budget iPad line restart"
+  ],
+  "max_ipados": 16,
+  "discontinued": 2018,
+  "sources": []
+ },
+ {
+  "key": "pro 10.5",
+  "name": "iPad Pro (10.5-inch)",
+  "name_fa": "آیپد پرو ۱۰٫۵ اینچ",
+  "aliases": [
+   "ipad pro 10.5",
+   "آیپد پرو ۱۰.۵",
+   "ایپد پرو ۱۰.۵",
+   "آیپد پرو ۱۰٫۵"
+  ],
+  "year": 2017,
+  "announced": "2017-06-05",
+  "chip": "A10X Fusion",
+  "ram_gb": 4,
+  "display": {
+   "inch": 10.5,
+   "type": "Retina (LCD, ProMotion, True Tone)",
+   "hz": 120,
+   "resolution": "2224x1668"
+  },
+  "rear_cameras": "12MP (4K video, OIS, True Tone flash)",
+  "front_camera": "7MP FaceTime HD",
+  "storage_gb": [
+   64,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (1st generation)"
+  ],
+  "keyboard": "Smart Keyboard",
+  "weight_g": 469,
+  "features": [
+   "ProMotion 120Hz",
+   "True Tone",
+   "Smart Connector",
+   "Four-speaker audio"
+  ],
+  "max_ipados": 17,
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "pro 12.9 2",
+  "name": "iPad Pro (12.9-inch) (2nd generation)",
+  "name_fa": "آیپد پرو ۱۲٫۹ اینچ (نسل ۲)",
+  "aliases": [
+   "ipad pro 12.9 2nd gen",
+   "ipad pro 12.9 2017",
+   "آیپد پرو ۱۲.۹ نسل ۲",
+   "ایپد پرو ۱۲.۹ نسل ۲"
+  ],
+  "year": 2017,
+  "announced": "2017-06-05",
+  "chip": "A10X Fusion",
+  "ram_gb": 4,
+  "display": {
+   "inch": 12.9,
+   "type": "Retina (LCD, ProMotion, True Tone)",
+   "hz": 120,
+   "resolution": "2732x2048"
+  },
+  "rear_cameras": "12MP (4K video, OIS, True Tone flash)",
+  "front_camera": "7MP FaceTime HD",
+  "storage_gb": [
+   64,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (1st generation)"
+  ],
+  "keyboard": "Smart Keyboard",
+  "weight_g": 677,
+  "features": [
+   "ProMotion 120Hz",
+   "True Tone",
+   "Smart Connector",
+   "Four-speaker audio"
+  ],
+  "max_ipados": 17,
+  "discontinued": 2018,
+  "sources": []
+ },
+ {
+  "key": "ipad 6",
+  "name": "iPad (6th generation)",
+  "name_fa": "آیپد نسل ۶",
+  "aliases": [
+   "ipad 6",
+   "ipad 6th gen",
+   "آیپد ۶",
+   "ایپد ۶",
+   "آیپد نسل ۶",
+   "ایپد نسل ۶",
+   "آیپد نسل 6",
+   "ipad 2018",
+   "آیپد ۲۰۱۸"
+  ],
+  "year": 2018,
+  "announced": "2018-03-27",
+  "chip": "A10 Fusion",
+  "ram_gb": 2,
+  "display": {
+   "inch": 9.7,
+   "type": "Retina (LCD)",
+   "hz": 60,
+   "resolution": "2048x1536"
+  },
+  "rear_cameras": "8MP (1080p video)",
+  "front_camera": "1.2MP FaceTime HD (720p)",
+  "storage_gb": [
+   32,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (1st generation)"
+  ],
+  "keyboard": null,
+  "weight_g": 469,
+  "features": [
+   "First base iPad with Apple Pencil support"
+  ],
+  "max_ipados": 17,
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "pro 11 1",
+  "name": "iPad Pro (11-inch)",
+  "name_fa": "آیپد پرو ۱۱ اینچ (نسل ۱)",
+  "aliases": [
+   "ipad pro 11 1st gen",
+   "ipad pro 11 2018",
+   "آیپد پرو ۱۱ نسل ۱",
+   "ایپد پرو ۱۱ نسل ۱",
+   "آیپد پرو ۱۱ ۲۰۱۸"
+  ],
+  "year": 2018,
+  "announced": "2018-10-30",
+  "chip": "A12X Bionic",
+  "ram_gb": [
+   4,
+   6
+  ],
+  "display": {
+   "inch": 11,
+   "type": "Liquid Retina (LCD)",
+   "hz": 120,
+   "resolution": "2388x1668"
+  },
+  "rear_cameras": "12MP (4K video, True Tone flash)",
+  "front_camera": "7MP TrueDepth",
+  "storage_gb": [
+   64,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (2nd generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Smart Keyboard Folio, Magic Keyboard",
+  "weight_g": 468,
+  "features": [
+   "First iPad with Face ID and USB-C",
+   "All-screen design",
+   "6GB RAM on 1TB model",
+   "ProMotion 120Hz",
+   "Stage Manager"
+  ],
+  "max_ipados": 26,
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "pro 12.9 3",
+  "name": "iPad Pro (12.9-inch) (3rd generation)",
+  "name_fa": "آیپد پرو ۱۲٫۹ اینچ (نسل ۳)",
+  "aliases": [
+   "ipad pro 12.9 3rd gen",
+   "ipad pro 12.9 2018",
+   "آیپد پرو ۱۲.۹ نسل ۳",
+   "ایپد پرو ۱۲.۹ نسل ۳"
+  ],
+  "year": 2018,
+  "announced": "2018-10-30",
+  "chip": "A12X Bionic",
+  "ram_gb": [
+   4,
+   6
+  ],
+  "display": {
+   "inch": 12.9,
+   "type": "Liquid Retina (LCD)",
+   "hz": 120,
+   "resolution": "2732x2048"
+  },
+  "rear_cameras": "12MP (4K video, True Tone flash)",
+  "front_camera": "7MP TrueDepth",
+  "storage_gb": [
+   64,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (2nd generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Smart Keyboard Folio, Magic Keyboard",
+  "weight_g": 631,
+  "features": [
+   "Face ID",
+   "USB-C",
+   "All-screen design",
+   "6GB RAM on 1TB model",
+   "ProMotion 120Hz",
+   "Stage Manager"
+  ],
+  "max_ipados": 26,
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "air 3",
+  "name": "iPad Air (3rd generation)",
+  "name_fa": "آیپد ایر نسل ۳",
+  "aliases": [
+   "ipad air 3",
+   "ipad air 2019",
+   "آیپد ایر ۳",
+   "ایپد ایر ۳",
+   "ایر ۳",
+   "آیپد ایر نسل ۳"
+  ],
+  "year": 2019,
+  "announced": "2019-03-18",
+  "chip": "A12 Bionic",
+  "ram_gb": 3,
+  "display": {
+   "inch": 10.5,
+   "type": "Retina (LCD, True Tone)",
+   "hz": 60,
+   "resolution": "2224x1668"
+  },
+  "rear_cameras": "8MP (1080p video)",
+  "front_camera": "7MP FaceTime HD",
+  "storage_gb": [
+   64,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (1st generation)"
+  ],
+  "keyboard": "Smart Keyboard",
+  "weight_g": 456,
+  "features": [
+   "True Tone",
+   "Smart Connector"
+  ],
+  "max_ipados": 26,
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "mini 5",
+  "name": "iPad mini (5th generation)",
+  "name_fa": "آیپد مینی نسل ۵",
+  "aliases": [
+   "ipad mini 5",
+   "ipad mini 2019",
+   "آیپد مینی ۵",
+   "ایپد مینی ۵",
+   "مینی ۵",
+   "آیپد مینی نسل ۵"
+  ],
+  "year": 2019,
+  "announced": "2019-03-18",
+  "chip": "A12 Bionic",
+  "ram_gb": 3,
+  "display": {
+   "inch": 7.9,
+   "type": "Retina (LCD, True Tone)",
+   "hz": 60,
+   "resolution": "2048x1536"
+  },
+  "rear_cameras": "8MP (1080p video)",
+  "front_camera": "7MP FaceTime HD",
+  "storage_gb": [
+   64,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (1st generation)"
+  ],
+  "keyboard": null,
+  "weight_g": 300.5,
+  "features": [
+   "True Tone",
+   "First iPad mini with Apple Pencil support"
+  ],
+  "max_ipados": 26,
+  "discontinued": 2021,
+  "sources": []
+ },
+ {
+  "key": "ipad 7",
+  "name": "iPad (7th generation)",
+  "name_fa": "آیپد نسل ۷",
+  "aliases": [
+   "ipad 7",
+   "ipad 7th gen",
+   "آیپد ۷",
+   "ایپد ۷",
+   "آیپد نسل ۷",
+   "ایپد نسل ۷",
+   "آیپد نسل 7",
+   "ipad 10.2 2019",
+   "آیپد ۱۰.۲ ۲۰۱۹"
+  ],
+  "year": 2019,
+  "announced": "2019-09-10",
+  "chip": "A10 Fusion",
+  "ram_gb": 3,
+  "display": {
+   "inch": 10.2,
+   "type": "Retina (LCD)",
+   "hz": 60,
+   "resolution": "2160x1620"
+  },
+  "rear_cameras": "8MP (1080p video)",
+  "front_camera": "1.2MP FaceTime HD (720p)",
+  "storage_gb": [
+   32,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (1st generation)"
+  ],
+  "keyboard": "Smart Keyboard",
+  "weight_g": 483,
+  "features": [
+   "10.2-inch display",
+   "Smart Connector"
+  ],
+  "max_ipados": 18,
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "pro 11 2",
+  "name": "iPad Pro (11-inch) (2nd generation)",
+  "name_fa": "آیپد پرو ۱۱ اینچ (نسل ۲)",
+  "aliases": [
+   "ipad pro 11 2nd gen",
+   "ipad pro 11 2020",
+   "آیپد پرو ۱۱ نسل ۲",
+   "ایپد پرو ۱۱ نسل ۲",
+   "آیپد پرو ۱۱ ۲۰۲۰"
+  ],
+  "year": 2020,
+  "announced": "2020-03-18",
+  "chip": "A12Z Bionic",
+  "ram_gb": 6,
+  "display": {
+   "inch": 11,
+   "type": "Liquid Retina (LCD)",
+   "hz": 120,
+   "resolution": "2388x1668"
+  },
+  "rear_cameras": "12MP Wide + 10MP Ultra Wide + LiDAR Scanner",
+  "front_camera": "7MP TrueDepth",
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (2nd generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard, Smart Keyboard Folio",
+  "weight_g": 471,
+  "features": [
+   "LiDAR Scanner",
+   "ProMotion 120Hz",
+   "Stage Manager"
+  ],
+  "max_ipados": null,
+  "discontinued": 2021,
+  "sources": []
+ },
+ {
+  "key": "pro 12.9 4",
+  "name": "iPad Pro (12.9-inch) (4th generation)",
+  "name_fa": "آیپد پرو ۱۲٫۹ اینچ (نسل ۴)",
+  "aliases": [
+   "ipad pro 12.9 4th gen",
+   "ipad pro 12.9 2020",
+   "آیپد پرو ۱۲.۹ نسل ۴",
+   "ایپد پرو ۱۲.۹ نسل ۴"
+  ],
+  "year": 2020,
+  "announced": "2020-03-18",
+  "chip": "A12Z Bionic",
+  "ram_gb": 6,
+  "display": {
+   "inch": 12.9,
+   "type": "Liquid Retina (LCD)",
+   "hz": 120,
+   "resolution": "2732x2048"
+  },
+  "rear_cameras": "12MP Wide + 10MP Ultra Wide + LiDAR Scanner",
+  "front_camera": "7MP TrueDepth",
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (2nd generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard, Smart Keyboard Folio",
+  "weight_g": 641,
+  "features": [
+   "LiDAR Scanner",
+   "ProMotion 120Hz",
+   "Stage Manager"
+  ],
+  "max_ipados": null,
+  "discontinued": 2021,
+  "sources": []
+ },
+ {
+  "key": "ipad 8",
+  "name": "iPad (8th generation)",
+  "name_fa": "آیپد نسل ۸",
+  "aliases": [
+   "ipad 8",
+   "ipad 8th gen",
+   "آیپد ۸",
+   "ایپد ۸",
+   "آیپد نسل ۸",
+   "ایپد نسل ۸",
+   "آیپد نسل 8",
+   "ipad 2020",
+   "آیپد ۲۰۲۰"
+  ],
+  "year": 2020,
+  "announced": "2020-09-15",
+  "chip": "A12 Bionic",
+  "ram_gb": 3,
+  "display": {
+   "inch": 10.2,
+   "type": "Retina (LCD)",
+   "hz": 60,
+   "resolution": "2160x1620"
+  },
+  "rear_cameras": "8MP (1080p video)",
+  "front_camera": "1.2MP FaceTime HD (720p)",
+  "storage_gb": [
+   32,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (1st generation)"
+  ],
+  "keyboard": "Smart Keyboard",
+  "weight_g": 490,
+  "features": [
+   "Smart Connector"
+  ],
+  "max_ipados": 26,
+  "discontinued": 2021,
+  "sources": []
+ },
+ {
+  "key": "air 4",
+  "name": "iPad Air (4th generation)",
+  "name_fa": "آیپد ایر نسل ۴",
+  "aliases": [
+   "ipad air 4",
+   "ipad air 2020",
+   "آیپد ایر ۴",
+   "ایپد ایر ۴",
+   "ایر ۴",
+   "آیپد ایر نسل ۴"
+  ],
+  "year": 2020,
+  "announced": "2020-09-15",
+  "chip": "A14 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 10.9,
+   "type": "Liquid Retina (LCD)",
+   "hz": 60,
+   "resolution": "2360x1640"
+  },
+  "rear_cameras": "12MP Wide (4K video)",
+  "front_camera": "7MP FaceTime HD",
+  "storage_gb": [
+   64,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Sky Blue",
+    "fa": "آبی آسمانی"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (2nd generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard, Smart Keyboard Folio",
+  "weight_g": 458,
+  "features": [
+   "All-screen design",
+   "First Touch ID in top button",
+   "USB-C"
+  ],
+  "max_ipados": null,
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "key": "pro 11 3",
+  "name": "iPad Pro 11-inch (3rd generation)",
+  "name_fa": "آیپد پرو ۱۱ اینچ (نسل ۳ / M1)",
+  "aliases": [
+   "ipad pro 11 m1",
+   "ipad pro 11 2021",
+   "ipad pro 11 3rd gen",
+   "آیپد پرو ۱۱ M1",
+   "ایپد پرو ۱۱ ام۱",
+   "آیپد پرو ۱۱ نسل ۳"
+  ],
+  "year": 2021,
+  "announced": "2021-04-20",
+  "chip": "M1",
+  "ram_gb": [
+   8,
+   16
+  ],
+  "display": {
+   "inch": 11,
+   "type": "Liquid Retina (LCD)",
+   "hz": 120,
+   "resolution": "2388x1668"
+  },
+  "rear_cameras": "12MP Wide + 10MP Ultra Wide + LiDAR Scanner",
+  "front_camera": "12MP Ultra Wide TrueDepth (Center Stage)",
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C (Thunderbolt)",
+  "biometrics": "Face ID",
+  "cellular": "Wi-Fi + Cellular (5G)",
+  "pencil": [
+   "Apple Pencil (2nd generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard, Smart Keyboard Folio",
+  "weight_g": 466,
+  "features": [
+   "M1 chip",
+   "Center Stage",
+   "Thunderbolt / USB 4",
+   "5G",
+   "16GB RAM on 1TB/2TB",
+   "Stage Manager",
+   "Apple Intelligence"
+  ],
+  "max_ipados": null,
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "key": "pro 12.9 5",
+  "name": "iPad Pro 12.9-inch (5th generation)",
+  "name_fa": "آیپد پرو ۱۲٫۹ اینچ (نسل ۵ / M1)",
+  "aliases": [
+   "ipad pro 12.9 m1",
+   "ipad pro 12.9 2021",
+   "ipad pro 12.9 5th gen",
+   "آیپد پرو ۱۲.۹ M1",
+   "ایپد پرو ۱۲.۹ ام۱",
+   "آیپد پرو ۱۲.۹ نسل ۵"
+  ],
+  "year": 2021,
+  "announced": "2021-04-20",
+  "chip": "M1",
+  "ram_gb": [
+   8,
+   16
+  ],
+  "display": {
+   "inch": 12.9,
+   "type": "Liquid Retina XDR (mini-LED)",
+   "hz": 120,
+   "resolution": "2732x2048"
+  },
+  "rear_cameras": "12MP Wide + 10MP Ultra Wide + LiDAR Scanner",
+  "front_camera": "12MP Ultra Wide TrueDepth (Center Stage)",
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C (Thunderbolt)",
+  "biometrics": "Face ID",
+  "cellular": "Wi-Fi + Cellular (5G)",
+  "pencil": [
+   "Apple Pencil (2nd generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard, Smart Keyboard Folio",
+  "weight_g": 682,
+  "features": [
+   "M1 chip",
+   "Mini-LED XDR display",
+   "Center Stage",
+   "Thunderbolt / USB 4",
+   "5G",
+   "16GB RAM on 1TB/2TB",
+   "Stage Manager",
+   "Apple Intelligence"
+  ],
+  "max_ipados": null,
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "key": "ipad 9",
+  "name": "iPad (9th generation)",
+  "name_fa": "آیپد نسل ۹",
+  "aliases": [
+   "ipad 9",
+   "ipad 9th gen",
+   "آیپد ۹",
+   "ایپد ۹",
+   "آیپد نسل ۹",
+   "ایپد نسل ۹",
+   "آیپد نسل 9",
+   "ipad 2021",
+   "آیپد ۲۰۲۱"
+  ],
+  "year": 2021,
+  "announced": "2021-09-14",
+  "chip": "A13 Bionic",
+  "ram_gb": 3,
+  "display": {
+   "inch": 10.2,
+   "type": "Retina (LCD, True Tone)",
+   "hz": 60,
+   "resolution": "2160x1620"
+  },
+  "rear_cameras": "8MP (1080p video)",
+  "front_camera": "12MP Ultra Wide (Center Stage)",
+  "storage_gb": [
+   64,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID (home button)",
+  "cellular": "Wi-Fi + Cellular (4G LTE)",
+  "pencil": [
+   "Apple Pencil (1st generation)"
+  ],
+  "keyboard": "Smart Keyboard",
+  "weight_g": 487,
+  "features": [
+   "Center Stage",
+   "True Tone",
+   "Last iPad with home button and Lightning"
+  ],
+  "max_ipados": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "mini 6",
+  "name": "iPad mini (6th generation)",
+  "name_fa": "آیپد مینی نسل ۶",
+  "aliases": [
+   "ipad mini 6",
+   "ipad mini 2021",
+   "آیپد مینی ۶",
+   "ایپد مینی ۶",
+   "مینی ۶",
+   "آیپد مینی نسل ۶"
+  ],
+  "year": 2021,
+  "announced": "2021-09-14",
+  "chip": "A15 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 8.3,
+   "type": "Liquid Retina (LCD)",
+   "hz": 60,
+   "resolution": "2266x1488"
+  },
+  "rear_cameras": "12MP Wide (4K video, True Tone flash)",
+  "front_camera": "12MP Ultra Wide (Center Stage)",
+  "storage_gb": [
+   64,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (5G)",
+  "pencil": [
+   "Apple Pencil (2nd generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": null,
+  "weight_g": 293,
+  "features": [
+   "All-screen design",
+   "USB-C",
+   "5G",
+   "Center Stage"
+  ],
+  "max_ipados": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "air 5",
+  "name": "iPad Air (5th generation)",
+  "name_fa": "آیپد ایر نسل ۵ (M1)",
+  "aliases": [
+   "ipad air 5",
+   "ipad air m1",
+   "ipad air 2022",
+   "آیپد ایر ۵",
+   "ایپد ایر ۵",
+   "ایر ۵",
+   "آیپد ایر M1",
+   "ایپد ایر ام۱"
+  ],
+  "year": 2022,
+  "announced": "2022-03-08",
+  "chip": "M1",
+  "ram_gb": 8,
+  "display": {
+   "inch": 10.9,
+   "type": "Liquid Retina (LCD)",
+   "hz": 60,
+   "resolution": "2360x1640"
+  },
+  "rear_cameras": "12MP Wide (4K video)",
+  "front_camera": "12MP Ultra Wide (Center Stage)",
+  "storage_gb": [
+   64,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (5G)",
+  "pencil": [
+   "Apple Pencil (2nd generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard, Smart Keyboard Folio",
+  "weight_g": 461,
+  "features": [
+   "M1 chip",
+   "5G",
+   "Center Stage",
+   "Stage Manager",
+   "Apple Intelligence"
+  ],
+  "max_ipados": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "ipad 10",
+  "name": "iPad (10th generation)",
+  "name_fa": "آیپد نسل ۱۰",
+  "aliases": [
+   "ipad 10",
+   "ipad 10th gen",
+   "آیپد ۱۰",
+   "ایپد ۱۰",
+   "آیپد نسل ۱۰",
+   "ایپد نسل ۱۰",
+   "آیپد نسل 10",
+   "ipad 2022",
+   "آیپد ۲۰۲۲",
+   "آیپد ۱۰.۹"
+  ],
+  "year": 2022,
+  "announced": "2022-10-18",
+  "chip": "A14 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 10.9,
+   "type": "Liquid Retina (LCD)",
+   "hz": 60,
+   "resolution": "2360x1640"
+  },
+  "rear_cameras": "12MP Wide (4K video)",
+  "front_camera": "12MP Ultra Wide, landscape edge (Center Stage)",
+  "storage_gb": [
+   64,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (5G)",
+  "pencil": [
+   "Apple Pencil (1st generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard Folio",
+  "weight_g": 477,
+  "features": [
+   "All-screen design",
+   "USB-C",
+   "Landscape front camera",
+   "5G"
+  ],
+  "max_ipados": null,
+  "discontinued": 2025,
+  "sources": []
+ },
+ {
+  "key": "pro 11 4",
+  "name": "iPad Pro 11-inch (4th generation)",
+  "name_fa": "آیپد پرو ۱۱ اینچ (نسل ۴ / M2)",
+  "aliases": [
+   "ipad pro 11 m2",
+   "ipad pro 11 2022",
+   "ipad pro 11 4th gen",
+   "آیپد پرو ۱۱ M2",
+   "ایپد پرو ۱۱ ام۲",
+   "آیپد پرو ۱۱ نسل ۴"
+  ],
+  "year": 2022,
+  "announced": "2022-10-18",
+  "chip": "M2",
+  "ram_gb": [
+   8,
+   16
+  ],
+  "display": {
+   "inch": 11,
+   "type": "Liquid Retina (LCD)",
+   "hz": 120,
+   "resolution": "2388x1668"
+  },
+  "rear_cameras": "12MP Wide + 10MP Ultra Wide + LiDAR Scanner",
+  "front_camera": "12MP Ultra Wide TrueDepth (Center Stage)",
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C (Thunderbolt)",
+  "biometrics": "Face ID",
+  "cellular": "Wi-Fi + Cellular (5G)",
+  "pencil": [
+   "Apple Pencil (2nd generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard, Smart Keyboard Folio",
+  "weight_g": 466,
+  "features": [
+   "M2 chip",
+   "Apple Pencil hover",
+   "Wi-Fi 6E",
+   "16GB RAM on 1TB/2TB",
+   "Stage Manager",
+   "Apple Intelligence"
+  ],
+  "max_ipados": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "pro 12.9 6",
+  "name": "iPad Pro 12.9-inch (6th generation)",
+  "name_fa": "آیپد پرو ۱۲٫۹ اینچ (نسل ۶ / M2)",
+  "aliases": [
+   "ipad pro 12.9 m2",
+   "ipad pro 12.9 2022",
+   "ipad pro 12.9 6th gen",
+   "آیپد پرو ۱۲.۹ M2",
+   "ایپد پرو ۱۲.۹ ام۲",
+   "آیپد پرو ۱۲.۹ نسل ۶"
+  ],
+  "year": 2022,
+  "announced": "2022-10-18",
+  "chip": "M2",
+  "ram_gb": [
+   8,
+   16
+  ],
+  "display": {
+   "inch": 12.9,
+   "type": "Liquid Retina XDR (mini-LED)",
+   "hz": 120,
+   "resolution": "2732x2048"
+  },
+  "rear_cameras": "12MP Wide + 10MP Ultra Wide + LiDAR Scanner",
+  "front_camera": "12MP Ultra Wide TrueDepth (Center Stage)",
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C (Thunderbolt)",
+  "biometrics": "Face ID",
+  "cellular": "Wi-Fi + Cellular (5G)",
+  "pencil": [
+   "Apple Pencil (2nd generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard, Smart Keyboard Folio",
+  "weight_g": 682,
+  "features": [
+   "M2 chip",
+   "Mini-LED XDR display",
+   "Apple Pencil hover",
+   "Wi-Fi 6E",
+   "16GB RAM on 1TB/2TB",
+   "Stage Manager",
+   "Apple Intelligence"
+  ],
+  "max_ipados": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "air m2 11",
+  "name": "iPad Air 11-inch (M2)",
+  "name_fa": "آیپد ایر ۱۱ اینچ (M2)",
+  "aliases": [
+   "ipad air m2 11",
+   "ipad air 11 m2",
+   "ipad air 6",
+   "ipad air 2024",
+   "آیپد ایر M2 ۱۱",
+   "ایپد ایر ام۲ ۱۱",
+   "آیپد ایر ۱۱ اینچ M2",
+   "آیپد ایر نسل ۶"
+  ],
+  "year": 2024,
+  "announced": "2024-05-07",
+  "chip": "M2",
+  "ram_gb": 8,
+  "display": {
+   "inch": 11,
+   "type": "Liquid Retina (LCD)",
+   "hz": 60,
+   "resolution": "2360x1640"
+  },
+  "rear_cameras": "12MP Wide (4K video)",
+  "front_camera": "12MP Ultra Wide, landscape edge (Center Stage)",
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (5G) eSIM only",
+  "pencil": [
+   "Apple Pencil Pro",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard (11-inch), Magic Keyboard for iPad Air",
+  "weight_g": 462,
+  "features": [
+   "Landscape front camera",
+   "Wi-Fi 6E",
+   "Stage Manager",
+   "Apple Intelligence",
+   "Apple Pencil Pro support"
+  ],
+  "max_ipados": null,
+  "discontinued": 2025,
+  "sources": [
+   "https://support.apple.com/119894",
+   "https://www.apple.com/ipad-air/specs/",
+   "https://m.gsmarena.com/apple_ipad_air_11_(2024)-12984.php"
+  ]
+ },
+ {
+  "key": "air m2 13",
+  "name": "iPad Air 13-inch (M2)",
+  "name_fa": "آیپد ایر ۱۳ اینچ (M2)",
+  "aliases": [
+   "ipad air m2 13",
+   "ipad air 13 m2",
+   "ipad air 6",
+   "ipad air 2024",
+   "آیپد ایر M2 ۱۳",
+   "ایپد ایر ام۲ ۱۳",
+   "آیپد ایر ۱۳ اینچ M2",
+   "آیپد ایر نسل ۶"
+  ],
+  "year": 2024,
+  "announced": "2024-05-07",
+  "chip": "M2",
+  "ram_gb": 8,
+  "display": {
+   "inch": 13,
+   "type": "Liquid Retina (LCD)",
+   "hz": 60,
+   "resolution": "2732x2048"
+  },
+  "rear_cameras": "12MP Wide (4K video)",
+  "front_camera": "12MP Ultra Wide, landscape edge (Center Stage)",
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (5G) eSIM only",
+  "pencil": [
+   "Apple Pencil Pro",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard (12.9-inch), Magic Keyboard for iPad Air",
+  "weight_g": 617,
+  "features": [
+   "Landscape front camera",
+   "Wi-Fi 6E",
+   "Stage Manager",
+   "Apple Intelligence",
+   "First 13-inch iPad Air"
+  ],
+  "max_ipados": null,
+  "discontinued": 2025,
+  "sources": [
+   "https://support.apple.com/119894",
+   "https://www.apple.com/ipad-air/specs/",
+   "https://m.gsmarena.com/apple_ipad_air_11_(2024)-12984.php"
+  ]
+ },
+ {
+  "key": "pro 11 m4",
+  "name": "iPad Pro 11-inch (M4)",
+  "name_fa": "آیپد پرو ۱۱ اینچ (M4)",
+  "aliases": [
+   "ipad pro 11 m4",
+   "ipad pro m4 11",
+   "ipad pro 11 2024",
+   "آیپد پرو ۱۱ M4",
+   "ایپد پرو ۱۱ ام۴",
+   "آیپد پرو ام۴ ۱۱",
+   "آیپد پرو ۲۰۲۴",
+   "آیپد پرو OLED"
+  ],
+  "year": 2024,
+  "announced": "2024-05-07",
+  "chip": "M4",
+  "ram_gb": [
+   8,
+   16
+  ],
+  "display": {
+   "inch": 11,
+   "type": "Ultra Retina XDR (tandem OLED)",
+   "hz": 120,
+   "resolution": "2420x1668"
+  },
+  "rear_cameras": "12MP Wide + LiDAR Scanner (adaptive True Tone flash)",
+  "front_camera": "12MP landscape TrueDepth (Center Stage)",
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C (Thunderbolt)",
+  "biometrics": "Face ID",
+  "cellular": "Wi-Fi + Cellular (5G) eSIM only",
+  "pencil": [
+   "Apple Pencil Pro",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard for iPad Pro (M4)",
+  "weight_g": 444,
+  "features": [
+   "Tandem OLED",
+   "Nano-texture glass option (1TB/2TB)",
+   "16GB RAM on 1TB/2TB",
+   "Landscape Face ID camera",
+   "Wi-Fi 6E",
+   "Stage Manager",
+   "Apple Intelligence"
+  ],
+  "max_ipados": null,
+  "discontinued": 2025,
+  "sources": [
+   "https://support.apple.com/119892",
+   "https://support.apple.com/119891",
+   "https://www.idownloadblog.com/2024/05/07/11-inch-and-13-inch-ipad-pro-tech-specs/"
+  ]
+ },
+ {
+  "key": "pro 13 m4",
+  "name": "iPad Pro 13-inch (M4)",
+  "name_fa": "آیپد پرو ۱۳ اینچ (M4)",
+  "aliases": [
+   "ipad pro 13 m4",
+   "ipad pro m4 13",
+   "ipad pro 13 2024",
+   "آیپد پرو ۱۳ M4",
+   "ایپد پرو ۱۳ ام۴",
+   "آیپد پرو ام۴ ۱۳",
+   "آیپد پرو ۲۰۲۴",
+   "آیپد پرو OLED"
+  ],
+  "year": 2024,
+  "announced": "2024-05-07",
+  "chip": "M4",
+  "ram_gb": [
+   8,
+   16
+  ],
+  "display": {
+   "inch": 13,
+   "type": "Ultra Retina XDR (tandem OLED)",
+   "hz": 120,
+   "resolution": "2752x2064"
+  },
+  "rear_cameras": "12MP Wide + LiDAR Scanner (adaptive True Tone flash)",
+  "front_camera": "12MP landscape TrueDepth (Center Stage)",
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C (Thunderbolt)",
+  "biometrics": "Face ID",
+  "cellular": "Wi-Fi + Cellular (5G) eSIM only",
+  "pencil": [
+   "Apple Pencil Pro",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard for iPad Pro (M4)",
+  "weight_g": 579,
+  "features": [
+   "Tandem OLED",
+   "Nano-texture glass option (1TB/2TB)",
+   "16GB RAM on 1TB/2TB",
+   "Landscape Face ID camera",
+   "Wi-Fi 6E",
+   "Stage Manager",
+   "Apple Intelligence"
+  ],
+  "max_ipados": null,
+  "discontinued": 2025,
+  "sources": [
+   "https://support.apple.com/119892",
+   "https://support.apple.com/119891",
+   "https://www.idownloadblog.com/2024/05/07/11-inch-and-13-inch-ipad-pro-tech-specs/"
+  ]
+ },
+ {
+  "key": "mini a17 pro",
+  "name": "iPad mini (A17 Pro)",
+  "name_fa": "آیپد مینی (A17 Pro)",
+  "aliases": [
+   "ipad mini 7",
+   "ipad mini 2024",
+   "ipad mini a17",
+   "آیپد مینی ۷",
+   "ایپد مینی ۷",
+   "مینی ۷",
+   "آیپد مینی A17",
+   "آیپد مینی نسل ۷"
+  ],
+  "year": 2024,
+  "announced": "2024-10-15",
+  "chip": "A17 Pro",
+  "ram_gb": 8,
+  "display": {
+   "inch": 8.3,
+   "type": "Liquid Retina (LCD)",
+   "hz": 60,
+   "resolution": "2266x1488"
+  },
+  "rear_cameras": "12MP Wide (4K video, True Tone flash)",
+  "front_camera": "12MP Ultra Wide (Center Stage)",
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (5G) eSIM only",
+  "pencil": [
+   "Apple Pencil Pro",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": null,
+  "weight_g": 293,
+  "features": [
+   "Apple Intelligence",
+   "Wi-Fi 6E",
+   "USB-C up to 10Gb/s"
+  ],
+  "max_ipados": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://support.apple.com/121456"
+  ]
+ },
+ {
+  "key": "ipad a16",
+  "name": "iPad (A16)",
+  "name_fa": "آیپد (A16)",
+  "aliases": [
+   "ipad 11",
+   "ipad 11th gen",
+   "ipad 2025",
+   "آیپد ۱۱",
+   "ایپد ۱۱",
+   "آیپد نسل ۱۱",
+   "ایپد نسل ۱۱",
+   "آیپد A16",
+   "آیپد ۲۰۲۵"
+  ],
+  "year": 2025,
+  "announced": "2025-03-04",
+  "chip": "A16",
+  "ram_gb": 6,
+  "display": {
+   "inch": 11,
+   "type": "Liquid Retina (LCD)",
+   "hz": 60,
+   "resolution": "2360x1640"
+  },
+  "rear_cameras": "12MP Wide (4K video)",
+  "front_camera": "12MP Ultra Wide, landscape edge (Center Stage)",
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (5G)",
+  "pencil": [
+   "Apple Pencil (1st generation)",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard Folio",
+  "weight_g": 477,
+  "features": [
+   "Starts at 128GB",
+   "Wi-Fi 6",
+   "No Apple Intelligence",
+   "RAM not published by Apple (6GB per Xcode data)"
+  ],
+  "max_ipados": null,
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/122240",
+   "https://www.macrumors.com/2025/03/04/a16-ipad-tidbits/",
+   "https://www.macrumors.com/2025/03/05/new-ipad-with-a16-chip-has-more-ram/"
+  ]
+ },
+ {
+  "key": "air m3 11",
+  "name": "iPad Air 11-inch (M3)",
+  "name_fa": "آیپد ایر ۱۱ اینچ (M3)",
+  "aliases": [
+   "ipad air m3 11",
+   "ipad air 11 m3",
+   "ipad air 7",
+   "ipad air 2025",
+   "آیپد ایر M3 ۱۱",
+   "ایپد ایر ام۳ ۱۱",
+   "آیپد ایر ۱۱ اینچ M3",
+   "آیپد ایر نسل ۷"
+  ],
+  "year": 2025,
+  "announced": "2025-03-04",
+  "chip": "M3",
+  "ram_gb": 8,
+  "display": {
+   "inch": 11,
+   "type": "Liquid Retina (LCD)",
+   "hz": 60,
+   "resolution": "2360x1640"
+  },
+  "rear_cameras": "12MP Wide (4K video)",
+  "front_camera": "12MP Ultra Wide, landscape edge (Center Stage)",
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (5G) eSIM only",
+  "pencil": [
+   "Apple Pencil Pro",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard for iPad Air",
+  "weight_g": 460,
+  "features": [
+   "Landscape front camera",
+   "Wi-Fi 6E",
+   "Stage Manager",
+   "Apple Intelligence",
+   "New Magic Keyboard with function row"
+  ],
+  "max_ipados": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://support.apple.com/122241",
+   "https://support.apple.com/122242",
+   "https://everymac.com/systems/apple/ipad/ipad-air-faq/differences-between-ipad-air-m2-ipad-air-m3.html"
+  ]
+ },
+ {
+  "key": "air m3 13",
+  "name": "iPad Air 13-inch (M3)",
+  "name_fa": "آیپد ایر ۱۳ اینچ (M3)",
+  "aliases": [
+   "ipad air m3 13",
+   "ipad air 13 m3",
+   "ipad air 7",
+   "ipad air 2025",
+   "آیپد ایر M3 ۱۳",
+   "ایپد ایر ام۳ ۱۳",
+   "آیپد ایر ۱۳ اینچ M3",
+   "آیپد ایر نسل ۷"
+  ],
+  "year": 2025,
+  "announced": "2025-03-04",
+  "chip": "M3",
+  "ram_gb": 8,
+  "display": {
+   "inch": 13,
+   "type": "Liquid Retina (LCD)",
+   "hz": 60,
+   "resolution": "2732x2048"
+  },
+  "rear_cameras": "12MP Wide (4K video)",
+  "front_camera": "12MP Ultra Wide, landscape edge (Center Stage)",
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (5G) eSIM only",
+  "pencil": [
+   "Apple Pencil Pro",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard for iPad Air",
+  "weight_g": 616,
+  "features": [
+   "Landscape front camera",
+   "Wi-Fi 6E",
+   "Stage Manager",
+   "Apple Intelligence",
+   "New Magic Keyboard with function row"
+  ],
+  "max_ipados": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://support.apple.com/122241",
+   "https://support.apple.com/122242",
+   "https://everymac.com/systems/apple/ipad/ipad-air-faq/differences-between-ipad-air-m2-ipad-air-m3.html"
+  ]
+ },
+ {
+  "key": "pro 11 m5",
+  "name": "iPad Pro 11-inch (M5)",
+  "name_fa": "آیپد پرو ۱۱ اینچ (M5)",
+  "aliases": [
+   "ipad pro 11 m5",
+   "ipad pro m5 11",
+   "ipad pro 11 2025",
+   "آیپد پرو ۱۱ M5",
+   "ایپد پرو ۱۱ ام۵",
+   "آیپد پرو ام۵ ۱۱",
+   "آیپد پرو ۲۰۲۵"
+  ],
+  "year": 2025,
+  "announced": "2025-10-15",
+  "chip": "M5",
+  "ram_gb": [
+   12,
+   16
+  ],
+  "display": {
+   "inch": 11,
+   "type": "Ultra Retina XDR (tandem OLED)",
+   "hz": 120,
+   "resolution": "2420x1668"
+  },
+  "rear_cameras": "12MP Wide + LiDAR Scanner (adaptive True Tone flash)",
+  "front_camera": "12MP landscape TrueDepth (Center Stage)",
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C (Thunderbolt)",
+  "biometrics": "Face ID",
+  "cellular": "Wi-Fi + Cellular (5G) eSIM only, Apple C1X modem",
+  "pencil": [
+   "Apple Pencil Pro",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard for iPad Pro (M4)",
+  "weight_g": 444,
+  "features": [
+   "Tandem OLED",
+   "Nano-texture glass option (1TB/2TB)",
+   "12GB RAM on 256/512GB, 16GB on 1TB/2TB",
+   "Apple N1: Wi-Fi 7, Bluetooth 6, Thread",
+   "Fast charge ~50% in 30 min",
+   "External display up to 120Hz with Adaptive Sync",
+   "Stage Manager",
+   "Apple Intelligence"
+  ],
+  "max_ipados": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2025/10/apple-introduces-the-powerful-new-ipad-pro-with-the-m5-chip/",
+   "https://support.apple.com/125407",
+   "https://www.apple.com/ipad-pro/specs/",
+   "https://m.gsmarena.com/apple_announces_new_ipad_pro_models_with_the_m5_chip-amp-69928.php"
+  ]
+ },
+ {
+  "key": "pro 13 m5",
+  "name": "iPad Pro 13-inch (M5)",
+  "name_fa": "آیپد پرو ۱۳ اینچ (M5)",
+  "aliases": [
+   "ipad pro 13 m5",
+   "ipad pro m5 13",
+   "ipad pro 13 2025",
+   "آیپد پرو ۱۳ M5",
+   "ایپد پرو ۱۳ ام۵",
+   "آیپد پرو ام۵ ۱۳",
+   "آیپد پرو ۲۰۲۵"
+  ],
+  "year": 2025,
+  "announced": "2025-10-15",
+  "chip": "M5",
+  "ram_gb": [
+   12,
+   16
+  ],
+  "display": {
+   "inch": 13,
+   "type": "Ultra Retina XDR (tandem OLED)",
+   "hz": 120,
+   "resolution": "2752x2064"
+  },
+  "rear_cameras": "12MP Wide + LiDAR Scanner (adaptive True Tone flash)",
+  "front_camera": "12MP landscape TrueDepth (Center Stage)",
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "USB-C (Thunderbolt)",
+  "biometrics": "Face ID",
+  "cellular": "Wi-Fi + Cellular (5G) eSIM only, Apple C1X modem",
+  "pencil": [
+   "Apple Pencil Pro",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard for iPad Pro (M4)",
+  "weight_g": 579,
+  "features": [
+   "Tandem OLED",
+   "Nano-texture glass option (1TB/2TB)",
+   "12GB RAM on 256/512GB, 16GB on 1TB/2TB",
+   "Apple N1: Wi-Fi 7, Bluetooth 6, Thread",
+   "Fast charge ~50% in 30 min",
+   "External display up to 120Hz with Adaptive Sync",
+   "Stage Manager",
+   "Apple Intelligence"
+  ],
+  "max_ipados": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2025/10/apple-introduces-the-powerful-new-ipad-pro-with-the-m5-chip/",
+   "https://support.apple.com/125407",
+   "https://www.apple.com/ipad-pro/specs/",
+   "https://m.gsmarena.com/apple_announces_new_ipad_pro_models_with_the_m5_chip-amp-69928.php"
+  ]
+ },
+ {
+  "key": "air m4 11",
+  "name": "iPad Air 11-inch (M4)",
+  "name_fa": "آیپد ایر ۱۱ اینچ (M4)",
+  "aliases": [
+   "ipad air m4 11",
+   "ipad air 11 m4",
+   "ipad air 8",
+   "ipad air 2026",
+   "آیپد ایر M4 ۱۱",
+   "ایپد ایر ام۴ ۱۱",
+   "آیپد ایر ۱۱ اینچ M4",
+   "آیپد ایر نسل ۸"
+  ],
+  "year": 2026,
+  "announced": "2026-03-02",
+  "chip": "M4",
+  "ram_gb": 12,
+  "display": {
+   "inch": 11,
+   "type": "Liquid Retina (LCD)",
+   "hz": 60,
+   "resolution": "2360x1640"
+  },
+  "rear_cameras": "12MP Wide (4K video)",
+  "front_camera": "12MP landscape Center Stage camera",
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (5G) eSIM only, Apple C1X modem",
+  "pencil": [
+   "Apple Pencil Pro",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard for iPad Air",
+  "weight_g": 464,
+  "features": [
+   "12GB unified memory",
+   "Apple N1: Wi-Fi 7, Bluetooth 6, Thread",
+   "Stage Manager",
+   "Apple Intelligence"
+  ],
+  "max_ipados": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-the-new-ipad-air-powered-by-m4/",
+   "https://support.apple.com/126471",
+   "https://support.apple.com/126472",
+   "https://www.apple.com/ipad-air/specs/"
+  ]
+ },
+ {
+  "key": "air m4 13",
+  "name": "iPad Air 13-inch (M4)",
+  "name_fa": "آیپد ایر ۱۳ اینچ (M4)",
+  "aliases": [
+   "ipad air m4 13",
+   "ipad air 13 m4",
+   "ipad air 8",
+   "ipad air 2026",
+   "آیپد ایر M4 ۱۳",
+   "ایپد ایر ام۴ ۱۳",
+   "آیپد ایر ۱۳ اینچ M4",
+   "آیپد ایر نسل ۸"
+  ],
+  "year": 2026,
+  "announced": "2026-03-02",
+  "chip": "M4",
+  "ram_gb": 12,
+  "display": {
+   "inch": 13,
+   "type": "Liquid Retina (LCD)",
+   "hz": 60,
+   "resolution": "2732x2048"
+  },
+  "rear_cameras": "12MP Wide (4K video)",
+  "front_camera": "12MP landscape Center Stage camera",
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (5G) eSIM only, Apple C1X modem",
+  "pencil": [
+   "Apple Pencil Pro",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": "Magic Keyboard for iPad Air",
+  "weight_g": 616,
+  "features": [
+   "12GB unified memory",
+   "Apple N1: Wi-Fi 7, Bluetooth 6, Thread",
+   "Stage Manager",
+   "Apple Intelligence"
+  ],
+  "max_ipados": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-the-new-ipad-air-powered-by-m4/",
+   "https://support.apple.com/126471",
+   "https://support.apple.com/126472",
+   "https://www.apple.com/ipad-air/specs/"
+  ]
+ },
+ {
+  "key": "mini a20 pro",
+  "name": "iPad mini (A20 Pro)",
+  "name_fa": "آیپد مینی (A20 Pro)",
+  "aliases": [
+   "ipad mini 8",
+   "ipad mini oled",
+   "ipad mini 2026",
+   "ipad mini a20",
+   "آیپد مینی ۸",
+   "ایپد مینی ۸",
+   "مینی ۸",
+   "آیپد مینی OLED",
+   "آیپد مینی اولد",
+   "آیپد مینی A20",
+   "آیپد مینی نسل ۸"
+  ],
+  "year": 2026,
+  "announced": "2026-10-26",
+  "chip": "A20 Pro",
+  "ram_gb": null,
+  "display": {
+   "inch": 8.5,
+   "type": "Super Retina XDR (OLED)",
+   "hz": 60,
+   "resolution": "2316x1512"
+  },
+  "rear_cameras": "12MP Wide (4K video)",
+  "front_camera": "12MP landscape Center Stage camera",
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "میدنایت (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID (top button)",
+  "cellular": "Wi-Fi + Cellular (5G), Apple C2 modem",
+  "pencil": [
+   "Apple Pencil Pro",
+   "Apple Pencil (USB-C)"
+  ],
+  "keyboard": null,
+  "weight_g": 255,
+  "features": [
+   "OLED display, 1200 nits peak HDR",
+   "IP67 water and dust resistance",
+   "Nano-texture glass option (256GB/512GB)",
+   "128/256GB: 5-core CPU; 512GB: 6-core CPU",
+   "No ProMotion",
+   "Apple Intelligence",
+   "USB 3 up to 10Gb/s"
+  ],
+  "max_ipados": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/10/apple-gives-ipad-mini-its-biggest-update-ever/",
+   "https://support.apple.com/149482",
+   "https://techcrunch.com/2026/10/26/apple-unveils-new-ipad-mini-with-oled-display-and-faster-a20-pro-chip/",
+   "https://everymac.com/systems/apple/ipad/specs/apple-ipad-mini-a20-pro-5-core-cpu-7-core-gpu-2026-wifi-cellular-specs.html",
+   "https://www.macworld.com/article/3273892/ipad-mini-a20-pro-review.html"
+  ]
+ }
+]

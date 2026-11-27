@@ -43,7 +43,7 @@ def canon(text: str) -> str:
     t = re.sub(r"[()\[\],\-–/]+", " ", t)
     for rx, rep in _WORDS:
         t = re.sub(rx, rep, t)
-    t = re.sub(r"(?<=[a-z])(?=\d)|(?<=\d)(?=[a-z]{2,})", " ", t)    # «m2pro»، «iphone15» → جدا
+    t = re.sub(r"(?<=[a-z]{2})(?=\d)|(?<=\d)(?=[a-z]{2,})", " ", t)    # «m3» و «a17» یک‌تکه می‌مانند    # «m2pro»، «iphone15» → جدا
     t = re.sub(r"(\d+)(?:th|nd|rd|st)\b", r"\1", t)
     return " ".join(t.split())
 
@@ -91,6 +91,8 @@ def index() -> list:
                 toks = tuple(canon(n).split())
                 if len(toks) < 2 or (toks, r["name"]) in seen:      # «pro» تنها یا «air» تنها نامی نیست
                     continue
+                if set(toks) <= _FAMILY:
+                    continue        # «آیپد ایر» خالی نام نسل اول نیست؛ تازه‌ترین را _loose پیدا می‌کند
                 seen.add((toks, r["name"]))
                 idx.append((toks, r))
         idx.sort(key=lambda x: -len(x[0]))
@@ -118,12 +120,75 @@ def find(text: str, limit: int = 3) -> list[dict]:
         nxt = toks[i + len(sub)] if i + len(sub) < len(toks) else ""
         if sub[-1].isdigit() and nxt in ("pro", "max", "plus", "mini", "e"):
             continue
+        if _MODELISH.match(nxt) and not _MODELISH.match(sub[-1]):   # «ipad air» در «ipad air m4»: نام ادامه دارد
+            continue
         if any(h is r for _, h in hits):
             continue
         used.update(range(i, i + len(sub)))
         hits.append((i, r))
     hits.sort(key=lambda x: x[0])
-    return [r for _, r in hits[:limit]]
+    out = [r for _, r in hits]
+    if not out:
+        out = _loose(toks)
+    # «فرق ایفون ۷ با ۸»، «۱۵ پرو یا ۱۶ پرو»: طرف دوم نام دسته را تکرار نمی‌کند
+    if out and len(out) < limit:
+        cat = out[0]["category"]
+        # نام خانواده‌ی طرف اول: «macbook air»، «ipad air»، «iphone»، «watch series»
+        fam = []
+        for t in canon(out[0]["name"]).split():
+            if t not in _FAMILY and t != "series":
+                break
+            fam.append(t)
+        word = " ".join(fam) if fam else None
+        for i, tk in enumerate(toks):
+            if tk not in ("با", "یا", "و", "vs", "or") or i + 1 >= len(toks):
+                continue
+            rest = toks[i + 1:i + 6]
+            if rest[0] in _CAT_WORDS:                 # «… با ایپد پرو m4»: نام کامل طرف دوم
+                more = find(" ".join(rest), 1)
+            elif word:                               # «… با ۸»: نام دسته‌ی طرف اول
+                more = [r for r in find(word + " " + " ".join(rest[:3]), 1) if r["category"] == cat]
+            else:
+                more = []
+            for r in more:
+                if r not in out:
+                    out.append(r)
+    return out[:limit]
+
+
+_MODELISH = re.compile(r"^(?:m\d+|a\d+|\d+(?:\.\d+)?|pro|max|plus|mini|ultra|air|se|e|gen|series|inch)$")
+_FAMILY = {"apple", "iphone", "ipad", "macbook", "imac", "mac", "watch", "airpods", "pro", "max", "plus", "mini",
+           "air", "ultra", "se", "studio"}
+_CAT_WORDS = ("iphone", "ipad", "macbook", "imac", "mac", "watch", "airpods")
+
+
+def _loose(toks: list) -> list[dict]:
+    """نام ناقص: «آیپد پرو m4» (بی‌اندازه)، «مک‌بوک ایر m3». مدل‌هایی که همه‌ی کلمه‌های نام مشتری را دارند؛
+    تازه‌ترین و کوچک‌تر اول."""
+    for i, tk in enumerate(toks):
+        if tk not in _CAT_WORDS:
+            continue
+        vocab = {t for sub, _ in index() for t in sub}
+        phrase = [tk]
+        for t in toks[i + 1:i + 5]:
+            if t not in vocab or t in _CAT_WORDS or t in ("با", "یا", "و", "vs", "or"):
+                break
+            phrase.append(t)
+        if len(phrase) < 2 and tk != "imac":        # «آیفون» یا «آیپد» تنها مدل نیست (می‌پرسیم کدام)؛ «آی‌مک» تنها یعنی تازه‌ترین
+            continue
+        want = set(phrase)
+        exact, cands = [], []
+        for sub, r in index():
+            if _at(list(sub), tuple(phrase)) >= 0 and r not in exact:     # «ipad pro» پشت سر هم، نه «ipad mini a20 pro»
+                exact.append(r)
+            elif want <= set(sub) and r not in cands:
+                cands.append(r)
+        cands = exact or cands
+        if cands:
+            inch = lambda r: (r.get("display") or {}).get("inch", 0) if isinstance(r.get("display"), dict) else 0
+            cands.sort(key=lambda r: (-(r.get("year") or 0), inch(r)))
+            return cands[:1]
+    return []
 
 
 def search(query: str, limit: int = 4) -> list[dict]:
@@ -269,8 +334,14 @@ SPEC_WORDS = re.compile(
 PRICE_WORDS = re.compile(r"قیمت|چند[هه]?\b|چنده|چقدر|تومن|تومان|موجود|دارید|دارین|بخرم|خرید|قسط|اقساط", re.I)
 
 
+# «رمش چنده»، «باتریش چقدره»، «چند اینچه»: عدد مشخصه را می‌پرسد، نه قیمت
+SPEC_ASK = re.compile(r"(?:\bرم\S*|باتری\S*|حافظ\S*|وزن\S*|صفحه\S*|اینچ\S*|دوربین\S*|مگاپیکسل\S*|هرتز\S*)\s*"
+                      r"(?:چند|چنده|چقدر\S*|چقد\S*)|چند\s*(?:اینچ|گرم|هرتز|مگاپیکسل|گیگ رم)\S*")
+
+
 def spec_question(text: str) -> list[dict]:
     """مدل‌های یک سؤال مشخصات (نه قیمت و موجودی)، یا [] اگر سؤال مشخصات نیست."""
-    if not SPEC_WORDS.search(brain.norm(text or "")) or PRICE_WORDS.search(brain.norm(text or "")):
+    t = brain.norm(text or "")
+    if not (SPEC_ASK.search(t) or (SPEC_WORDS.search(t) and not PRICE_WORDS.search(t))):
         return []
     return find(text)

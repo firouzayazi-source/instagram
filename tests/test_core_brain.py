@@ -182,3 +182,11 @@ def test_review_distills_agent_answers(env):
         wins = review.agent_wins(c)
     assert [w["question"] for w in wins] == ["گوشیای شما تو جعبه‌ی خودشونه یا نه"]
     assert wins[0]["ai_reply"] == "جواب"
+
+
+def test_agent_apple_specs_tool(env):
+    """ابزار مشخصات اپل: داده‌ی دانشنامه بی منبع و نام‌های جایگزین؛ مدل ناشناخته «پیدا نشد»."""
+    r = agent.run_tool("apple_specs", {"query": "مک‌بوک ایر M2"})
+    assert r["ok"] and r["models"][0]["name"].startswith("MacBook Air") and "sources" not in r["models"][0]
+    assert agent.run_tool("apple_specs", {"query": "نوکیا ۳۳۱۰"})["ok"] is False
+    assert any(t["name"] == "apple_specs" for t in agent.TOOLS)

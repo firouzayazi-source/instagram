@@ -7676,12 +7676,17 @@ async def run_intent(msg,item,user,bot,lead="",product="",dry=False,text="",tail
         # «با ۱۶ پرو چه فرقی داره؟» — طرف دوم مقایسه، مدلِ قبلیِ گفتگوست
         prev_k=specs.key_of(canon_product(prev.get("product",""))) if now_fresh(prev) else None
         if action=="compare" and len(keys)==1 and prev_k and prev_k not in keys: keys=[prev_k]+keys
-        if action=="specs" and not keys and pk: keys=[pk]
+        ars=apple_db.find(text)
+        if action=="specs" and not keys and pk and not ars: keys=[pk]
         if action=="compare" and len(keys)>=2:
             await _send_html(msg,_join(esc(lead),specs.compare_text(keys)),rows)
             keep_product=specs.name_of(keys[1])
+        elif action=="compare" and len(ars)>=2:          # مدل‌های بیرون از جدول آیفون ۱۱+ (آیفون قدیمی، آیپد، مک…)
+            await _send_html(msg,_join(esc(lead),apple_db.compare(ars)),rows)
         elif keys:
-            await _send_html(msg,_join(esc(lead),specs.spec_text(keys[0])),rows)
+            # کارت دانشنامه کامل‌تر است (رنگ‌ها، حافظه‌ها، وزن)؛ اگر داده نبود همان جدول
+            one=next((r for r in ars if r.get("category")=="iphone"),None) if ars else None
+            await _send_html(msg,_join(esc(lead),apple_db.card(one) if one else specs.spec_text(keys[0])),rows)
             keep_product=specs.name_of(keys[0])
             if action=="compare":
                 await msg.reply_text(f"با کدوم مدل مقایسه‌اش کنم؟ مثلاً «با {specs.name_of('16')}»")
@@ -7826,14 +7831,12 @@ async def assistant_reply(update,ctx,text,user,dry=False):
     if mood!="issue":
         rs=apple_db.spec_question(text)
         if rs:
-            ks=specs.find_models(text)
-            body=(specs.compare_text(ks) if len(rs)>=2 and len(ks)>=2 else
-                  apple_db.compare(rs) if len(rs)>=2 else apple_db.card(rs[0]))
-            p0=rs[-1].get("name_fa","") if rs[-1].get("category")=="iphone" else ""
-            brain_ctx[uid]={"ts":now,"product":p0,"intent":"i_specs"}
+            it=faq_item("i_compare" if len(rs)>=2 else "i_specs")
             await _typing(ctx.bot,msg.chat_id)
-            await _send_html(msg,_join(esc(lead),body))
-            if not dry: _bg(record_event(uid,"ai:i_specs"),"ev specs")
+            if it and it.get("enabled",True):          # همان مسیر نیت (آمار، حافظه‌ی گفتگو، دکمه‌ها)
+                await run_intent(msg,it,user,ctx.bot,lead=lead,dry=dry,text=text)
+            else:
+                await _send_html(msg,_join(esc(lead),apple_db.compare(rs) if len(rs)>=2 else apple_db.card(rs[0])))
             return True
 
     # ۲٫۵) محصولی که فعلاً نداریم (آیپد، مک‌بوک…) — قیمت و موجودی‌اش بی‌معنی است

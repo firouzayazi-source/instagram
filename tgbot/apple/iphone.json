@@ -1,0 +1,3623 @@
+[
+ {
+  "key": "iphone",
+  "name": "iPhone",
+  "name_fa": "آیفون (نسل اول)",
+  "aliases": [
+   "iphone 2g",
+   "original iphone",
+   "iphone 1",
+   "آیفون ۲جی",
+   "ایفون اول",
+   "آیفون 1"
+  ],
+  "year": 2007,
+  "announced": "2007-01-09",
+  "chip": "Samsung ARM11 (412 MHz)",
+  "ram_gb": 0.125,
+  "display": {
+   "inch": 3.5,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "480x320"
+  },
+  "rear_cameras": "2MP",
+  "front_camera": "none",
+  "optical_zoom": 0,
+  "storage_gb": [
+   4,
+   8,
+   16
+  ],
+  "colors": [],
+  "port": "30-pin",
+  "biometrics": "none",
+  "network": "2G",
+  "sim": "mini-SIM",
+  "water": null,
+  "body": "aluminum",
+  "weight_g": 135,
+  "battery_mah": 1400,
+  "features": [
+   "multi-touch",
+   "EDGE"
+  ],
+  "max_ios": 3,
+  "discontinued": 2008,
+  "sources": []
+ },
+ {
+  "key": "3g",
+  "name": "iPhone 3G",
+  "name_fa": "آیفون ۳جی",
+  "aliases": [
+   "ایفون 3g",
+   "آیفون 3G"
+  ],
+  "year": 2008,
+  "announced": "2008-06-09",
+  "chip": "Samsung ARM11 (412 MHz)",
+  "ram_gb": 0.125,
+  "display": {
+   "inch": 3.5,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "480x320"
+  },
+  "rear_cameras": "2MP",
+  "front_camera": "none",
+  "optical_zoom": 0,
+  "storage_gb": [
+   8,
+   16
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "port": "30-pin",
+  "biometrics": "none",
+  "network": "3G",
+  "sim": "mini-SIM",
+  "water": null,
+  "body": "plastic",
+  "weight_g": 133,
+  "battery_mah": 1150,
+  "features": [
+   "GPS",
+   "App Store"
+  ],
+  "max_ios": 4,
+  "discontinued": 2010,
+  "sources": []
+ },
+ {
+  "key": "3gs",
+  "name": "iPhone 3GS",
+  "name_fa": "آیفون ۳جی‌اس",
+  "aliases": [
+   "ایفون 3gs",
+   "آیفون 3GS"
+  ],
+  "year": 2009,
+  "announced": "2009-06-08",
+  "chip": "Samsung ARM Cortex-A8 (600 MHz)",
+  "ram_gb": 0.25,
+  "display": {
+   "inch": 3.5,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "480x320"
+  },
+  "rear_cameras": "3MP",
+  "front_camera": "none",
+  "optical_zoom": 0,
+  "storage_gb": [
+   16,
+   32
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "port": "30-pin",
+  "biometrics": "none",
+  "network": "3G",
+  "sim": "mini-SIM",
+  "water": null,
+  "body": "plastic",
+  "weight_g": 135,
+  "battery_mah": 1219,
+  "features": [
+   "video recording",
+   "Voice Control",
+   "compass"
+  ],
+  "max_ios": 6,
+  "discontinued": 2012,
+  "sources": []
+ },
+ {
+  "key": "4",
+  "name": "iPhone 4",
+  "name_fa": "آیفون ۴",
+  "aliases": [
+   "ایفون 4",
+   "آیفون 4",
+   "ایفون چهار"
+  ],
+  "year": 2010,
+  "announced": "2010-06-07",
+  "chip": "A4",
+  "ram_gb": 0.5,
+  "display": {
+   "inch": 3.5,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "960x640"
+  },
+  "rear_cameras": "5MP",
+  "front_camera": "0.3MP (VGA)",
+  "optical_zoom": 0,
+  "storage_gb": [
+   16,
+   32
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "port": "30-pin",
+  "biometrics": "none",
+  "network": "3G",
+  "sim": "micro-SIM",
+  "water": null,
+  "body": "stainless steel",
+  "weight_g": 137,
+  "battery_mah": 1420,
+  "features": [
+   "Retina display",
+   "FaceTime",
+   "front camera",
+   "gyroscope"
+  ],
+  "max_ios": 7,
+  "discontinued": 2013,
+  "sources": []
+ },
+ {
+  "key": "4s",
+  "name": "iPhone 4s",
+  "name_fa": "آیفون ۴اس",
+  "aliases": [
+   "ایفون 4s",
+   "آیفون 4S",
+   "ایفون فوراس"
+  ],
+  "year": 2011,
+  "announced": "2011-10-04",
+  "chip": "A5",
+  "ram_gb": 0.5,
+  "display": {
+   "inch": 3.5,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "960x640"
+  },
+  "rear_cameras": "8MP",
+  "front_camera": "0.3MP (VGA)",
+  "optical_zoom": 0,
+  "storage_gb": [
+   16,
+   32,
+   64
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "port": "30-pin",
+  "biometrics": "none",
+  "network": "3G",
+  "sim": "micro-SIM",
+  "water": null,
+  "body": "stainless steel",
+  "weight_g": 140,
+  "battery_mah": 1432,
+  "features": [
+   "Siri",
+   "1080p video"
+  ],
+  "max_ios": 9,
+  "discontinued": 2014,
+  "sources": []
+ },
+ {
+  "key": "5",
+  "name": "iPhone 5",
+  "name_fa": "آیفون ۵",
+  "aliases": [
+   "ایفون 5",
+   "آیفون 5",
+   "ایفون پنج"
+  ],
+  "year": 2012,
+  "announced": "2012-09-12",
+  "chip": "A6",
+  "ram_gb": 1,
+  "display": {
+   "inch": 4.0,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1136x640"
+  },
+  "rear_cameras": "8MP",
+  "front_camera": "1.2MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   16,
+   32,
+   64
+  ],
+  "colors": [
+   {
+    "en": "Black & Slate",
+    "fa": "مشکی و تیره (اسلیت)"
+   },
+   {
+    "en": "White & Silver",
+    "fa": "سفید و نقره‌ای"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "none",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": null,
+  "body": "aluminum",
+  "weight_g": 112,
+  "battery_mah": 1440,
+  "features": [
+   "4-inch display",
+   "LTE",
+   "Lightning connector"
+  ],
+  "max_ios": 10,
+  "discontinued": 2013,
+  "sources": []
+ },
+ {
+  "key": "5c",
+  "name": "iPhone 5c",
+  "name_fa": "آیفون ۵سی",
+  "aliases": [
+   "ایفون 5c",
+   "آیفون 5C"
+  ],
+  "year": 2013,
+  "announced": "2013-09-10",
+  "chip": "A6",
+  "ram_gb": 1,
+  "display": {
+   "inch": 4.0,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1136x640"
+  },
+  "rear_cameras": "8MP",
+  "front_camera": "1.2MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   16,
+   32
+  ],
+  "colors": [
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "none",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": null,
+  "body": "polycarbonate (plastic)",
+  "weight_g": 132,
+  "battery_mah": 1510,
+  "features": [
+   "colorful polycarbonate body"
+  ],
+  "max_ios": 10,
+  "discontinued": 2015,
+  "sources": []
+ },
+ {
+  "key": "5s",
+  "name": "iPhone 5s",
+  "name_fa": "آیفون ۵اس",
+  "aliases": [
+   "ایفون 5s",
+   "آیفون 5S"
+  ],
+  "year": 2013,
+  "announced": "2013-09-10",
+  "chip": "A7",
+  "ram_gb": 1,
+  "display": {
+   "inch": 4.0,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1136x640"
+  },
+  "rear_cameras": "8MP",
+  "front_camera": "1.2MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   16,
+   32,
+   64
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": null,
+  "body": "aluminum",
+  "weight_g": 112,
+  "battery_mah": 1560,
+  "features": [
+   "Touch ID",
+   "64-bit chip",
+   "True Tone flash",
+   "slo-mo video"
+  ],
+  "max_ios": 12,
+  "discontinued": 2016,
+  "sources": []
+ },
+ {
+  "key": "6",
+  "name": "iPhone 6",
+  "name_fa": "آیفون ۶",
+  "aliases": [
+   "ایفون 6",
+   "آیفون 6",
+   "ایفون شش"
+  ],
+  "year": 2014,
+  "announced": "2014-09-09",
+  "chip": "A8",
+  "ram_gb": 1,
+  "display": {
+   "inch": 4.7,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1334x750"
+  },
+  "rear_cameras": "8MP",
+  "front_camera": "1.2MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   16,
+   64,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": null,
+  "body": "aluminum",
+  "weight_g": 129,
+  "battery_mah": 1810,
+  "features": [
+   "Apple Pay (NFC)",
+   "4.7-inch display"
+  ],
+  "max_ios": 12,
+  "discontinued": 2016,
+  "sources": []
+ },
+ {
+  "key": "6 plus",
+  "name": "iPhone 6 Plus",
+  "name_fa": "آیفون ۶ پلاس",
+  "aliases": [
+   "6+",
+   "ایفون 6 پلاس",
+   "آیفون 6 پلاس"
+  ],
+  "year": 2014,
+  "announced": "2014-09-09",
+  "chip": "A8",
+  "ram_gb": 1,
+  "display": {
+   "inch": 5.5,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1920x1080"
+  },
+  "rear_cameras": "8MP (OIS)",
+  "front_camera": "1.2MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   16,
+   64,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": null,
+  "body": "aluminum",
+  "weight_g": 172,
+  "battery_mah": 2915,
+  "features": [
+   "Apple Pay (NFC)",
+   "optical image stabilization"
+  ],
+  "max_ios": 12,
+  "discontinued": 2016,
+  "sources": []
+ },
+ {
+  "key": "6s",
+  "name": "iPhone 6s",
+  "name_fa": "آیفون ۶اس",
+  "aliases": [
+   "ایفون 6s",
+   "آیفون 6S"
+  ],
+  "year": 2015,
+  "announced": "2015-09-09",
+  "chip": "A9",
+  "ram_gb": 2,
+  "display": {
+   "inch": 4.7,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1334x750"
+  },
+  "rear_cameras": "12MP",
+  "front_camera": "5MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   16,
+   64,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": null,
+  "body": "aluminum",
+  "weight_g": 143,
+  "battery_mah": 1715,
+  "features": [
+   "3D Touch",
+   "Live Photos",
+   "4K video"
+  ],
+  "max_ios": 15,
+  "discontinued": 2018,
+  "sources": []
+ },
+ {
+  "key": "6s plus",
+  "name": "iPhone 6s Plus",
+  "name_fa": "آیفون ۶اس پلاس",
+  "aliases": [
+   "6s+",
+   "ایفون 6s پلاس",
+   "آیفون 6S پلاس"
+  ],
+  "year": 2015,
+  "announced": "2015-09-09",
+  "chip": "A9",
+  "ram_gb": 2,
+  "display": {
+   "inch": 5.5,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1920x1080"
+  },
+  "rear_cameras": "12MP (OIS)",
+  "front_camera": "5MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   16,
+   64,
+   128
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": null,
+  "body": "aluminum",
+  "weight_g": 192,
+  "battery_mah": 2750,
+  "features": [
+   "3D Touch",
+   "Live Photos",
+   "4K video"
+  ],
+  "max_ios": 15,
+  "discontinued": 2018,
+  "sources": []
+ },
+ {
+  "key": "se",
+  "name": "iPhone SE (1st generation)",
+  "name_fa": "آیفون اس‌ای (نسل اول)",
+  "aliases": [
+   "iphone se",
+   "se 2016",
+   "se 1",
+   "اس ای",
+   "اس ای ۱",
+   "آیفون SE 2016"
+  ],
+  "year": 2016,
+  "announced": "2016-03-21",
+  "chip": "A9",
+  "ram_gb": 2,
+  "display": {
+   "inch": 4.0,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1136x640"
+  },
+  "rear_cameras": "12MP",
+  "front_camera": "1.2MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   16,
+   64
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": null,
+  "body": "aluminum",
+  "weight_g": 113,
+  "battery_mah": 1624,
+  "features": [
+   "4-inch display",
+   "Live Photos",
+   "4K video"
+  ],
+  "max_ios": 15,
+  "discontinued": 2018,
+  "sources": []
+ },
+ {
+  "key": "7",
+  "name": "iPhone 7",
+  "name_fa": "آیفون ۷",
+  "aliases": [
+   "ایفون 7",
+   "آیفون 7",
+   "ایفون هفت"
+  ],
+  "year": 2016,
+  "announced": "2016-09-07",
+  "chip": "A10 Fusion",
+  "ram_gb": 2,
+  "display": {
+   "inch": 4.7,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1334x750"
+  },
+  "rear_cameras": "12MP (OIS)",
+  "front_camera": "7MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   32,
+   128,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "Jet Black",
+    "fa": "مشکی براق (جت بلک)"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": "IP67",
+  "body": "aluminum",
+  "weight_g": 138,
+  "battery_mah": 1960,
+  "features": [
+   "stereo speakers",
+   "no headphone jack",
+   "solid-state Home button"
+  ],
+  "max_ios": 15,
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "7 plus",
+  "name": "iPhone 7 Plus",
+  "name_fa": "آیفون ۷ پلاس",
+  "aliases": [
+   "7+",
+   "ایفون 7 پلاس",
+   "آیفون 7 پلاس"
+  ],
+  "year": 2016,
+  "announced": "2016-09-07",
+  "chip": "A10 Fusion",
+  "ram_gb": 3,
+  "display": {
+   "inch": 5.5,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1920x1080"
+  },
+  "rear_cameras": "12MP wide + 12MP 2x telephoto",
+  "front_camera": "7MP",
+  "optical_zoom": 2,
+  "storage_gb": [
+   32,
+   128,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "Jet Black",
+    "fa": "مشکی براق (جت بلک)"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": "IP67",
+  "body": "aluminum",
+  "weight_g": 188,
+  "battery_mah": 2900,
+  "features": [
+   "dual camera",
+   "Portrait mode",
+   "stereo speakers",
+   "no headphone jack"
+  ],
+  "max_ios": 15,
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "8",
+  "name": "iPhone 8",
+  "name_fa": "آیفون ۸",
+  "aliases": [
+   "ایفون 8",
+   "آیفون 8",
+   "ایفون هشت"
+  ],
+  "year": 2017,
+  "announced": "2017-09-12",
+  "chip": "A11 Bionic",
+  "ram_gb": 2,
+  "display": {
+   "inch": 4.7,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1334x750"
+  },
+  "rear_cameras": "12MP (OIS)",
+  "front_camera": "7MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   64,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": "IP67",
+  "body": "aluminum",
+  "weight_g": 148,
+  "battery_mah": 1821,
+  "features": [
+   "wireless charging (Qi)",
+   "glass back",
+   "True Tone display",
+   "fast charging"
+  ],
+  "max_ios": 16,
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "8 plus",
+  "name": "iPhone 8 Plus",
+  "name_fa": "آیفون ۸ پلاس",
+  "aliases": [
+   "8+",
+   "ایفون 8 پلاس",
+   "آیفون 8 پلاس"
+  ],
+  "year": 2017,
+  "announced": "2017-09-12",
+  "chip": "A11 Bionic",
+  "ram_gb": 3,
+  "display": {
+   "inch": 5.5,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1920x1080"
+  },
+  "rear_cameras": "12MP wide + 12MP 2x telephoto",
+  "front_camera": "7MP",
+  "optical_zoom": 2,
+  "storage_gb": [
+   64,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": "IP67",
+  "body": "aluminum",
+  "weight_g": 202,
+  "battery_mah": 2691,
+  "features": [
+   "wireless charging (Qi)",
+   "Portrait Lighting",
+   "True Tone display",
+   "fast charging"
+  ],
+  "max_ios": 16,
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "x",
+  "name": "iPhone X",
+  "name_fa": "آیفون ده (X)",
+  "aliases": [
+   "iphone 10",
+   "ایفون ده",
+   "آیفون 10",
+   "ایفون ایکس",
+   "آیفون X"
+  ],
+  "year": 2017,
+  "announced": "2017-09-12",
+  "chip": "A11 Bionic",
+  "ram_gb": 3,
+  "display": {
+   "inch": 5.8,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2436x1125"
+  },
+  "rear_cameras": "12MP wide + 12MP 2x telephoto",
+  "front_camera": "7MP",
+  "optical_zoom": 2,
+  "storage_gb": [
+   64,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "4G",
+  "sim": "nano-SIM",
+  "water": "IP67",
+  "body": "stainless steel",
+  "weight_g": 174,
+  "battery_mah": 2716,
+  "features": [
+   "Face ID",
+   "notch display",
+   "Animoji",
+   "wireless charging (Qi)",
+   "no Home button"
+  ],
+  "max_ios": 16,
+  "discontinued": 2018,
+  "sources": []
+ },
+ {
+  "key": "xs",
+  "name": "iPhone XS",
+  "name_fa": "آیفون ده‌اس (XS)",
+  "aliases": [
+   "iphone 10s",
+   "ایفون xs",
+   "آیفون XS",
+   "ایفون ده اس"
+  ],
+  "year": 2018,
+  "announced": "2018-09-12",
+  "chip": "A12 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 5.8,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2436x1125"
+  },
+  "rear_cameras": "12MP wide + 12MP 2x telephoto",
+  "front_camera": "7MP",
+  "optical_zoom": 2,
+  "storage_gb": [
+   64,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "4G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "stainless steel",
+  "weight_g": 177,
+  "battery_mah": 2658,
+  "features": [
+   "Face ID",
+   "eSIM (first iPhone with eSIM)",
+   "Smart HDR",
+   "wireless charging (Qi)"
+  ],
+  "max_ios": 18,
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "xs max",
+  "name": "iPhone XS Max",
+  "name_fa": "آیفون ده‌اس مکس (XS Max)",
+  "aliases": [
+   "iphone 10s max",
+   "ایفون xs max",
+   "آیفون XS مکس",
+   "ایفون ده اس مکس"
+  ],
+  "year": 2018,
+  "announced": "2018-09-12",
+  "chip": "A12 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 6.5,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2688x1242"
+  },
+  "rear_cameras": "12MP wide + 12MP 2x telephoto",
+  "front_camera": "7MP",
+  "optical_zoom": 2,
+  "storage_gb": [
+   64,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "4G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "stainless steel",
+  "weight_g": 208,
+  "battery_mah": 3174,
+  "features": [
+   "Face ID",
+   "eSIM",
+   "Smart HDR",
+   "wireless charging (Qi)"
+  ],
+  "max_ios": 18,
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "xr",
+  "name": "iPhone XR",
+  "name_fa": "آیفون ده‌آر (XR)",
+  "aliases": [
+   "iphone 10r",
+   "ایفون xr",
+   "آیفون XR",
+   "ایفون ده ار"
+  ],
+  "year": 2018,
+  "announced": "2018-09-12",
+  "chip": "A12 Bionic",
+  "ram_gb": 3,
+  "display": {
+   "inch": 6.1,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1792x828"
+  },
+  "rear_cameras": "12MP",
+  "front_camera": "7MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   64,
+   128,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Coral",
+    "fa": "مرجانی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "4G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP67",
+  "body": "aluminum",
+  "weight_g": 194,
+  "battery_mah": 2942,
+  "features": [
+   "Face ID",
+   "Liquid Retina display",
+   "eSIM",
+   "wireless charging (Qi)"
+  ],
+  "max_ios": 18,
+  "discontinued": 2021,
+  "sources": []
+ },
+ {
+  "key": "11",
+  "name": "iPhone 11",
+  "name_fa": "آیفون ۱۱",
+  "aliases": [
+   "ایفون 11",
+   "آیفون 11",
+   "ایفون یازده"
+  ],
+  "year": 2019,
+  "announced": "2019-09-10",
+  "chip": "A13 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 6.1,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1792x828"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   64,
+   128,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "4G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 194,
+  "battery_mah": 3110,
+  "features": [
+   "Night mode",
+   "ultra-wide camera",
+   "4K front camera",
+   "wireless charging (Qi)"
+  ],
+  "max_ios": null,
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "key": "11 pro",
+  "name": "iPhone 11 Pro",
+  "name_fa": "آیفون ۱۱ پرو",
+  "aliases": [
+   "ایفون 11 پرو",
+   "آیفون 11 پرو",
+   "ایفون یازده پرو"
+  ],
+  "year": 2019,
+  "announced": "2019-09-10",
+  "chip": "A13 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 5.8,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2436x1125"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide + 12MP 2x telephoto",
+  "front_camera": "12MP",
+  "optical_zoom": 2,
+  "storage_gb": [
+   64,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Midnight Green",
+    "fa": "سبز نیمه‌شب"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "4G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "stainless steel",
+  "weight_g": 188,
+  "battery_mah": 3046,
+  "features": [
+   "triple camera",
+   "Night mode",
+   "18W fast charger in box"
+  ],
+  "max_ios": null,
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "11 pro max",
+  "name": "iPhone 11 Pro Max",
+  "name_fa": "آیفون ۱۱ پرو مکس",
+  "aliases": [
+   "ایفون 11 پرو مکس",
+   "آیفون 11 پرومکس",
+   "ایفون یازده پرو مکس"
+  ],
+  "year": 2019,
+  "announced": "2019-09-10",
+  "chip": "A13 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 6.5,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2688x1242"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide + 12MP 2x telephoto",
+  "front_camera": "12MP",
+  "optical_zoom": 2,
+  "storage_gb": [
+   64,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Midnight Green",
+    "fa": "سبز نیمه‌شب"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "4G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "stainless steel",
+  "weight_g": 226,
+  "battery_mah": 3969,
+  "features": [
+   "triple camera",
+   "Night mode",
+   "18W fast charger in box"
+  ],
+  "max_ios": null,
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "se 2",
+  "name": "iPhone SE (2nd generation)",
+  "name_fa": "آیفون اس‌ای (نسل دوم)",
+  "aliases": [
+   "iphone se 2",
+   "se 2020",
+   "se2",
+   "اس ای ۲",
+   "اس ای 2020",
+   "آیفون SE 2020"
+  ],
+  "year": 2020,
+  "announced": "2020-04-15",
+  "chip": "A13 Bionic",
+  "ram_gb": 3,
+  "display": {
+   "inch": 4.7,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1334x750"
+  },
+  "rear_cameras": "12MP",
+  "front_camera": "7MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   64,
+   128,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID",
+  "network": "4G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP67",
+  "body": "aluminum",
+  "weight_g": 148,
+  "battery_mah": 1821,
+  "features": [
+   "Touch ID Home button",
+   "wireless charging (Qi)",
+   "eSIM"
+  ],
+  "max_ios": null,
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "key": "12 mini",
+  "name": "iPhone 12 mini",
+  "name_fa": "آیفون ۱۲ مینی",
+  "aliases": [
+   "ایفون 12 مینی",
+   "آیفون 12 مینی",
+   "ایفون دوازده مینی"
+  ],
+  "year": 2020,
+  "announced": "2020-10-13",
+  "chip": "A14 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 5.4,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2340x1080"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   64,
+   128,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 133,
+  "battery_mah": 2227,
+  "features": [
+   "MagSafe",
+   "Ceramic Shield",
+   "5G",
+   "Dolby Vision HDR video"
+  ],
+  "max_ios": null,
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "key": "12",
+  "name": "iPhone 12",
+  "name_fa": "آیفون ۱۲",
+  "aliases": [
+   "ایفون 12",
+   "آیفون 12",
+   "ایفون دوازده"
+  ],
+  "year": 2020,
+  "announced": "2020-10-13",
+  "chip": "A14 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 6.1,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2532x1170"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   64,
+   128,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 164,
+  "battery_mah": 2815,
+  "features": [
+   "MagSafe",
+   "Ceramic Shield",
+   "5G",
+   "Dolby Vision HDR video"
+  ],
+  "max_ios": null,
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "12 pro",
+  "name": "iPhone 12 Pro",
+  "name_fa": "آیفون ۱۲ پرو",
+  "aliases": [
+   "ایفون 12 پرو",
+   "آیفون 12 پرو",
+   "ایفون دوازده پرو"
+  ],
+  "year": 2020,
+  "announced": "2020-10-13",
+  "chip": "A14 Bionic",
+  "ram_gb": 6,
+  "display": {
+   "inch": 6.1,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2532x1170"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide + 12MP 2x telephoto",
+  "front_camera": "12MP",
+  "optical_zoom": 2,
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Graphite",
+    "fa": "گرافیتی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Pacific Blue",
+    "fa": "آبی اقیانوسی (پسیفیک)"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "stainless steel",
+  "weight_g": 187,
+  "battery_mah": 2815,
+  "features": [
+   "MagSafe",
+   "LiDAR",
+   "Ceramic Shield",
+   "ProRAW",
+   "5G"
+  ],
+  "max_ios": null,
+  "discontinued": 2021,
+  "sources": []
+ },
+ {
+  "key": "12 pro max",
+  "name": "iPhone 12 Pro Max",
+  "name_fa": "آیفون ۱۲ پرو مکس",
+  "aliases": [
+   "ایفون 12 پرو مکس",
+   "آیفون 12 پرومکس",
+   "ایفون دوازده پرو مکس"
+  ],
+  "year": 2020,
+  "announced": "2020-10-13",
+  "chip": "A14 Bionic",
+  "ram_gb": 6,
+  "display": {
+   "inch": 6.7,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2778x1284"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide + 12MP 2.5x telephoto",
+  "front_camera": "12MP",
+  "optical_zoom": 2.5,
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Graphite",
+    "fa": "گرافیتی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Pacific Blue",
+    "fa": "آبی اقیانوسی (پسیفیک)"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "stainless steel",
+  "weight_g": 226,
+  "battery_mah": 3687,
+  "features": [
+   "MagSafe",
+   "LiDAR",
+   "sensor-shift OIS",
+   "Ceramic Shield",
+   "ProRAW",
+   "5G"
+  ],
+  "max_ios": null,
+  "discontinued": 2021,
+  "sources": []
+ },
+ {
+  "key": "13 mini",
+  "name": "iPhone 13 mini",
+  "name_fa": "آیفون ۱۳ مینی",
+  "aliases": [
+   "ایفون 13 مینی",
+   "آیفون 13 مینی",
+   "ایفون سیزده مینی"
+  ],
+  "year": 2021,
+  "announced": "2021-09-14",
+  "chip": "A15 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 5.4,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2340x1080"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 140,
+  "battery_mah": 2406,
+  "features": [
+   "MagSafe",
+   "Cinematic mode",
+   "sensor-shift OIS",
+   "smaller notch"
+  ],
+  "max_ios": null,
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "13",
+  "name": "iPhone 13",
+  "name_fa": "آیفون ۱۳",
+  "aliases": [
+   "ایفون 13",
+   "آیفون 13",
+   "ایفون سیزده"
+  ],
+  "year": 2021,
+  "announced": "2021-09-14",
+  "chip": "A15 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 6.1,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2532x1170"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 173,
+  "battery_mah": 3227,
+  "features": [
+   "MagSafe",
+   "Cinematic mode",
+   "sensor-shift OIS",
+   "smaller notch"
+  ],
+  "max_ios": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "13 pro",
+  "name": "iPhone 13 Pro",
+  "name_fa": "آیفون ۱۳ پرو",
+  "aliases": [
+   "ایفون 13 پرو",
+   "آیفون 13 پرو",
+   "ایفون سیزده پرو"
+  ],
+  "year": 2021,
+  "announced": "2021-09-14",
+  "chip": "A15 Bionic",
+  "ram_gb": 6,
+  "display": {
+   "inch": 6.1,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2532x1170"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide + 12MP 3x telephoto",
+  "front_camera": "12MP",
+  "optical_zoom": 3,
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Graphite",
+    "fa": "گرافیتی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Sierra Blue",
+    "fa": "آبی سیرا"
+   },
+   {
+    "en": "Alpine Green",
+    "fa": "سبز آلپاین"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "stainless steel",
+  "weight_g": 203,
+  "battery_mah": 3095,
+  "features": [
+   "ProMotion 120Hz",
+   "MagSafe",
+   "LiDAR",
+   "macro photography",
+   "ProRes video",
+   "Cinematic mode"
+  ],
+  "max_ios": null,
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "key": "13 pro max",
+  "name": "iPhone 13 Pro Max",
+  "name_fa": "آیفون ۱۳ پرو مکس",
+  "aliases": [
+   "ایفون 13 پرو مکس",
+   "آیفون 13 پرومکس",
+   "ایفون سیزده پرو مکس"
+  ],
+  "year": 2021,
+  "announced": "2021-09-14",
+  "chip": "A15 Bionic",
+  "ram_gb": 6,
+  "display": {
+   "inch": 6.7,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2778x1284"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide + 12MP 3x telephoto",
+  "front_camera": "12MP",
+  "optical_zoom": 3,
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Graphite",
+    "fa": "گرافیتی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Sierra Blue",
+    "fa": "آبی سیرا"
+   },
+   {
+    "en": "Alpine Green",
+    "fa": "سبز آلپاین"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP68",
+  "body": "stainless steel",
+  "weight_g": 238,
+  "battery_mah": 4352,
+  "features": [
+   "ProMotion 120Hz",
+   "MagSafe",
+   "LiDAR",
+   "macro photography",
+   "ProRes video",
+   "Cinematic mode"
+  ],
+  "max_ios": null,
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "key": "se 3",
+  "name": "iPhone SE (3rd generation)",
+  "name_fa": "آیفون اس‌ای (نسل سوم)",
+  "aliases": [
+   "iphone se 3",
+   "se 2022",
+   "se3",
+   "اس ای ۳",
+   "اس ای 2022",
+   "آیفون SE 2022"
+  ],
+  "year": 2022,
+  "announced": "2022-03-08",
+  "chip": "A15 Bionic",
+  "ram_gb": 4,
+  "display": {
+   "inch": 4.7,
+   "type": "LCD",
+   "hz": 60,
+   "resolution": "1334x750"
+  },
+  "rear_cameras": "12MP",
+  "front_camera": "7MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   64,
+   128,
+   256
+  ],
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Touch ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (China/HK/Macau: dual nano-SIM)",
+  "water": "IP67",
+  "body": "aluminum",
+  "weight_g": 144,
+  "battery_mah": 2018,
+  "features": [
+   "Touch ID Home button",
+   "5G",
+   "wireless charging (Qi)"
+  ],
+  "max_ios": null,
+  "discontinued": 2025,
+  "sources": []
+ },
+ {
+  "key": "14",
+  "name": "iPhone 14",
+  "name_fa": "آیفون ۱۴",
+  "aliases": [
+   "ایفون 14",
+   "آیفون 14",
+   "ایفون چهارده"
+  ],
+  "year": 2022,
+  "announced": "2022-09-07",
+  "chip": "A15 Bionic (5-core GPU)",
+  "ram_gb": 6,
+  "display": {
+   "inch": 6.1,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2532x1170"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 172,
+  "battery_mah": 3279,
+  "features": [
+   "MagSafe",
+   "Crash Detection",
+   "Emergency SOS via satellite",
+   "Action mode video"
+  ],
+  "max_ios": null,
+  "discontinued": 2025,
+  "sources": []
+ },
+ {
+  "key": "14 plus",
+  "name": "iPhone 14 Plus",
+  "name_fa": "آیفون ۱۴ پلاس",
+  "aliases": [
+   "14+",
+   "ایفون 14 پلاس",
+   "آیفون 14 پلاس"
+  ],
+  "year": 2022,
+  "announced": "2022-09-07",
+  "chip": "A15 Bionic (5-core GPU)",
+  "ram_gb": 6,
+  "display": {
+   "inch": 6.7,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2778x1284"
+  },
+  "rear_cameras": "12MP wide + 12MP ultra-wide",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (سفید صدفی)"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "(PRODUCT)RED",
+    "fa": "قرمز (پروداکت رد)"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 203,
+  "battery_mah": 4325,
+  "features": [
+   "MagSafe",
+   "Crash Detection",
+   "Emergency SOS via satellite",
+   "Action mode video"
+  ],
+  "max_ios": null,
+  "discontinued": 2025,
+  "sources": []
+ },
+ {
+  "key": "14 pro",
+  "name": "iPhone 14 Pro",
+  "name_fa": "آیفون ۱۴ پرو",
+  "aliases": [
+   "ایفون 14 پرو",
+   "آیفون 14 پرو",
+   "ایفون چهارده پرو"
+  ],
+  "year": 2022,
+  "announced": "2022-09-07",
+  "chip": "A16 Bionic",
+  "ram_gb": 6,
+  "display": {
+   "inch": 6.1,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2556x1179"
+  },
+  "rear_cameras": "48MP main + 12MP ultra-wide + 12MP 3x telephoto",
+  "front_camera": "12MP",
+  "optical_zoom": 3,
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Deep Purple",
+    "fa": "بنفش تیره (دیپ پرپل)"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "stainless steel",
+  "weight_g": 206,
+  "battery_mah": 3200,
+  "features": [
+   "Dynamic Island",
+   "Always-On display",
+   "ProMotion 120Hz",
+   "MagSafe",
+   "LiDAR",
+   "Crash Detection",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "14 pro max",
+  "name": "iPhone 14 Pro Max",
+  "name_fa": "آیفون ۱۴ پرو مکس",
+  "aliases": [
+   "ایفون 14 پرو مکس",
+   "آیفون 14 پرومکس",
+   "ایفون چهارده پرو مکس"
+  ],
+  "year": 2022,
+  "announced": "2022-09-07",
+  "chip": "A16 Bionic",
+  "ram_gb": 6,
+  "display": {
+   "inch": 6.7,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2796x1290"
+  },
+  "rear_cameras": "48MP main + 12MP ultra-wide + 12MP 3x telephoto",
+  "front_camera": "12MP",
+  "optical_zoom": 3,
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Deep Purple",
+    "fa": "بنفش تیره (دیپ پرپل)"
+   }
+  ],
+  "port": "Lightning",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "stainless steel",
+  "weight_g": 240,
+  "battery_mah": 4323,
+  "features": [
+   "Dynamic Island",
+   "Always-On display",
+   "ProMotion 120Hz",
+   "MagSafe",
+   "LiDAR",
+   "Crash Detection",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "15",
+  "name": "iPhone 15",
+  "name_fa": "آیفون ۱۵",
+  "aliases": [
+   "ایفون 15",
+   "آیفون 15",
+   "ایفون پانزده"
+  ],
+  "year": 2023,
+  "announced": "2023-09-12",
+  "chip": "A16 Bionic",
+  "ram_gb": 6,
+  "display": {
+   "inch": 6.1,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2556x1179"
+  },
+  "rear_cameras": "48MP main + 12MP ultra-wide",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 171,
+  "battery_mah": 3349,
+  "features": [
+   "Dynamic Island",
+   "USB-C",
+   "MagSafe",
+   "Emergency SOS via satellite",
+   "Roadside Assistance via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": 2025,
+  "sources": []
+ },
+ {
+  "key": "15 plus",
+  "name": "iPhone 15 Plus",
+  "name_fa": "آیفون ۱۵ پلاس",
+  "aliases": [
+   "15+",
+   "ایفون 15 پلاس",
+   "آیفون 15 پلاس"
+  ],
+  "year": 2023,
+  "announced": "2023-09-12",
+  "chip": "A16 Bionic",
+  "ram_gb": 6,
+  "display": {
+   "inch": 6.7,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2796x1290"
+  },
+  "rear_cameras": "48MP main + 12MP ultra-wide",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 201,
+  "battery_mah": 4383,
+  "features": [
+   "Dynamic Island",
+   "USB-C",
+   "MagSafe",
+   "Emergency SOS via satellite",
+   "Roadside Assistance via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": 2025,
+  "sources": []
+ },
+ {
+  "key": "15 pro",
+  "name": "iPhone 15 Pro",
+  "name_fa": "آیفون ۱۵ پرو",
+  "aliases": [
+   "ایفون 15 پرو",
+   "آیفون 15 پرو",
+   "ایفون پانزده پرو"
+  ],
+  "year": 2023,
+  "announced": "2023-09-12",
+  "chip": "A17 Pro",
+  "ram_gb": 8,
+  "display": {
+   "inch": 6.1,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2556x1179"
+  },
+  "rear_cameras": "48MP main + 12MP ultra-wide + 12MP 3x telephoto",
+  "front_camera": "12MP",
+  "optical_zoom": 3,
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Black Titanium",
+    "fa": "تیتانیوم مشکی"
+   },
+   {
+    "en": "White Titanium",
+    "fa": "تیتانیوم سفید"
+   },
+   {
+    "en": "Blue Titanium",
+    "fa": "تیتانیوم آبی"
+   },
+   {
+    "en": "Natural Titanium",
+    "fa": "تیتانیوم طبیعی"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "titanium",
+  "weight_g": 187,
+  "battery_mah": 3274,
+  "features": [
+   "Action button",
+   "titanium design",
+   "USB 3 (10Gb/s)",
+   "Dynamic Island",
+   "Always-On display",
+   "ProMotion 120Hz",
+   "MagSafe",
+   "LiDAR",
+   "Apple Intelligence",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "15 pro max",
+  "name": "iPhone 15 Pro Max",
+  "name_fa": "آیفون ۱۵ پرو مکس",
+  "aliases": [
+   "ایفون 15 پرو مکس",
+   "آیفون 15 پرومکس",
+   "ایفون پانزده پرو مکس"
+  ],
+  "year": 2023,
+  "announced": "2023-09-12",
+  "chip": "A17 Pro",
+  "ram_gb": 8,
+  "display": {
+   "inch": 6.7,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2796x1290"
+  },
+  "rear_cameras": "48MP main + 12MP ultra-wide + 12MP 5x telephoto",
+  "front_camera": "12MP",
+  "optical_zoom": 5,
+  "storage_gb": [
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Black Titanium",
+    "fa": "تیتانیوم مشکی"
+   },
+   {
+    "en": "White Titanium",
+    "fa": "تیتانیوم سفید"
+   },
+   {
+    "en": "Blue Titanium",
+    "fa": "تیتانیوم آبی"
+   },
+   {
+    "en": "Natural Titanium",
+    "fa": "تیتانیوم طبیعی"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "titanium",
+  "weight_g": 221,
+  "battery_mah": 4422,
+  "features": [
+   "Action button",
+   "5x tetraprism telephoto",
+   "titanium design",
+   "USB 3 (10Gb/s)",
+   "Dynamic Island",
+   "Always-On display",
+   "ProMotion 120Hz",
+   "MagSafe",
+   "LiDAR",
+   "Apple Intelligence",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "16",
+  "name": "iPhone 16",
+  "name_fa": "آیفون ۱۶",
+  "aliases": [
+   "ایفون 16",
+   "آیفون 16",
+   "ایفون شانزده"
+  ],
+  "year": 2024,
+  "announced": "2024-09-09",
+  "chip": "A18",
+  "ram_gb": 8,
+  "display": {
+   "inch": 6.1,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2556x1179"
+  },
+  "rear_cameras": "48MP Fusion main + 12MP ultra-wide",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Teal",
+    "fa": "سبزآبی (تیل)"
+   },
+   {
+    "en": "Ultramarine",
+    "fa": "آبی اولترامارین"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 170,
+  "battery_mah": 3561,
+  "features": [
+   "Camera Control",
+   "Action button",
+   "Apple Intelligence",
+   "Dynamic Island",
+   "MagSafe",
+   "spatial video",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2024/09/apple-introduces-iphone-16-and-iphone-16-plus/",
+   "https://www.macrumors.com/roundup/iphone-16/",
+   "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/"
+  ]
+ },
+ {
+  "key": "16 plus",
+  "name": "iPhone 16 Plus",
+  "name_fa": "آیفون ۱۶ پلاس",
+  "aliases": [
+   "16+",
+   "ایفون 16 پلاس",
+   "آیفون 16 پلاس"
+  ],
+  "year": 2024,
+  "announced": "2024-09-09",
+  "chip": "A18",
+  "ram_gb": 8,
+  "display": {
+   "inch": 6.7,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2796x1290"
+  },
+  "rear_cameras": "48MP Fusion main + 12MP ultra-wide",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Teal",
+    "fa": "سبزآبی (تیل)"
+   },
+   {
+    "en": "Ultramarine",
+    "fa": "آبی اولترامارین"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 199,
+  "battery_mah": 4674,
+  "features": [
+   "Camera Control",
+   "Action button",
+   "Apple Intelligence",
+   "Dynamic Island",
+   "MagSafe",
+   "spatial video",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://www.apple.com/newsroom/2024/09/apple-introduces-iphone-16-and-iphone-16-plus/",
+   "https://www.macrumors.com/roundup/iphone-16/",
+   "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/"
+  ]
+ },
+ {
+  "key": "16 pro",
+  "name": "iPhone 16 Pro",
+  "name_fa": "آیفون ۱۶ پرو",
+  "aliases": [
+   "ایفون 16 پرو",
+   "آیفون 16 پرو",
+   "ایفون شانزده پرو"
+  ],
+  "year": 2024,
+  "announced": "2024-09-09",
+  "chip": "A18 Pro",
+  "ram_gb": 8,
+  "display": {
+   "inch": 6.3,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2622x1206"
+  },
+  "rear_cameras": "48MP Fusion main + 48MP ultra-wide + 12MP 5x telephoto",
+  "front_camera": "12MP",
+  "optical_zoom": 5,
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Black Titanium",
+    "fa": "تیتانیوم مشکی"
+   },
+   {
+    "en": "White Titanium",
+    "fa": "تیتانیوم سفید"
+   },
+   {
+    "en": "Natural Titanium",
+    "fa": "تیتانیوم طبیعی"
+   },
+   {
+    "en": "Desert Titanium",
+    "fa": "تیتانیوم صحرایی (دزرت)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "titanium",
+  "weight_g": 199,
+  "battery_mah": 3582,
+  "features": [
+   "Camera Control",
+   "Action button",
+   "Apple Intelligence",
+   "4K120 Dolby Vision video",
+   "Dynamic Island",
+   "Always-On display",
+   "ProMotion 120Hz",
+   "MagSafe",
+   "LiDAR",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": 2025,
+  "sources": [
+   "https://www.apple.com/newsroom/2024/09/apple-debuts-iphone-16-pro-and-iphone-16-pro-max/",
+   "https://www.macrumors.com/2025/12/24/apple-discontinued-25-products-this-year/"
+  ]
+ },
+ {
+  "key": "16 pro max",
+  "name": "iPhone 16 Pro Max",
+  "name_fa": "آیفون ۱۶ پرو مکس",
+  "aliases": [
+   "ایفون 16 پرو مکس",
+   "آیفون 16 پرومکس",
+   "ایفون شانزده پرو مکس"
+  ],
+  "year": 2024,
+  "announced": "2024-09-09",
+  "chip": "A18 Pro",
+  "ram_gb": 8,
+  "display": {
+   "inch": 6.9,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2868x1320"
+  },
+  "rear_cameras": "48MP Fusion main + 48MP ultra-wide + 12MP 5x telephoto",
+  "front_camera": "12MP",
+  "optical_zoom": 5,
+  "storage_gb": [
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Black Titanium",
+    "fa": "تیتانیوم مشکی"
+   },
+   {
+    "en": "White Titanium",
+    "fa": "تیتانیوم سفید"
+   },
+   {
+    "en": "Natural Titanium",
+    "fa": "تیتانیوم طبیعی"
+   },
+   {
+    "en": "Desert Titanium",
+    "fa": "تیتانیوم صحرایی (دزرت)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "titanium",
+  "weight_g": 227,
+  "battery_mah": 4685,
+  "features": [
+   "Camera Control",
+   "Action button",
+   "Apple Intelligence",
+   "4K120 Dolby Vision video",
+   "Dynamic Island",
+   "Always-On display",
+   "ProMotion 120Hz",
+   "MagSafe",
+   "LiDAR",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": 2025,
+  "sources": [
+   "https://www.apple.com/newsroom/2024/09/apple-debuts-iphone-16-pro-and-iphone-16-pro-max/",
+   "https://www.macrumors.com/2025/12/24/apple-discontinued-25-products-this-year/"
+  ]
+ },
+ {
+  "key": "16e",
+  "name": "iPhone 16e",
+  "name_fa": "آیفون ۱۶ای",
+  "aliases": [
+   "16 e",
+   "ایفون 16e",
+   "آیفون 16e",
+   "آیفون ۱۶ ای"
+  ],
+  "year": 2025,
+  "announced": "2025-02-19",
+  "chip": "A18 (4-core GPU)",
+  "ram_gb": 8,
+  "display": {
+   "inch": 6.1,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2532x1170"
+  },
+  "rear_cameras": "48MP Fusion main",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (US: eSIM only)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 167,
+  "battery_mah": 4005,
+  "features": [
+   "Apple C1 modem",
+   "Action button",
+   "Apple Intelligence",
+   "notch display (no Dynamic Island)",
+   "no MagSafe (Qi 7.5W)",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://support.apple.com/en-us/122208",
+   "https://www.apple.com/newsroom/2025/02/apple-debuts-iphone-16e-a-powerful-new-member-of-the-iphone-16-family/",
+   "https://9to5mac.com/2026/03/03/apple-has-discontinued-seven-products-this-week-with-one-more-likely/",
+   "https://www.macrumors.com/2026/06/30/apple-refurbished-iphone-16e/"
+  ]
+ },
+ {
+  "key": "17",
+  "name": "iPhone 17",
+  "name_fa": "آیفون ۱۷",
+  "aliases": [
+   "ایفون 17",
+   "آیفون 17",
+   "ایفون هفده"
+  ],
+  "year": 2025,
+  "announced": "2025-09-09",
+  "chip": "A19",
+  "ram_gb": 8,
+  "display": {
+   "inch": 6.3,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2622x1206"
+  },
+  "rear_cameras": "48MP Fusion main + 48MP Fusion ultra-wide (2x optical-quality crop)",
+  "front_camera": "18MP Center Stage",
+  "optical_zoom": 0,
+  "storage_gb": [
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Mist Blue",
+    "fa": "آبی مه‌آلود (میست بلو)"
+   },
+   {
+    "en": "Sage",
+    "fa": "سبز مریمی (سیج)"
+   },
+   {
+    "en": "Lavender",
+    "fa": "اسطوخودوسی (لوندر)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (eSIM only in US, Canada, Japan, Mexico, Gulf states and some other countries)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 177,
+  "battery_mah": null,
+  "features": [
+   "ProMotion 120Hz",
+   "Always-On display",
+   "Dynamic Island",
+   "Camera Control",
+   "Action button",
+   "Center Stage front camera",
+   "Ceramic Shield 2",
+   "MagSafe",
+   "Apple Intelligence",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/iphone-17/specs/",
+   "https://support.apple.com/en-us/125089"
+  ]
+ },
+ {
+  "key": "air",
+  "name": "iPhone Air",
+  "name_fa": "آیفون ایر",
+  "aliases": [
+   "ایفون ایر",
+   "آیفون air",
+   "ایفون ار",
+   "آیفون ۱۷ ایر",
+   "iphone 17 air"
+  ],
+  "year": 2025,
+  "announced": "2025-09-09",
+  "chip": "A19 Pro",
+  "ram_gb": 12,
+  "display": {
+   "inch": 6.5,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2736x1260"
+  },
+  "rear_cameras": "48MP Fusion main (2x optical-quality crop)",
+  "front_camera": "18MP Center Stage",
+  "optical_zoom": 0,
+  "storage_gb": [
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Cloud White",
+    "fa": "سفید ابری"
+   },
+   {
+    "en": "Light Gold",
+    "fa": "طلایی روشن"
+   },
+   {
+    "en": "Sky Blue",
+    "fa": "آبی آسمانی"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "eSIM only (worldwide)",
+  "water": "IP68",
+  "body": "titanium",
+  "weight_g": 165,
+  "battery_mah": null,
+  "features": [
+   "5.64mm thin design",
+   "Apple C1X modem",
+   "N1 wireless chip",
+   "ProMotion 120Hz",
+   "Always-On display",
+   "Dynamic Island",
+   "Camera Control",
+   "Action button",
+   "Ceramic Shield 2",
+   "MagSafe",
+   "Apple Intelligence"
+  ],
+  "max_ios": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/iphone-air/specs/",
+   "https://support.apple.com/en-us/125092"
+  ]
+ },
+ {
+  "key": "17 pro",
+  "name": "iPhone 17 Pro",
+  "name_fa": "آیفون ۱۷ پرو",
+  "aliases": [
+   "ایفون 17 پرو",
+   "آیفون 17 پرو",
+   "ایفون هفده پرو"
+  ],
+  "year": 2025,
+  "announced": "2025-09-09",
+  "chip": "A19 Pro",
+  "ram_gb": 12,
+  "display": {
+   "inch": 6.3,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2622x1206"
+  },
+  "rear_cameras": "48MP Fusion main + 48MP Fusion ultra-wide + 48MP 4x telephoto (8x optical-quality)",
+  "front_camera": "18MP Center Stage",
+  "optical_zoom": 4,
+  "storage_gb": [
+   256,
+   512,
+   1024
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Cosmic Orange",
+    "fa": "نارنجی کیهانی"
+   },
+   {
+    "en": "Deep Blue",
+    "fa": "آبی تیره (دیپ بلو)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (eSIM only in US, Canada, Japan, Mexico, Gulf states and some other countries)",
+  "water": "IP68",
+  "body": "aluminum (unibody)",
+  "weight_g": 206,
+  "battery_mah": null,
+  "features": [
+   "aluminum unibody",
+   "vapor chamber cooling",
+   "ProMotion 120Hz",
+   "Always-On display",
+   "Dynamic Island",
+   "Camera Control",
+   "Action button",
+   "Ceramic Shield 2",
+   "MagSafe",
+   "LiDAR",
+   "Apple Intelligence",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://www.apple.com/newsroom/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max/",
+   "https://www.macrumors.com/2026/09/09/apple-discontinues-iphone-17-pro-max/",
+   "https://support.apple.com/en-ph/125090"
+  ]
+ },
+ {
+  "key": "17 pro max",
+  "name": "iPhone 17 Pro Max",
+  "name_fa": "آیفون ۱۷ پرو مکس",
+  "aliases": [
+   "ایفون 17 پرو مکس",
+   "آیفون 17 پرومکس",
+   "ایفون هفده پرو مکس"
+  ],
+  "year": 2025,
+  "announced": "2025-09-09",
+  "chip": "A19 Pro",
+  "ram_gb": 12,
+  "display": {
+   "inch": 6.9,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2868x1320"
+  },
+  "rear_cameras": "48MP Fusion main + 48MP Fusion ultra-wide + 48MP 4x telephoto (8x optical-quality)",
+  "front_camera": "18MP Center Stage",
+  "optical_zoom": 4,
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Cosmic Orange",
+    "fa": "نارنجی کیهانی"
+   },
+   {
+    "en": "Deep Blue",
+    "fa": "آبی تیره (دیپ بلو)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (eSIM only in US, Canada, Japan, Mexico, Gulf states and some other countries)",
+  "water": "IP68",
+  "body": "aluminum (unibody)",
+  "weight_g": 233,
+  "battery_mah": null,
+  "features": [
+   "aluminum unibody",
+   "vapor chamber cooling",
+   "2TB option",
+   "ProMotion 120Hz",
+   "Always-On display",
+   "Dynamic Island",
+   "Camera Control",
+   "Action button",
+   "Ceramic Shield 2",
+   "MagSafe",
+   "LiDAR",
+   "Apple Intelligence",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://www.apple.com/newsroom/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max/",
+   "https://www.macrumors.com/2026/09/09/apple-discontinues-iphone-17-pro-max/",
+   "https://support.apple.com/en-ae/125091"
+  ]
+ },
+ {
+  "key": "17e",
+  "name": "iPhone 17e",
+  "name_fa": "آیفون ۱۷ای",
+  "aliases": [
+   "17 e",
+   "ایفون 17e",
+   "آیفون 17e",
+   "آیفون ۱۷ ای"
+  ],
+  "year": 2026,
+  "announced": "2026-03-02",
+  "chip": "A19",
+  "ram_gb": 8,
+  "display": {
+   "inch": 6.1,
+   "type": "OLED",
+   "hz": 60,
+   "resolution": "2532x1170"
+  },
+  "rear_cameras": "48MP Fusion main (2x optical-quality crop)",
+  "front_camera": "12MP",
+  "optical_zoom": 0,
+  "storage_gb": [
+   256,
+   512
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "White",
+    "fa": "سفید"
+   },
+   {
+    "en": "Soft Pink",
+    "fa": "صورتی ملایم"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (eSIM only in US, Canada, Mexico, Japan, Saudi Arabia, UAE and some other countries)",
+  "water": "IP68",
+  "body": "aluminum",
+  "weight_g": 169,
+  "battery_mah": 4005,
+  "features": [
+   "MagSafe (15W) and Qi2",
+   "Apple C1X modem",
+   "Action button",
+   "Apple Intelligence",
+   "notch display (no Dynamic Island)",
+   "Emergency SOS via satellite"
+  ],
+  "max_ios": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-iphone-17e/",
+   "https://www.apple.com/iphone-17e/specs/",
+   "https://support.apple.com/en-us/126470",
+   "https://www.macrumors.com/2026/03/02/apple-announces-iphone-17e-with-a19-chip-magsafe-and-more/",
+   "https://www.macrumors.com/2026/03/05/iphone-17e-has-8gb-of-ram/",
+   "https://www.gsmarena.com/apple_iphone_17e-14487.php",
+   "https://www.macrumors.com/2026/03/02/iphone-17e-smaller-details/"
+  ]
+ },
+ {
+  "key": "18 pro",
+  "name": "iPhone 18 Pro",
+  "name_fa": "آیفون ۱۸ پرو",
+  "aliases": [
+   "ایفون 18 پرو",
+   "آیفون 18 پرو",
+   "ایفون هجده پرو"
+  ],
+  "year": 2026,
+  "announced": "2026-09-09",
+  "chip": "A20 Pro",
+  "ram_gb": 12,
+  "display": {
+   "inch": 6.3,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2622x1206"
+  },
+  "rear_cameras": "48MP Fusion main (variable aperture f/1.48-f/4.0) + 48MP Fusion ultra-wide + 48MP 4x telephoto (8x optical-quality)",
+  "front_camera": "18MP Center Stage",
+  "optical_zoom": 4,
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Glacier",
+    "fa": "آبی یخچالی (گلیشر)"
+   },
+   {
+    "en": "Burgundy",
+    "fa": "زرشکی (برگاندی)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (eSIM only in US, Canada, Mexico, Japan, Bahrain, Kuwait, Oman, Qatar, Saudi Arabia, UAE, Guam, US Virgin Islands)",
+  "water": "IP68",
+  "body": "aluminum (unibody)",
+  "weight_g": 211,
+  "battery_mah": 4056,
+  "features": [
+   "variable aperture main camera",
+   "Apple C2 modem",
+   "2TB option",
+   "ProMotion 120Hz",
+   "Always-On display",
+   "Dynamic Island",
+   "Camera Control",
+   "Action button",
+   "Ceramic Shield 2",
+   "MagSafe",
+   "LiDAR",
+   "Apple Intelligence"
+  ],
+  "max_ios": null,
+  "discontinued": null,
+  "sources": [
+   "https://apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
+   "https://www.apple.com/iphone-18-pro/specs/",
+   "https://9to5mac.com/2026/09/09/iphone-18-pro-officially-announced-heres-whats-new/",
+   "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
+   "https://macrumors.com/2026/09/09/iphone-18-pro-esim-only-countries/",
+   "https://www.macrumors.com/2026/09/10/iphone-18-pro-max-battery-capacities-ram/",
+   "https://support.apple.com/en-us/148590"
+  ]
+ },
+ {
+  "key": "18 pro max",
+  "name": "iPhone 18 Pro Max",
+  "name_fa": "آیفون ۱۸ پرو مکس",
+  "aliases": [
+   "ایفون 18 پرو مکس",
+   "آیفون 18 پرومکس",
+   "ایفون هجده پرو مکس"
+  ],
+  "year": 2026,
+  "announced": "2026-09-09",
+  "chip": "A20 Pro",
+  "ram_gb": 12,
+  "display": {
+   "inch": 6.9,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2868x1320"
+  },
+  "rear_cameras": "48MP Fusion main (variable aperture f/1.48-f/4.0) + 48MP Fusion ultra-wide + 48MP 4x telephoto (8x optical-quality)",
+  "front_camera": "18MP Center Stage",
+  "optical_zoom": 4,
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "colors": [
+   {
+    "en": "Black",
+    "fa": "مشکی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Glacier",
+    "fa": "آبی یخچالی (گلیشر)"
+   },
+   {
+    "en": "Burgundy",
+    "fa": "زرشکی (برگاندی)"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Face ID",
+  "network": "5G",
+  "sim": "nano-SIM + eSIM (eSIM only in US, Canada, Mexico, Japan, Bahrain, Kuwait, Oman, Qatar, Saudi Arabia, UAE, Guam, US Virgin Islands)",
+  "water": "IP68",
+  "body": "aluminum (unibody)",
+  "weight_g": 249,
+  "battery_mah": 5391,
+  "features": [
+   "variable aperture main camera",
+   "Apple C2 modem",
+   "2TB option",
+   "ProMotion 120Hz",
+   "Always-On display",
+   "Dynamic Island",
+   "Camera Control",
+   "Action button",
+   "Ceramic Shield 2",
+   "MagSafe",
+   "LiDAR",
+   "Apple Intelligence"
+  ],
+  "max_ios": null,
+  "discontinued": null,
+  "sources": [
+   "https://apple.com/newsroom/2026/09/apple-debuts-iphone-18-pro-and-iphone-18-pro-max/",
+   "https://www.apple.com/iphone-18-pro/specs/",
+   "https://9to5mac.com/2026/09/09/iphone-18-pro-officially-announced-heres-whats-new/",
+   "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
+   "https://macrumors.com/2026/09/09/iphone-18-pro-esim-only-countries/",
+   "https://www.macrumors.com/2026/09/10/iphone-18-pro-max-battery-capacities-ram/",
+   "https://support.apple.com/148591",
+   "https://www.macrumors.com/2026/09/25/apple-sells-four-iphone-18-pro-max-models/"
+  ]
+ },
+ {
+  "key": "duo",
+  "name": "iPhone Duo",
+  "name_fa": "آیفون دوئو (تاشو)",
+  "aliases": [
+   "iphone fold",
+   "foldable iphone",
+   "ایفون دو",
+   "ایفون دوئو",
+   "آیفون تاشو",
+   "ایفون فولد",
+   "آیفون Duo"
+  ],
+  "year": 2026,
+  "announced": "2026-09-09",
+  "chip": "A20 Pro",
+  "ram_gb": null,
+  "display": {
+   "inch": 7.6,
+   "type": "OLED",
+   "hz": 120,
+   "resolution": "2670x1878"
+  },
+  "rear_cameras": "48MP Fusion main + 48MP Fusion ultra-wide",
+  "front_camera": "12MP Center Stage (outer display) + under-display camera (inner display)",
+  "optical_zoom": 0,
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "colors": [
+   {
+    "en": "Night Sky",
+    "fa": "آسمان شب (سرمه‌ای)"
+   },
+   {
+    "en": "Star White",
+    "fa": "سفید ستاره‌ای"
+   }
+  ],
+  "port": "USB-C",
+  "biometrics": "Touch ID",
+  "network": "5G",
+  "sim": "eSIM only (worldwide, dual eSIM)",
+  "water": "IP68",
+  "body": "titanium",
+  "weight_g": 254,
+  "battery_mah": null,
+  "features": [
+   "foldable: 7.6-inch inner + 5.4-inch outer OLED (1398x2034)",
+   "Touch ID in side button",
+   "no Face ID",
+   "no telephoto",
+   "no Action button",
+   "Apple C2 modem",
+   "ProMotion 120Hz (both displays)",
+   "released 2026-10-23",
+   "Apple Intelligence"
+  ],
+  "max_ios": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/09/apple-unveils-iphone-duo/",
+   "https://www.apple.com/iphone-duo/specs/",
+   "https://support.apple.com/en-us/148588",
+   "https://www.macrumors.com/2026/09/09/apple-announces-foldable-iphone-duo/",
+   "https://9to5mac.com/2026/10/16/iphone-duo-now-available-to-pre-order-prices-start-at-1999/",
+   "https://www.macrumors.com/roundup/iphone-duo/",
+   "https://www.gsmarena.com/apple_iphone_duo_fold-13804.php"
+  ]
+ }
+]

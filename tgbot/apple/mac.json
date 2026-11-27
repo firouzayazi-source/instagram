@@ -1,0 +1,4746 @@
+[
+ {
+  "key": "macbook air 11 2015",
+  "name": "MacBook Air 11-inch (Early 2015)",
+  "name_fa": "مک‌بوک ایر ۱۱ اینچ (اوایل ۲۰۱۵)",
+  "aliases": [
+   "macbook air 11 2015",
+   "macbookair112015",
+   "مکبوک ایر ۲۰۱۵",
+   "مک بوک ایر ۲۰۱۵"
+  ],
+  "year": 2015,
+  "announced": "2015-03-09",
+  "chips": [
+   "Intel Core i5 5th gen (Broadwell) dual-core 1.6GHz",
+   "Intel Core i7 5th gen dual-core 2.2GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "display": {
+   "inch": 11.6,
+   "type": "LED (non-Retina)",
+   "hz": 60,
+   "resolution": "1366x768"
+  },
+  "ports": [
+   "2x USB 3",
+   "Thunderbolt 2",
+   "MagSafe 2",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 9,
+  "weight_kg": 1.08,
+  "features": [
+   "Intel HD Graphics 6000",
+   "Wi-Fi 5 (802.11ac)"
+  ],
+  "max_macos": "macOS 12 Monterey",
+  "discontinued": 2016,
+  "sources": []
+ },
+ {
+  "key": "macbook air 13 2015",
+  "name": "MacBook Air 13-inch (Early 2015)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ (اوایل ۲۰۱۵)",
+  "aliases": [
+   "macbook air 13 2015",
+   "macbookair132015",
+   "مکبوک ایر ۱۳ ۲۰۱۵",
+   "مک بوک ایر ۱۳ ۲۰۱۵"
+  ],
+  "year": 2015,
+  "announced": "2015-03-09",
+  "chips": [
+   "Intel Core i5 5th gen (Broadwell) dual-core 1.6GHz",
+   "Intel Core i7 5th gen dual-core 2.2GHz"
+  ],
+  "ram_gb": [
+   4,
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED (non-Retina)",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 3",
+   "Thunderbolt 2",
+   "MagSafe 2",
+   "SDXC card slot",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 12,
+  "weight_kg": 1.35,
+  "features": [
+   "Intel HD Graphics 6000",
+   "Wi-Fi 5 (802.11ac)"
+  ],
+  "max_macos": "macOS 12 Monterey",
+  "discontinued": 2017,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 13 2015",
+  "name": "MacBook Pro 13-inch Retina (Early 2015)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ رتینا (اوایل ۲۰۱۵)",
+  "aliases": [
+   "macbook pro 13 2015",
+   "macbookpro132015",
+   "مکبوک پرو ۱۳ ۲۰۱۵",
+   "مک بوک پرو ۱۳ ۲۰۱۵"
+  ],
+  "year": 2015,
+  "announced": "2015-03-09",
+  "chips": [
+   "Intel Core i5 5th gen (Broadwell) dual-core 2.7/2.9GHz",
+   "Intel Core i7 5th gen dual-core 3.1GHz"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x Thunderbolt 2",
+   "2x USB 3",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 2",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 12,
+  "weight_kg": 1.58,
+  "features": [
+   "Force Touch trackpad",
+   "Intel Iris Graphics 6100"
+  ],
+  "max_macos": "macOS 12 Monterey",
+  "discontinued": 2017,
+  "sources": []
+ },
+ {
+  "key": "macbook 12 2015",
+  "name": "MacBook 12-inch (Early 2015)",
+  "name_fa": "مک‌بوک ۱۲ اینچ (اوایل ۲۰۱۵)",
+  "aliases": [
+   "macbook 12 2015",
+   "macbook122015",
+   "مکبوک ۲۰۱۵",
+   "مک بوک ۲۰۱۵"
+  ],
+  "year": 2015,
+  "announced": "2015-03-09",
+  "chips": [
+   "Intel Core M dual-core 1.1GHz",
+   "Intel Core M 1.2GHz",
+   "Intel Core M 1.3GHz"
+  ],
+  "ram_gb": [
+   8
+  ],
+  "storage_gb": [
+   256,
+   512
+  ],
+  "display": {
+   "inch": 12,
+   "type": "Retina",
+   "hz": 60,
+   "resolution": "2304x1440"
+  },
+  "ports": [
+   "1x USB-C",
+   "3.5mm headphone"
+  ],
+  "camera": "480p FaceTime",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "battery_hours": 10,
+  "weight_kg": 0.92,
+  "features": [
+   "fanless",
+   "butterfly keyboard",
+   "Force Touch trackpad"
+  ],
+  "max_macos": "macOS 11 Big Sur",
+  "discontinued": 2016,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 15 2015",
+  "name": "MacBook Pro 15-inch Retina (Mid 2015)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ رتینا (اواسط ۲۰۱۵)",
+  "aliases": [
+   "macbook pro 15 2015",
+   "macbookpro152015",
+   "مکبوک پرو ۱۵ ۲۰۱۵",
+   "مک بوک پرو ۱۵ ۲۰۱۵"
+  ],
+  "year": 2015,
+  "announced": "2015-05-19",
+  "chips": [
+   "Intel Core i7 quad-core (Haswell) 2.2GHz / 2.5GHz (up to 2.8GHz)"
+  ],
+  "ram_gb": [
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "Retina",
+   "hz": 60,
+   "resolution": "2880x1800"
+  },
+  "ports": [
+   "2x Thunderbolt 2",
+   "2x USB 3",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 2",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 9,
+  "weight_kg": 2.04,
+  "features": [
+   "Force Touch trackpad",
+   "Intel Iris Pro or AMD Radeon R9 M370X"
+  ],
+  "max_macos": "macOS 12 Monterey",
+  "discontinued": 2018,
+  "sources": []
+ },
+ {
+  "key": "imac 21.5 2015",
+  "name": "iMac 21.5-inch (2015: non-Retina and Retina 4K)",
+  "name_fa": "آی‌مک ۲۱٫۵ اینچ (۲۰۱۵)",
+  "aliases": [
+   "imac 21.5 2015",
+   "imac21.52015",
+   "ایمک ۲۰۱۵",
+   "آی مک ۲۰۱۵",
+   "imac 2015"
+  ],
+  "year": 2015,
+  "announced": "2015-10-13",
+  "chips": [
+   "Intel Core i5 dual/quad-core (Broadwell)",
+   "Intel Core i7 quad-core (Retina 4K, optional)"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": null,
+  "display": {
+   "inch": 21.5,
+   "type": "Retina 4K or non-Retina LED",
+   "hz": 60,
+   "resolution": "4096x2304 (4K) or 1920x1080"
+  },
+  "ports": [
+   "4x USB-A 3",
+   "2x Thunderbolt 2",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 5.68,
+  "features": [
+   "HDD, Fusion Drive or SSD options",
+   "Magic Keyboard/Mouse 2 (Late 2015)"
+  ],
+  "max_macos": "macOS 12 Monterey",
+  "discontinued": 2017,
+  "sources": []
+ },
+ {
+  "key": "imac 27 2015",
+  "name": "iMac 27-inch Retina 5K (2015)",
+  "name_fa": "آی‌مک ۲۷ اینچ رتینا 5K (۲۰۱۵)",
+  "aliases": [
+   "imac 27 2015",
+   "imac272015",
+   "ایمک ۲۷ ۲۰۱۵",
+   "آی مک ۲۷ ۲۰۱۵"
+  ],
+  "year": 2015,
+  "announced": "2015-10-13",
+  "chips": [
+   "Intel Core i5 quad-core 6th gen (Skylake)",
+   "Intel Core i7 quad-core 6th gen (optional)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   32
+  ],
+  "storage_gb": null,
+  "display": {
+   "inch": 27,
+   "type": "Retina 5K",
+   "hz": 60,
+   "resolution": "5120x2880"
+  },
+  "ports": [
+   "4x USB-A 3",
+   "2x Thunderbolt 2",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.54,
+  "features": [
+   "HDD, Fusion Drive or SSD options",
+   "user-upgradeable RAM",
+   "P3 wide color (Late 2015)"
+  ],
+  "max_macos": "macOS 12 Monterey",
+  "discontinued": 2017,
+  "sources": []
+ },
+ {
+  "key": "macbook 12 2016",
+  "name": "MacBook 12-inch (Early 2016)",
+  "name_fa": "مک‌بوک ۱۲ اینچ (اوایل ۲۰۱۶)",
+  "aliases": [
+   "macbook 12 2016",
+   "macbook122016",
+   "مکبوک ۲۰۱۶",
+   "مک بوک ۲۰۱۶"
+  ],
+  "year": 2016,
+  "announced": "2016-04-19",
+  "chips": [
+   "Intel Core m3 (Skylake) 1.1GHz",
+   "Intel Core m5 1.2GHz",
+   "Intel Core m7 1.3GHz"
+  ],
+  "ram_gb": [
+   8
+  ],
+  "storage_gb": [
+   256,
+   512
+  ],
+  "display": {
+   "inch": 12,
+   "type": "Retina",
+   "hz": 60,
+   "resolution": "2304x1440"
+  },
+  "ports": [
+   "1x USB-C",
+   "3.5mm headphone"
+  ],
+  "camera": "480p FaceTime",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   }
+  ],
+  "battery_hours": 11,
+  "weight_kg": 0.92,
+  "features": [
+   "fanless",
+   "butterfly keyboard"
+  ],
+  "max_macos": "macOS 12 Monterey",
+  "discontinued": 2017,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 13 2016",
+  "name": "MacBook Pro 13-inch (2016, Two or Four Thunderbolt 3 ports)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ (۲۰۱۶)",
+  "aliases": [
+   "macbook pro 13 2016",
+   "macbookpro132016",
+   "مکبوک پرو ۱۳ ۲۰۱۶",
+   "مک بوک پرو ۱۳ ۲۰۱۶"
+  ],
+  "year": 2016,
+  "announced": "2016-10-27",
+  "chips": [
+   "Intel Core i5 dual-core 6th gen (Skylake)",
+   "Intel Core i7 dual-core 6th gen"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (P3, 500 nits)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x or 4x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 10,
+  "weight_kg": 1.37,
+  "features": [
+   "Touch Bar and Touch ID (4-port model)",
+   "butterfly keyboard"
+  ],
+  "max_macos": "macOS 12 Monterey",
+  "discontinued": 2017,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 15 2016",
+  "name": "MacBook Pro 15-inch (2016)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (۲۰۱۶)",
+  "aliases": [
+   "macbook pro 15 2016",
+   "macbookpro152016",
+   "مکبوک پرو ۱۵ ۲۰۱۶",
+   "مک بوک پرو ۱۵ ۲۰۱۶"
+  ],
+  "year": 2016,
+  "announced": "2016-10-27",
+  "chips": [
+   "Intel Core i7 quad-core 6th gen (Skylake) 2.6/2.7/2.9GHz"
+  ],
+  "ram_gb": [
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "Retina (P3, 500 nits)",
+   "hz": 60,
+   "resolution": "2880x1800"
+  },
+  "ports": [
+   "4x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 10,
+  "weight_kg": 1.83,
+  "features": [
+   "Touch Bar",
+   "Touch ID",
+   "AMD Radeon Pro 450/455/460",
+   "butterfly keyboard"
+  ],
+  "max_macos": "macOS 12 Monterey",
+  "discontinued": 2017,
+  "sources": []
+ },
+ {
+  "key": "macbook 12 2017",
+  "name": "MacBook 12-inch (2017)",
+  "name_fa": "مک‌بوک ۱۲ اینچ (۲۰۱۷)",
+  "aliases": [
+   "macbook 12 2017",
+   "macbook122017",
+   "مکبوک ۲۰۱۷",
+   "مک بوک ۲۰۱۷"
+  ],
+  "year": 2017,
+  "announced": "2017-06-05",
+  "chips": [
+   "Intel Core m3 7th gen (Kaby Lake) 1.2GHz",
+   "Intel Core i5 1.3GHz",
+   "Intel Core i7 1.4GHz"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512
+  ],
+  "display": {
+   "inch": 12,
+   "type": "Retina",
+   "hz": 60,
+   "resolution": "2304x1440"
+  },
+  "ports": [
+   "1x USB-C",
+   "3.5mm headphone"
+  ],
+  "camera": "480p FaceTime",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Rose Gold",
+    "fa": "رزگلد"
+   }
+  ],
+  "battery_hours": 12,
+  "weight_kg": 0.92,
+  "features": [
+   "fanless",
+   "butterfly keyboard"
+  ],
+  "max_macos": "macOS 13 Ventura",
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "macbook air 13 2017",
+  "name": "MacBook Air 13-inch (2017)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ (۲۰۱۷)",
+  "aliases": [
+   "macbook air 13 2017",
+   "macbookair132017",
+   "مکبوک ایر ۱۳ ۲۰۱۷",
+   "مک بوک ایر ۱۳ ۲۰۱۷"
+  ],
+  "year": 2017,
+  "announced": "2017-06-05",
+  "chips": [
+   "Intel Core i5 dual-core 5th gen 1.8GHz",
+   "Intel Core i7 dual-core 2.2GHz"
+  ],
+  "ram_gb": [
+   8
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "LED (non-Retina)",
+   "hz": 60,
+   "resolution": "1440x900"
+  },
+  "ports": [
+   "2x USB 3",
+   "Thunderbolt 2",
+   "MagSafe 2",
+   "SDXC card slot",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 12,
+  "weight_kg": 1.35,
+  "features": [
+   "last MacBook Air with MagSafe 2 and non-Retina display"
+  ],
+  "max_macos": "macOS 12 Monterey",
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 13 2017",
+  "name": "MacBook Pro 13-inch (2017, Two or Four Thunderbolt 3 ports)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ (۲۰۱۷)",
+  "aliases": [
+   "macbook pro 13 2017",
+   "macbookpro132017",
+   "مکبوک پرو ۱۳ ۲۰۱۷",
+   "مک بوک پرو ۱۳ ۲۰۱۷"
+  ],
+  "year": 2017,
+  "announced": "2017-06-05",
+  "chips": [
+   "Intel Core i5 dual-core 7th gen (Kaby Lake)",
+   "Intel Core i7 dual-core 7th gen"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (P3, 500 nits)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x or 4x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 10,
+  "weight_kg": 1.37,
+  "features": [
+   "Touch Bar and Touch ID (4-port model)",
+   "butterfly keyboard"
+  ],
+  "max_macos": "macOS 13 Ventura",
+  "discontinued": 2018,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 15 2017",
+  "name": "MacBook Pro 15-inch (2017)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (۲۰۱۷)",
+  "aliases": [
+   "macbook pro 15 2017",
+   "macbookpro152017",
+   "مکبوک پرو ۱۵ ۲۰۱۷",
+   "مک بوک پرو ۱۵ ۲۰۱۷"
+  ],
+  "year": 2017,
+  "announced": "2017-06-05",
+  "chips": [
+   "Intel Core i7 quad-core 7th gen (Kaby Lake) 2.8/2.9/3.1GHz"
+  ],
+  "ram_gb": [
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "Retina (P3, 500 nits)",
+   "hz": 60,
+   "resolution": "2880x1800"
+  },
+  "ports": [
+   "4x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 10,
+  "weight_kg": 1.83,
+  "features": [
+   "Touch Bar",
+   "Touch ID",
+   "AMD Radeon Pro 555/560",
+   "butterfly keyboard"
+  ],
+  "max_macos": "macOS 13 Ventura",
+  "discontinued": 2018,
+  "sources": []
+ },
+ {
+  "key": "imac 21.5 2017",
+  "name": "iMac 21.5-inch (2017: non-Retina and Retina 4K)",
+  "name_fa": "آی‌مک ۲۱٫۵ اینچ (۲۰۱۷)",
+  "aliases": [
+   "imac 21.5 2017",
+   "imac21.52017",
+   "ایمک ۲۰۱۷",
+   "آی مک ۲۰۱۷"
+  ],
+  "year": 2017,
+  "announced": "2017-06-05",
+  "chips": [
+   "Intel Core i5 7th gen (Kaby Lake) dual/quad-core",
+   "Intel Core i7 quad-core (optional)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   32
+  ],
+  "storage_gb": null,
+  "display": {
+   "inch": 21.5,
+   "type": "Retina 4K or non-Retina LED",
+   "hz": 60,
+   "resolution": "4096x2304 (4K) or 1920x1080"
+  },
+  "ports": [
+   "4x USB-A 3",
+   "2x Thunderbolt 3 (USB-C)",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 5.66,
+  "features": [
+   "HDD, Fusion Drive or SSD options",
+   "Radeon Pro 555/560 (4K model)"
+  ],
+  "max_macos": "macOS 13 Ventura",
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "imac 27 2017",
+  "name": "iMac 27-inch Retina 5K (2017)",
+  "name_fa": "آی‌مک ۲۷ اینچ رتینا 5K (۲۰۱۷)",
+  "aliases": [
+   "imac 27 2017",
+   "imac272017",
+   "ایمک ۲۷ ۲۰۱۷",
+   "آی مک ۲۷ ۲۰۱۷"
+  ],
+  "year": 2017,
+  "announced": "2017-06-05",
+  "chips": [
+   "Intel Core i5 quad-core 7th gen (Kaby Lake)",
+   "Intel Core i7 quad-core 4.2GHz (optional)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   32,
+   64
+  ],
+  "storage_gb": null,
+  "display": {
+   "inch": 27,
+   "type": "Retina 5K (500 nits, P3)",
+   "hz": 60,
+   "resolution": "5120x2880"
+  },
+  "ports": [
+   "4x USB-A 3",
+   "2x Thunderbolt 3 (USB-C)",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.44,
+  "features": [
+   "Fusion Drive or SSD options",
+   "Radeon Pro 570/575/580",
+   "user-upgradeable RAM"
+  ],
+  "max_macos": "macOS 13 Ventura",
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "imac pro 2017",
+  "name": "iMac Pro 27-inch (2017)",
+  "name_fa": "آی‌مک پرو ۲۷ اینچ (۲۰۱۷)",
+  "aliases": [
+   "imac pro 2017",
+   "imacpro2017",
+   "ایمک پرو ۲۰۱۷",
+   "آی مک پرو ۲۰۱۷"
+  ],
+  "year": 2017,
+  "announced": "2017-06-05",
+  "chips": [
+   "Intel Xeon W 8-, 10-, 14- or 18-core"
+  ],
+  "ram_gb": [
+   32,
+   64,
+   128,
+   256
+  ],
+  "storage_gb": [
+   1024,
+   2048,
+   4096
+  ],
+  "display": {
+   "inch": 27,
+   "type": "Retina 5K (500 nits, P3)",
+   "hz": 60,
+   "resolution": "5120x2880"
+  },
+  "ports": [
+   "4x Thunderbolt 3 (USB-C)",
+   "4x USB-A 3",
+   "10Gb Ethernet",
+   "SDXC card slot",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.7,
+  "features": [
+   "Radeon Pro Vega 56/64/64X",
+   "Apple T2 chip",
+   "released Dec 2017"
+  ],
+  "max_macos": "macOS 15 Sequoia",
+  "discontinued": 2021,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 13 2018",
+  "name": "MacBook Pro 13-inch (2018, Four Thunderbolt 3 ports)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ (۲۰۱۸)",
+  "aliases": [
+   "macbook pro 13 2018",
+   "macbookpro132018",
+   "مکبوک پرو ۱۳ ۲۰۱۸",
+   "مک بوک پرو ۱۳ ۲۰۱۸"
+  ],
+  "year": 2018,
+  "announced": "2018-07-12",
+  "chips": [
+   "Intel Core i5 quad-core 8th gen 2.3GHz",
+   "Intel Core i7 quad-core 2.7GHz"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (True Tone)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "4x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 10,
+  "weight_kg": 1.37,
+  "features": [
+   "Touch Bar",
+   "Touch ID",
+   "Apple T2 chip",
+   "butterfly keyboard"
+  ],
+  "max_macos": "macOS 15 Sequoia",
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 15 2018",
+  "name": "MacBook Pro 15-inch (2018)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (۲۰۱۸)",
+  "aliases": [
+   "macbook pro 15 2018",
+   "macbookpro152018",
+   "مکبوک پرو ۱۵ ۲۰۱۸",
+   "مک بوک پرو ۱۵ ۲۰۱۸"
+  ],
+  "year": 2018,
+  "announced": "2018-07-12",
+  "chips": [
+   "Intel Core i7 6-core 8th gen 2.2/2.6GHz",
+   "Intel Core i9 6-core 2.9GHz"
+  ],
+  "ram_gb": [
+   16,
+   32
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048,
+   4096
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "Retina (True Tone)",
+   "hz": 60,
+   "resolution": "2880x1800"
+  },
+  "ports": [
+   "4x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 10,
+  "weight_kg": 1.83,
+  "features": [
+   "Touch Bar",
+   "Touch ID",
+   "Apple T2 chip",
+   "Radeon Pro 555X/560X or Vega 16/20"
+  ],
+  "max_macos": "macOS 15 Sequoia",
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "macbook air 2018",
+  "name": "MacBook Air 13-inch Retina (2018)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ رتینا (۲۰۱۸)",
+  "aliases": [
+   "macbook air 2018",
+   "macbookair2018",
+   "مکبوک ایر ۲۰۱۸",
+   "مک بوک ایر ۲۰۱۸"
+  ],
+  "year": 2018,
+  "announced": "2018-10-30",
+  "chips": [
+   "Intel Core i5 dual-core 8th gen 1.6GHz"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1536
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "battery_hours": 13,
+  "weight_kg": 1.25,
+  "features": [
+   "Touch ID",
+   "Apple T2 chip",
+   "butterfly keyboard"
+  ],
+  "max_macos": "macOS 14 Sonoma",
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "mac mini 2018",
+  "name": "Mac mini (2018)",
+  "name_fa": "مک مینی (۲۰۱۸)",
+  "aliases": [
+   "mac mini 2018",
+   "macmini2018",
+   "مک‌مینی ۲۰۱۸",
+   "مکمینی ۲۰۱۸"
+  ],
+  "year": 2018,
+  "announced": "2018-10-30",
+  "chips": [
+   "Intel Core i3 quad-core 8th gen 3.6GHz",
+   "Intel Core i5 6-core 3.0GHz",
+   "Intel Core i7 6-core 3.2GHz"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   32,
+   64
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "4x Thunderbolt 3 (USB-C)",
+   "2x USB-A 3",
+   "HDMI 2.0",
+   "Gigabit Ethernet (10Gb optional)",
+   "3.5mm headphone"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 1.3,
+  "features": [
+   "Apple T2 chip",
+   "user-upgradeable RAM (SO-DIMM)"
+  ],
+  "max_macos": "macOS 15 Sequoia",
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "imac 21.5 2019",
+  "name": "iMac 21.5-inch Retina 4K (2019)",
+  "name_fa": "آی‌مک ۲۱٫۵ اینچ رتینا 4K (۲۰۱۹)",
+  "aliases": [
+   "imac 21.5 2019",
+   "imac21.52019",
+   "ایمک ۲۰۱۹",
+   "آی مک ۲۰۱۹"
+  ],
+  "year": 2019,
+  "announced": "2019-03-19",
+  "chips": [
+   "Intel Core i3 quad-core 8th gen",
+   "Intel Core i5 6-core 8th gen",
+   "Intel Core i7 6-core 8th gen (optional)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   32
+  ],
+  "storage_gb": null,
+  "display": {
+   "inch": 21.5,
+   "type": "Retina 4K (500 nits, P3)",
+   "hz": 60,
+   "resolution": "4096x2304"
+  },
+  "ports": [
+   "4x USB-A 3",
+   "2x Thunderbolt 3 (USB-C)",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 5.66,
+  "features": [
+   "Fusion Drive or SSD options",
+   "Radeon Pro 555X/560X/Vega 20"
+  ],
+  "max_macos": "macOS 15 Sequoia",
+  "discontinued": 2021,
+  "sources": []
+ },
+ {
+  "key": "imac 27 2019",
+  "name": "iMac 27-inch Retina 5K (2019)",
+  "name_fa": "آی‌مک ۲۷ اینچ رتینا 5K (۲۰۱۹)",
+  "aliases": [
+   "imac 27 2019",
+   "imac272019",
+   "ایمک ۲۷ ۲۰۱۹",
+   "آی مک ۲۷ ۲۰۱۹"
+  ],
+  "year": 2019,
+  "announced": "2019-03-19",
+  "chips": [
+   "Intel Core i5 6-core 8th/9th gen",
+   "Intel Core i9 8-core 9th gen (optional)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   32,
+   64
+  ],
+  "storage_gb": null,
+  "display": {
+   "inch": 27,
+   "type": "Retina 5K (500 nits, P3)",
+   "hz": 60,
+   "resolution": "5120x2880"
+  },
+  "ports": [
+   "4x USB-A 3",
+   "2x Thunderbolt 3 (USB-C)",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.44,
+  "features": [
+   "Fusion Drive or SSD options",
+   "Radeon Pro 570X/575X/580X/Vega 48"
+  ],
+  "max_macos": "macOS 15 Sequoia",
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 13 2019",
+  "name": "MacBook Pro 13-inch (2019, Two or Four Thunderbolt 3 ports)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ (۲۰۱۹)",
+  "aliases": [
+   "macbook pro 13 2019",
+   "macbookpro132019",
+   "مکبوک پرو ۱۳ ۲۰۱۹",
+   "مک بوک پرو ۱۳ ۲۰۱۹"
+  ],
+  "year": 2019,
+  "announced": "2019-05-21",
+  "chips": [
+   "Intel Core i5/i7 quad-core 8th gen (1.4GHz two-port; 2.4GHz four-port)"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (True Tone)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x or 4x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 10,
+  "weight_kg": 1.37,
+  "features": [
+   "Touch Bar",
+   "Touch ID",
+   "Apple T2 chip",
+   "butterfly keyboard",
+   "two-port model added July 2019"
+  ],
+  "max_macos": "macOS 15 Sequoia",
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 15 2019",
+  "name": "MacBook Pro 15-inch (2019)",
+  "name_fa": "مک‌بوک پرو ۱۵ اینچ (۲۰۱۹)",
+  "aliases": [
+   "macbook pro 15 2019",
+   "macbookpro152019",
+   "مکبوک پرو ۱۵ ۲۰۱۹",
+   "مک بوک پرو ۱۵ ۲۰۱۹"
+  ],
+  "year": 2019,
+  "announced": "2019-05-21",
+  "chips": [
+   "Intel Core i7 6-core 9th gen 2.6GHz",
+   "Intel Core i9 8-core 2.3/2.4GHz"
+  ],
+  "ram_gb": [
+   16,
+   32
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048,
+   4096
+  ],
+  "display": {
+   "inch": 15.4,
+   "type": "Retina (True Tone)",
+   "hz": 60,
+   "resolution": "2880x1800"
+  },
+  "ports": [
+   "4x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 10,
+  "weight_kg": 1.83,
+  "features": [
+   "Touch Bar",
+   "Touch ID",
+   "Apple T2 chip",
+   "Radeon Pro 555X/560X or Vega 16/20"
+  ],
+  "max_macos": "macOS 15 Sequoia",
+  "discontinued": 2019,
+  "sources": []
+ },
+ {
+  "key": "mac pro 2019",
+  "name": "Mac Pro (2019)",
+  "name_fa": "مک پرو (۲۰۱۹)",
+  "aliases": [
+   "mac pro 2019",
+   "macpro2019",
+   "مک‌پرو ۲۰۱۹",
+   "مکپرو ۲۰۱۹"
+  ],
+  "year": 2019,
+  "announced": "2019-06-03",
+  "chips": [
+   "Intel Xeon W 8-, 12-, 16-, 24- or 28-core"
+  ],
+  "ram_gb": [
+   32,
+   48,
+   96,
+   192,
+   384,
+   768,
+   1536
+  ],
+  "storage_gb": [
+   256,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "2x Thunderbolt 3 (top) + more via MPX GPUs",
+   "2x USB-A 3",
+   "2x 10Gb Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 18.0,
+  "features": [
+   "tower or rack-mount",
+   "8 PCIe slots",
+   "Radeon Pro 580X to Pro Vega II Duo / W6900X (MPX)",
+   "Apple T2 chip",
+   "Afterburner card option",
+   "shipped Dec 2019"
+  ],
+  "max_macos": "macOS 26 Tahoe",
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "macbook air 2019",
+  "name": "MacBook Air 13-inch Retina (2019)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ رتینا (۲۰۱۹)",
+  "aliases": [
+   "macbook air 2019",
+   "macbookair2019",
+   "مکبوک ایر ۲۰۱۹",
+   "مک بوک ایر ۲۰۱۹"
+  ],
+  "year": 2019,
+  "announced": "2019-07-09",
+  "chips": [
+   "Intel Core i5 dual-core 8th gen 1.6GHz"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   128,
+   256,
+   512,
+   1024
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (True Tone)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "battery_hours": 13,
+  "weight_kg": 1.25,
+  "features": [
+   "Touch ID",
+   "Apple T2 chip",
+   "butterfly keyboard"
+  ],
+  "max_macos": "macOS 14 Sonoma",
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 16 2019",
+  "name": "MacBook Pro 16-inch (2019)",
+  "name_fa": "مک‌بوک پرو ۱۶ اینچ (۲۰۱۹)",
+  "aliases": [
+   "macbook pro 16 2019",
+   "macbookpro162019",
+   "مکبوک پرو ۱۶ ۲۰۱۹",
+   "مک بوک پرو ۱۶ ۲۰۱۹"
+  ],
+  "year": 2019,
+  "announced": "2019-11-13",
+  "chips": [
+   "Intel Core i7 6-core 9th gen 2.6GHz",
+   "Intel Core i9 8-core 2.3/2.4GHz"
+  ],
+  "ram_gb": [
+   16,
+   32,
+   64
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": 16,
+   "type": "Retina (True Tone, 500 nits)",
+   "hz": 60,
+   "resolution": "3072x1920"
+  },
+  "ports": [
+   "4x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 11,
+  "weight_kg": 2.0,
+  "features": [
+   "Touch Bar",
+   "Touch ID",
+   "Magic Keyboard (scissor)",
+   "Apple T2 chip",
+   "AMD Radeon Pro 5300M/5500M/5600M"
+  ],
+  "max_macos": "macOS 26 Tahoe",
+  "discontinued": 2021,
+  "sources": []
+ },
+ {
+  "key": "macbook air 2020 intel",
+  "name": "MacBook Air 13-inch Retina (2020, Intel)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ رتینا (۲۰۲۰، اینتل)",
+  "aliases": [
+   "macbook air 2020 intel",
+   "macbookair2020intel",
+   "مکبوک ایر ۲۰۲۰",
+   "مک بوک ایر ۲۰۲۰",
+   "macbook air 2020",
+   "مکبوک ایر ۲۰۲۰ اینتل"
+  ],
+  "year": 2020,
+  "announced": "2020-03-18",
+  "chips": [
+   "Intel Core i3 dual-core 10th gen 1.1GHz",
+   "Intel Core i5 quad-core 1.1GHz",
+   "Intel Core i7 quad-core 1.2GHz"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (True Tone)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   }
+  ],
+  "battery_hours": 12,
+  "weight_kg": 1.29,
+  "features": [
+   "Touch ID",
+   "Magic Keyboard (scissor)",
+   "Apple T2 chip"
+  ],
+  "max_macos": "macOS 15 Sequoia",
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 13 2020 2-port",
+  "name": "MacBook Pro 13-inch (2020, Two Thunderbolt 3 ports)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ (۲۰۲۰، دو پورت)",
+  "aliases": [
+   "macbook pro 13 2020 2-port",
+   "macbookpro1320202-port",
+   "مکبوک پرو ۱۳ ۲۰۲۰",
+   "مک بوک پرو ۱۳ ۲۰۲۰"
+  ],
+  "year": 2020,
+  "announced": "2020-05-04",
+  "chips": [
+   "Intel Core i5 quad-core 8th gen 1.4GHz",
+   "Intel Core i7 quad-core 8th gen 1.7GHz"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (True Tone, 500 nits)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 10,
+  "weight_kg": 1.4,
+  "features": [
+   "Touch Bar",
+   "Touch ID",
+   "Magic Keyboard (scissor)",
+   "Apple T2 chip"
+  ],
+  "max_macos": "macOS 15 Sequoia",
+  "discontinued": 2020,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 13 2020 4-port",
+  "name": "MacBook Pro 13-inch (2020, Four Thunderbolt 3 ports)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ (۲۰۲۰، چهار پورت)",
+  "aliases": [
+   "macbook pro 13 2020 4-port",
+   "macbookpro1320204-port",
+   "مکبوک پرو ۱۳ ۲۰۲۰",
+   "مک بوک پرو ۱۳ ۲۰۲۰"
+  ],
+  "year": 2020,
+  "announced": "2020-05-04",
+  "chips": [
+   "Intel Core i5 quad-core 10th gen 2.0GHz",
+   "Intel Core i7 quad-core 10th gen 2.3GHz"
+  ],
+  "ram_gb": [
+   16,
+   32
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (True Tone, 500 nits)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "4x Thunderbolt 3 (USB-C)",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 10,
+  "weight_kg": 1.4,
+  "features": [
+   "Touch Bar",
+   "Touch ID",
+   "Magic Keyboard (scissor)",
+   "Apple T2 chip"
+  ],
+  "max_macos": "macOS 26 Tahoe",
+  "discontinued": 2021,
+  "sources": []
+ },
+ {
+  "key": "imac 27 2020",
+  "name": "iMac 27-inch Retina 5K (2020)",
+  "name_fa": "آی‌مک ۲۷ اینچ رتینا 5K (۲۰۲۰)",
+  "aliases": [
+   "imac 27 2020",
+   "imac272020",
+   "ایمک ۲۷ ۲۰۲۰",
+   "آی مک ۲۷ ۲۰۲۰"
+  ],
+  "year": 2020,
+  "announced": "2020-08-04",
+  "chips": [
+   "Intel Core i5 6-core 10th gen",
+   "Intel Core i7 8-core 10th gen",
+   "Intel Core i9 10-core 10th gen"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   32,
+   64,
+   128
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": 27,
+   "type": "Retina 5K (True Tone, 500 nits)",
+   "hz": 60,
+   "resolution": "5120x2880"
+  },
+  "ports": [
+   "4x USB-A 3",
+   "2x Thunderbolt 3 (USB-C)",
+   "SDXC card slot",
+   "Gigabit Ethernet (10Gb optional)",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 8.92,
+  "features": [
+   "all-SSD",
+   "nano-texture glass option",
+   "Apple T2 chip",
+   "Radeon Pro 5300/5500 XT/5700/5700 XT"
+  ],
+  "max_macos": "macOS 26 Tahoe",
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "key": "macbook air m1",
+  "name": "MacBook Air (M1, 2020)",
+  "name_fa": "مک‌بوک ایر M1 (۲۰۲۰)",
+  "aliases": [
+   "macbook air m1",
+   "macbookairm1",
+   "مکبوک ایر ام ۱",
+   "مکبوک ایر m1",
+   "مک بوک ایر ام ۱",
+   "مک بوک ایر m1",
+   "macbook air 13 m1",
+   "مک بوک m1",
+   "ایر ام ۱"
+  ],
+  "year": 2020,
+  "announced": "2020-11-10",
+  "chips": [
+   "M1 (8-core CPU, 7- or 8-core GPU)"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (True Tone)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x Thunderbolt / USB 4",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Gold",
+    "fa": "طلایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 18,
+  "weight_kg": 1.29,
+  "features": [
+   "fanless",
+   "Touch ID",
+   "Wi-Fi 6",
+   "Apple Intelligence (macOS Sequoia 15.1+)"
+  ],
+  "max_macos": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 13 m1",
+  "name": "MacBook Pro 13-inch (M1, 2020)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ M1 (۲۰۲۰)",
+  "aliases": [
+   "macbook pro 13 m1",
+   "macbookpro13m1",
+   "مکبوک پرو ۱۳ ام ۱",
+   "مکبوک پرو ۱۳ m1",
+   "مک بوک پرو ۱۳ ام ۱",
+   "مک بوک پرو ۱۳ m1"
+  ],
+  "year": 2020,
+  "announced": "2020-11-10",
+  "chips": [
+   "M1 (8-core CPU, 8-core GPU)"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (True Tone, 500 nits)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x Thunderbolt / USB 4",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 20,
+  "weight_kg": 1.4,
+  "features": [
+   "Touch Bar",
+   "Touch ID",
+   "active cooling (fan)",
+   "Wi-Fi 6",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2022,
+  "sources": []
+ },
+ {
+  "key": "mac mini m1",
+  "name": "Mac mini (M1, 2020)",
+  "name_fa": "مک مینی M1 (۲۰۲۰)",
+  "aliases": [
+   "mac mini m1",
+   "macminim1",
+   "مک‌مینی ام ۱",
+   "مک‌مینی m1",
+   "مکمینی ام ۱",
+   "مکمینی m1"
+  ],
+  "year": 2020,
+  "announced": "2020-11-10",
+  "chips": [
+   "M1 (8-core CPU, 8-core GPU)"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "2x Thunderbolt / USB 4",
+   "2x USB-A",
+   "HDMI 2.0",
+   "Gigabit Ethernet (10Gb optional)",
+   "3.5mm headphone"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 1.2,
+  "features": [
+   "Wi-Fi 6",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "imac 24 m1",
+  "name": "iMac 24-inch (M1, 2021)",
+  "name_fa": "آی‌مک ۲۴ اینچ M1 (۲۰۲۱)",
+  "aliases": [
+   "imac 24 m1",
+   "imac24m1",
+   "ایمک ۲۴ ام ۱",
+   "ایمک ۲۴ m1",
+   "آی مک ۲۴ ام ۱",
+   "آی مک ۲۴ m1"
+  ],
+  "year": 2021,
+  "announced": "2021-04-20",
+  "chips": [
+   "M1 (8-core CPU, 7- or 8-core GPU)"
+  ],
+  "ram_gb": [
+   8,
+   16
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 24,
+   "type": "Retina 4.5K",
+   "hz": 60,
+   "resolution": "4480x2520"
+  },
+  "ports": [
+   "2x Thunderbolt / USB 4",
+   "2x USB 3 (8-core GPU model)",
+   "Gigabit Ethernet (in power adapter, some models)",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Orange",
+    "fa": "نارنجی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 4.46,
+  "features": [
+   "Touch ID on keyboard (higher models)",
+   "Yellow/Orange/Purple only with 8-core GPU",
+   "Wi-Fi 6",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 14 m1 pro",
+  "name": "MacBook Pro 14-inch (M1 Pro or M1 Max, 2021)",
+  "name_fa": "مک‌بوک پرو ۱۴ اینچ M1 Pro / M1 Max (۲۰۲۱)",
+  "aliases": [
+   "macbook pro 14 m1 pro",
+   "macbookpro14m1pro",
+   "مکبوک پرو ۱۴ ام ۱",
+   "مکبوک پرو ۱۴ m1",
+   "مک بوک پرو ۱۴ ام ۱",
+   "مک بوک پرو ۱۴ m1",
+   "macbook pro 14 m1 max",
+   "مکبوک پرو ۱۴ ام ۱ پرو",
+   "مکبوک پرو ام ۱ مکس"
+  ],
+  "year": 2021,
+  "announced": "2021-10-18",
+  "chips": [
+   "M1 Pro (8-core CPU, 14-core GPU)",
+   "M1 Pro (10-core CPU, 14- or 16-core GPU)",
+   "M1 Max (10-core CPU, 24- or 32-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   32,
+   64
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": 14.2,
+   "type": "Liquid Retina XDR (mini-LED)",
+   "hz": 120,
+   "resolution": "3024x1964"
+  },
+  "ports": [
+   "3x Thunderbolt 4",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 17,
+  "weight_kg": 1.6,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "notch",
+   "Wi-Fi 6",
+   "64GB only with M1 Max",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 16 m1 pro",
+  "name": "MacBook Pro 16-inch (M1 Pro or M1 Max, 2021)",
+  "name_fa": "مک‌بوک پرو ۱۶ اینچ M1 Pro / M1 Max (۲۰۲۱)",
+  "aliases": [
+   "macbook pro 16 m1 pro",
+   "macbookpro16m1pro",
+   "مکبوک پرو ۱۶ ام ۱",
+   "مکبوک پرو ۱۶ m1",
+   "مک بوک پرو ۱۶ ام ۱",
+   "مک بوک پرو ۱۶ m1",
+   "macbook pro 16 m1 max",
+   "مکبوک پرو ۱۶ ام ۱ مکس"
+  ],
+  "year": 2021,
+  "announced": "2021-10-18",
+  "chips": [
+   "M1 Pro (10-core CPU, 16-core GPU)",
+   "M1 Max (10-core CPU, 24- or 32-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   32,
+   64
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": 16.2,
+   "type": "Liquid Retina XDR (mini-LED)",
+   "hz": 120,
+   "resolution": "3456x2234"
+  },
+  "ports": [
+   "3x Thunderbolt 4",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 21,
+  "weight_kg": 2.1,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "notch",
+   "Wi-Fi 6",
+   "M1 Max weighs 2.2kg",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "mac studio m1 max",
+  "name": "Mac Studio (M1 Max or M1 Ultra, 2022)",
+  "name_fa": "مک استودیو M1 Max / M1 Ultra (۲۰۲۲)",
+  "aliases": [
+   "mac studio m1 max",
+   "macstudiom1max",
+   "مک‌استودیو ام ۱",
+   "مک‌استودیو m1",
+   "مک استدیو ام ۱",
+   "مک استدیو m1",
+   "mac studio m1 ultra",
+   "مک استودیو ام ۱ الترا"
+  ],
+  "year": 2022,
+  "announced": "2022-03-08",
+  "chips": [
+   "M1 Max (10-core CPU, 24- or 32-core GPU)",
+   "M1 Ultra (20-core CPU, 48- or 64-core GPU)"
+  ],
+  "ram_gb": [
+   32,
+   64,
+   128
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "4x Thunderbolt 4 (rear)",
+   "2x USB-A",
+   "HDMI",
+   "10Gb Ethernet",
+   "3.5mm headphone",
+   "front: 2x USB-C (10Gb/s, M1 Max) or 2x Thunderbolt 4 (M1 Ultra)",
+   "SDXC card slot"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 2.7,
+  "features": [
+   "M1 Max: 32/64GB; M1 Ultra: 64/128GB",
+   "M1 Ultra model weighs 3.6kg",
+   "Wi-Fi 6",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "macbook air m2",
+  "name": "MacBook Air 13-inch (M2, 2022)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ M2 (۲۰۲۲)",
+  "aliases": [
+   "macbook air m2",
+   "macbookairm2",
+   "مکبوک ایر ام ۲",
+   "مکبوک ایر m2",
+   "مک بوک ایر ام ۲",
+   "مک بوک ایر m2",
+   "macbook air 13 m2"
+  ],
+  "year": 2022,
+  "announced": "2022-06-06",
+  "chips": [
+   "M2 (8-core CPU, 8- or 10-core GPU)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   24
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 13.6,
+   "type": "Liquid Retina",
+   "hz": 60,
+   "resolution": "2560x1664"
+  },
+  "ports": [
+   "2x Thunderbolt / USB 4",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (نور ستاره)"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 18,
+  "weight_kg": 1.24,
+  "features": [
+   "fanless",
+   "Touch ID",
+   "notch",
+   "Wi-Fi 6",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2025,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 13 m2",
+  "name": "MacBook Pro 13-inch (M2, 2022)",
+  "name_fa": "مک‌بوک پرو ۱۳ اینچ M2 (۲۰۲۲)",
+  "aliases": [
+   "macbook pro 13 m2",
+   "macbookpro13m2",
+   "مکبوک پرو ۱۳ ام ۲",
+   "مکبوک پرو ۱۳ m2",
+   "مک بوک پرو ۱۳ ام ۲",
+   "مک بوک پرو ۱۳ m2"
+  ],
+  "year": 2022,
+  "announced": "2022-06-06",
+  "chips": [
+   "M2 (8-core CPU, 10-core GPU)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   24
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 13.3,
+   "type": "Retina (True Tone, 500 nits)",
+   "hz": 60,
+   "resolution": "2560x1600"
+  },
+  "ports": [
+   "2x Thunderbolt / USB 4",
+   "3.5mm headphone"
+  ],
+  "camera": "720p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 20,
+  "weight_kg": 1.4,
+  "features": [
+   "Touch Bar (last Mac with Touch Bar)",
+   "Touch ID",
+   "active cooling (fan)",
+   "Wi-Fi 6",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 14 m2 pro",
+  "name": "MacBook Pro 14-inch (M2 Pro or M2 Max, 2023)",
+  "name_fa": "مک‌بوک پرو ۱۴ اینچ M2 Pro / M2 Max (۲۰۲۳)",
+  "aliases": [
+   "macbook pro 14 m2 pro",
+   "macbookpro14m2pro",
+   "مکبوک پرو ۱۴ ام ۲",
+   "مکبوک پرو ۱۴ m2",
+   "مک بوک پرو ۱۴ ام ۲",
+   "مک بوک پرو ۱۴ m2",
+   "macbook pro 14 m2 max",
+   "مکبوک پرو ام ۲ پرو"
+  ],
+  "year": 2023,
+  "announced": "2023-01-17",
+  "chips": [
+   "M2 Pro (10-core CPU, 16-core GPU)",
+   "M2 Pro (12-core CPU, 19-core GPU)",
+   "M2 Max (12-core CPU, 30- or 38-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   32,
+   64,
+   96
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": 14.2,
+   "type": "Liquid Retina XDR (mini-LED)",
+   "hz": 120,
+   "resolution": "3024x1964"
+  },
+  "ports": [
+   "3x Thunderbolt 4",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 18,
+  "weight_kg": 1.6,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "Wi-Fi 6E",
+   "HDMI up to 8K",
+   "64/96GB only with M2 Max",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 16 m2 pro",
+  "name": "MacBook Pro 16-inch (M2 Pro or M2 Max, 2023)",
+  "name_fa": "مک‌بوک پرو ۱۶ اینچ M2 Pro / M2 Max (۲۰۲۳)",
+  "aliases": [
+   "macbook pro 16 m2 pro",
+   "macbookpro16m2pro",
+   "مکبوک پرو ۱۶ ام ۲",
+   "مکبوک پرو ۱۶ m2",
+   "مک بوک پرو ۱۶ ام ۲",
+   "مک بوک پرو ۱۶ m2",
+   "macbook pro 16 m2 max"
+  ],
+  "year": 2023,
+  "announced": "2023-01-17",
+  "chips": [
+   "M2 Pro (12-core CPU, 19-core GPU)",
+   "M2 Max (12-core CPU, 30- or 38-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   32,
+   64,
+   96
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": 16.2,
+   "type": "Liquid Retina XDR (mini-LED)",
+   "hz": 120,
+   "resolution": "3456x2234"
+  },
+  "ports": [
+   "3x Thunderbolt 4",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   }
+  ],
+  "battery_hours": 22,
+  "weight_kg": 2.15,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "Wi-Fi 6E",
+   "HDMI up to 8K",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2023,
+  "sources": []
+ },
+ {
+  "key": "mac mini m2",
+  "name": "Mac mini (M2 or M2 Pro, 2023)",
+  "name_fa": "مک مینی M2 / M2 Pro (۲۰۲۳)",
+  "aliases": [
+   "mac mini m2",
+   "macminim2",
+   "مک‌مینی ام ۲",
+   "مک‌مینی m2",
+   "مکمینی ام ۲",
+   "مکمینی m2",
+   "mac mini m2 pro",
+   "مک مینی ام ۲ پرو"
+  ],
+  "year": 2023,
+  "announced": "2023-01-17",
+  "chips": [
+   "M2 (8-core CPU, 10-core GPU)",
+   "M2 Pro (10-core CPU, 16-core GPU)",
+   "M2 Pro (12-core CPU, 19-core GPU)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   24,
+   32
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "2x Thunderbolt 4 (M2) or 4x Thunderbolt 4 (M2 Pro)",
+   "2x USB-A",
+   "HDMI",
+   "Gigabit Ethernet (10Gb optional)",
+   "3.5mm headphone"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 1.18,
+  "features": [
+   "M2: 8/16/24GB, 256GB-2TB; M2 Pro: 16/32GB, 512GB-8TB",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "macbook air 15 m2",
+  "name": "MacBook Air 15-inch (M2, 2023)",
+  "name_fa": "مک‌بوک ایر ۱۵ اینچ M2 (۲۰۲۳)",
+  "aliases": [
+   "macbook air 15 m2",
+   "macbookair15m2",
+   "مکبوک ایر ۱۵ ام ۲",
+   "مکبوک ایر ۱۵ m2",
+   "مک بوک ایر ۱۵ ام ۲",
+   "مک بوک ایر ۱۵ m2"
+  ],
+  "year": 2023,
+  "announced": "2023-06-05",
+  "chips": [
+   "M2 (8-core CPU, 10-core GPU)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   24
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 15.3,
+   "type": "Liquid Retina",
+   "hz": 60,
+   "resolution": "2880x1864"
+  },
+  "ports": [
+   "2x Thunderbolt / USB 4",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (نور ستاره)"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 18,
+  "weight_kg": 1.51,
+  "features": [
+   "fanless",
+   "Touch ID",
+   "six-speaker sound system",
+   "Wi-Fi 6",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "mac studio m2 max",
+  "name": "Mac Studio (M2 Max or M2 Ultra, 2023)",
+  "name_fa": "مک استودیو M2 Max / M2 Ultra (۲۰۲۳)",
+  "aliases": [
+   "mac studio m2 max",
+   "macstudiom2max",
+   "مک‌استودیو ام ۲",
+   "مک‌استودیو m2",
+   "مک استدیو ام ۲",
+   "مک استدیو m2",
+   "mac studio m2 ultra",
+   "مک استودیو ام ۲ الترا"
+  ],
+  "year": 2023,
+  "announced": "2023-06-05",
+  "chips": [
+   "M2 Max (12-core CPU, 30- or 38-core GPU)",
+   "M2 Ultra (24-core CPU, 60- or 76-core GPU)"
+  ],
+  "ram_gb": [
+   32,
+   64,
+   96,
+   128,
+   192
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "4x Thunderbolt 4 (rear)",
+   "2x USB-A",
+   "HDMI (up to 8K)",
+   "10Gb Ethernet",
+   "3.5mm headphone",
+   "front: 2x USB-C (M2 Max) or 2x Thunderbolt 4 (M2 Ultra)",
+   "SDXC card slot"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 2.7,
+  "features": [
+   "M2 Max: 32/64/96GB; M2 Ultra: 64/128/192GB",
+   "M2 Ultra model weighs 3.6kg",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2025,
+  "sources": []
+ },
+ {
+  "key": "mac pro m2 ultra",
+  "name": "Mac Pro (M2 Ultra, 2023)",
+  "name_fa": "مک پرو M2 Ultra (۲۰۲۳)",
+  "aliases": [
+   "mac pro m2 ultra",
+   "macprom2ultra",
+   "مک‌پرو ام ۲",
+   "مک‌پرو m2",
+   "مکپرو ام ۲",
+   "مکپرو m2",
+   "mac pro 2023"
+  ],
+  "year": 2023,
+  "announced": "2023-06-05",
+  "chips": [
+   "M2 Ultra (24-core CPU, 60- or 76-core GPU)"
+  ],
+  "ram_gb": [
+   64,
+   128,
+   192
+  ],
+  "storage_gb": [
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "8x Thunderbolt 4 (6 rear, 2 top)",
+   "3x USB-A",
+   "2x HDMI",
+   "2x 10Gb Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 16.86,
+  "features": [
+   "tower or rack-mount",
+   "7 PCIe Gen 4 slots",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/"
+  ]
+ },
+ {
+  "key": "macbook pro 14 m3",
+  "name": "MacBook Pro 14-inch (M3, Nov 2023)",
+  "name_fa": "مک‌بوک پرو ۱۴ اینچ M3 (۲۰۲۳)",
+  "aliases": [
+   "macbook pro 14 m3",
+   "macbookpro14m3",
+   "مکبوک پرو ۱۴ ام ۳",
+   "مکبوک پرو ۱۴ m3",
+   "مک بوک پرو ۱۴ ام ۳",
+   "مک بوک پرو ۱۴ m3"
+  ],
+  "year": 2023,
+  "announced": "2023-10-30",
+  "chips": [
+   "M3 (8-core CPU, 10-core GPU)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   24
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 14.2,
+   "type": "Liquid Retina XDR (mini-LED)",
+   "hz": 120,
+   "resolution": "3024x1964"
+  },
+  "ports": [
+   "2x Thunderbolt / USB 4",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 22,
+  "weight_kg": 1.55,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 14 m3 pro",
+  "name": "MacBook Pro 14-inch (M3 Pro or M3 Max, Nov 2023)",
+  "name_fa": "مک‌بوک پرو ۱۴ اینچ M3 Pro / M3 Max (۲۰۲۳)",
+  "aliases": [
+   "macbook pro 14 m3 pro",
+   "macbookpro14m3pro",
+   "مکبوک پرو ۱۴ ام ۳",
+   "مکبوک پرو ۱۴ m3",
+   "مک بوک پرو ۱۴ ام ۳",
+   "مک بوک پرو ۱۴ m3",
+   "macbook pro 14 m3 max",
+   "مکبوک پرو ام ۳ مکس"
+  ],
+  "year": 2023,
+  "announced": "2023-10-30",
+  "chips": [
+   "M3 Pro (11-core CPU, 14-core GPU)",
+   "M3 Pro (12-core CPU, 18-core GPU)",
+   "M3 Max (14-core CPU, 30-core GPU)",
+   "M3 Max (16-core CPU, 40-core GPU)"
+  ],
+  "ram_gb": [
+   18,
+   36,
+   48,
+   64,
+   96,
+   128
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": 14.2,
+   "type": "Liquid Retina XDR (mini-LED)",
+   "hz": 120,
+   "resolution": "3024x1964"
+  },
+  "ports": [
+   "3x Thunderbolt 4",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 18,
+  "weight_kg": 1.61,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "Wi-Fi 6E",
+   "M3 Pro: 18/36GB; M3 Max: 36-128GB",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "macbook pro 16 m3 pro",
+  "name": "MacBook Pro 16-inch (M3 Pro or M3 Max, Nov 2023)",
+  "name_fa": "مک‌بوک پرو ۱۶ اینچ M3 Pro / M3 Max (۲۰۲۳)",
+  "aliases": [
+   "macbook pro 16 m3 pro",
+   "macbookpro16m3pro",
+   "مکبوک پرو ۱۶ ام ۳",
+   "مکبوک پرو ۱۶ m3",
+   "مک بوک پرو ۱۶ ام ۳",
+   "مک بوک پرو ۱۶ m3",
+   "macbook pro 16 m3 max"
+  ],
+  "year": 2023,
+  "announced": "2023-10-30",
+  "chips": [
+   "M3 Pro (12-core CPU, 18-core GPU)",
+   "M3 Max (14-core CPU, 30-core GPU)",
+   "M3 Max (16-core CPU, 40-core GPU)"
+  ],
+  "ram_gb": [
+   18,
+   36,
+   48,
+   64,
+   96,
+   128
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": 16.2,
+   "type": "Liquid Retina XDR (mini-LED)",
+   "hz": 120,
+   "resolution": "3456x2234"
+  },
+  "ports": [
+   "3x Thunderbolt 4",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 22,
+  "weight_kg": 2.14,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "imac 24 m3",
+  "name": "iMac 24-inch (M3, 2023)",
+  "name_fa": "آی‌مک ۲۴ اینچ M3 (۲۰۲۳)",
+  "aliases": [
+   "imac 24 m3",
+   "imac24m3",
+   "ایمک ۲۴ ام ۳",
+   "ایمک ۲۴ m3",
+   "آی مک ۲۴ ام ۳",
+   "آی مک ۲۴ m3"
+  ],
+  "year": 2023,
+  "announced": "2023-10-30",
+  "chips": [
+   "M3 (8-core CPU, 8- or 10-core GPU)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   24
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 24,
+   "type": "Retina 4.5K",
+   "hz": 60,
+   "resolution": "4480x2520"
+  },
+  "ports": [
+   "2x Thunderbolt / USB 4",
+   "2x USB 3 (10-core GPU model)",
+   "Gigabit Ethernet (some models)",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Orange",
+    "fa": "نارنجی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 4.43,
+  "features": [
+   "Yellow/Orange/Purple only with 10-core GPU",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2024,
+  "sources": []
+ },
+ {
+  "key": "macbook air 13 m3",
+  "name": "MacBook Air 13-inch (M3, 2024)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ M3 (۲۰۲۴)",
+  "aliases": [
+   "macbook air 13 m3",
+   "macbookair13m3",
+   "مکبوک ایر ۱۳ ام ۳",
+   "مکبوک ایر ۱۳ m3",
+   "مک بوک ایر ۱۳ ام ۳",
+   "مک بوک ایر ۱۳ m3"
+  ],
+  "year": 2024,
+  "announced": "2024-03-04",
+  "chips": [
+   "M3 (8-core CPU, 8- or 10-core GPU)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   24
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 13.6,
+   "type": "Liquid Retina",
+   "hz": 60,
+   "resolution": "2560x1664"
+  },
+  "ports": [
+   "2x Thunderbolt / USB 4",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (نور ستاره)"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 18,
+  "weight_kg": 1.24,
+  "features": [
+   "fanless",
+   "Touch ID",
+   "Wi-Fi 6E",
+   "two external displays with lid closed",
+   "base RAM raised to 16GB in Oct 2024",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2025,
+  "sources": [
+   "https://www.apple.com/newsroom/archive/mac/"
+  ]
+ },
+ {
+  "key": "macbook air 15 m3",
+  "name": "MacBook Air 15-inch (M3, 2024)",
+  "name_fa": "مک‌بوک ایر ۱۵ اینچ M3 (۲۰۲۴)",
+  "aliases": [
+   "macbook air 15 m3",
+   "macbookair15m3",
+   "مکبوک ایر ۱۵ ام ۳",
+   "مکبوک ایر ۱۵ m3",
+   "مک بوک ایر ۱۵ ام ۳",
+   "مک بوک ایر ۱۵ m3"
+  ],
+  "year": 2024,
+  "announced": "2024-03-04",
+  "chips": [
+   "M3 (8-core CPU, 10-core GPU)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   24
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 15.3,
+   "type": "Liquid Retina",
+   "hz": 60,
+   "resolution": "2880x1864"
+  },
+  "ports": [
+   "2x Thunderbolt / USB 4",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (نور ستاره)"
+   },
+   {
+    "en": "Space Gray",
+    "fa": "خاکستری فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 18,
+  "weight_kg": 1.51,
+  "features": [
+   "fanless",
+   "Touch ID",
+   "Wi-Fi 6E",
+   "two external displays with lid closed",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2025,
+  "sources": [
+   "https://www.apple.com/newsroom/archive/mac/"
+  ]
+ },
+ {
+  "key": "imac 24 m4",
+  "name": "iMac 24-inch (M4, 2024)",
+  "name_fa": "آی‌مک ۲۴ اینچ M4 (۲۰۲۴)",
+  "aliases": [
+   "imac 24 m4",
+   "imac24m4",
+   "ایمک ۲۴ ام ۴",
+   "ایمک ۲۴ m4",
+   "آی مک ۲۴ ام ۴",
+   "آی مک ۲۴ m4"
+  ],
+  "year": 2024,
+  "announced": "2024-10-28",
+  "chips": [
+   "M4 (8-core CPU, 8-core GPU)",
+   "M4 (10-core CPU, 10-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   24,
+   32
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 24,
+   "type": "Retina 4.5K (nano-texture option)",
+   "hz": 60,
+   "resolution": "4480x2520"
+  },
+  "ports": [
+   "2x Thunderbolt / USB 4 (8-core) or 4x Thunderbolt 4 (10-core)",
+   "Gigabit Ethernet (some models)",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
+  "colors": [
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Orange",
+    "fa": "نارنجی"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 4.44,
+  "features": [
+   "nano-texture glass option",
+   "Touch ID keyboard (some models)",
+   "USB-C Magic accessories",
+   "Wi-Fi 6E",
+   "Apple Intelligence",
+   "8-core model only in Blue, Green, Pink, Silver"
+  ],
+  "max_macos": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://www.apple.com/newsroom/archive/mac/"
+  ]
+ },
+ {
+  "key": "mac mini m4",
+  "name": "Mac mini (M4 or M4 Pro, 2024)",
+  "name_fa": "مک مینی M4 / M4 Pro (۲۰۲۴)",
+  "aliases": [
+   "mac mini m4",
+   "macminim4",
+   "مک‌مینی ام ۴",
+   "مک‌مینی m4",
+   "مکمینی ام ۴",
+   "مکمینی m4",
+   "mac mini m4 pro",
+   "مک مینی ام ۴ پرو"
+  ],
+  "year": 2024,
+  "announced": "2024-10-29",
+  "chips": [
+   "M4 (10-core CPU, 10-core GPU)",
+   "M4 Pro (12-core CPU, 16-core GPU)",
+   "M4 Pro (14-core CPU, 20-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   24,
+   32,
+   48,
+   64
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "front: 2x USB-C (USB 3) + 3.5mm headphone",
+   "rear: 3x Thunderbolt 4 (M4) or 3x Thunderbolt 5 (M4 Pro)",
+   "HDMI",
+   "Gigabit Ethernet (10Gb optional)"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 0.67,
+  "features": [
+   "5x5-inch redesign, no USB-A",
+   "M4: 16/24/32GB, 256GB-2TB; M4 Pro: 24/48/64GB, 512GB-8TB",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://www.apple.com/newsroom/2024/10/apples-new-mac-mini-is-more-mighty-more-mini-and-built-for-apple-intelligence/"
+  ]
+ },
+ {
+  "key": "macbook pro 14 m4",
+  "name": "MacBook Pro 14-inch (M4, 2024)",
+  "name_fa": "مک‌بوک پرو ۱۴ اینچ M4 (۲۰۲۴)",
+  "aliases": [
+   "macbook pro 14 m4",
+   "macbookpro14m4",
+   "مکبوک پرو ۱۴ ام ۴",
+   "مکبوک پرو ۱۴ m4",
+   "مک بوک پرو ۱۴ ام ۴",
+   "مک بوک پرو ۱۴ m4"
+  ],
+  "year": 2024,
+  "announced": "2024-10-30",
+  "chips": [
+   "M4 (10-core CPU, 10-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   24,
+   32
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 14.2,
+   "type": "Liquid Retina XDR (mini-LED, nano-texture option)",
+   "hz": 120,
+   "resolution": "3024x1964"
+  },
+  "ports": [
+   "3x Thunderbolt 4",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 24,
+  "weight_kg": 1.55,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "1000 nits SDR",
+   "nano-texture option",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2025,
+  "sources": [
+   "https://www.apple.com/newsroom/archive/mac/"
+  ]
+ },
+ {
+  "key": "macbook pro 14 m4 pro",
+  "name": "MacBook Pro 14-inch (M4 Pro or M4 Max, 2024)",
+  "name_fa": "مک‌بوک پرو ۱۴ اینچ M4 Pro / M4 Max (۲۰۲۴)",
+  "aliases": [
+   "macbook pro 14 m4 pro",
+   "macbookpro14m4pro",
+   "مکبوک پرو ۱۴ ام ۴",
+   "مکبوک پرو ۱۴ m4",
+   "مک بوک پرو ۱۴ ام ۴",
+   "مک بوک پرو ۱۴ m4",
+   "macbook pro 14 m4 max",
+   "مکبوک پرو ام ۴ مکس",
+   "مکبوک پرو ام ۴ پرو"
+  ],
+  "year": 2024,
+  "announced": "2024-10-30",
+  "chips": [
+   "M4 Pro (12-core CPU, 16-core GPU)",
+   "M4 Pro (14-core CPU, 20-core GPU)",
+   "M4 Max (14-core CPU, 32-core GPU)",
+   "M4 Max (16-core CPU, 40-core GPU)"
+  ],
+  "ram_gb": [
+   24,
+   36,
+   48,
+   64,
+   128
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": 14.2,
+   "type": "Liquid Retina XDR (mini-LED, nano-texture option)",
+   "hz": 120,
+   "resolution": "3024x1964"
+  },
+  "ports": [
+   "3x Thunderbolt 5",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 22,
+  "weight_kg": 1.6,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "Thunderbolt 5",
+   "M4 Pro: 24/48GB; M4 Max: 36/48/64/128GB",
+   "battery 22h (M4 Pro) / 18h (M4 Max)",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://www.apple.com/newsroom/archive/mac/"
+  ]
+ },
+ {
+  "key": "macbook pro 16 m4 pro",
+  "name": "MacBook Pro 16-inch (M4 Pro or M4 Max, 2024)",
+  "name_fa": "مک‌بوک پرو ۱۶ اینچ M4 Pro / M4 Max (۲۰۲۴)",
+  "aliases": [
+   "macbook pro 16 m4 pro",
+   "macbookpro16m4pro",
+   "مکبوک پرو ۱۶ ام ۴",
+   "مکبوک پرو ۱۶ m4",
+   "مک بوک پرو ۱۶ ام ۴",
+   "مک بوک پرو ۱۶ m4",
+   "macbook pro 16 m4 max"
+  ],
+  "year": 2024,
+  "announced": "2024-10-30",
+  "chips": [
+   "M4 Pro (14-core CPU, 20-core GPU)",
+   "M4 Max (14-core CPU, 32-core GPU)",
+   "M4 Max (16-core CPU, 40-core GPU)"
+  ],
+  "ram_gb": [
+   24,
+   36,
+   48,
+   64,
+   128
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": 16.2,
+   "type": "Liquid Retina XDR (mini-LED, nano-texture option)",
+   "hz": 120,
+   "resolution": "3456x2234"
+  },
+  "ports": [
+   "3x Thunderbolt 5",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 24,
+  "weight_kg": 2.14,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "Thunderbolt 5",
+   "battery 24h (M4 Pro) / 21h (M4 Max)",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://www.apple.com/newsroom/archive/mac/"
+  ]
+ },
+ {
+  "key": "macbook air 13 m4",
+  "name": "MacBook Air 13-inch (M4, 2025)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ M4 (۲۰۲۵)",
+  "aliases": [
+   "macbook air 13 m4",
+   "macbookair13m4",
+   "مکبوک ایر ۱۳ ام ۴",
+   "مکبوک ایر ۱۳ m4",
+   "مک بوک ایر ۱۳ ام ۴",
+   "مک بوک ایر ۱۳ m4",
+   "macbook air m4"
+  ],
+  "year": 2025,
+  "announced": "2025-03-05",
+  "chips": [
+   "M4 (10-core CPU, 8- or 10-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   24,
+   32
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 13.6,
+   "type": "Liquid Retina",
+   "hz": 60,
+   "resolution": "2560x1664"
+  },
+  "ports": [
+   "2x Thunderbolt 4",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
+  "colors": [
+   {
+    "en": "Sky Blue",
+    "fa": "آبی آسمانی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (نور ستاره)"
+   },
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   }
+  ],
+  "battery_hours": 18,
+  "weight_kg": 1.24,
+  "features": [
+   "fanless",
+   "Touch ID",
+   "Desk View",
+   "up to two external displays + built-in",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://www.apple.com/newsroom/archive/mac/",
+   "https://techcrunch.com/?p=2975698"
+  ]
+ },
+ {
+  "key": "macbook air 15 m4",
+  "name": "MacBook Air 15-inch (M4, 2025)",
+  "name_fa": "مک‌بوک ایر ۱۵ اینچ M4 (۲۰۲۵)",
+  "aliases": [
+   "macbook air 15 m4",
+   "macbookair15m4",
+   "مکبوک ایر ۱۵ ام ۴",
+   "مکبوک ایر ۱۵ m4",
+   "مک بوک ایر ۱۵ ام ۴",
+   "مک بوک ایر ۱۵ m4"
+  ],
+  "year": 2025,
+  "announced": "2025-03-05",
+  "chips": [
+   "M4 (10-core CPU, 10-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   24,
+   32
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
+  "display": {
+   "inch": 15.3,
+   "type": "Liquid Retina",
+   "hz": 60,
+   "resolution": "2880x1864"
+  },
+  "ports": [
+   "2x Thunderbolt 4",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
+  "colors": [
+   {
+    "en": "Sky Blue",
+    "fa": "آبی آسمانی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (نور ستاره)"
+   },
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   }
+  ],
+  "battery_hours": 18,
+  "weight_kg": 1.51,
+  "features": [
+   "fanless",
+   "Touch ID",
+   "Desk View",
+   "six-speaker sound system",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://www.apple.com/newsroom/archive/mac/",
+   "https://techcrunch.com/?p=2975698"
+  ]
+ },
+ {
+  "key": "mac studio m4 max",
+  "name": "Mac Studio (M4 Max or M3 Ultra, 2025)",
+  "name_fa": "مک استودیو M4 Max / M3 Ultra (۲۰۲۵)",
+  "aliases": [
+   "mac studio m4 max",
+   "macstudiom4max",
+   "مک‌استودیو ام ۴",
+   "مک‌استودیو m4",
+   "مک استدیو ام ۴",
+   "مک استدیو m4",
+   "mac studio m3 ultra",
+   "مک استودیو ام ۳ الترا",
+   "mac studio 2025"
+  ],
+  "year": 2025,
+  "announced": "2025-03-05",
+  "chips": [
+   "M4 Max (14-core CPU, 32-core GPU)",
+   "M4 Max (16-core CPU, 40-core GPU)",
+   "M3 Ultra (28-core CPU, 60-core GPU)",
+   "M3 Ultra (32-core CPU, 80-core GPU)"
+  ],
+  "ram_gb": [
+   36,
+   48,
+   64,
+   96,
+   128,
+   256,
+   512
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192,
+   16384
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "4x Thunderbolt 5 (rear)",
+   "2x USB-A",
+   "HDMI",
+   "10Gb Ethernet",
+   "3.5mm headphone",
+   "front: 2x USB-C 10Gb/s (M4 Max) or 2x Thunderbolt 5 (M3 Ultra)",
+   "SDXC card slot"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 2.74,
+  "features": [
+   "M4 Max: 36-128GB; M3 Ultra: 96/256/512GB",
+   "up to 16TB SSD (M3 Ultra)",
+   "Thunderbolt 5",
+   "Wi-Fi 6E",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://www.apple.com/newsroom/2025/03/apple-unveils-new-mac-studio-the-most-powerful-mac-ever/"
+  ]
+ },
+ {
+  "key": "macbook pro 14 m5",
+  "name": "MacBook Pro 14-inch (M5, 2025)",
+  "name_fa": "مک‌بوک پرو ۱۴ اینچ M5 (۲۰۲۵)",
+  "aliases": [
+   "macbook pro 14 m5",
+   "macbookpro14m5",
+   "مکبوک پرو ۱۴ ام ۵",
+   "مکبوک پرو ۱۴ m5",
+   "مک بوک پرو ۱۴ ام ۵",
+   "مک بوک پرو ۱۴ m5"
+  ],
+  "year": 2025,
+  "announced": "2025-10-15",
+  "chips": [
+   "M5 (10-core CPU, 10-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   24,
+   32
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096
+  ],
+  "display": {
+   "inch": 14.2,
+   "type": "Liquid Retina XDR (mini-LED, nano-texture option)",
+   "hz": 120,
+   "resolution": "3024x1964"
+  },
+  "ports": [
+   "3x Thunderbolt 4",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 24,
+  "weight_kg": 1.55,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "Neural Accelerator in each GPU core",
+   "up to 4TB SSD",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": 2026,
+  "sources": [
+   "https://www.apple.com/newsroom/2025/10/apple-unleashes-m5-the-next-big-leap-in-ai-performance-for-apple-silicon/",
+   "https://support.apple.com/125405"
+  ]
+ },
+ {
+  "key": "macbook air 13 m5",
+  "name": "MacBook Air 13-inch (M5, 2026)",
+  "name_fa": "مک‌بوک ایر ۱۳ اینچ M5 (۲۰۲۶)",
+  "aliases": [
+   "macbook air 13 m5",
+   "macbookair13m5",
+   "مکبوک ایر ۱۳ ام ۵",
+   "مکبوک ایر ۱۳ m5",
+   "مک بوک ایر ۱۳ ام ۵",
+   "مک بوک ایر ۱۳ m5",
+   "macbook air m5"
+  ],
+  "year": 2026,
+  "announced": "2026-03-03",
+  "chips": [
+   "M5 (10-core CPU, 8- or 10-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   24,
+   32
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096
+  ],
+  "display": {
+   "inch": 13.6,
+   "type": "Liquid Retina",
+   "hz": 60,
+   "resolution": "2560x1664"
+  },
+  "ports": [
+   "2x Thunderbolt 4",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
+  "colors": [
+   {
+    "en": "Sky Blue",
+    "fa": "آبی آسمانی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (نور ستاره)"
+   },
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   }
+  ],
+  "battery_hours": 18,
+  "weight_kg": 1.23,
+  "features": [
+   "fanless",
+   "Touch ID",
+   "Apple N1 chip: Wi-Fi 7 + Bluetooth 6",
+   "Desk View",
+   "512GB base storage",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-the-new-macbook-air-with-m5/",
+   "https://support.apple.com/126320"
+  ]
+ },
+ {
+  "key": "macbook air 15 m5",
+  "name": "MacBook Air 15-inch (M5, 2026)",
+  "name_fa": "مک‌بوک ایر ۱۵ اینچ M5 (۲۰۲۶)",
+  "aliases": [
+   "macbook air 15 m5",
+   "macbookair15m5",
+   "مکبوک ایر ۱۵ ام ۵",
+   "مکبوک ایر ۱۵ m5",
+   "مک بوک ایر ۱۵ ام ۵",
+   "مک بوک ایر ۱۵ m5"
+  ],
+  "year": 2026,
+  "announced": "2026-03-03",
+  "chips": [
+   "M5 (10-core CPU, 10-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   24,
+   32
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096
+  ],
+  "display": {
+   "inch": 15.3,
+   "type": "Liquid Retina",
+   "hz": 60,
+   "resolution": "2880x1864"
+  },
+  "ports": [
+   "2x Thunderbolt 4",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
+  "colors": [
+   {
+    "en": "Sky Blue",
+    "fa": "آبی آسمانی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Starlight",
+    "fa": "استارلایت (نور ستاره)"
+   },
+   {
+    "en": "Midnight",
+    "fa": "نیمه‌شب (سرمه‌ای تیره)"
+   }
+  ],
+  "battery_hours": 18,
+  "weight_kg": 1.51,
+  "features": [
+   "fanless",
+   "Touch ID",
+   "Apple N1 chip: Wi-Fi 7 + Bluetooth 6",
+   "Desk View",
+   "512GB base storage",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-the-new-macbook-air-with-m5/",
+   "https://support.apple.com/126321"
+  ]
+ },
+ {
+  "key": "macbook pro 14 m5 pro",
+  "name": "MacBook Pro 14-inch (M5 Pro or M5 Max, 2026)",
+  "name_fa": "مک‌بوک پرو ۱۴ اینچ M5 Pro / M5 Max (۲۰۲۶)",
+  "aliases": [
+   "macbook pro 14 m5 pro",
+   "macbookpro14m5pro",
+   "مکبوک پرو ۱۴ ام ۵",
+   "مکبوک پرو ۱۴ m5",
+   "مک بوک پرو ۱۴ ام ۵",
+   "مک بوک پرو ۱۴ m5",
+   "macbook pro 14 m5 max",
+   "مکبوک پرو ام ۵ پرو",
+   "مکبوک پرو ام ۵ مکس"
+  ],
+  "year": 2026,
+  "announced": "2026-03-03",
+  "chips": [
+   "M5 Pro (15-core CPU, 16-core GPU)",
+   "M5 Pro (18-core CPU, 20-core GPU)",
+   "M5 Max (18-core CPU, 32-core GPU)",
+   "M5 Max (18-core CPU, 40-core GPU)"
+  ],
+  "ram_gb": [
+   24,
+   36,
+   48,
+   64,
+   128
+  ],
+  "storage_gb": [
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": 14.2,
+   "type": "Liquid Retina XDR (mini-LED, nano-texture option)",
+   "hz": 120,
+   "resolution": "3024x1964"
+  },
+  "ports": [
+   "3x Thunderbolt 5",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 22,
+  "weight_kg": 1.6,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "Thunderbolt 5",
+   "Wi-Fi 7 + Bluetooth 6",
+   "M5 Pro: 24/48/64GB, 1-4TB; M5 Max: 36GB up to 128GB, 2-8TB",
+   "battery 22h (M5 Pro) / 20h (M5 Max)",
+   "M5 Max weighs 1.62kg",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-macbook-pro-with-all-new-m5-pro-and-m5-max/",
+   "https://techcrunch.com/2026/03/03/apple-unveils-new-macbook-air-and-macbook-pro-with-m5/",
+   "https://support.apple.com/126318"
+  ]
+ },
+ {
+  "key": "macbook pro 16 m5 pro",
+  "name": "MacBook Pro 16-inch (M5 Pro or M5 Max, 2026)",
+  "name_fa": "مک‌بوک پرو ۱۶ اینچ M5 Pro / M5 Max (۲۰۲۶)",
+  "aliases": [
+   "macbook pro 16 m5 pro",
+   "macbookpro16m5pro",
+   "مکبوک پرو ۱۶ ام ۵",
+   "مکبوک پرو ۱۶ m5",
+   "مک بوک پرو ۱۶ ام ۵",
+   "مک بوک پرو ۱۶ m5",
+   "macbook pro 16 m5 max",
+   "مکبوک پرو ۱۶ ام ۵ مکس"
+  ],
+  "year": 2026,
+  "announced": "2026-03-03",
+  "chips": [
+   "M5 Pro (18-core CPU, 20-core GPU)",
+   "M5 Max (18-core CPU, 32-core GPU)",
+   "M5 Max (18-core CPU, 40-core GPU)"
+  ],
+  "ram_gb": [
+   24,
+   36,
+   48,
+   64,
+   128
+  ],
+  "storage_gb": [
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": 16.2,
+   "type": "Liquid Retina XDR (mini-LED, nano-texture option)",
+   "hz": 120,
+   "resolution": "3456x2234"
+  },
+  "ports": [
+   "3x Thunderbolt 5",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": null,
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 24,
+  "weight_kg": 2.14,
+  "features": [
+   "ProMotion",
+   "Touch ID",
+   "Thunderbolt 5",
+   "Wi-Fi 7 + Bluetooth 6",
+   "M5 Pro: 24GB up to 64GB, 1-4TB; M5 Max: 36GB up to 128GB, 2-8TB",
+   "battery 24h figure is for M5 Pro",
+   "M5 Max weighs 2.15kg",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-macbook-pro-with-all-new-m5-pro-and-m5-max/",
+   "https://techcrunch.com/2026/03/03/apple-unveils-new-macbook-air-and-macbook-pro-with-m5/",
+   "https://support.apple.com/126319"
+  ]
+ },
+ {
+  "key": "macbook neo",
+  "name": "MacBook Neo (A18 Pro, 2026)",
+  "name_fa": "مک‌بوک نئو (۲۰۲۶)",
+  "aliases": [
+   "macbook neo",
+   "macbookneo",
+   "macbook neo 2026",
+   "macbook a18 pro",
+   "ارزان‌ترین مکبوک",
+   "مک بوک ارزان",
+   "مکبوک نئو ۱۳"
+  ],
+  "year": 2026,
+  "announced": "2026-03-04",
+  "chips": [
+   "A18 Pro (6-core CPU: 2 performance + 4 efficiency, 5-core GPU, 16-core Neural Engine)"
+  ],
+  "ram_gb": [
+   8
+  ],
+  "storage_gb": [
+   256,
+   512
+  ],
+  "display": {
+   "inch": 13,
+   "type": "Liquid Retina (IPS LED, 500 nits)",
+   "hz": null,
+   "resolution": "2408x1506"
+  },
+  "ports": [
+   "1x USB-C (USB 3, 10Gb/s, DisplayPort, one external display up to 4K60)",
+   "1x USB-C (USB 2)",
+   "3.5mm headphone"
+  ],
+  "camera": "1080p FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   },
+   {
+    "en": "Blush",
+    "fa": "صورتی ملایم (Blush)"
+   },
+   {
+    "en": "Citrus",
+    "fa": "لیمویی (Citrus)"
+   },
+   {
+    "en": "Indigo",
+    "fa": "نیلی (Indigo)"
+   }
+  ],
+  "battery_hours": 16,
+  "weight_kg": 1.23,
+  "features": [
+   "Apple's lowest-cost MacBook (from $599, $499 education)",
+   "Touch ID only on 512GB model",
+   "no backlit keyboard",
+   "Wi-Fi 6E",
+   "fanless",
+   "8GB RAM not upgradeable",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/",
+   "https://support.apple.com/126322",
+   "https://www.macrumors.com/roundup/macbook-neo/",
+   "https://techcrunch.com/2026/03/04/meet-the-macbook-neo-apples-colorful-answer-to-the-chromebook-starting-at-599/"
+  ]
+ },
+ {
+  "key": "mac mini m6",
+  "name": "Mac mini (M6 or M5 Pro, 2026)",
+  "name_fa": "مک مینی M6 / M5 Pro (۲۰۲۶)",
+  "aliases": [
+   "mac mini m6",
+   "macminim6",
+   "مک‌مینی ام ۶",
+   "مک‌مینی m6",
+   "مکمینی ام ۶",
+   "مکمینی m6",
+   "mac mini m5 pro",
+   "مک مینی ام ۵ پرو",
+   "mac mini 2026"
+  ],
+  "year": 2026,
+  "announced": "2026-08-25",
+  "chips": [
+   "M6 (12-core CPU, 12-core GPU)",
+   "M5 Pro (up to 18-core CPU, up to 20-core GPU)"
+  ],
+  "ram_gb": [
+   16,
+   24,
+   32,
+   48,
+   64
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048,
+   4096,
+   8192
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "rear: 3x Thunderbolt 4 (M6) or 3x Thunderbolt 5 (M5 Pro)",
+   "HDMI",
+   "Ethernet"
+  ],
+  "camera": null,
+  "colors": null,
+  "battery_hours": null,
+  "weight_kg": null,
+  "features": [
+   "M6: 16/24/32GB, 256GB-2TB; M5 Pro: 24/48/64GB, 512GB-8TB",
+   "from $899 (M6) / $1,699 (M5 Pro)",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/08/apple-unveils-a-more-powerful-mac-mini-featuring-the-all-new-m6-and-m5-pro/",
+   "https://support.apple.com/128108",
+   "https://9to5mac.com/2026/08/25/apple-announces-new-mac-mini-heres-everything-new/"
+  ]
+ },
+ {
+  "key": "mac studio m5 max",
+  "name": "Mac Studio (M5 Max or M5 Ultra, 2026)",
+  "name_fa": "مک استودیو M5 Max / M5 Ultra (۲۰۲۶)",
+  "aliases": [
+   "mac studio m5 max",
+   "macstudiom5max",
+   "مک‌استودیو ام ۵",
+   "مک‌استودیو m5",
+   "مک استدیو ام ۵",
+   "مک استدیو m5",
+   "mac studio m5 ultra",
+   "مک استودیو ام ۵ الترا",
+   "mac studio 2026"
+  ],
+  "year": 2026,
+  "announced": "2026-08-25",
+  "chips": [
+   "M5 Max (18-core CPU, 32- or 40-core GPU)",
+   "M5 Ultra (up to 36-core CPU, up to 80-core GPU)"
+  ],
+  "ram_gb": [
+   36,
+   48,
+   64,
+   96,
+   128,
+   256,
+   512
+  ],
+  "storage_gb": [
+   512,
+   1024,
+   2048,
+   4096,
+   8192,
+   16384
+  ],
+  "display": {
+   "inch": null,
+   "type": "none",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": [
+   "4x Thunderbolt 5 (rear)",
+   "2x USB-A",
+   "HDMI 2.1",
+   "10Gb Ethernet",
+   "front: 2x USB-C 10Gb/s (M5 Max) or 2x Thunderbolt 5 (M5 Ultra)"
+  ],
+  "camera": null,
+  "colors": null,
+  "battery_hours": null,
+  "weight_kg": null,
+  "features": [
+   "M5 Max: 36/48/64/128GB, 512GB-8TB; M5 Ultra: 96/256/512GB, 1-16TB",
+   "M5 Ultra = two M5 Max dies (UltraFusion), 1.2TB/s memory bandwidth",
+   "512GB memory option shipped late October 2026",
+   "from $2,499 (M5 Max) / $5,499 (M5 Ultra)",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/08/apple-introduces-mac-studio-with-m5-max-and-m5-ultra/",
+   "https://support.apple.com/128107",
+   "https://macrumors.com/2026/08/25/apple-announces-new-mac-studio-with-m5-ultra-chip/"
+  ]
+ },
+ {
+  "key": "imac 24 m6",
+  "name": "iMac 24-inch (M6, 2026)",
+  "name_fa": "آی‌مک ۲۴ اینچ M6 (۲۰۲۶)",
+  "aliases": [
+   "imac 24 m6",
+   "imac24m6",
+   "ایمک ۲۴ ام ۶",
+   "ایمک ۲۴ m6",
+   "آی مک ۲۴ ام ۶",
+   "آی مک ۲۴ m6",
+   "imac m6",
+   "ایمک ام ۶",
+   "imac 2026"
+  ],
+  "year": 2026,
+  "announced": "2026-10-27",
+  "chips": [
+   "M6 (10-core CPU, 10-core GPU)",
+   "M6 (12-core CPU, 12-core GPU)"
+  ],
+  "ram_gb": null,
+  "storage_gb": null,
+  "display": {
+   "inch": 24,
+   "type": "Retina 4.5K (500 nits)",
+   "hz": 60,
+   "resolution": "4480x2520"
+  },
+  "ports": null,
+  "camera": null,
+  "colors": [
+   {
+    "en": "Blue",
+    "fa": "آبی"
+   },
+   {
+    "en": "Green",
+    "fa": "سبز"
+   },
+   {
+    "en": "Pink",
+    "fa": "صورتی"
+   },
+   {
+    "en": "Yellow",
+    "fa": "زرد"
+   },
+   {
+    "en": "Purple",
+    "fa": "بنفش"
+   },
+   {
+    "en": "Orange",
+    "fa": "نارنجی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": null,
+  "features": [
+   "Apple N1 chip: Wi-Fi 7 + Bluetooth 6",
+   "Neural Accelerator in each GPU core",
+   "same design as M4 iMac",
+   "from $1,499 (10-core) / $1,699 (12-core)",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.tomsguide.com/computing/apple-desktops/apple-unveils-new-imac-with-m6-here-are-the-all-the-upgrades",
+   "https://macworld.com/article/3270546/imac-gains-m6-chip-and-performance-boost-but-little-else-changes.html",
+   "https://www.engadget.com/2298220/everything-apple-announced-ipad-macbook-pro-and-tell-event/"
+  ]
+ },
+ {
+  "key": "macbook pro 14 m6",
+  "name": "MacBook Pro 14-inch (M6, 2026)",
+  "name_fa": "مک‌بوک پرو ۱۴ اینچ M6 (۲۰۲۶)",
+  "aliases": [
+   "macbook pro 14 m6",
+   "macbookpro14m6",
+   "مکبوک پرو ۱۴ ام ۶",
+   "مکبوک پرو ۱۴ m6",
+   "مک بوک پرو ۱۴ ام ۶",
+   "مک بوک پرو ۱۴ m6",
+   "macbook pro m6",
+   "مکبوک پرو ام ۶"
+  ],
+  "year": 2026,
+  "announced": "2026-10-27",
+  "chips": [
+   "M6 (12-core CPU: 2 super + 4 performance + 6 efficiency, 12-core GPU)"
+  ],
+  "ram_gb": null,
+  "storage_gb": null,
+  "display": {
+   "inch": 14.2,
+   "type": "Liquid Retina XDR (mini-LED)",
+   "hz": 120,
+   "resolution": "3024x1964"
+  },
+  "ports": null,
+  "camera": null,
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": 24,
+  "weight_kg": null,
+  "features": [
+   "ProMotion",
+   "Wi-Fi 7",
+   "16GB RAM + 1TB SSD base configuration",
+   "from $1,999 ($1,899 education)",
+   "no touchscreen",
+   "available Nov 6, 2026",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.apple.com/newsroom/2026/10/apple-introduces-the-new-14-inch-macbook-pro-with-m6/",
+   "https://support.apple.com/148300",
+   "https://www.engadget.com/2298220/everything-apple-announced-ipad-macbook-pro-and-tell-event/"
+  ]
+ },
+ {
+  "key": "macbook pro 14 oled m5 pro",
+  "name": "MacBook Pro 14-inch PROLED XDR touchscreen (M5 Pro or M5 Max, 2026)",
+  "name_fa": "مک‌بوک پرو ۱۴ اینچ OLED لمسی M5 Pro / M5 Max (۲۰۲۶)",
+  "aliases": [
+   "macbook pro 14 oled m5 pro",
+   "macbookpro14oledm5pro",
+   "مکبوک پرو ۱۴ ام ۵",
+   "مکبوک پرو ۱۴ m5",
+   "مک بوک پرو ۱۴ ام ۵",
+   "مک بوک پرو ۱۴ m5",
+   "macbook pro oled",
+   "macbook pro touch",
+   "مکبوک پرو لمسی",
+   "مکبوک پرو اولد",
+   "مک بوک تاچ"
+  ],
+  "year": 2026,
+  "announced": "2026-10-28",
+  "chips": [
+   "M5 Pro (15-core CPU, 16-core GPU)",
+   "M5 Pro (18-core CPU, 20-core GPU)",
+   "M5 Max (18-core CPU, 32- or 40-core GPU)"
+  ],
+  "ram_gb": null,
+  "storage_gb": null,
+  "display": {
+   "inch": 14.2,
+   "type": "PROLED XDR (tandem OLED, touchscreen)",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": null,
+  "camera": null,
+  "colors": null,
+  "battery_hours": 22,
+  "weight_kg": 1.38,
+  "features": [
+   "touchscreen (first touch Mac)",
+   "Dynamic Island instead of notch",
+   "tandem OLED, up to 2000 nits peak",
+   "Touch ID",
+   "battery 22h (M5 Pro) / 20h (M5 Max)",
+   "M5 Max weighs 1.40kg",
+   "from $2,899 ($400 over non-touch model)",
+   "sold alongside non-touch MacBook Pro",
+   "available Nov 6, 2026",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.macrumors.com/2026/10/28/apple-new-macbook-pro/",
+   "https://www.engadget.com/2298220/everything-apple-announced-ipad-macbook-pro-and-tell-event/",
+   "https://support.apple.com/148301"
+  ]
+ },
+ {
+  "key": "macbook pro 16 oled m5 pro",
+  "name": "MacBook Pro 16-inch PROLED XDR touchscreen (M5 Pro or M5 Max, 2026)",
+  "name_fa": "مک‌بوک پرو ۱۶ اینچ OLED لمسی M5 Pro / M5 Max (۲۰۲۶)",
+  "aliases": [
+   "macbook pro 16 oled m5 pro",
+   "macbookpro16oledm5pro",
+   "مکبوک پرو ۱۶ ام ۵",
+   "مکبوک پرو ۱۶ m5",
+   "مک بوک پرو ۱۶ ام ۵",
+   "مک بوک پرو ۱۶ m5",
+   "macbook pro 16 oled",
+   "مکبوک پرو ۱۶ لمسی"
+  ],
+  "year": 2026,
+  "announced": "2026-10-28",
+  "chips": [
+   "M5 Pro (18-core CPU, 20-core GPU)",
+   "M5 Max (18-core CPU, 32- or 40-core GPU)"
+  ],
+  "ram_gb": null,
+  "storage_gb": null,
+  "display": {
+   "inch": 16.3,
+   "type": "PROLED XDR (tandem OLED, touchscreen)",
+   "hz": null,
+   "resolution": null
+  },
+  "ports": null,
+  "camera": null,
+  "colors": null,
+  "battery_hours": 24,
+  "weight_kg": 1.82,
+  "features": [
+   "touchscreen",
+   "Dynamic Island instead of notch",
+   "tandem OLED, up to 2000 nits peak",
+   "Touch ID",
+   "battery 24h (M5 Pro) / 22h (M5 Max), 100Wh",
+   "M5 Max weighs 1.84kg",
+   "from $3,399 (M5 Pro) / $4,799 (M5 Max)",
+   "available Nov 6, 2026",
+   "Apple Intelligence"
+  ],
+  "max_macos": null,
+  "discontinued": null,
+  "sources": [
+   "https://www.macrumors.com/2026/10/28/apple-new-macbook-pro/",
+   "https://www.engadget.com/2298220/everything-apple-announced-ipad-macbook-pro-and-tell-event/",
+   "https://support.apple.com/148302"
+  ]
+ }
+]
