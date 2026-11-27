@@ -43,7 +43,7 @@
     "fa": "نقره‌ای"
    }
   ],
-  "battery_hours": 9,
+  "battery_hours": 10,
   "weight_kg": 1.08,
   "features": [
    "Intel HD Graphics 6000",
@@ -51,7 +51,11 @@
   ],
   "max_macos": "macOS 12 Monterey",
   "discontinued": 2016,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/112441",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2015/03/09Apple-Updates-13-inch-MacBook-Pro-with-Retina-Display-MacBook-Air/"
+  ]
  },
  {
   "key": "macbook air 13 2015",
@@ -106,7 +110,11 @@
   ],
   "max_macos": "macOS 12 Monterey",
   "discontinued": 2017,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111956",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2015/03/09Apple-Updates-13-inch-MacBook-Pro-with-Retina-Display-MacBook-Air/"
+  ]
  },
  {
   "key": "macbook pro 13 2015",
@@ -163,7 +171,11 @@
   ],
   "max_macos": "macOS 12 Monterey",
   "discontinued": 2017,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111959",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2015/03/09Apple-Updates-13-inch-MacBook-Pro-with-Retina-Display-MacBook-Air/"
+  ]
  },
  {
   "key": "macbook 12 2015",
@@ -223,7 +235,11 @@
   ],
   "max_macos": "macOS 11 Big Sur",
   "discontinued": 2016,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/kb/SP712",
+   "https://support.apple.com/en-us/103257",
+   "https://www.apple.com/newsroom/2015/03/09Apple-Unveils-All-New-MacBook/"
+  ]
  },
  {
   "key": "macbook pro 15 2015",
@@ -238,7 +254,9 @@
   "year": 2015,
   "announced": "2015-05-19",
   "chips": [
-   "Intel Core i7 quad-core (Haswell) 2.2GHz / 2.5GHz (up to 2.8GHz)"
+   "Intel Core i7 quad-core 2.2GHz (Turbo Boost up to 3.4GHz)",
+   "Intel Core i7 quad-core 2.5GHz (Turbo Boost up to 3.7GHz)",
+   "Intel Core i7 quad-core 2.8GHz (configurable, Turbo Boost up to 4.0GHz)"
   ],
   "ram_gb": [
    16
@@ -277,11 +295,78 @@
   ],
   "max_macos": "macOS 12 Monterey",
   "discontinued": 2018,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111955",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2015/05/19Apple-Introduces-15-inch-MacBook-Pro-with-Force-Touch-Trackpad-New-1-999-iMac-with-Retina-5K-Display/"
+  ]
+ },
+ {
+  "key": "imac 27 mid 2015",
+  "name": "iMac 27-inch Retina 5K (Mid 2015)",
+  "name_fa": "آی‌مک ۲۷ اینچ رتینا 5K (اواسط ۲۰۱۵)",
+  "aliases": [
+   "imac 27 mid 2015",
+   "imac27mid2015",
+   "imac 5k mid 2015",
+   "آیمک ۲۷ اواسط ۲۰۱۵",
+   "ایمک ۲۷ اواسط ۲۰۱۵",
+   "آی مک ۲۷ اواسط ۲۰۱۵"
+  ],
+  "year": 2015,
+  "announced": "2015-05-19",
+  "chips": [
+   "Intel Core i5 quad-core 3.3GHz (Turbo Boost up to 3.7GHz)"
+  ],
+  "ram_gb": [
+   8,
+   16,
+   32
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   3072
+  ],
+  "display": {
+   "inch": 27,
+   "type": "Retina 5K",
+   "hz": 60,
+   "resolution": "5120x2880"
+  },
+  "ports": [
+   "4x USB-A 3",
+   "2x Thunderbolt 2",
+   "SDXC card slot",
+   "Gigabit Ethernet",
+   "3.5mm headphone"
+  ],
+  "camera": "FaceTime HD",
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
+  "battery_hours": null,
+  "weight_kg": 9.54,
+  "features": [
+   "HDD, Fusion Drive or SSD options",
+   "user-upgradeable RAM",
+   "AMD Radeon R9 M290 (2GB)"
+  ],
+  "max_macos": "macOS 11 Big Sur",
+  "discontinued": null,
+  "sources": [
+   "https://support.apple.com/en-us/112434",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2015/05/19Apple-Introduces-15-inch-MacBook-Pro-with-Force-Touch-Trackpad-New-1-999-iMac-with-Retina-5K-Display/"
+  ]
  },
  {
   "key": "imac 21.5 2015",
-  "name": "iMac 21.5-inch (2015: non-Retina and Retina 4K)",
+  "name": "iMac 21.5-inch (Late 2015: non-Retina and Retina 4K)",
   "name_fa": "آی‌مک ۲۱٫۵ اینچ (۲۰۱۵)",
   "aliases": [
    "imac 21.5 2015",
@@ -293,14 +378,21 @@
   "year": 2015,
   "announced": "2015-10-13",
   "chips": [
-   "Intel Core i5 dual/quad-core (Broadwell)",
-   "Intel Core i7 quad-core (Retina 4K, optional)"
+   "Intel Core i5 dual-core 1.6GHz (non-Retina)",
+   "Intel Core i5 quad-core 2.8GHz (non-Retina)",
+   "Intel Core i5 quad-core 3.1GHz (Retina 4K)",
+   "Intel Core i7 quad-core 3.3GHz (Retina 4K, configurable)"
   ],
   "ram_gb": [
    8,
    16
   ],
-  "storage_gb": null,
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
   "display": {
    "inch": 21.5,
    "type": "Retina 4K or non-Retina LED",
@@ -314,7 +406,7 @@
    "Gigabit Ethernet",
    "3.5mm headphone"
   ],
-  "camera": "720p FaceTime HD",
+  "camera": "FaceTime HD",
   "colors": [
    {
     "en": "Silver",
@@ -329,30 +421,44 @@
   ],
   "max_macos": "macOS 12 Monterey",
   "discontinued": 2017,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/112036",
+   "https://support.apple.com/en-us/112034",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2015/10/13Apple-Updates-iMac-Family-with-Stunning-New-Retina-Displays/"
+  ]
  },
  {
   "key": "imac 27 2015",
-  "name": "iMac 27-inch Retina 5K (2015)",
+  "name": "iMac 27-inch Retina 5K (Late 2015)",
   "name_fa": "آی‌مک ۲۷ اینچ رتینا 5K (۲۰۱۵)",
   "aliases": [
    "imac 27 2015",
    "imac272015",
    "ایمک ۲۷ ۲۰۱۵",
-   "آی مک ۲۷ ۲۰۱۵"
+   "آی مک ۲۷ ۲۰۱۵",
+   "imac 27 late 2015",
+   "آیمک ۲۷ اواخر ۲۰۱۵"
   ],
   "year": 2015,
   "announced": "2015-10-13",
   "chips": [
-   "Intel Core i5 quad-core 6th gen (Skylake)",
-   "Intel Core i7 quad-core 6th gen (optional)"
+   "Intel Core i5 quad-core 3.2GHz (6th gen, Skylake)",
+   "Intel Core i5 quad-core 3.3GHz",
+   "Intel Core i7 quad-core 4.0GHz (configurable)"
   ],
   "ram_gb": [
    8,
    16,
    32
   ],
-  "storage_gb": null,
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048,
+   3072
+  ],
   "display": {
    "inch": 27,
    "type": "Retina 5K",
@@ -366,7 +472,7 @@
    "Gigabit Ethernet",
    "3.5mm headphone"
   ],
-  "camera": "720p FaceTime HD",
+  "camera": "FaceTime HD",
   "colors": [
    {
     "en": "Silver",
@@ -382,7 +488,11 @@
   ],
   "max_macos": "macOS 12 Monterey",
   "discontinued": 2017,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/112035",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2015/10/13Apple-Updates-iMac-Family-with-Stunning-New-Retina-Displays/"
+  ]
  },
  {
   "key": "macbook 12 2016",
@@ -445,7 +555,11 @@
   ],
   "max_macos": "macOS 12 Monterey",
   "discontinued": 2017,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/kb/SP741",
+   "https://support.apple.com/en-us/103257",
+   "https://www.apple.com/newsroom/2016/04/19Apple-Updates-MacBook-with-Latest-Processors-Longer-Battery-Life-New-Rose-Gold-Finish/"
+  ]
  },
  {
   "key": "macbook pro 13 2016",
@@ -460,8 +574,10 @@
   "year": 2016,
   "announced": "2016-10-27",
   "chips": [
-   "Intel Core i5 dual-core 6th gen (Skylake)",
-   "Intel Core i7 dual-core 6th gen"
+   "Intel Core i5 dual-core 2.0GHz (two-port)",
+   "Intel Core i7 dual-core 2.4GHz (two-port, configurable)",
+   "Intel Core i5 dual-core 2.9GHz or 3.1GHz (four-port)",
+   "Intel Core i7 dual-core 3.3GHz (four-port, configurable)"
   ],
   "ram_gb": [
    8,
@@ -501,7 +617,12 @@
   ],
   "max_macos": "macOS 12 Monterey",
   "discontinued": 2017,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111999",
+   "https://support.apple.com/en-us/112003",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2016/10/apple-unveils-groundbreaking-new-macbook-pro/"
+  ]
  },
  {
   "key": "macbook pro 15 2016",
@@ -516,7 +637,9 @@
   "year": 2016,
   "announced": "2016-10-27",
   "chips": [
-   "Intel Core i7 quad-core 6th gen (Skylake) 2.6/2.7/2.9GHz"
+   "Intel Core i7 quad-core 2.6GHz",
+   "Intel Core i7 quad-core 2.7GHz",
+   "Intel Core i7 quad-core 2.9GHz (configurable)"
   ],
   "ram_gb": [
    16
@@ -558,7 +681,11 @@
   ],
   "max_macos": "macOS 12 Monterey",
   "discontinued": 2017,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111975",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2016/10/apple-unveils-groundbreaking-new-macbook-pro/"
+  ]
  },
  {
   "key": "macbook 12 2017",
@@ -622,7 +749,11 @@
   ],
   "max_macos": "macOS 13 Ventura",
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/kb/SP757",
+   "https://support.apple.com/en-us/103257",
+   "https://www.apple.com/newsroom/2017/06/highlights-from-wwdc-2017/"
+  ]
  },
  {
   "key": "macbook air 13 2017",
@@ -675,7 +806,11 @@
   ],
   "max_macos": "macOS 12 Monterey",
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111924",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2017/06/highlights-from-wwdc-2017/"
+  ]
  },
  {
   "key": "macbook pro 13 2017",
@@ -690,8 +825,10 @@
   "year": 2017,
   "announced": "2017-06-05",
   "chips": [
-   "Intel Core i5 dual-core 7th gen (Kaby Lake)",
-   "Intel Core i7 dual-core 7th gen"
+   "Intel Core i5 dual-core 2.3GHz (two-port)",
+   "Intel Core i7 dual-core 2.5GHz (two-port, configurable)",
+   "Intel Core i5 dual-core 3.1GHz or 3.3GHz (four-port)",
+   "Intel Core i7 dual-core 3.5GHz (four-port, configurable)"
   ],
   "ram_gb": [
    8,
@@ -732,7 +869,12 @@
   ],
   "max_macos": "macOS 13 Ventura",
   "discontinued": 2018,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111951",
+   "https://support.apple.com/en-us/111972",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2017/06/highlights-from-wwdc-2017/"
+  ]
  },
  {
   "key": "macbook pro 15 2017",
@@ -747,7 +889,9 @@
   "year": 2017,
   "announced": "2017-06-05",
   "chips": [
-   "Intel Core i7 quad-core 7th gen (Kaby Lake) 2.8/2.9/3.1GHz"
+   "Intel Core i7 quad-core 2.8GHz",
+   "Intel Core i7 quad-core 2.9GHz",
+   "Intel Core i7 quad-core 3.1GHz (configurable)"
   ],
   "ram_gb": [
    16
@@ -789,7 +933,11 @@
   ],
   "max_macos": "macOS 13 Ventura",
   "discontinued": 2018,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111947",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2017/06/highlights-from-wwdc-2017/"
+  ]
  },
  {
   "key": "imac 21.5 2017",
@@ -804,15 +952,20 @@
   "year": 2017,
   "announced": "2017-06-05",
   "chips": [
-   "Intel Core i5 7th gen (Kaby Lake) dual/quad-core",
-   "Intel Core i7 quad-core (optional)"
+   "Intel Core i5 dual-core 2.3GHz (non-Retina)",
+   "Intel Core i5 quad-core 3.0GHz or 3.4GHz (Retina 4K)",
+   "Intel Core i7 quad-core 3.6GHz (Retina 4K, configurable)"
   ],
   "ram_gb": [
    8,
    16,
    32
   ],
-  "storage_gb": null,
+  "storage_gb": [
+   256,
+   512,
+   1024
+  ],
   "display": {
    "inch": 21.5,
    "type": "Retina 4K or non-Retina LED",
@@ -826,7 +979,7 @@
    "Gigabit Ethernet",
    "3.5mm headphone"
   ],
-  "camera": "720p FaceTime HD",
+  "camera": "FaceTime HD",
   "colors": [
    {
     "en": "Silver",
@@ -834,14 +987,19 @@
    }
   ],
   "battery_hours": null,
-  "weight_kg": 5.66,
+  "weight_kg": 5.44,
   "features": [
    "HDD, Fusion Drive or SSD options",
    "Radeon Pro 555/560 (4K model)"
   ],
   "max_macos": "macOS 13 Ventura",
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111921",
+   "https://support.apple.com/en-us/112026",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2017/06/imac-receives-major-update-featuring-more-powerful-graphics-faster-processors-thunderbolt-3-brighter-displays/"
+  ]
  },
  {
   "key": "imac 27 2017",
@@ -856,8 +1014,8 @@
   "year": 2017,
   "announced": "2017-06-05",
   "chips": [
-   "Intel Core i5 quad-core 7th gen (Kaby Lake)",
-   "Intel Core i7 quad-core 4.2GHz (optional)"
+   "Intel Core i5 quad-core 3.4GHz, 3.5GHz or 3.8GHz (7th gen, Kaby Lake)",
+   "Intel Core i7 quad-core 4.2GHz (configurable)"
   ],
   "ram_gb": [
    8,
@@ -865,7 +1023,13 @@
    32,
    64
   ],
-  "storage_gb": null,
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048,
+   3072
+  ],
   "display": {
    "inch": 27,
    "type": "Retina 5K (500 nits, P3)",
@@ -879,7 +1043,7 @@
    "Gigabit Ethernet",
    "3.5mm headphone"
   ],
-  "camera": "720p FaceTime HD",
+  "camera": "FaceTime HD",
   "colors": [
    {
     "en": "Silver",
@@ -895,7 +1059,11 @@
   ],
   "max_macos": "macOS 13 Ventura",
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111969",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2017/06/imac-receives-major-update-featuring-more-powerful-graphics-faster-processors-thunderbolt-3-brighter-displays/"
+  ]
  },
  {
   "key": "imac pro 2017",
@@ -952,7 +1120,11 @@
   ],
   "max_macos": "macOS 15 Sequoia",
   "discontinued": 2021,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111995",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2017/06/imac-pro-most-powerful-mac-arrives-december/"
+  ]
  },
  {
   "key": "macbook pro 13 2018",
@@ -1011,7 +1183,11 @@
   ],
   "max_macos": "macOS 15 Sequoia",
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111925",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2018/07/apple-updates-macbook-pro-with-faster-performance-and-new-features-for-pros/"
+  ]
  },
  {
   "key": "macbook pro 15 2018",
@@ -1071,7 +1247,11 @@
   ],
   "max_macos": "macOS 15 Sequoia",
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111949",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2018/07/apple-updates-macbook-pro-with-faster-performance-and-new-features-for-pros/"
+  ]
  },
  {
   "key": "macbook air 2018",
@@ -1132,7 +1312,11 @@
   ],
   "max_macos": "macOS 14 Sonoma",
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111933",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2018/10/all-new-macbook-air-takes-flight/"
+  ]
  },
  {
   "key": "mac mini 2018",
@@ -1192,7 +1376,11 @@
   ],
   "max_macos": "macOS 15 Sequoia",
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111912",
+   "https://support.apple.com/en-us/102852",
+   "https://www.apple.com/newsroom/2018/10/new-mac-mini-packs-huge-punch/"
+  ]
  },
  {
   "key": "imac 21.5 2019",
@@ -1207,16 +1395,19 @@
   "year": 2019,
   "announced": "2019-03-19",
   "chips": [
-   "Intel Core i3 quad-core 8th gen",
-   "Intel Core i5 6-core 8th gen",
-   "Intel Core i7 6-core 8th gen (optional)"
+   "Intel Core i3 quad-core 3.6GHz (8th gen)",
+   "Intel Core i5 6-core 3.0GHz (8th gen)",
+   "Intel Core i7 6-core 3.2GHz (configurable)"
   ],
   "ram_gb": [
    8,
    16,
    32
   ],
-  "storage_gb": null,
+  "storage_gb": [
+   256,
+   1024
+  ],
   "display": {
    "inch": 21.5,
    "type": "Retina 4K (500 nits, P3)",
@@ -1230,7 +1421,7 @@
    "Gigabit Ethernet",
    "3.5mm headphone"
   ],
-  "camera": "720p FaceTime HD",
+  "camera": "FaceTime HD",
   "colors": [
    {
     "en": "Silver",
@@ -1238,14 +1429,18 @@
    }
   ],
   "battery_hours": null,
-  "weight_kg": 5.66,
+  "weight_kg": 5.48,
   "features": [
    "Fusion Drive or SSD options",
    "Radeon Pro 555X/560X/Vega 20"
   ],
   "max_macos": "macOS 15 Sequoia",
   "discontinued": 2021,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111963",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2019/03/imac-gets-a-2x-performance-boost/"
+  ]
  },
  {
   "key": "imac 27 2019",
@@ -1260,8 +1455,8 @@
   "year": 2019,
   "announced": "2019-03-19",
   "chips": [
-   "Intel Core i5 6-core 8th/9th gen",
-   "Intel Core i9 8-core 9th gen (optional)"
+   "Intel Core i5 6-core 3.0GHz, 3.1GHz or 3.7GHz (8th/9th gen)",
+   "Intel Core i9 8-core 3.6GHz (configurable, 9th gen)"
   ],
   "ram_gb": [
    8,
@@ -1269,7 +1464,13 @@
    32,
    64
   ],
-  "storage_gb": null,
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048,
+   3072
+  ],
   "display": {
    "inch": 27,
    "type": "Retina 5K (500 nits, P3)",
@@ -1283,7 +1484,7 @@
    "Gigabit Ethernet",
    "3.5mm headphone"
   ],
-  "camera": "720p FaceTime HD",
+  "camera": "FaceTime HD",
   "colors": [
    {
     "en": "Silver",
@@ -1291,14 +1492,18 @@
    }
   ],
   "battery_hours": null,
-  "weight_kg": 9.44,
+  "weight_kg": 9.42,
   "features": [
    "Fusion Drive or SSD options",
    "Radeon Pro 570X/575X/580X/Vega 48"
   ],
   "max_macos": "macOS 15 Sequoia",
   "discontinued": 2020,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111998",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2019/03/imac-gets-a-2x-performance-boost/"
+  ]
  },
  {
   "key": "macbook pro 13 2019",
@@ -1313,7 +1518,10 @@
   "year": 2019,
   "announced": "2019-05-21",
   "chips": [
-   "Intel Core i5/i7 quad-core 8th gen (1.4GHz two-port; 2.4GHz four-port)"
+   "Intel Core i5 quad-core 1.4GHz (two-port, 8th gen)",
+   "Intel Core i7 quad-core 1.7GHz (two-port, configurable)",
+   "Intel Core i5 quad-core 2.4GHz (four-port)",
+   "Intel Core i7 quad-core 2.8GHz (four-port, configurable)"
   ],
   "ram_gb": [
    8,
@@ -1358,7 +1566,13 @@
   ],
   "max_macos": "macOS 15 Sequoia",
   "discontinued": 2020,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111945",
+   "https://support.apple.com/en-us/111997",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2019/05/apple-introduces-first-8-core-macbook-pro-the-fastest-mac-notebook-ever/",
+   "https://www.apple.com/newsroom/2019/07/macbook-air-and-macbook-pro-updated-for-back-to-school-season/"
+  ]
  },
  {
   "key": "macbook pro 15 2019",
@@ -1373,8 +1587,9 @@
   "year": 2019,
   "announced": "2019-05-21",
   "chips": [
-   "Intel Core i7 6-core 9th gen 2.6GHz",
-   "Intel Core i9 8-core 2.3/2.4GHz"
+   "Intel Core i7 6-core 2.6GHz (9th gen)",
+   "Intel Core i9 8-core 2.3GHz",
+   "Intel Core i9 8-core 2.4GHz (configurable)"
   ],
   "ram_gb": [
    16,
@@ -1418,7 +1633,11 @@
   ],
   "max_macos": "macOS 15 Sequoia",
   "discontinued": 2019,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111941",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2019/05/apple-introduces-first-8-core-macbook-pro-the-fastest-mac-notebook-ever/"
+  ]
  },
  {
   "key": "mac pro 2019",
@@ -1433,7 +1652,11 @@
   "year": 2019,
   "announced": "2019-06-03",
   "chips": [
-   "Intel Xeon W 8-, 12-, 16-, 24- or 28-core"
+   "Intel Xeon W 8-core 3.5GHz",
+   "Intel Xeon W 12-core 3.3GHz",
+   "Intel Xeon W 16-core 3.2GHz",
+   "Intel Xeon W 24-core 2.7GHz",
+   "Intel Xeon W 28-core 2.5GHz"
   ],
   "ram_gb": [
    32,
@@ -1446,6 +1669,7 @@
   ],
   "storage_gb": [
    256,
+   512,
    1024,
    2048,
    4096,
@@ -1482,7 +1706,12 @@
   ],
   "max_macos": "macOS 26 Tahoe",
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/118461",
+   "https://support.apple.com/en-us/111907",
+   "https://support.apple.com/en-us/102887",
+   "https://www.apple.com/newsroom/2019/06/apple-unveils-powerful-all-new-mac-pro-and-groundbreaking-pro-display-xdr/"
+  ]
  },
  {
   "key": "macbook air 2019",
@@ -1543,7 +1772,11 @@
   ],
   "max_macos": "macOS 14 Sonoma",
   "discontinued": 2020,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111948",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2019/07/macbook-air-and-macbook-pro-updated-for-back-to-school-season/"
+  ]
  },
  {
   "key": "macbook pro 16 2019",
@@ -1558,8 +1791,9 @@
   "year": 2019,
   "announced": "2019-11-13",
   "chips": [
-   "Intel Core i7 6-core 9th gen 2.6GHz",
-   "Intel Core i9 8-core 2.3/2.4GHz"
+   "Intel Core i7 6-core 2.6GHz (9th gen)",
+   "Intel Core i9 8-core 2.3GHz",
+   "Intel Core i9 8-core 2.4GHz (configurable)"
   ],
   "ram_gb": [
    16,
@@ -1605,7 +1839,11 @@
   ],
   "max_macos": "macOS 26 Tahoe",
   "discontinued": 2021,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111932",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2019/11/apple-introduces-16-inch-macbook-pro-the-worlds-best-pro-notebook/"
+  ]
  },
  {
   "key": "macbook air 2020 intel",
@@ -1670,7 +1908,11 @@
   ],
   "max_macos": "macOS 15 Sequoia",
   "discontinued": 2020,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111991",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2020/03/new-macbook-air-has-more-to-love-and-is-now-just-999/"
+  ]
  },
  {
   "key": "macbook pro 13 2020 2-port",
@@ -1678,9 +1920,7 @@
   "name_fa": "مک‌بوک پرو ۱۳ اینچ (۲۰۲۰، دو پورت)",
   "aliases": [
    "macbook pro 13 2020 2-port",
-   "macbookpro1320202-port",
-   "مکبوک پرو ۱۳ ۲۰۲۰",
-   "مک بوک پرو ۱۳ ۲۰۲۰"
+   "macbookpro1320202-port"
   ],
   "year": 2020,
   "announced": "2020-05-04",
@@ -1729,7 +1969,11 @@
   ],
   "max_macos": "macOS 15 Sequoia",
   "discontinued": 2020,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111981",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2020/05/apple-updates-13-inch-macbook-pro-with-magic-keyboard-double-the-storage-and-faster-performance/"
+  ]
  },
  {
   "key": "macbook pro 13 2020 4-port",
@@ -1737,9 +1981,7 @@
   "name_fa": "مک‌بوک پرو ۱۳ اینچ (۲۰۲۰، چهار پورت)",
   "aliases": [
    "macbook pro 13 2020 4-port",
-   "macbookpro1320204-port",
-   "مکبوک پرو ۱۳ ۲۰۲۰",
-   "مک بوک پرو ۱۳ ۲۰۲۰"
+   "macbookpro1320204-port"
   ],
   "year": 2020,
   "announced": "2020-05-04",
@@ -1788,7 +2030,11 @@
   ],
   "max_macos": "macOS 26 Tahoe",
   "discontinued": 2021,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111339",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2020/05/apple-updates-13-inch-macbook-pro-with-magic-keyboard-double-the-storage-and-faster-performance/"
+  ]
  },
  {
   "key": "imac 27 2020",
@@ -1803,9 +2049,9 @@
   "year": 2020,
   "announced": "2020-08-04",
   "chips": [
-   "Intel Core i5 6-core 10th gen",
-   "Intel Core i7 8-core 10th gen",
-   "Intel Core i9 10-core 10th gen"
+   "Intel Core i5 6-core 3.1GHz or 3.3GHz (10th gen)",
+   "Intel Core i7 8-core 3.8GHz (10th gen)",
+   "Intel Core i9 10-core 3.6GHz (configurable, 10th gen)"
   ],
   "ram_gb": [
    8,
@@ -1852,7 +2098,11 @@
   ],
   "max_macos": "macOS 26 Tahoe",
   "discontinued": 2022,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111913",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2020/08/27-inch-imac-gets-a-major-update/"
+  ]
  },
  {
   "key": "macbook air m1",
@@ -1879,6 +2129,7 @@
    16
   ],
   "storage_gb": [
+   128,
    256,
    512,
    1024,
@@ -1919,7 +2170,11 @@
   ],
   "max_macos": null,
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111883",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2020/11/introducing-the-next-generation-of-mac/"
+  ]
  },
  {
   "key": "macbook pro 13 m1",
@@ -1980,7 +2235,11 @@
   ],
   "max_macos": null,
   "discontinued": 2022,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111893",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2020/11/introducing-the-next-generation-of-mac/"
+  ]
  },
  {
   "key": "mac mini m1",
@@ -2037,7 +2296,11 @@
   ],
   "max_macos": null,
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111894",
+   "https://support.apple.com/en-us/102852",
+   "https://www.apple.com/newsroom/2020/11/introducing-the-next-generation-of-mac/"
+  ]
  },
  {
   "key": "imac 24 m1",
@@ -2119,7 +2382,11 @@
   ],
   "max_macos": null,
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111895",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2021/04/imac-features-all-new-design-in-vibrant-colors-m1-chip-and-45k-retina-display/"
+  ]
  },
  {
   "key": "macbook pro 14 m1 pro",
@@ -2191,7 +2458,11 @@
   ],
   "max_macos": null,
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111902",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2021/10/apple-unveils-game-changing-macbook-pro/"
+  ]
  },
  {
   "key": "macbook pro 16 m1 pro",
@@ -2261,7 +2532,11 @@
   ],
   "max_macos": null,
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111901",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2021/10/apple-unveils-game-changing-macbook-pro/"
+  ]
  },
  {
   "key": "mac studio m1 max",
@@ -2327,7 +2602,11 @@
   ],
   "max_macos": null,
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111900",
+   "https://support.apple.com/en-us/102231",
+   "https://www.apple.com/newsroom/2022/03/apple-unveils-all-new-mac-studio-and-studio-display/"
+  ]
  },
  {
   "key": "macbook air m2",
@@ -2399,7 +2678,11 @@
   ],
   "max_macos": null,
   "discontinued": 2025,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111867",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2022/06/apple-unveils-all-new-macbook-air-supercharged-by-the-new-m2-chip/"
+  ]
  },
  {
   "key": "macbook pro 13 m2",
@@ -2461,7 +2744,11 @@
   ],
   "max_macos": null,
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111869",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2022/06/apple-unveils-m2-with-breakthrough-performance-and-capabilities/"
+  ]
  },
  {
   "key": "macbook pro 14 m2 pro",
@@ -2533,7 +2820,11 @@
   ],
   "max_macos": null,
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111340",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2023/01/apple-unveils-macbook-pro-featuring-m2-pro-and-m2-max/"
+  ]
  },
  {
   "key": "macbook pro 16 m2 pro",
@@ -2602,7 +2893,11 @@
   ],
   "max_macos": null,
   "discontinued": 2023,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111838",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2023/01/apple-unveils-macbook-pro-featuring-m2-pro-and-m2-max/"
+  ]
  },
  {
   "key": "mac mini m2",
@@ -2668,7 +2963,11 @@
   ],
   "max_macos": null,
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111837",
+   "https://support.apple.com/en-us/102852",
+   "https://www.apple.com/newsroom/2023/01/apple-introduces-new-mac-mini-with-m2-and-m2-pro-more-powerful-capable-and-versatile-than-ever/"
+  ]
  },
  {
   "key": "macbook air 15 m2",
@@ -2739,7 +3038,11 @@
   ],
   "max_macos": null,
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111346",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2023/06/apple-introduces-the-15-inch-macbook-air/"
+  ]
  },
  {
   "key": "mac studio m2 max",
@@ -2807,7 +3110,11 @@
   ],
   "max_macos": null,
   "discontinued": 2025,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/111835",
+   "https://support.apple.com/en-us/102231",
+   "https://www.apple.com/newsroom/2023/06/apple-unveils-new-mac-studio-and-brings-apple-silicon-to-mac-pro/"
+  ]
  },
  {
   "key": "mac pro m2 ultra",
@@ -2869,7 +3176,9 @@
   "max_macos": null,
   "discontinued": 2026,
   "sources": [
-   "https://www.macrumors.com/2026/03/26/apple-discontinues-mac-pro/"
+   "https://support.apple.com/en-us/111343",
+   "https://support.apple.com/en-us/102887",
+   "https://www.apple.com/newsroom/2023/06/apple-unveils-new-mac-studio-and-brings-apple-silicon-to-mac-pro/"
   ]
  },
  {
@@ -2933,7 +3242,11 @@
   ],
   "max_macos": null,
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/117735",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2023/10/apple-unveils-new-macbook-pro-featuring-m3-chips/"
+  ]
  },
  {
   "key": "macbook pro 14 m3 pro",
@@ -2942,10 +3255,6 @@
   "aliases": [
    "macbook pro 14 m3 pro",
    "macbookpro14m3pro",
-   "مکبوک پرو ۱۴ ام ۳",
-   "مکبوک پرو ۱۴ m3",
-   "مک بوک پرو ۱۴ ام ۳",
-   "مک بوک پرو ۱۴ m3",
    "macbook pro 14 m3 max",
    "مکبوک پرو ام ۳ مکس"
   ],
@@ -3007,7 +3316,11 @@
   ],
   "max_macos": null,
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/117736",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2023/10/apple-unveils-new-macbook-pro-featuring-m3-chips/"
+  ]
  },
  {
   "key": "macbook pro 16 m3 pro",
@@ -3078,7 +3391,11 @@
   ],
   "max_macos": null,
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/117737",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2023/10/apple-unveils-new-macbook-pro-featuring-m3-chips/"
+  ]
  },
  {
   "key": "imac 24 m3",
@@ -3160,7 +3477,12 @@
   ],
   "max_macos": null,
   "discontinued": 2024,
-  "sources": []
+  "sources": [
+   "https://support.apple.com/en-us/117733",
+   "https://support.apple.com/en-us/117734",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2023/10/apple-supercharges-24-inch-imac-with-new-m3-chip/"
+  ]
  },
  {
   "key": "macbook air 13 m3",
@@ -3233,7 +3555,9 @@
   "max_macos": null,
   "discontinued": 2025,
   "sources": [
-   "https://www.apple.com/newsroom/archive/mac/"
+   "https://support.apple.com/en-us/118551",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2024/03/apple-unveils-the-new-13-and-15-inch-macbook-air-with-the-powerful-m3-chip/"
   ]
  },
  {
@@ -3306,7 +3630,9 @@
   "max_macos": null,
   "discontinued": 2025,
   "sources": [
-   "https://www.apple.com/newsroom/archive/mac/"
+   "https://support.apple.com/en-us/118552",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2024/03/apple-unveils-the-new-13-and-15-inch-macbook-air-with-the-powerful-m3-chip/"
   ]
  },
  {
@@ -3381,7 +3707,7 @@
    }
   ],
   "battery_hours": null,
-  "weight_kg": 4.44,
+  "weight_kg": 4.42,
   "features": [
    "nano-texture glass option",
    "Touch ID keyboard (some models)",
@@ -3393,7 +3719,10 @@
   "max_macos": null,
   "discontinued": 2026,
   "sources": [
-   "https://www.apple.com/newsroom/archive/mac/"
+   "https://support.apple.com/en-us/121556",
+   "https://support.apple.com/en-us/121557",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2024/10/apple-introduces-new-imac-supercharged-by-m4-and-apple-intelligence/"
   ]
  },
  {
@@ -3462,6 +3791,8 @@
   "max_macos": null,
   "discontinued": 2026,
   "sources": [
+   "https://support.apple.com/en-us/121555",
+   "https://support.apple.com/en-us/102852",
    "https://www.apple.com/newsroom/2024/10/apples-new-mac-mini-is-more-mighty-more-mini-and-built-for-apple-intelligence/"
   ]
  },
@@ -3529,7 +3860,9 @@
   "max_macos": null,
   "discontinued": 2025,
   "sources": [
-   "https://www.apple.com/newsroom/archive/mac/"
+   "https://support.apple.com/en-us/121552",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2024/10/new-macbook-pro-features-m4-family-of-chips-and-apple-intelligence/"
   ]
  },
  {
@@ -3539,10 +3872,6 @@
   "aliases": [
    "macbook pro 14 m4 pro",
    "macbookpro14m4pro",
-   "مکبوک پرو ۱۴ ام ۴",
-   "مکبوک پرو ۱۴ m4",
-   "مک بوک پرو ۱۴ ام ۴",
-   "مک بوک پرو ۱۴ m4",
    "macbook pro 14 m4 max",
    "مکبوک پرو ام ۴ مکس",
    "مکبوک پرو ام ۴ پرو"
@@ -3607,7 +3936,9 @@
   "max_macos": null,
   "discontinued": 2026,
   "sources": [
-   "https://www.apple.com/newsroom/archive/mac/"
+   "https://support.apple.com/en-us/121553",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2024/10/new-macbook-pro-features-m4-family-of-chips-and-apple-intelligence/"
   ]
  },
  {
@@ -3681,7 +4012,9 @@
   "max_macos": null,
   "discontinued": 2026,
   "sources": [
-   "https://www.apple.com/newsroom/archive/mac/"
+   "https://support.apple.com/en-us/121554",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2024/10/new-macbook-pro-features-m4-family-of-chips-and-apple-intelligence/"
   ]
  },
  {
@@ -3756,8 +4089,9 @@
   "max_macos": null,
   "discontinued": 2026,
   "sources": [
-   "https://www.apple.com/newsroom/archive/mac/",
-   "https://techcrunch.com/?p=2975698"
+   "https://support.apple.com/en-us/122209",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2025/03/apple-introduces-the-new-macbook-air-with-the-m4-chip-and-a-sky-blue-color/"
   ]
  },
  {
@@ -3831,8 +4165,9 @@
   "max_macos": null,
   "discontinued": 2026,
   "sources": [
-   "https://www.apple.com/newsroom/archive/mac/",
-   "https://techcrunch.com/?p=2975698"
+   "https://support.apple.com/en-us/122210",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2025/03/apple-introduces-the-new-macbook-air-with-the-m4-chip-and-a-sky-blue-color/"
   ]
  },
  {
@@ -3864,8 +4199,7 @@
    64,
    96,
    128,
-   256,
-   512
+   256
   ],
   "storage_gb": [
    512,
@@ -3900,7 +4234,7 @@
   "battery_hours": null,
   "weight_kg": 2.74,
   "features": [
-   "M4 Max: 36-128GB; M3 Ultra: 96/256/512GB",
+   "M4 Max: 36-128GB; M3 Ultra: 96/256GB",
    "up to 16TB SSD (M3 Ultra)",
    "Thunderbolt 5",
    "Wi-Fi 6E",
@@ -3909,6 +4243,8 @@
   "max_macos": null,
   "discontinued": 2026,
   "sources": [
+   "https://support.apple.com/en-us/122211",
+   "https://support.apple.com/en-us/102231",
    "https://www.apple.com/newsroom/2025/03/apple-unveils-new-mac-studio-the-most-powerful-mac-ever/"
   ]
  },
@@ -3976,8 +4312,9 @@
   "max_macos": null,
   "discontinued": 2026,
   "sources": [
-   "https://www.apple.com/newsroom/2025/10/apple-unleashes-m5-the-next-big-leap-in-ai-performance-for-apple-silicon/",
-   "https://support.apple.com/125405"
+   "https://support.apple.com/en-us/125405",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2025/10/apple-unveils-new-14-inch-macbook-pro-powered-by-the-m5-chip/"
   ]
  },
  {
@@ -4052,8 +4389,9 @@
   "max_macos": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/newsroom/2026/03/apple-introduces-the-new-macbook-air-with-m5/",
-   "https://support.apple.com/126320"
+   "https://support.apple.com/en-us/126320",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-the-new-macbook-air-with-m5/"
   ]
  },
  {
@@ -4127,8 +4465,9 @@
   "max_macos": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/newsroom/2026/03/apple-introduces-the-new-macbook-air-with-m5/",
-   "https://support.apple.com/126321"
+   "https://support.apple.com/en-us/126321",
+   "https://support.apple.com/en-us/102869",
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-the-new-macbook-air-with-m5/"
   ]
  },
  {
@@ -4138,10 +4477,6 @@
   "aliases": [
    "macbook pro 14 m5 pro",
    "macbookpro14m5pro",
-   "مکبوک پرو ۱۴ ام ۵",
-   "مکبوک پرو ۱۴ m5",
-   "مک بوک پرو ۱۴ ام ۵",
-   "مک بوک پرو ۱۴ m5",
    "macbook pro 14 m5 max",
    "مکبوک پرو ام ۵ پرو",
    "مکبوک پرو ام ۵ مکس"
@@ -4180,7 +4515,7 @@
    "MagSafe 3",
    "3.5mm headphone"
   ],
-  "camera": null,
+  "camera": "12MP Center Stage",
   "colors": [
    {
     "en": "Space Black",
@@ -4206,9 +4541,9 @@
   "max_macos": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/newsroom/2026/03/apple-introduces-macbook-pro-with-all-new-m5-pro-and-m5-max/",
-   "https://techcrunch.com/2026/03/03/apple-unveils-new-macbook-air-and-macbook-pro-with-m5/",
-   "https://support.apple.com/126318"
+   "https://support.apple.com/en-us/126318",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-macbook-pro-with-all-new-m5-pro-and-m5-max/"
   ]
  },
  {
@@ -4258,7 +4593,7 @@
    "MagSafe 3",
    "3.5mm headphone"
   ],
-  "camera": null,
+  "camera": "12MP Center Stage",
   "colors": [
    {
     "en": "Space Black",
@@ -4284,9 +4619,9 @@
   "max_macos": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/newsroom/2026/03/apple-introduces-macbook-pro-with-all-new-m5-pro-and-m5-max/",
-   "https://techcrunch.com/2026/03/03/apple-unveils-new-macbook-air-and-macbook-pro-with-m5/",
-   "https://support.apple.com/126319"
+   "https://support.apple.com/en-us/126319",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2026/03/apple-introduces-macbook-pro-with-all-new-m5-pro-and-m5-max/"
   ]
  },
  {
@@ -4347,7 +4682,6 @@
   "battery_hours": 16,
   "weight_kg": 1.23,
   "features": [
-   "Apple's lowest-cost MacBook (from $599, $499 education)",
    "Touch ID only on 512GB model",
    "no backlit keyboard",
    "Wi-Fi 6E",
@@ -4358,10 +4692,8 @@
   "max_macos": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/",
-   "https://support.apple.com/126322",
-   "https://www.macrumors.com/roundup/macbook-neo/",
-   "https://techcrunch.com/2026/03/04/meet-the-macbook-neo-apples-colorful-answer-to-the-chromebook-starting-at-599/"
+   "https://support.apple.com/en-us/126322",
+   "https://www.apple.com/newsroom/2026/03/say-hello-to-macbook-neo/"
   ]
  },
  {
@@ -4383,7 +4715,8 @@
   "announced": "2026-08-25",
   "chips": [
    "M6 (12-core CPU, 12-core GPU)",
-   "M5 Pro (up to 18-core CPU, up to 20-core GPU)"
+   "M5 Pro (15-core CPU, 16-core GPU)",
+   "M5 Pro (18-core CPU, 20-core GPU)"
   ],
   "ram_gb": [
    16,
@@ -4407,25 +4740,30 @@
    "resolution": null
   },
   "ports": [
+   "front: 2x USB-C (USB 3) + 3.5mm headphone",
    "rear: 3x Thunderbolt 4 (M6) or 3x Thunderbolt 5 (M5 Pro)",
    "HDMI",
-   "Ethernet"
+   "2.5Gb Ethernet (10Gb optional)"
   ],
   "camera": null,
-  "colors": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
   "battery_hours": null,
-  "weight_kg": null,
+  "weight_kg": 0.67,
   "features": [
    "M6: 16/24/32GB, 256GB-2TB; M5 Pro: 24/48/64GB, 512GB-8TB",
-   "from $899 (M6) / $1,699 (M5 Pro)",
    "Apple Intelligence"
   ],
   "max_macos": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/newsroom/2026/08/apple-unveils-a-more-powerful-mac-mini-featuring-the-all-new-m6-and-m5-pro/",
-   "https://support.apple.com/128108",
-   "https://9to5mac.com/2026/08/25/apple-announces-new-mac-mini-heres-everything-new/"
+   "https://support.apple.com/en-us/128108",
+   "https://support.apple.com/en-us/102852",
+   "https://www.apple.com/newsroom/2026/08/apple-unveils-a-more-powerful-mac-mini-featuring-the-all-new-m6-and-m5-pro/"
   ]
  },
  {
@@ -4446,8 +4784,10 @@
   "year": 2026,
   "announced": "2026-08-25",
   "chips": [
-   "M5 Max (18-core CPU, 32- or 40-core GPU)",
-   "M5 Ultra (up to 36-core CPU, up to 80-core GPU)"
+   "M5 Max (18-core CPU, 32-core GPU)",
+   "M5 Max (18-core CPU, 40-core GPU)",
+   "M5 Ultra (30-core CPU, 64-core GPU)",
+   "M5 Ultra (36-core CPU, 80-core GPU)"
   ],
   "ram_gb": [
    36,
@@ -4477,25 +4817,30 @@
    "2x USB-A",
    "HDMI 2.1",
    "10Gb Ethernet",
-   "front: 2x USB-C 10Gb/s (M5 Max) or 2x Thunderbolt 5 (M5 Ultra)"
+   "3.5mm headphone",
+   "front: 2x USB-C 10Gb/s + SDXC card slot (M5 Max) or 2x Thunderbolt 5 (M5 Ultra)"
   ],
   "camera": null,
-  "colors": null,
+  "colors": [
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
   "battery_hours": null,
-  "weight_kg": null,
+  "weight_kg": 2.7,
   "features": [
    "M5 Max: 36/48/64/128GB, 512GB-8TB; M5 Ultra: 96/256/512GB, 1-16TB",
    "M5 Ultra = two M5 Max dies (UltraFusion), 1.2TB/s memory bandwidth",
    "512GB memory option shipped late October 2026",
-   "from $2,499 (M5 Max) / $5,499 (M5 Ultra)",
    "Apple Intelligence"
   ],
   "max_macos": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/newsroom/2026/08/apple-introduces-mac-studio-with-m5-max-and-m5-ultra/",
-   "https://support.apple.com/128107",
-   "https://macrumors.com/2026/08/25/apple-announces-new-mac-studio-with-m5-ultra-chip/"
+   "https://support.apple.com/en-us/128107",
+   "https://support.apple.com/en-us/102231",
+   "https://www.apple.com/newsroom/2026/08/apple-introduces-new-mac-studio-with-m5-max-and-m5-ultra/"
   ]
  },
  {
@@ -4519,16 +4864,29 @@
    "M6 (10-core CPU, 10-core GPU)",
    "M6 (12-core CPU, 12-core GPU)"
   ],
-  "ram_gb": null,
-  "storage_gb": null,
+  "ram_gb": [
+   16,
+   24,
+   32
+  ],
+  "storage_gb": [
+   256,
+   512,
+   1024,
+   2048
+  ],
   "display": {
    "inch": 24,
    "type": "Retina 4.5K (500 nits)",
    "hz": 60,
    "resolution": "4480x2520"
   },
-  "ports": null,
-  "camera": null,
+  "ports": [
+   "2x Thunderbolt / USB 4 (10-core) or 4x Thunderbolt 4 (12-core)",
+   "2.5Gb Ethernet (some models)",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
   "colors": [
    {
     "en": "Blue",
@@ -4560,20 +4918,20 @@
    }
   ],
   "battery_hours": null,
-  "weight_kg": null,
+  "weight_kg": 4.42,
   "features": [
    "Apple N1 chip: Wi-Fi 7 + Bluetooth 6",
    "Neural Accelerator in each GPU core",
    "same design as M4 iMac",
-   "from $1,499 (10-core) / $1,699 (12-core)",
    "Apple Intelligence"
   ],
   "max_macos": null,
   "discontinued": null,
   "sources": [
-   "https://www.tomsguide.com/computing/apple-desktops/apple-unveils-new-imac-with-m6-here-are-the-all-the-upgrades",
-   "https://macworld.com/article/3270546/imac-gains-m6-chip-and-performance-boost-but-little-else-changes.html",
-   "https://www.engadget.com/2298220/everything-apple-announced-ipad-macbook-pro-and-tell-event/"
+   "https://support.apple.com/en-us/148298",
+   "https://support.apple.com/en-us/148299",
+   "https://support.apple.com/en-us/108054",
+   "https://www.apple.com/newsroom/2026/10/apple-unveils-new-imac-with-m6/"
   ]
  },
  {
@@ -4595,16 +4953,30 @@
   "chips": [
    "M6 (12-core CPU: 2 super + 4 performance + 6 efficiency, 12-core GPU)"
   ],
-  "ram_gb": null,
-  "storage_gb": null,
+  "ram_gb": [
+   16,
+   24,
+   32
+  ],
+  "storage_gb": [
+   1024,
+   2048,
+   4096
+  ],
   "display": {
    "inch": 14.2,
    "type": "Liquid Retina XDR (mini-LED)",
    "hz": 120,
    "resolution": "3024x1964"
   },
-  "ports": null,
-  "camera": null,
+  "ports": [
+   "3x Thunderbolt 4",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
   "colors": [
    {
     "en": "Space Black",
@@ -4616,12 +4988,11 @@
    }
   ],
   "battery_hours": 24,
-  "weight_kg": null,
+  "weight_kg": 1.55,
   "features": [
    "ProMotion",
    "Wi-Fi 7",
    "16GB RAM + 1TB SSD base configuration",
-   "from $1,999 ($1,899 education)",
    "no touchscreen",
    "available Nov 6, 2026",
    "Apple Intelligence"
@@ -4629,9 +5000,9 @@
   "max_macos": null,
   "discontinued": null,
   "sources": [
-   "https://www.apple.com/newsroom/2026/10/apple-introduces-the-new-14-inch-macbook-pro-with-m6/",
-   "https://support.apple.com/148300",
-   "https://www.engadget.com/2298220/everything-apple-announced-ipad-macbook-pro-and-tell-event/"
+   "https://support.apple.com/en-us/148300",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2026/10/apple-introduces-the-new-14-inch-macbook-pro-with-m6/"
   ]
  },
  {
@@ -4641,10 +5012,6 @@
   "aliases": [
    "macbook pro 14 oled m5 pro",
    "macbookpro14oledm5pro",
-   "مکبوک پرو ۱۴ ام ۵",
-   "مکبوک پرو ۱۴ m5",
-   "مک بوک پرو ۱۴ ام ۵",
-   "مک بوک پرو ۱۴ m5",
    "macbook pro oled",
    "macbook pro touch",
    "مکبوک پرو لمسی",
@@ -4656,19 +5023,47 @@
   "chips": [
    "M5 Pro (15-core CPU, 16-core GPU)",
    "M5 Pro (18-core CPU, 20-core GPU)",
-   "M5 Max (18-core CPU, 32- or 40-core GPU)"
+   "M5 Max (18-core CPU, 32-core GPU)",
+   "M5 Max (18-core CPU, 40-core GPU)"
   ],
-  "ram_gb": null,
-  "storage_gb": null,
+  "ram_gb": [
+   24,
+   36,
+   48,
+   64,
+   128
+  ],
+  "storage_gb": [
+   1024,
+   2048,
+   4096,
+   8192,
+   16384
+  ],
   "display": {
    "inch": 14.2,
    "type": "PROLED XDR (tandem OLED, touchscreen)",
-   "hz": null,
-   "resolution": null
+   "hz": 120,
+   "resolution": "3024x1986"
   },
-  "ports": null,
-  "camera": null,
-  "colors": null,
+  "ports": [
+   "3x Thunderbolt 5",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
   "battery_hours": 22,
   "weight_kg": 1.38,
   "features": [
@@ -4678,7 +5073,6 @@
    "Touch ID",
    "battery 22h (M5 Pro) / 20h (M5 Max)",
    "M5 Max weighs 1.40kg",
-   "from $2,899 ($400 over non-touch model)",
    "sold alongside non-touch MacBook Pro",
    "available Nov 6, 2026",
    "Apple Intelligence"
@@ -4686,9 +5080,9 @@
   "max_macos": null,
   "discontinued": null,
   "sources": [
-   "https://www.macrumors.com/2026/10/28/apple-new-macbook-pro/",
-   "https://www.engadget.com/2298220/everything-apple-announced-ipad-macbook-pro-and-tell-event/",
-   "https://support.apple.com/148301"
+   "https://support.apple.com/en-us/148301",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2026/10/apple-unveils-groundbreaking-macbook-pro-with-proled-xdr-display/"
   ]
  },
  {
@@ -4698,10 +5092,6 @@
   "aliases": [
    "macbook pro 16 oled m5 pro",
    "macbookpro16oledm5pro",
-   "مکبوک پرو ۱۶ ام ۵",
-   "مکبوک پرو ۱۶ m5",
-   "مک بوک پرو ۱۶ ام ۵",
-   "مک بوک پرو ۱۶ m5",
    "macbook pro 16 oled",
    "مکبوک پرو ۱۶ لمسی"
   ],
@@ -4709,19 +5099,47 @@
   "announced": "2026-10-28",
   "chips": [
    "M5 Pro (18-core CPU, 20-core GPU)",
-   "M5 Max (18-core CPU, 32- or 40-core GPU)"
+   "M5 Max (18-core CPU, 32-core GPU)",
+   "M5 Max (18-core CPU, 40-core GPU)"
   ],
-  "ram_gb": null,
-  "storage_gb": null,
+  "ram_gb": [
+   24,
+   36,
+   48,
+   64,
+   128
+  ],
+  "storage_gb": [
+   1024,
+   2048,
+   4096,
+   8192,
+   16384
+  ],
   "display": {
    "inch": 16.3,
    "type": "PROLED XDR (tandem OLED, touchscreen)",
-   "hz": null,
-   "resolution": null
+   "hz": 120,
+   "resolution": "3472x2266"
   },
-  "ports": null,
-  "camera": null,
-  "colors": null,
+  "ports": [
+   "3x Thunderbolt 5",
+   "HDMI",
+   "SDXC card slot",
+   "MagSafe 3",
+   "3.5mm headphone"
+  ],
+  "camera": "12MP Center Stage",
+  "colors": [
+   {
+    "en": "Space Black",
+    "fa": "مشکی فضایی"
+   },
+   {
+    "en": "Silver",
+    "fa": "نقره‌ای"
+   }
+  ],
   "battery_hours": 24,
   "weight_kg": 1.82,
   "features": [
@@ -4731,16 +5149,15 @@
    "Touch ID",
    "battery 24h (M5 Pro) / 22h (M5 Max), 100Wh",
    "M5 Max weighs 1.84kg",
-   "from $3,399 (M5 Pro) / $4,799 (M5 Max)",
    "available Nov 6, 2026",
    "Apple Intelligence"
   ],
   "max_macos": null,
   "discontinued": null,
   "sources": [
-   "https://www.macrumors.com/2026/10/28/apple-new-macbook-pro/",
-   "https://www.engadget.com/2298220/everything-apple-announced-ipad-macbook-pro-and-tell-event/",
-   "https://support.apple.com/148302"
+   "https://support.apple.com/en-us/148302",
+   "https://support.apple.com/en-us/108052",
+   "https://www.apple.com/newsroom/2026/10/apple-unveils-groundbreaking-macbook-pro-with-proled-xdr-display/"
   ]
  }
 ]
