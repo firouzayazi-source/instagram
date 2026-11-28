@@ -106,7 +106,7 @@ async def test_story_note_and_product_hint(env, monkeypatch):
     ig = IG()
     seen = {}
 
-    def spy(text, username=None, product_hint="", budget=0):
+    def spy(text, username=None, product_hint="", budget=0, log_who=None):
         seen["hint"] = product_hint
         return None
     monkeypatch.setattr(brain_engine, "decide", spy)

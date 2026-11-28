@@ -118,13 +118,27 @@ def _with_budget(q: dict, budget: int) -> dict:
     return q
 
 
-def _catalog_reply(text: str, product: str, budget: int = 0) -> str | None:
+def log_search(q_desc: str, found: bool, who: str | None) -> None:
+    """جستجوی کالای اینستاگرام یا فروشنده‌ی هوشمند ← گزارش تقاضای ربات تلگرام (صف inbox)؛ خطا بی‌اثر."""
+    if not who or not q_desc:
+        return
+    try:
+        from . import shared_kb
+        if shared_kb.ready():
+            shared_kb._queue({"op": "search_log", "q": q_desc[:120], "found": bool(found), "who": str(who)[:80]})
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _catalog_reply(text: str, product: str, budget: int = 0, who: str | None = None) -> str | None:
     """جستجوی کالا در فهرست سایت؛ None اگر پیام جستجوی کالا نبود."""
     q = _with_budget(catalog.parse(text, product), budget)
     if not q:
         return None
     res = catalog.search(q)
     what = catalog.describe(q) or "این مورد"
+    if q.get("model") or q.get("variant") or q.get("acc"):
+        log_search(catalog.describe(q), bool(res), who)
     if res:
         # فقط یک لینک در هر دایرکت (قواعد ایمنی پیج، ۶ آذر ۱۴۰۵): لینک اولین کالا؛ بقیه با نام و قیمت
         lines = [_item_line(x, link=(i == 0)) for i, x in enumerate(res[:MAX_ITEMS])]
@@ -266,7 +280,7 @@ def _render(item: dict, text: str, product: str, name: str):
     return answer, "reply"
 
 
-def decide(text: str, username: str | None = None, product_hint: str = "", budget: int = 0):
+def decide(text: str, username: str | None = None, product_hint: str = "", budget: int = 0, log_who: str | None = None):
     """تصمیم موتور فهم: (action، reply، intent، score، handoff_reason) یا None اگر محکم نفهمید.
     product_hint: محصولِ پست یا استوری‌ای که پیام به آن جواب داده (وقتی خود پیام مدل را نگفته)."""
     its = intents()
@@ -310,7 +324,7 @@ def decide(text: str, username: str | None = None, product_hint: str = "", budge
     if _catalog_ready():
         q = _with_budget(catalog.parse(text, a["product"]), budget)
         if catalog.wants_catalog(text, q, (a["intent"] or {}).get("id"), HAVE_RX, LIST_RX):   # قاعده‌ی مشترک با تلگرام
-            cat = _catalog_reply(text, a["product"], budget)
+            cat = _catalog_reply(text, a["product"], budget, who=log_who)
             if cat:
                 return "reply", _join(lead, cat), "price", 1.0, ""
 

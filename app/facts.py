@@ -62,8 +62,9 @@ def _item(x: dict) -> dict:
             "condition": a.get("وضعیت", ""), "last_one": x.get("left") == 1, "link": brain_engine._short_link(x)}
 
 
-def search_products(query: str) -> dict:
-    """جستجوی زنده در فهرست سایت با همان فهم ربات تلگرام («۱۳ پرو ۲۵۶ کارکرده زیر ۷۰ میلیون»)."""
+def search_products(query: str, who: str | None = None) -> dict:
+    """جستجوی زنده در فهرست سایت با همان فهم ربات تلگرام («۱۳ پرو ۲۵۶ کارکرده زیر ۷۰ میلیون»).
+    who: شناسه‌ی مشتری برای گزارش تقاضا (فقط گفتگوهای واقعی)."""
     st = catalog_state()
     if not st["ready"]:
         return {"ok": False, "error": "فهرست کالای سایت در دسترس نیست؛ قیمت و موجودی را نگو و به همکار بسپار"}
@@ -71,6 +72,8 @@ def search_products(query: str) -> dict:
     if not q:
         return {"ok": True, "fresh": st["fresh"], "items": [], "note": "عبارت جستجوی کالا نبود؛ مدل یا نوع کالا را بپرس"}
     res = catalog.search(q)
+    if q.get("model") or q.get("variant") or q.get("acc"):
+        brain_engine.log_search(catalog.describe(q), bool(res), who)
     near = False
     if not res and q.get("model"):
         res, near = catalog.search(q, family=True), True

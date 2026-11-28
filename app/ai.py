@@ -534,7 +534,8 @@ async def decide(c, *, channel: str, text: str, user_id: str, username: str | No
 
     # لایه‌ی ۱: موتور فهم مشترک با تلگرام (رایگان، فوری، همان دانش ربات تلگرام)
     if brain_on and brain_engine.available():
-        r = brain_engine.decide(text, username, product_hint, budget)
+        r = brain_engine.decide(text, username, product_hint, budget,
+                                log_who=(f"ig:{user_id or username}" if channel in ("dm", "comment") and not is_test else None))
         if r:
             action, reply, intent, score, reason = r
             d = Decision(action, reply=reply, intent=intent, confidence=score, handoff_reason=reason)
@@ -647,6 +648,7 @@ async def _decide_agent(c, s: dict, channel: str, text: str, user_id: str, usern
                         is_test: bool, ctx: dict) -> Decision | None:
     """مسیر فروشنده‌ی هوشمند. None یعنی خطای API پیش آمد و مسیر قدیمی امتحان شود."""
     from . import agent
+    agent.WHO.set(None if is_test else f"{'tg' if channel == 'telegram' else 'ig'}:{user_id or username}")
     client = get_client("anthropic")
     strong, fast = s["model"] or default_model("anthropic"), s.get("agent_model") or "claude-haiku-5-5"
     content = build_messages(c, s, channel, text, user_id, username, note)[0]["content"]

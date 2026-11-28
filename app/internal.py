@@ -144,8 +144,10 @@ async def transcribe(request: Request, x_internal_key: str | None = Header(None)
 
 
 @router.post("/vision")
-async def vision(request: Request, x_internal_key: str | None = Header(None), x_caption: str | None = Header(None)):
-    """عکس مشتری ← یک جمله‌ی کوتاه (برای ربات تلگرام). بی کلید هوش مصنوعی: provider خالی، یعنی خاموش."""
+async def vision(request: Request, x_internal_key: str | None = Header(None), x_caption: str | None = Header(None),
+                 x_mode: str | None = Header(None)):
+    """عکس مشتری ← یک جمله‌ی کوتاه (برای ربات تلگرام). بی کلید هوش مصنوعی: provider خالی، یعنی خاموش.
+    X-Mode: phone ← اسکرین‌شات تنظیمات آیفون برای کارشناسی معاوضه: {info: {model, storage_gb, battery, parts}}."""
     _check(request, x_internal_key)
     from urllib.parse import unquote
     from . import vision as vis
@@ -154,6 +156,11 @@ async def vision(request: Request, x_internal_key: str | None = Header(None), x_
     data = await request.body()
     if len(data) > vis.MAX_BYTES:
         raise HTTPException(413)
+    if x_mode == "phone":
+        try:
+            return {"info": await vis.phone_info(data), "provider": vis.available()}
+        except Exception as e:  # noqa: BLE001
+            return {"info": None, "provider": vis.available(), "error": str(e)[:200]}
     try:
         text = await vis.describe(data, unquote(x_caption or ""))
     except Exception as e:  # noqa: BLE001

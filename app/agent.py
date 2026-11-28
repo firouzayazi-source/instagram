@@ -19,6 +19,9 @@ MAX_TURNS = 5
 SITE_HOST = "stland.ir"
 
 TERMINAL = {"reply_to_customer", "handoff_to_human"}
+# مشتری گفتگوی فعلی، فقط برای گزارش تقاضا (جستجوهای بی‌نتیجه)؛ در آزمون پنل خالی است
+import contextvars  # noqa: E402
+WHO: contextvars.ContextVar = contextvars.ContextVar("agent_who", default=None)
 
 TOOLS = [
     {"name": "search_products",
@@ -107,7 +110,7 @@ def system_prompt(s: dict) -> list:
 def run_tool(name: str, args: dict) -> dict:
     try:
         if name == "search_products":
-            return facts.search_products(str(args.get("query") or "")[:200])
+            return facts.search_products(str(args.get("query") or "")[:200], who=WHO.get())
         if name == "installment_quote":
             return facts.installment_quote(str(args.get("product_id") or ""), int(args.get("price_toman") or 0))
         if name == "apple_specs":

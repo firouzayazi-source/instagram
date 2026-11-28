@@ -656,9 +656,13 @@ ATTR_ICONS = {"مدل": "📱", "حافظه": "💾", "رنگ": "🎨", "وضع�
 def card_html(x):
     a = x["attrs"]
     lines = [f"<b>{html.escape(x['name'])}</b>", ""]
+    if x.get("used"):          # شناسنامه‌ی سلامت کارکرده (۷ آذر ۱۴۰۵): همان مشخصات سایت، یکجا و خوانا
+        lines.append("🩺 <b>شناسنامه‌ی سلامت</b> (بررسی‌شده پیش از فروش)")
     for k, v in a.items():
         if k == "برند" or not v: continue
         lines.append(f"{ATTR_ICONS.get(k, '▫️')} {html.escape(k)}: {html.escape(v)}")
+    if x.get("used"):
+        lines.append("🛡 حداقل ۷ روز مهلت تست فنی")
     lines += ["", f"💰 <b>{fmt_price(x['price'])}</b>"]
     if x.get("left") == 1: lines.append("🔥 آخرین عدد")
     elif x.get("left"): lines.append(f"📦 {fa(x['left'])} عدد موجود")

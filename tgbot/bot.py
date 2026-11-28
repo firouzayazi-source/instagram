@@ -5,6 +5,7 @@ import appleid     # لینک ربات اپل‌آیدی از تنظیمات م�
 import brain       # موتور فهم پیام — بدون هیچ API بیرونی
 import specs       # مشخصات فنی آیفون‌ها (مقایسه)
 import apple_db    # دانشنامه‌ی همه‌ی محصولات اپل (مشخصات، رنگ، حافظه، سال)
+import tradein     # تخمین اولیه‌ی قیمت گوشی کارکرده‌ی مشتری با جدول صاحب فروشگاه
 import profanity   # تشخیص فحش و توهین
 import catalog     # لیست کالای زنده از سایت (stland.ir)
 import sitepages   # صفحه‌ها و نوشته‌های سایت برای جواب آفلاین (به‌جز کالا)
@@ -187,6 +188,9 @@ DEFAULT_SETTINGS = {"notify_new_user":True,"store_open":True,"forward_user_msgs"
                     "referral":True,        # باشگاه مشتری: لینک دعوت اختصاصی
                     "sla_min":15,           # هشدار: پیام بی‌جواب بیش از این چند دقیقه در ساعت کاری (۰ = خاموش)
                     "vision":True,          # فهم عکس مشتری (فقط وقتی کلید هوش مصنوعی در پنل هست)
+                    "voice":False,          # فهم ویس (۷ آذر ۱۴۰۵: پیش‌فرض خاموش، به خواست صاحب فروشگاه؛ کلید OpenAI یا Gemini لازم)
+                    "demand_weekly":True,   # گزارش «خواستند و نداشتیم» کنار گزارش هفتگی
+                    "price_drop":True,      # خبر افت قیمت کالایی که مشتری جزئیاتش را دیده (یک بار، با «دیگه خبر نده»)
                     "morning_brief":True,   # گزارش صبحگاهی ساعت ۹
                     "weekly_digest":True,   # خلاصه‌ی هفته کنار بکاپ جمعه
                     "miniapp":True,         # لینک سایت داخل تلگرام باز شود
@@ -633,6 +637,7 @@ async def load_settings():
     if not settings.get("_menu_restored"):
         settings["chat_mode"]=False; settings["_menu_restored"]=True
         await save_settings()
+    pd_off.clear(); pd_off.update(int(x) for x in settings.get("pd_off") or [] if str(x).lstrip("-").isdigit())
 async def save_settings(): await _wj(SETTINGS_FILE,settings)
 
 # ── مدیران
@@ -729,6 +734,10 @@ async def init_db():
         CREATE TABLE IF NOT EXISTS staff_replies(
             admin_id INTEGER,user_id INTEGER,wait_sec INTEGER,ts TEXT);
         CREATE INDEX IF NOT EXISTS idx_staff_ts ON staff_replies(ts);
+        CREATE TABLE IF NOT EXISTS watch(
+            user_id INTEGER,pid TEXT,name TEXT,price INTEGER,ts TEXT,notified INTEGER DEFAULT 0,
+            PRIMARY KEY(user_id,pid));
+        CREATE INDEX IF NOT EXISTS idx_watch_ts ON watch(ts);
     """)
     for sql in ["ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0",
                 "ALTER TABLE users ADD COLUMN has_left INTEGER DEFAULT 0",
@@ -1995,7 +2004,10 @@ def settings_kb(owner=False):
           [InlineKeyboardButton(f"{_dot('visits')} رزرو بازدید",callback_data="stg_visits"),
            InlineKeyboardButton(f"{_dot('vision')} فهم عکس (با کلید AI)",callback_data="stg_vision")],
           [InlineKeyboardButton(f"{_dot('morning_brief')} گزارش صبح",callback_data="stg_morning_brief"),
-           InlineKeyboardButton(f"{_dot('aftersale')} پیگیری بعد از خرید",callback_data="stg_aftersale")]]
+           InlineKeyboardButton(f"{_dot('aftersale')} پیگیری بعد از خرید",callback_data="stg_aftersale")],
+          [InlineKeyboardButton(f"{_dot('voice')} فهم ویس (آزمایشی)",callback_data="stg_voice"),
+           InlineKeyboardButton(f"{_dot('price_drop')} خبر افت قیمت",callback_data="stg_price_drop")],
+          [InlineKeyboardButton(f"{_dot('demand_weekly')} گزارش تقاضای هفتگی",callback_data="stg_demand_weekly")]]
     # مدیریت مدیرها و بازگردانی بک‌آپ فقط دستِ مالک است
     if owner:
         rows.append([InlineKeyboardButton(f"👮 مدیران ربات · {to_fa(len(_admins))}",
@@ -3341,6 +3353,9 @@ async def _auto_backup_loop(bot):
                         txt,kb=await weekly_review()
                         await bot.send_message(OWNER_ID,txt,parse_mode="HTML",reply_markup=kb)
                     except Exception as e: logger.error(f"review: {e}")
+                if get_setting("demand_weekly"):
+                    try: await bot.send_message(OWNER_ID,await demand_text(7),parse_mode="HTML")
+                    except Exception as e: logger.error(f"demand weekly: {e}")
         except Exception as e:
             logger.error(f"auto_backup: {e}")
         await asyncio.sleep(1800)
@@ -3877,6 +3892,16 @@ async def user_cb(query,ctx):
         await adv_step(query.message,query.from_user,ctx.bot,step=parts[1],idx=idx)
         return
 
+    if data=="pd_off":       # مشتری دیگر خبر افت قیمت نمی‌خواهد: همه‌ی یادداشت‌هایش بسته می‌شود
+        u=query.from_user
+        await db.execute("UPDATE watch SET notified=1 WHERE user_id=?",(u.id,)); await db.commit()
+        pd_off.add(u.id); settings["pd_off"]=sorted(pd_off)[-5000:]; await save_settings()
+        try: await query.answer("🔕 باشه، دیگه خبر افت قیمت نمی‌فرستم",show_alert=True)
+        except Exception: pass
+        try: await query.message.edit_reply_markup(reply_markup=None)
+        except Exception: pass
+        return
+
     # لیست انتظار یک مدل
     if data=="wl_add":
         u=query.from_user; c=brain_ctx.get(u.id) or {}
@@ -3921,7 +3946,7 @@ async def user_cb(query,ctx):
 #  MAIN CALLBACK DISPATCHER
 # ════════════════════════════════════════════════
 # پیشوندهایی که هم ادمین هم کاربر دسترسی دارد
-_USER_CB_PREFIXES = ("wh_today","wh_weekly","wh_back_today","sub_","ai_","dym_","adv_","wl_add","mem_","cat_","fb_")
+_USER_CB_PREFIXES = ("wh_today","wh_weekly","wh_back_today","sub_","ai_","dym_","adv_","wl_add","mem_","cat_","fb_","pd_off")
 
 async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     global _bc_job,_bc_cancel
@@ -4947,7 +4972,7 @@ async def callbacks(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
 _INVIS_RE = re.compile("[\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]")
 ADMIN_TEXT_CMDS = {"review":"cmd_review","brief":"cmd_brief","staff":"cmd_staff","sla":"cmd_sla","demand":"cmd_demand",
                    "refreward":"cmd_refreward","admin":"cmd_admin","test":"cmd_test","ask":"cmd_ask",
-                   "installment":"cmd_installment","setgroup":"cmd_setgroup","badword":"cmd_badword"}
+                   "installment":"cmd_installment","setgroup":"cmd_setgroup","badword":"cmd_badword","tradein":"cmd_tradein"}
 
 def text_command(text):
     """«‏/review ۲» ← ("review", ["۲"])؛ متن عادی ← None."""
@@ -6148,6 +6173,16 @@ async def process_panel_inbox(bot=None):
                     await bot.send_message(OWNER_ID,review_text(r),parse_mode="HTML",reply_markup=review_kb(r))
             except Exception as e: logger.warning(f"panel op {f}: {e}")
             continue
+        if isinstance(op,dict) and op.get("op")=="search_log":         # جستجوی کالای اینستاگرام/فروشنده‌ی هوشمند (گزارش تقاضا)
+            try:
+                q=str(op.get("q") or "")[:120].strip()
+                if q:
+                    who=op.get("who")
+                    uid_=-(int(hashlib.md5(str(who).encode()).hexdigest()[:8],16)) if who else -1   # منفی: بیرون از تلگرام
+                    await db.execute("INSERT INTO searches(ts,user_id,q,found) VALUES(?,?,?,?)",
+                                     (gregorian_now(),uid_,q,1 if op.get("found") else 0)); await db.commit()
+            except Exception as e: logger.warning(f"panel op {f}: {e}")
+            continue
         if isinstance(op,dict) and op.get("op")=="unmatched_add":      # سؤال نفهمیده‌ی بله یا اینستاگرام
             try: await log_unmatched(str(op.get("text") or "")[:_UNM_MAX],None,str(op.get("src") or ""),
                                      who=str(op.get("who") or "")[:60],ext_uid=op.get("ext_uid") if isinstance(op.get("ext_uid"),(int,str)) else None)
@@ -6244,6 +6279,22 @@ async def core_touch(user,text=""):
                           json={"channel":ORDER_CHANNEL,"user_id":str(user.id),"username":user.username or "",
                                 "name":" ".join(x for x in (user.first_name,user.last_name) if x)[:100],"text":(text or "")[:2000]})
     except Exception as e: logger.debug(f"core touch: {e}")
+
+async def core_vision_phone(data):
+    """اسکرین‌شات تنظیمات آیفون ← {model, storage_gb, battery, parts} از هسته؛ None اگر خاموش یا ناخوانا."""
+    try:
+        with open(INTERNAL_KEY_FILE,encoding="utf-8") as f: key=f.read().strip()
+    except OSError: return None
+    if not key: return None
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=60,trust_env=False) as cl:
+            r=await cl.post(CORE_URL+"/internal/vision",content=bytes(data),
+                            headers={"X-Internal-Key":key,"X-Mode":"phone"})
+        if r.status_code!=200: return None
+        return r.json().get("info") or None
+    except Exception as e:
+        logger.warning(f"vision phone: {type(e).__name__}: {e}"); return None
 
 async def core_transcribe(data,filename="voice.ogg"):
     """ویس ← متن از هسته‌ی مرکزی (با کلید هوش مصنوعی پنل). None اگر کلید یا هسته نبود."""
@@ -6912,13 +6963,87 @@ async def ti_answer(msg,user,bot,st,value):
         await msg.reply_text(TI_STEPS[st["step"]][1],reply_markup=kb)
         return
     ti_state.pop(user.id,None)
-    await msg.reply_text("ممنون 🙏 اطلاعات گوشی‌تون رو به همکارم دادم؛ قیمت رو بعد از بررسی همین‌جا بهتون می‌گه.",
-                         reply_markup=main_menu())
+    est=ti_estimate(st)
+    if est:
+        await msg.reply_text(f"ممنون 🙏\n💡 تخمین اولیه برای گوشی شما: <b>{tradein.fmt_m(est[0])} تا {tradein.fmt_m(est[1])} تومان</b>.\n"
+                             "این فقط برآورد از روی اطلاعاتیه که دادید؛ قیمت قطعی بعد از کارشناسی حضوری گوشی گفته می‌شه. "
+                             "اطلاعات رو به همکارم هم دادم تا هماهنگ کنه.",parse_mode="HTML",reply_markup=main_menu())
+    else:
+        await msg.reply_text("ممنون 🙏 اطلاعات گوشی‌تون رو به همکارم دادم؛ قیمت رو بعد از بررسی همین‌جا بهتون می‌گه.",
+                             reply_markup=main_menu())
     lines="\n".join(f"• {TI_STEPS[i][0]}: {a}" for i,a in enumerate(st["a"]))
+    if est: lines+=f"\n• تخمین ربات به مشتری: {tradein.fmt_m(est[0])} تا {tradein.fmt_m(est[1])}"
+    if st.get("parts"): lines+="\n• ⚠️ پیام قطعه در تنظیمات: "+"، ".join(st["parts"])
     await notify_handoff(bot,user,why="درخواست ارزیابی گوشی برای معاوضه یا فروش",icon="🔄",extra=lines)
     try: await mark_open(user.id)
     except Exception: pass
     set_human(user.id,bot)
+
+def ti_model(text):
+    """«۱۳ پرو ۲۵۶» ← («13 pro», «256»)."""
+    q=catalog.parse(text or "")
+    return q.get("model"),(q.get("storage") if q.get("storage")!="ترا" else "1024")
+
+def ti_estimate(st):
+    """تخمین با جدول صاحب فروشگاه (tradein)؛ None اگر جدول این گوشی کامل نیست."""
+    a=st.get("a") or []
+    if len(a)<3: return None
+    model,storage=ti_model(a[0])
+    cond=TI_COND.index(a[2]) if a[2] in TI_COND else None
+    return tradein.estimate(tradein_cfg(),model,storage,tradein.battery_of(a[1]),cond)
+
+def tradein_cfg():
+    """جدول کارشناسی: ربات تلگرام از تنظیمات خودش؛ بله از همان جدول تلگرام (یک جا وارد می‌شود)."""
+    if KNOWLEDGE_DIR:
+        try:
+            with open(os.path.join(KNOWLEDGE_DIR,"settings.json"),encoding="utf-8") as f:
+                v=json.load(f).get("tradein")
+            if v: return v
+        except (OSError,ValueError): pass
+    return settings.get("tradein")
+
+async def ti_photo(msg,user,bot,st):
+    """اسکرین‌شات «درباره‌ی گوشی» یا «سلامت باتری» در میانه‌ی کارشناسی ← پر شدن جواب‌ها. False اگر خوانده نشد."""
+    try:
+        f=await bot.get_file(msg.photo[-1].file_id); data=await f.download_as_bytearray()
+    except Exception as e:
+        logger.warning(f"ti photo: {e}"); return False
+    info=await core_vision_phone(data)
+    if not info: return False
+    got=[]
+    if st["step"]==0 and (info.get("model") or info.get("storage_gb")):
+        m=catalog.parse(info.get("model") or "")
+        model=(specs.name_of(m["model"]) if m.get("model") else (info.get("model") or ""))
+        val=" ".join(x for x in (model,(f"{info['storage_gb']} گیگ" if info.get("storage_gb") else "")) if x)
+        got.append(f"📱 {val}")
+        if info.get("battery"):
+            st["a"].append(val); st["step"]=1
+            got.append(f"🔋 سلامت باتری {to_fa(info['battery'])}٪")
+            if info.get("parts"): st["parts"]=info["parts"]
+            await msg.reply_text("از اسکرین‌شات خوندم:\n"+"\n".join(got),reply_markup=main_menu())
+            await ti_answer(msg,user,bot,st,f"{info['battery']}٪")
+            return True
+        await msg.reply_text("از اسکرین‌شات خوندم:\n"+"\n".join(got),reply_markup=main_menu())
+        await ti_answer(msg,user,bot,st,val)
+        return True
+    if st["step"]==1 and info.get("battery"):
+        if info.get("parts"): st["parts"]=info["parts"]
+        await msg.reply_text(f"از اسکرین‌شات خوندم: 🔋 سلامت باتری {to_fa(info['battery'])}٪",reply_markup=main_menu())
+        await ti_answer(msg,user,bot,st,f"{info['battery']}٪")
+        return True
+    return False
+
+async def cmd_tradein(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
+    """/tradein — جدول قیمت پایه و کسرهای کارشناسی معاوضه (فقط مدیر)."""
+    if not is_admin(update.effective_user.id): return
+    if KNOWLEDGE_DIR:
+        return await update.message.reply_text("جدول کارشناسی را در ربات تلگرام وارد کنید؛ بله از همان استفاده می‌کند.\n\n"
+                                               +tradein.table_text(tradein_cfg()),parse_mode="HTML")
+    a=list(getattr(ctx,"args",None) or [])
+    cfg,note=tradein.apply_cmd(settings.get("tradein"),a,ti_model)
+    if a and note.startswith(("✅","🗑")):
+        settings["tradein"]=cfg; await save_settings()
+    await update.message.reply_text(_join(note,tradein.table_text(settings.get("tradein"))),parse_mode="HTML")
 
 async def ti_typed(msg,user,bot,st,text):
     """جواب تایپی مشتری به سؤال کارشناسی. اگر سؤال دیگری پرسید (نیت روشن دیگر)، کارشناسی کنار می‌رود."""
@@ -7317,10 +7442,15 @@ async def send_catalog(msg,text,product,lead="",rows=None,uid=None,force=None):
             res=fam; note+=" از همین خانواده اینا هست 👇"
             title=f"📱 هم‌خانواده‌های {catalog.model_name(q['model'])} — {to_fa(len(fam))} مورد موجود"
         else:
-            note+="\nاگه بنویسید «خبرم کن»، هر وقت رسید همین‌جا خبرتون می‌کنم 🔔"
+            note+="\nهر وقت رسید همین‌جا خبرتون می‌کنم؛ کافیه دکمه‌ی زیر رو بزنید 🔔"
     if not res:
-        await msg.reply_text(note or f"🙏 {catalog.describe(q) or 'با این مشخصات'} الان موجود نداریم.",
-                             reply_markup=_cat_markup([[("📦 دیدن همه‌ی دسته‌ها","cat_home")]]))
+        rows=[[("📦 دیدن همه‌ی دسته‌ها","cat_home")]]
+        want=catalog.describe(q)
+        if uid and want and (q.get("model") or q.get("variant")):
+            c=brain_ctx.setdefault(uid,{"ts":time.time()}); c["wl"]=want
+            rows.insert(0,[("🔔 وقتی رسید خبرم کن","wl_add")])
+        await msg.reply_text(note or f"🙏 {want or 'با این مشخصات'} الان موجود نداریم.",
+                             reply_markup=_cat_markup(rows))
         return True
     hint="" if title else catalog.neighbor_line(q)   # یک اشاره به مدل بالاتر و پایین‌تر، نه بیشتر
     hint=_join(hint,CTA_LINES[1] if chat_mode() else random.choice(CTA_LINES)).replace("\n\n","\n")   # دعوت به خرید، یک خط
@@ -7408,6 +7538,7 @@ async def _catalog_loop(bot):
                 if fails: logger.info(f"catalog: دوباره وصل شد — {len(new)} کالا")
                 fails=0
                 await wl_auto(bot)
+                await price_drop_auto(bot)
         except Exception as e:
             fails+=1
             if fails in (1,6): logger.warning(f"catalog: سایت در دسترس نیست ({fails}): {e}")
@@ -7448,6 +7579,45 @@ async def wl_auto(bot):
         await db.execute("DELETE FROM waitlist WHERE product=?",(product,)); await db.commit()
         logger.info(f"wl_auto: «{product}» رسید — {sent} نفر خبر گرفتند")
 
+# ── خبر افت قیمت (۷ آذر ۱۴۰۵): کالایی که مشتری جزئیاتش را دید و قیمتش دست‌کم ۳٪ پایین آمد، یک بار خبر می‌گیرد
+WATCH_DAYS = 14
+pd_off: set = set()      # مشتری‌هایی که «دیگه خبر نده» زدند (در settings ماندگار)
+DROP_MIN = 0.03
+
+async def watch_add(uid,x):
+    await db.execute("INSERT OR REPLACE INTO watch(user_id,pid,name,price,ts,notified) VALUES(?,?,?,?,?,0)",
+                     (uid,str(x["id"]),x["name"][:120],int(x["price"]),gregorian_now()))
+    await db.commit()
+
+async def price_drop_due():
+    """[(uid, کالا, قیمت قبلی)] برای کالاهای دیده‌شده در ۱۴ روز اخیر که موجودند و ارزان‌تر شده‌اند."""
+    since=(datetime.now(IRAN_TZ)-timedelta(days=WATCH_DAYS)).strftime("%Y-%m-%d %H:%M:%S")
+    async with db.execute("SELECT w.user_id,w.pid,w.price FROM watch w LEFT JOIN users u ON u.user_id=w.user_id "
+                          "WHERE w.notified=0 AND w.ts>=? AND COALESCE(u.has_left,0)=0 AND COALESCE(u.is_blocked,0)=0",
+                          (since,)) as c:
+        rows=await c.fetchall()
+    out=[]
+    for uid,pid,old in rows:
+        x=catalog.by_id(pid)
+        if x and x["stock"] and x.get("price") and old and x["price"]<=old*(1-DROP_MIN):
+            out.append((uid,x,old))
+    return out
+
+async def price_drop_auto(bot):
+    if not get_setting("price_drop") or not catalog.fresh(): return
+    for uid,x,old in await price_drop_due():
+        await db.execute("UPDATE watch SET notified=1 WHERE user_id=? AND pid=?",(uid,str(x["id"]))); await db.commit()
+        body=(f"📉 خبر خوب! قیمت <b>{esc(x['name'])}</b> که دیده بودید کم شد:\n"
+              f"قبلاً {catalog.fmt_price(old)} ← الان <b>{catalog.fmt_price(x['price'])}</b>")
+        kb=InlineKeyboardMarkup([[InlineKeyboardButton("🖼 عکس و جزئیات",callback_data=f"cat_p_{x['id']}")],
+                                 [InlineKeyboardButton("🔕 دیگه خبر افت قیمت نده",callback_data="pd_off")]])
+        try:
+            await bot.send_message(uid,body,parse_mode="HTML",reply_markup=kb)
+            await topic_note(bot,uid,f"📉 خبر افت قیمت «{x['name']}» خودکار برای این مشتری رفت.")
+        except Forbidden: await mark_left(uid)
+        except Exception as e: logger.warning(f"price drop → {uid}: {e}")
+        await asyncio.sleep(0.05)
+
 # ── گزارش تقاضا: مشتری‌ها دنبال چه بودند و چه نداشتیم
 async def log_search(uid,q,found):
     d=catalog.describe(q)
@@ -7462,17 +7632,20 @@ async def demand_text(days=7):
                           "WHERE ts>=? GROUP BY q ORDER BY COUNT(DISTINCT user_id) DESC,COUNT(*) DESC",
                           (since,)) as c:
         rows=await c.fetchall()
-    out=[f"<b>📈 تقاضای {to_fa(days)} روز گذشته</b>",HR]
+    out=[f"<b>📈 تقاضای {to_fa(days)} روز گذشته</b> (تلگرام، بله، اینستاگرام)",HR]
     if not rows:
         out.append("هنوز جستجویی ثبت نشده.")
     else:
         out.append("🔎 بیشترین جستجو:")
         out += [f"• {esc(q)} — {to_fa(u)} نفر"+(f" · {to_fa(z)} بار نداشتیم ❌" if z else "")
                 for q,n,u,z in rows[:10]]
-        miss=[r for r in rows if r[3]][:5]
+        miss=sorted([r for r in rows if r[3]],key=lambda r:(-r[2],-r[3]))[:8]
         if miss:
-            out += ["",f"❌ <b>خواستند و نداشتیم</b> (برای خرید کالا):"]
-            out += [f"• {esc(q)} — {to_fa(u)} نفر" for q,n,u,z in miss]
+            out += ["",f"❌ <b>خواستند و نداشتیم</b>:"]
+            out += [f"• {esc(q)} — {to_fa(u)} نفر، {to_fa(z)} بار" for q,n,u,z in miss]
+            top=[q for q,n,u,z in miss if u>=2][:3]
+            if top:
+                out += ["",f"🛒 <b>پیشنهاد خرید این هفته</b>: {esc('، '.join(top))} (بیش از یک نفر خواستند و موجود نبود)"]
     wl=(await wl_groups())[:5]
     if wl:
         out += ["","🔔 منتظر «خبرم کن»:"]+[f"• {esc(p)} — {to_fa(n)} نفر" for p,n in wl]
@@ -7537,6 +7710,8 @@ async def product_cb(query,ctx,kind,pid):
     if kind=="p":
         await _send_card(query.message,bot,x)
         add_trail(uid,"i_price",x["name"])
+        if get_setting("price_drop") and not is_admin(uid) and x.get("price") and uid not in pd_off:
+            _bg(watch_add(uid,x),"watch")
     elif kind=="ins":
         body=catalog.installment_html(x,inst_cfg())
         await query.message.reply_text(body or "شرایط اقساط رو همکارم همین‌جا می‌گه 🙏",parse_mode="HTML",
@@ -8116,7 +8291,7 @@ async def user_media_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
     if msg.contact and msg.contact.phone_number:      # شماره‌ای که خود مشتری فرستاد ← پرونده‌اش در پنل
         _bg(core_touch(user,msg.contact.phone_number.replace("+98","0")),"crm contact")
     # ویس: به متن تبدیل و مثل پیام نوشتاری جواب داده می‌شود (اگر کلید هوش مصنوعی در پنل هست)
-    if (msg.voice or msg.audio) and get_setting("assistant") and get_setting("faq_auto") \
+    if (msg.voice or msg.audio) and get_setting("voice") and get_setting("assistant") and get_setting("faq_auto") \
             and not await human_active(user.id,ctx.bot):
         text=await voice_to_text(msg,ctx.bot)
         if text:
@@ -8124,6 +8299,9 @@ async def user_media_handler(update:Update,ctx:ContextTypes.DEFAULT_TYPE):
             ok=await assistant_reply(update,ctx,text,user)
             await asyncio.sleep(1.5); await tx_flush(ctx.bot,user)
             if ok: return
+    ti=ti_state.get(user.id)
+    if msg.photo and ti and time.time()-ti["ts"]<TI_TTL and ti["step"]<2 and get_setting("vision"):
+        if await ti_photo(msg,user,ctx.bot,ti): return
     if msg.photo:     # شاید رسید پرداختِ سفارشی باشد که در هسته ثبت شده
         r=await core_order(user,image=True)
         if r and r.get("receipt"):
@@ -8352,6 +8530,7 @@ async def post_init(app):
                 await app.bot.set_my_commands(
                     [BotCommand("admin","پنل مدیریت"),BotCommand("review","سؤال‌های نفهمیده و درصد فهم"),
                      BotCommand("brief","گزارش امروز"),BotCommand("staff","عملکرد تیم"),
+                     BotCommand("demand","تقاضا: خواستند و نداشتیم"),BotCommand("tradein","جدول کارشناسی معاوضه"),
                      BotCommand("test","امتحان مثل مشتری"),BotCommand("ask","فهم دستیار از یک جمله"),
                      BotCommand("start","صفحه‌ی مشتری")],
                     scope=BotCommandScopeChat(aid))
@@ -8480,6 +8659,7 @@ def main():
     app.add_handler(MessageHandler(~filters.COMMAND,reply_relay),group=-1)
     app.add_handler(CommandHandler("setgroup",cmd_setgroup))
     app.add_handler(CommandHandler("demand",cmd_demand))
+    app.add_handler(CommandHandler("tradein",cmd_tradein))
     app.add_handler(CommandHandler("review",cmd_review))
     app.add_handler(CommandHandler("brief",cmd_brief))
     app.add_handler(CommandHandler("invite",cmd_invite))
