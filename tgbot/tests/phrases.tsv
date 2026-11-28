@@ -471,3 +471,20 @@ xs پلمپ رجیستر شده 256 چند	catalog|i_price|i_registry
 !Se چنده یه گوشی دوم میخوام	catalog|i_price
 !شرایط چی داری	i_install|i_order
 !کدوم ای او اس 27 پشتیبانی نمیکنه	i_specs|human|unknown
+
+# ── ۷ آذر ۱۴۰۵ (دور دوم پیام‌های واقعی، بی‌نام)
+xs	catalog
+Se	catalog
+Xs max	catalog
+اقصاد ایکس اس	i_install|catalog
+رجیسترانجام میدید؟	i_registry
+میشه عکس گوشی رو بفرستید ببینم	i_photo
+عکسشو بده	i_photo
+رییس کیه	i_owner
+شونزده پرو مکسی که گفتین پیش پرداخت چقد بدن چند قسطی بقیش؟ اگه بگین ممنون میشم	i_install
+ایفون سیزده باتری ۷۷ درصد دارید	catalog
+16 و 17 موجود شد بهم خبربدید	i_notify
+س 2020 باتری 100	catalog|dym|unknown
+تا 200 تومن گوشی چی موجود دارید؟	catalog
+ساعت یازده بازید	i_hours
+!یک ماه تا 10ماهه شرایط اوکی باشه زودتر تسویه میشه	i_install

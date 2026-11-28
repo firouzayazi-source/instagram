@@ -386,7 +386,8 @@ _BARE_OK = {"می", "خوام", "میخوام", "میخواستم", "من", "م�
             "اقا", "اک", "آک", "کارکرده", "نو", "عزیز", "بزرگوار"}
 # نیت‌هایی که اگر محکم خوردند، مدلِ داخل پیام دلیل جستجوی کالا نیست («اقساط ۱۳ پرو»، «۱۳ با ۱۴ چه فرقی داره»)
 STRONG_OTHER = {"i_install", "i_tradein", "i_compare", "i_specs", "i_appleid", "i_other", "i_android", "i_human",
-                "i_address", "i_hours", "i_return", "i_warranty", "i_shipping", "i_owner", "i_software"}
+                "i_address", "i_hours", "i_return", "i_warranty", "i_shipping", "i_owner", "i_software", "i_notify",
+                "i_photo"}
 
 
 def wants_catalog(text, q, intent_id, have_rx, list_rx):

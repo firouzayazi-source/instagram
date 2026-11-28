@@ -36,8 +36,16 @@ _LONG_NUM = re.compile(r"(?:\d[\s\-]?){7,}")        # تلفن، کارت، شب
 _SPACE = re.compile(r"\s+")
 
 
+# برچسب‌های نمایشی صندوق (app/worker._shown_text) و دکمه‌ها: مغز این‌ها را نمی‌بیند
+_SHOWN_PREFIX = re.compile(r"^(?:↩️ \(جواب به استوری\) |📣 شما را در استوری‌اش منشن کرد:? ?)")
+_SKIP = {"🖼 عکس", "👍 مفید بود", "👎 نه", "📣 شما را در استوری‌اش منشن کرد"}
+
+
 def mask(text: str) -> str:
-    t = str(text or "").translate(_FA_DIGITS)
+    t = _SHOWN_PREFIX.sub("", str(text or "").strip())
+    if t in _SKIP:
+        return ""
+    t = t.translate(_FA_DIGITS)
     t = _EMAIL.sub("<ایمیل>", t)
     t = _URL.sub("<لینک>", t)
     t = _HANDLE.sub("<آیدی>", t)
@@ -70,13 +78,15 @@ def _json(p: Path, default):
         return default
 
 
-def collect(bot_db: Path, tg_dir: Path, since: float) -> dict[str, list]:
-    """متن خام هر منبع (پیش از پوشاندن)."""
+def collect(bot_db: Path, tg_dir: Path, since: float, comments: bool = True) -> dict[str, list]:
+    """متن خام هر منبع (پیش از پوشاندن). comments=False: بی کامنت‌های اینستاگرام (بیشترشان نظر زیر پست‌اند، نه سؤال)."""
     out: dict[str, list] = {}
     out["دایرکت اینستاگرام"] = _rows(bot_db, "SELECT text FROM messages WHERE direction='in' AND created_at>?", (since,))
-    out["کامنت اینستاگرام"] = _rows(bot_db, "SELECT text FROM comments WHERE created_at>?", (since,))
+    if comments:
+        out["کامنت اینستاگرام"] = _rows(bot_db, "SELECT text FROM comments WHERE created_at>?", (since,))
     out["مغز مرکزی (همه‌ی پلتفرم‌ها)"] = _rows(
-        bot_db, "SELECT input FROM ai_log WHERE is_test=0 AND created_at>? AND channel NOT IN ('review')", (since,))
+        bot_db, "SELECT input FROM ai_log WHERE is_test=0 AND created_at>? AND channel NOT IN ('review'"
+        + ("" if comments else ",'comment'") + ")", (since,))
     unm = _json(tg_dir / "unmatched.json", [])
     texts = []
     for u in unm if isinstance(unm, list) else []:
@@ -112,10 +122,11 @@ def main(argv=None) -> int:
     ap.add_argument("--out", default="/tmp/stockland_questions.json")
     ap.add_argument("--days", type=int, default=365)
     ap.add_argument("--limit", type=int, default=4000, help="حداکثر تعداد پیام یکتا (پرتکرارها اول)")
+    ap.add_argument("--no-comments", action="store_true", help="بی کامنت‌های اینستاگرام: فقط دایرکت، تلگرام و بله")
     ap.add_argument("--db", default=os.environ.get("DB_PATH", str(ROOT / "data" / "bot.db")))
     ap.add_argument("--tg-dir", default=os.environ.get("TG_DATA_DIR", str(ROOT / "data" / "telegram")))
     a = ap.parse_args(argv)
-    sources = collect(Path(a.db), Path(a.tg_dir), time.time() - a.days * 86400)
+    sources = collect(Path(a.db), Path(a.tg_dir), time.time() - a.days * 86400, comments=not a.no_comments)
     items, stats = build(sources, a.limit)
     out = Path(a.out)
     out.write_text(json.dumps(items, ensure_ascii=False, indent=0), encoding="utf-8")

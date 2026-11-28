@@ -11,6 +11,8 @@ def test_mask_hides_personal_details():
         assert bad not in t
     assert "<شماره>" in t and "<ایمیل>" in t and "<آیدی>" in t and "<لینک>" in t
     assert ex.mask("قیمت ۱۳ پرو ۲۵۶ چنده") == "قیمت 13 پرو 256 چنده"     # عدد کوتاه (مدل، حافظه) می‌ماند
+    assert ex.mask("↩️ (جواب به استوری) ایکس چند") == "ایکس چند"           # برچسب نمایشی صندوق
+    assert ex.mask("👍 مفید بود") == "" and ex.mask("🖼 عکس") == ""
 
 
 def test_export_reads_all_sources(tmp_path):
@@ -34,6 +36,7 @@ def test_export_reads_all_sources(tmp_path):
     got = dict(items)
     assert got == {"قیمت 13 پرو؟": 2, "تعمیر دارید": 3, "اسنپ پی دارید": 1}
     assert stats["دایرکت اینستاگرام"] == 2 and stats["جستجوی کالای تلگرام"] == 0
+    assert "کامنت اینستاگرام" not in ex.collect(db, tg, now - 100, comments=False)
     out = tmp_path / "q.json"
     assert ex.main(["--db", str(db), "--tg-dir", str(tg), "--out", str(out), "--days", "100000"]) == 0
     assert json.loads(out.read_text(encoding="utf-8"))

@@ -111,7 +111,7 @@ def _at(toks: list, sub: tuple) -> int:
     return -1
 
 
-def find(text: str, limit: int = 3) -> list[dict]:
+def find(text: str, limit: int = 3, _deep: bool = True) -> list[dict]:
     """مدل‌های نام‌برده در جمله، به ترتیب آمدن. نام بلندتر برنده است («۱۵ پرو مکس» نه «۱۵ پرو»)."""
     toks = canon(text).split()
     used, hits = set(), []
@@ -133,15 +133,15 @@ def find(text: str, limit: int = 3) -> list[dict]:
     out = [r for _, r in hits]
     if not out:
         out = _loose(toks)
-    if not out:
+    if not out and _deep:
         # «۱۱ نرمال»، «xs»، «se 2022» بی‌کلمه‌ی آیفون: همان فهم مدل ربات (brain.products_all)
         for p in brain.products_all(text):
             if p.startswith("آیفون "):
-                for r in find("iphone " + p[len("آیفون "):], 1):
+                for r in find("iphone " + p[len("آیفون "):], 1, _deep=False):
                     if r not in out:
                         out.append(r)
     # «فرق ایفون ۷ با ۸»، «۱۵ پرو یا ۱۶ پرو»: طرف دوم نام دسته را تکرار نمی‌کند
-    if out and len(out) < limit:
+    if out and len(out) < limit and _deep:
         cat = out[0]["category"]
         # نام خانواده‌ی طرف اول: «macbook air»، «ipad air»، «iphone»، «watch series»
         fam = []
@@ -155,9 +155,9 @@ def find(text: str, limit: int = 3) -> list[dict]:
                 continue
             rest = toks[i + 1:i + 6]
             if rest[0] in _CAT_WORDS:                 # «… با ایپد پرو m4»: نام کامل طرف دوم
-                more = find(" ".join(rest), 1)
+                more = find(" ".join(rest), 1, _deep=False)
             elif word:                               # «… با ۸»: نام دسته‌ی طرف اول
-                more = [r for r in find(word + " " + " ".join(rest[:3]), 1) if r["category"] == cat]
+                more = [r for r in find(word + " " + " ".join(rest[:3]), 1, _deep=False) if r["category"] == cat]
             else:
                 more = []
             for r in more:
@@ -352,7 +352,7 @@ SPEC_WORDS = re.compile(
     r"مشخصات|سخت ?افزار|تراشه|چیپ|پردازنده|\bرم\b|رمش|حافظه|صفحه|نمایشگر|اینچ|دوربین|باتری|وزن|رنگ|"
     r"چه سالی|کی اومد|کی اومده|سال ساخت|فرق|تفاوت|مقایسه|بهتره|قوی ?تر|پورت|درگاه|شارژ|ضد ?اب|ای ?او ?اس|ios|"
     r"اپدیت|آپدیت|ابدیت|چند گیگ|چند ترا|specs?|chip|ram|camera|battery|colou?rs?", re.I)
-PRICE_WORDS = re.compile(r"قیمت|چند[هه]?\b|چنده|چقدر|تومن|تومان|موجود|دارید|دارین|بخرم|خرید|قسط|اقساط", re.I)
+PRICE_WORDS = re.compile(r"باتری\S*\s*(?:سلامت\s*)?\d{2,3}|قیمت|چند[هه]?\b|چنده|چقدر|تومن|تومان|موجود|دارید|دارین|بخرم|خرید|قسط|اقساط", re.I)
 
 
 # «رمش چنده»، «باتریش چقدره»، «چند اینچه»: عدد مشخصه را می‌پرسد، نه قیمت
