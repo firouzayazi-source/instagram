@@ -488,3 +488,27 @@ Xs max	catalog
 تا 200 تومن گوشی چی موجود دارید؟	catalog
 ساعت یازده بازید	i_hours
 !یک ماه تا 10ماهه شرایط اوکی باشه زودتر تسویه میشه	i_install
+
+# ── ۷ آذر ۱۴۰۵ (دور سوم پیام‌های واقعی: احوال‌پرسی محاوره‌ای، «ایکس چند»، «پورو»، «تومن» بودجه)
+سلام داش خسته نباشید؟	smalltalk
+سلام دادا خسته نباشی	smalltalk
+سلام خبی وقت بخیر	smalltalk
+سلام مهندس جان عرض ادب	smalltalk
+وقت لخیر	smalltalk
+داداش سلام وقت بخیر	smalltalk
+درود بر شما	smalltalk
+دورود بر شما	smalltalk
+سلام ارادت	smalltalk
+سلامت باشید	smalltalk
+مهندس جان سلام مجدد	smalltalk
+چشم ممنون	smalltalk
+ممنونم ازتون	smalltalk
+ممنون لطف کردید خدمت میرسم	smalltalk
+مچکر	smalltalk
+عالی	smalltalk
+ایکس چند	catalog|i_price
+سلام 10ایکس چند	catalog|i_price
+13 پورو مکس	catalog
+سلام وقت بخیر برای 23 یا 25 تومن گوشی دارین	catalog
+نه خبرش بدی ممنون میشم	i_notify
+بنظرتون بگیرم 11رو	i_advisor|i_compare|catalog
